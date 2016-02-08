@@ -214,9 +214,6 @@
                <finalName>infinispan-${project.version}</finalName>
                <outputDirectory>${buildDirectory}/distribution</outputDirectory>
                <workDirectory>${buildDirectory}/assembly/work</workDirectory>
-
-               
-               <attach>false</attach>
             </configuration>
          </plugin>
       </plugins>
