@@ -22,7 +22,6 @@ import org.testng.annotations.Test;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
@@ -69,7 +68,7 @@ public class ConsistentHashV1IntegrationTest extends MultipleCacheManagersTest {
       remoteCache = (RemoteCacheImpl) remoteCacheManager.getCache();
       assert super.cacheManagers.size() == 4;
 
-      ex = Executors.newSingleThreadExecutor();
+      ex = Executors.newSingleThreadExecutor(getTestThreadFactory("KeyGenerator"));
       kas = KeyAffinityServiceFactory.newKeyAffinityService(cache(0),
             ex, new DistributionRetryTest.ByteKeyGenerator(), 2, true);
 

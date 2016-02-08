@@ -32,6 +32,7 @@ import org.infinispan.util.ModuleProperties;
 import org.infinispan.util.TimeService;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+import org.infinispan.util.logging.events.EventLogManager;
 import org.infinispan.xsite.GlobalXSiteAdminOperations;
 
 import javax.management.MBeanServer;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A global component registry where shared components are stored.
@@ -58,7 +60,7 @@ import java.util.concurrent.ConcurrentMap;
 public class GlobalComponentRegistry extends AbstractComponentRegistry {
 
    private static final Log log = LogFactory.getLog(GlobalComponentRegistry.class);
-   private static volatile boolean versionLogged = false;
+   private static final AtomicBoolean versionLogged = new AtomicBoolean(false);
    /**
     * Hook to shut down the cache when the JVM exits.
     */
@@ -127,6 +129,7 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
                   InfinispanCollections.<Object, Object>emptyMap(), KnownComponentNames.MODULE_COMMAND_FACTORIES);
          this.createdCaches = createdCaches;
 
+         getOrCreateComponent(EventLogManager.class);
          // This is necessary to make sure the transport has been started and is available to other components that
          // may need it.  This is a messy approach though - a proper fix will be in ISPN-1698
          getOrCreateComponent(Transport.class);
@@ -227,9 +230,8 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
          }
          super.start();
 
-         if (!versionLogged) {
+         if (versionLogged.compareAndSet(false, true)) {
             log.version(Version.printVersion());
-            versionLogged = true;
          }
 
          if (needToNotify && state == ComponentStatus.RUNNING) {

@@ -1,5 +1,6 @@
 package org.infinispan.query.dsl.embedded;
 
+import org.hibernate.hql.ParsingException;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -11,6 +12,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.objectfilter.ObjectFilter;
 import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Expression;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.test.Person;
@@ -132,8 +134,21 @@ public class ClusteredListenerWithDslFilterTest extends MultipleCacheManagersTes
       cache(0).removeListener(listener);
    }
 
+   /**
+    * Using grouping and aggregation with event filters is not allowed.
+    */
+   @Test(expectedExceptions = ParsingException.class, expectedExceptionsMessageRegExp = ".*ISPN000411:.*")
+   public void testDisallowGroupingAndAggregation() {
+      Query query = Search.getQueryFactory(cache(0)).from(Person.class)
+            .having("age").gte(20)
+            .toBuilder().select(Expression.max("age"))
+            .build();
+
+      cache(0).addListener(new EntryListener(), Search.makeFilter(query), null);
+   }
+
    @Listener(clustered = true, includeCurrentState = true)
-   public static class EntryListener {
+   private static class EntryListener {
 
       // this is where we accumulate matches
       public final List<ObjectFilter.FilterResult> results = new ArrayList<ObjectFilter.FilterResult>();

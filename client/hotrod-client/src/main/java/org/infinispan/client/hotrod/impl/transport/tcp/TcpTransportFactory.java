@@ -85,6 +85,10 @@ public class TcpTransportFactory implements TransportFactory {
    // updates won't be allowed to apply since they refer to older views.
    private final AtomicInteger topologyAge = new AtomicInteger(0);
 
+   @GuardedBy("lock")
+   private Map<byte[], Boolean> compatibilityCaches = CollectionFactory
+      .makeMap(ByteArrayEquivalence.INSTANCE, AnyEquivalence.getInstance());
+
    @Override
    public void start(Codec codec, Configuration configuration, AtomicInteger defaultCacheTopologyId, ClientListenerNotifier listenerNotifier) {
       synchronized (lock) {
@@ -267,7 +271,7 @@ public class TcpTransportFactory implements TransportFactory {
       return borrowTransportFromPool(server);
    }
 
-   public Transport getTransport(byte[] key, Set<SocketAddress> failedServers, byte[] cacheName) {
+   public Transport getTransport(Object key, Set<SocketAddress> failedServers, byte[] cacheName) {
       SocketAddress server;
       synchronized (lock) {
          Optional<SocketAddress> hashAwareServer = topologyInfo.getHashAwareServer(key, cacheName);

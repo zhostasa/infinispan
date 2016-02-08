@@ -14,6 +14,7 @@ import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.transaction.LockingMode;
+import org.infinispan.util.ReplicatedControlledConsistentHashFactory;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.testng.annotations.Test;
 
@@ -22,8 +23,6 @@ import javax.transaction.TransactionManager;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.infinispan.context.Flag.FAIL_SILENTLY;
@@ -39,6 +38,8 @@ public class APITest extends MultipleCacheManagersTest {
    @Override
    protected void createCacheManagers() throws Throwable {
       ConfigurationBuilder cfg = getDefaultClusteredCacheConfig(CacheMode.REPL_SYNC, true);
+      cfg.clustering().hash().numSegments(1)
+            .consistentHashFactory(new ReplicatedControlledConsistentHashFactory(0));
       cfg.transaction().lockingMode(LockingMode.PESSIMISTIC)
             .cacheStopTimeout(0)
             .locking().lockAcquisitionTimeout(100);
@@ -89,12 +90,11 @@ public class APITest extends MultipleCacheManagersTest {
    public void testSilentLockFailureAffectsPostOperations() throws Exception {
       final Cache<Integer, String> cache = cache(0);
       final TransactionManager tm = cache.getAdvancedCache().getTransactionManager();
-      final ExecutorService e = Executors.newCachedThreadPool();
       final CountDownLatch waitLatch = new CountDownLatch(1);
       final CountDownLatch continueLatch = new CountDownLatch(1);
       cache.put(1, "v1");
 
-      Future<Void> f1 = e.submit(new Callable<Void>() {
+      Future<Void> f1 = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
             tm.begin();
@@ -114,7 +114,7 @@ public class APITest extends MultipleCacheManagersTest {
       });
 
 
-      Future<Void> f2 = e.submit(new Callable<Void>() {
+      Future<Void> f2 = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
             waitLatch.await();

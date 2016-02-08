@@ -38,19 +38,25 @@ import org.infinispan.remoting.rpc.RpcManagerImpl;
 import org.infinispan.server.infinispan.SecurityActions;
 import org.infinispan.server.infinispan.spi.service.CacheServiceName;
 import org.infinispan.util.concurrent.locks.impl.DefaultLockManager;
+import org.infinispan.xsite.XSiteAdminOperations;
+import org.infinispan.xsite.status.SiteStatus;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +113,11 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
         AVERAGE_REPLICATION_TIME(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG, true, true),
         REPLICATION_COUNT(MetricKeys.REPLICATION_COUNT, ModelType.LONG, true, true),
         REPLICATION_FAILURES(MetricKeys.REPLICATION_FAILURES, ModelType.LONG, true, true),
-        SUCCESS_RATIO(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE, true, true) ;
+        SUCCESS_RATIO(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE, true, true),
+        //backup site
+        ONLINE_SITES(MetricKeys.SITES_ONLINE, ModelType.LIST, ModelType.STRING, false),
+        OFFLINE_SITES(MetricKeys.SITES_OFFLINE, ModelType.LIST, ModelType.STRING, false),
+        MIXED_SITES(MetricKeys.SITES_MIXED, ModelType.LIST, ModelType.STRING, false);
 
         private static final Map<String, CacheMetrics> MAP = new HashMap<String, CacheMetrics>();
 
@@ -131,6 +141,17 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         private CacheMetrics(String attributeName, ModelType type, boolean allowNull, final boolean clustered) {
             this(new SimpleAttributeDefinitionBuilder(attributeName, type, allowNull).setStorageRuntime().build(), clustered);
+        }
+
+        private CacheMetrics(String attributeName, ModelType outerType, ModelType innerType, boolean allowNull) {
+            if (outerType != ModelType.LIST) {
+                throw new IllegalArgumentException();
+            }
+            if (innerType != ModelType.STRING) {
+                throw new IllegalArgumentException();
+            }
+            this.definition = new StringListAttributeDefinition.Builder(attributeName).setAllowNull(allowNull).build();
+            this.clustered = false;
         }
 
         @Override
@@ -323,6 +344,17 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
                     result.set(SecurityActions.getCacheVersion(aCache));
                     break;
                 }
+                case OFFLINE_SITES:
+                case ONLINE_SITES:
+                case MIXED_SITES: {
+                    Collection<String> sites = filterSitesByStatus(registry.getComponent(XSiteAdminOperations.class), metric);
+                    if (sites.isEmpty()) {
+                        result.setEmptyList();
+                    } else {
+                        result.set(toModelNodeCollection(sites));
+                    }
+                    break;
+                }
                 default:{
                     context.getFailureDescription().set(String.format("Unknown metric %s", metric));
                     break;
@@ -358,5 +390,50 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
             }
         }
         return null;
+    }
+
+    private static Collection<String> filterSitesByStatus(XSiteAdminOperations operations, CacheMetrics metric) {
+        if (operations == null) {
+            return Collections.emptyList();
+        }
+        Map<String, SiteStatus> statusMap = operations.clusterStatus();
+        if (statusMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> filterSites = new LinkedList<>();
+        for (Map.Entry<String, SiteStatus> entry : statusMap.entrySet()) {
+            switch (metric) {
+                case ONLINE_SITES:
+                    //online sites only
+                    if (entry.getValue().isOnline()) {
+                        filterSites.add(entry.getKey());
+                    }
+                    break;
+                case OFFLINE_SITES:
+                    //offline sites only
+                    if (entry.getValue().isOffline()) {
+                        filterSites.add(entry.getKey());
+                    }
+                    break;
+                case MIXED_SITES:
+                    //mixed sites only
+                    if (!entry.getValue().isOnline() && !entry.getValue().isOffline()) {
+                        filterSites.add(entry.getKey());
+                    }
+                    break;
+                default:
+                    return Collections.emptyList();
+            }
+        }
+        return filterSites;
+    }
+
+    private static Collection<ModelNode> toModelNodeCollection(Collection<String> collection) {
+        if (collection == null || collection.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Collection<ModelNode> modelNodeCollection = new ArrayList<>(collection.size());
+        collection.forEach(e -> modelNodeCollection.add(new ModelNode().set(e)));
+        return modelNodeCollection;
     }
 }

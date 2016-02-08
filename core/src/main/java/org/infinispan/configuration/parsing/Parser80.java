@@ -58,7 +58,6 @@ import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.container.DataContainer;
-import org.infinispan.distribution.ch.ConsistentHashFactory;
 import org.infinispan.distribution.group.Grouper;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionThreadPolicy;
@@ -92,9 +91,10 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices
 @Namespaces({
-   @Namespace(uri = "urn:infinispan:config:8.0", root = "infinispan"),
-   @Namespace(uri = "urn:infinispan:config:8.1", root = "infinispan"),
-   @Namespace(root = "infinispan")
+      @Namespace(uri = "urn:infinispan:config:8.0", root = "infinispan"),
+      @Namespace(uri = "urn:infinispan:config:8.1", root = "infinispan"),
+      @Namespace(uri = "urn:infinispan:config:8.2", root = "infinispan"),
+      @Namespace(root = "infinispan")
 })
 public class Parser80 implements ConfigurationParser {
 
@@ -460,6 +460,7 @@ public class Parser80 implements ConfigurationParser {
                stackName = value;
                holder.getGlobalConfigurationBuilder().transport()
                      .addProperty("stack-" + stackName, value);
+               break;
             }
             case PATH: {
                holder.getGlobalConfigurationBuilder().transport()
@@ -512,6 +513,7 @@ public class Parser80 implements ConfigurationParser {
             }
             case EVICTION_EXECUTOR:
                log.evictionExecutorDeprecated();
+               // fallthrough
             case EXPIRATION_EXECUTOR: {
                builder.expirationThreadPool().read(
                      createThreadPoolConfiguration(value, EXPIRATION_SCHEDULED_EXECUTOR));
@@ -1538,7 +1540,15 @@ public class Parser80 implements ConfigurationParser {
       for (int i = 0; i < reader.getAttributeCount(); i++) {
          String value = replaceProperties(reader.getAttributeValue(i));
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-         this.parseClusteredCacheAttribute(reader, i, attribute, value, builder, baseCacheMode);
+         switch (attribute) {
+            case KEY_PARTITIONER: {
+               builder.clustering().hash().keyPartitioner(Util.getInstance(value, holder.getClassLoader()));
+               break;
+            }
+            default: {
+               this.parseClusteredCacheAttribute(reader, i, attribute, value, builder, baseCacheMode);
+            }
+         }
       }
 
       while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -1589,7 +1599,27 @@ public class Parser80 implements ConfigurationParser {
       for (int i = 0; i < reader.getAttributeCount(); i++) {
          String value = replaceProperties(reader.getAttributeValue(i));
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-         this.parseClusteredCacheAttribute(reader, i, attribute, value, builder, baseCacheMode);
+         switch (attribute) {
+            case SEGMENTS: {
+               builder.clustering().hash().numSegments(Integer.parseInt(value));
+               break;
+            }
+            case CONSISTENT_HASH_FACTORY: {
+               builder.clustering().hash().consistentHashFactory(Util.getInstance(value, holder.getClassLoader()));
+               break;
+            }
+            case KEY_PARTITIONER: {
+               if (reader.getSchema().since(8, 2)) {
+                  builder.clustering().hash().keyPartitioner(Util.getInstance(value, holder.getClassLoader()));
+               } else {
+                  throw ParseUtils.unexpectedAttribute(reader, i);
+               }
+               break;
+            }
+            default: {
+               this.parseClusteredCacheAttribute(reader, i, attribute, value, builder, baseCacheMode);
+            }
+         }
       }
 
       while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -1667,7 +1697,15 @@ public class Parser80 implements ConfigurationParser {
             }
             case CONSISTENT_HASH_FACTORY: {
                builder.clustering().hash().consistentHashFactory(
-                     Util.<ConsistentHashFactory>getInstance(value, holder.getClassLoader()));
+                     Util.getInstance(value, holder.getClassLoader()));
+               break;
+            }
+            case KEY_PARTITIONER: {
+               if (reader.getSchema().since(8, 2)) {
+                  builder.clustering().hash().keyPartitioner(Util.getInstance(value, holder.getClassLoader()));
+               } else {
+                  throw ParseUtils.unexpectedAttribute(reader, i);
+               }
                break;
             }
             default: {
@@ -2117,7 +2155,7 @@ public class Parser80 implements ConfigurationParser {
       ASYNC(false),
       ;
       private final boolean sync;
-      private Mode(boolean sync) {
+      Mode(boolean sync) {
          this.sync = sync;
       }
 

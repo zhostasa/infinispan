@@ -1,5 +1,6 @@
 package org.infinispan.query.dsl.embedded;
 
+import org.hibernate.hql.ParsingException;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -10,6 +11,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.objectfilter.ObjectFilter;
 import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Expression;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.test.Person;
@@ -56,8 +58,8 @@ public class ListenerWithDslFilterTest extends SingleCacheManagerTest {
       QueryFactory qf = Search.getQueryFactory(cache());
 
       Query query = qf.from(Person.class)
-            .having("age").lte(31)
-            .toBuilder().build();
+            .having("age").lte(Expression.param("ageParam"))
+            .toBuilder().build().setParameter("ageParam", 31);
 
       EntryListener listener = new EntryListener();
 
@@ -98,6 +100,76 @@ public class ListenerWithDslFilterTest extends SingleCacheManagerTest {
       assertTrue(listener.modifyEvents.isEmpty());
    }
 
+   public void testEventFilterChangingParameter() {
+      for (int i = 0; i < 10; ++i) {
+         Person value = new Person();
+         value.setName("John");
+         value.setAge(99);
+
+         cache().put(i, value);
+      }
+      assertEquals(10, cache.size());
+
+      QueryFactory qf = Search.getQueryFactory(cache());
+
+      Query query = qf.from(Person.class)
+            .having("age").lte(Expression.param("ageParam"))
+            .toBuilder().build().setParameter("ageParam", 31);
+
+      EntryListener listener = new EntryListener();
+
+      // we want our cluster listener to be notified only if the entity matches our query
+      cache().addListener(listener, Search.makeFilter(query), null);
+
+      assertTrue(listener.createEvents.isEmpty());
+      assertTrue(listener.modifyEvents.isEmpty());
+
+      for (int i = 0; i < 10; ++i) {
+         Person value = new Person();
+         value.setName("John");
+         value.setAge(i + 25);
+
+         cache().put(i, value);
+      }
+
+      assertEquals(10, cache.size());
+      assertTrue(listener.createEvents.isEmpty());
+      assertEquals(7, listener.modifyEvents.size());
+
+      for (ObjectFilter.FilterResult r : listener.modifyEvents) {
+         Person p = (Person) r.getInstance();
+         assertTrue(p.getAge() <= 31);
+      }
+
+      cache().removeListener(listener);
+
+      query.setParameter("ageParam", 30);
+
+      listener = new EntryListener();
+
+      cache().addListener(listener, Search.makeFilter(query), null);
+
+      assertTrue(listener.createEvents.isEmpty());
+      assertTrue(listener.modifyEvents.isEmpty());
+
+      for (int i = 0; i < 10; ++i) {
+         Person value = new Person();
+         value.setName("John");
+         value.setAge(i + 25);
+
+         cache().put(i, value);
+      }
+
+      assertEquals(10, cache.size());
+      assertTrue(listener.createEvents.isEmpty());
+      assertEquals(6, listener.modifyEvents.size());
+
+      for (ObjectFilter.FilterResult r : listener.modifyEvents) {
+         Person p = (Person) r.getInstance();
+         assertTrue(p.getAge() <= 30);
+      }
+   }
+
    public void testEventFilterAndConverter() {
       QueryFactory qf = Search.getQueryFactory(cache());
 
@@ -133,8 +205,21 @@ public class ListenerWithDslFilterTest extends SingleCacheManagerTest {
       cache().removeListener(listener);
    }
 
+   /**
+    * Using grouping and aggregation with event filters is not allowed.
+    */
+   @Test(expectedExceptions = ParsingException.class, expectedExceptionsMessageRegExp = ".*ISPN000411:.*")
+   public void testDisallowGroupingAndAggregation() {
+      Query query = Search.getQueryFactory(cache()).from(Person.class)
+            .having("age").gte(20)
+            .toBuilder().select(Expression.max("age"))
+            .build();
+
+      cache().addListener(new EntryListener(), Search.makeFilter(query), null);
+   }
+
    @Listener(observation = Listener.Observation.POST)
-   public static class EntryListener {
+   private static class EntryListener {
 
       // this is where we accumulate matches
       public final List<ObjectFilter.FilterResult> createEvents = new ArrayList<ObjectFilter.FilterResult>();

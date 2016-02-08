@@ -11,7 +11,6 @@ import org.infinispan.commands.RemoteCommandsFactory;
 import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.hash.MurmurHash2;
-import org.infinispan.commons.hash.MurmurHash2Compat;
 import org.infinispan.commons.hash.MurmurHash3;
 import org.infinispan.commons.io.ByteBufferImpl;
 import org.infinispan.commons.io.UnsignedNumeric;
@@ -46,9 +45,11 @@ import org.infinispan.context.Flag;
 import org.infinispan.distexec.mapreduce.MapReduceManagerImpl;
 import org.infinispan.distribution.ch.impl.DefaultConsistentHash;
 import org.infinispan.distribution.ch.impl.DefaultConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.HashFunctionPartitioner;
 import org.infinispan.distribution.ch.impl.ReplicatedConsistentHash;
 import org.infinispan.distribution.ch.impl.ReplicatedConsistentHashFactory;
 import org.infinispan.distribution.ch.impl.SyncConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.SyncReplicatedConsistentHashFactory;
 import org.infinispan.distribution.ch.impl.TopologyAwareConsistentHashFactory;
 import org.infinispan.distribution.ch.impl.TopologyAwareSyncConsistentHashFactory;
 import org.infinispan.factories.GlobalComponentRegistry;
@@ -310,14 +311,15 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new InDoubtTxInfoImpl.Externalizer());
 
       addInternalExternalizer(new MurmurHash2.Externalizer());
-      addInternalExternalizer(new MurmurHash2Compat.Externalizer());
       addInternalExternalizer(new MurmurHash3.Externalizer());
+      addInternalExternalizer(new HashFunctionPartitioner.Externalizer());
 
       addInternalExternalizer(new DefaultConsistentHash.Externalizer());
       addInternalExternalizer(new ReplicatedConsistentHash.Externalizer());
       addInternalExternalizer(new DefaultConsistentHashFactory.Externalizer());
       addInternalExternalizer(new ReplicatedConsistentHashFactory.Externalizer());
       addInternalExternalizer(new SyncConsistentHashFactory.Externalizer());
+      addInternalExternalizer(new SyncReplicatedConsistentHashFactory.Externalizer());
       addInternalExternalizer(new TopologyAwareConsistentHashFactory.Externalizer());
       addInternalExternalizer(new TopologyAwareSyncConsistentHashFactory.Externalizer());
       addInternalExternalizer(new CacheTopology.Externalizer());

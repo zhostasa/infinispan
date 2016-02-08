@@ -17,7 +17,7 @@ final class SumAccumulator extends FieldAccumulator {
 
    private final Class<? extends Number> fieldType;
 
-   public SumAccumulator(int inPos, int outPos, Class<?> fieldType) {
+   protected SumAccumulator(int inPos, int outPos, Class<?> fieldType) {
       super(inPos, outPos);
       if (!Number.class.isAssignableFrom(fieldType)) {
          throw new IllegalStateException("Aggregation SUM cannot be applied to property of type " + fieldType.getName());
@@ -28,7 +28,7 @@ final class SumAccumulator extends FieldAccumulator {
    @Override
    public void init(Object[] accRow) {
       if (fieldType == Double.class || fieldType == Float.class) {
-         accRow[outPos] = new DoubleSum();
+         accRow[outPos] = new DoubleStat();
       }
    }
 
@@ -37,8 +37,8 @@ final class SumAccumulator extends FieldAccumulator {
       if (val != null) {
          Number value = (Number) val;
          if (fieldType == Double.class || fieldType == Float.class) {
-            ((DoubleSum) accRow[outPos]).update(value.doubleValue());
-         } else if (fieldType == Integer.class || fieldType == Byte.class || fieldType == Short.class) {
+            ((DoubleStat) accRow[outPos]).update(value.doubleValue());
+         } else if (fieldType == Long.class || fieldType == Integer.class || fieldType == Byte.class || fieldType == Short.class) {
             value = value.longValue();
             Number sum = (Number) accRow[outPos];
             if (sum != null) {
@@ -59,9 +59,19 @@ final class SumAccumulator extends FieldAccumulator {
    }
 
    @Override
-   public void finish(Object[] accRow) {
+   protected void merge(Object[] accRow, Object value) {
+      if (value instanceof DoubleStat) {
+         value = ((DoubleStat) value).getSum();
+      } else if (value instanceof Counter) {
+         value = ((Counter) value).getValue();
+      }
+      update(accRow, value);
+   }
+
+   @Override
+   protected void finish(Object[] accRow) {
       if (fieldType == Double.class || fieldType == Float.class) {
-         accRow[outPos] = ((DoubleSum) accRow[outPos]).getValue();
+         accRow[outPos] = ((DoubleStat) accRow[outPos]).getSum();
       }
    }
 
@@ -79,5 +89,18 @@ final class SumAccumulator extends FieldAccumulator {
          return Long.class;
       }
       return fieldType;
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || o.getClass() != getClass()) return false;
+      SumAccumulator other = (SumAccumulator) o;
+      return inPos == other.inPos && outPos == other.outPos && fieldType == other.fieldType;
+   }
+
+   @Override
+   public int hashCode() {
+      return 31 * super.hashCode() + fieldType.hashCode();
    }
 }

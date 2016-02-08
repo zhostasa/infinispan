@@ -50,6 +50,32 @@ public class ReplicatedConsistentHash implements ConsistentHash {
       segmentSize = Util.getSegmentSize(primaryOwners.length);
    }
 
+   public ReplicatedConsistentHash union(ReplicatedConsistentHash ch2) {
+      if (!this.getHashFunction().equals(ch2.getHashFunction())) {
+         throw new IllegalArgumentException("The consistent hash objects must have the same hash function");
+      }
+      if (this.getNumSegments() != ch2.getNumSegments()) {
+         throw new IllegalArgumentException("The consistent hash objects must have the same number of segments");
+
+      }
+
+      List<Address> unionMembers = new ArrayList<Address>(this.getMembers());
+      for (Address member : ch2.getMembers()) {
+         if (!unionMembers.contains(member)) {
+            unionMembers.add(member);
+         }
+      }
+
+      int[] primaryOwners = new int[this.getNumSegments()];
+      for (int segmentId = 0; segmentId < primaryOwners.length; segmentId++) {
+         Address primaryOwner = this.locatePrimaryOwnerForSegment(segmentId);
+         int primaryOwnerIndex = unionMembers.indexOf(primaryOwner);
+         primaryOwners[segmentId] = primaryOwnerIndex;
+      }
+
+      return new ReplicatedConsistentHash(this.getHashFunction(), unionMembers, primaryOwners);
+   }
+
    @Override
    public int getNumSegments() {
       return primaryOwners.length;
@@ -142,7 +168,17 @@ public class ReplicatedConsistentHash implements ConsistentHash {
 
    @Override
    public boolean isKeyLocalToNode(Address nodeAddress, Object key) {
+      return isSegmentLocalToNode(nodeAddress, 0);
+   }
+
+   @Override
+   public boolean isSegmentLocalToNode(Address nodeAddress, int segmentId) {
       return membersSet.contains(nodeAddress);
+   }
+
+   @Override
+   public boolean isReplicated() {
+      return true;
    }
 
    @Override

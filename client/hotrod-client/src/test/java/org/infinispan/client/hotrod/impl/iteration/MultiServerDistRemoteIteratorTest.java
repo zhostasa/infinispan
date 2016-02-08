@@ -1,14 +1,21 @@
 package org.infinispan.client.hotrod.impl.iteration;
 
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.query.dsl.embedded.testdomain.hsearch.AccountHS;
+import org.infinispan.test.TestingUtil;
 import org.testng.annotations.Test;
 
 import java.net.InetSocketAddress;
+import java.util.BitSet;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
 import static org.testng.Assert.assertEquals;
 
 /**
@@ -26,9 +33,43 @@ public class MultiServerDistRemoteIteratorTest extends BaseMultiServerRemoteIter
    }
 
    private ConfigurationBuilder getCacheConfiguration() {
-      ConfigurationBuilder builder = getDefaultClusteredCacheConfig(CacheMode.DIST_SYNC, false);
-      builder.clustering().hash().numOwners(2);
+      ConfigurationBuilder builder = hotRodCacheConfiguration(getDefaultClusteredCacheConfig(CacheMode.DIST_SYNC, false));
+      builder.clustering().hash().numSegments(60).numOwners(2);
       return builder;
+   }
+
+
+   class TestSegmentKeyTracker implements KeyTracker {
+
+      Set<Integer> finished = new HashSet<>();
+
+      @Override
+      public boolean track(byte[] key) {
+         return true;
+      }
+
+      @Override
+      public void segmentsFinished(byte[] finishedSegments) {
+         BitSet bitSet = BitSet.valueOf(finishedSegments);
+         bitSet.stream().forEach(finished::add);
+      }
+
+      @Override
+      public Set<Integer> missedSegments() {
+         return null;
+      }
+   }
+
+   public void testSegmentFinishedCallback() {
+      RemoteCache<Integer, AccountHS> cache = clients.get(0).getCache();
+      populateCache(CACHE_SIZE, this::newAccount, cache);
+      TestSegmentKeyTracker testSegmentKeyTracker = new TestSegmentKeyTracker();
+
+      try (CloseableIterator<Map.Entry<Object, Object>> iterator = cache.retrieveEntries(null, 3)) {
+         TestingUtil.replaceField(testSegmentKeyTracker, "segmentKeyTracker", iterator, RemoteCloseableIterator.class);
+         while (iterator.hasNext()) iterator.next();
+         assertEquals(60, testSegmentKeyTracker.finished.size());
+      }
    }
 
    @Override

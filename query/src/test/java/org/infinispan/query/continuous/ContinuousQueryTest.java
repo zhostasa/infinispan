@@ -5,9 +5,11 @@ import static org.junit.Assert.assertEquals;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.hibernate.hql.ParsingException;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Expression;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.test.Person;
@@ -36,6 +38,20 @@ public class ContinuousQueryTest extends SingleCacheManagerTest {
       return cm;
    }
 
+   /**
+    * Using grouping and aggregation with continuous query is not allowed.
+    */
+   @Test(expectedExceptions = ParsingException.class, expectedExceptionsMessageRegExp = ".*ISPN000411:.*")
+   public void testDisallowGroupingAndAggregation() {
+      Query query = Search.getQueryFactory(cache()).from(Person.class)
+            .select(Expression.max("age"))
+            .having("age").gte(20)
+            .toBuilder().build();
+
+      ContinuousQuery<Object, Object> cq = new ContinuousQuery<>(cache());
+      cq.addContinuousQueryListener(query, new CallCountingCQResultListener<>());
+   }
+
    public void testContinuousQuery() {
       for (int i = 0; i < 2; i++) {
          Person value = new Person();
@@ -50,8 +66,8 @@ public class ContinuousQueryTest extends SingleCacheManagerTest {
 
       Query query = qf.from(Person.class)
             .select("age")
-            .having("age").lte(30)
-            .toBuilder().build();
+            .having("age").lte(Expression.param("ageParam"))
+            .toBuilder().build().setParameter("ageParam", 30);
 
       CallCountingCQResultListener<Object, Object> listener = new CallCountingCQResultListener<>();
       cq.addContinuousQueryListener(query, listener);
@@ -128,6 +144,49 @@ public class ContinuousQueryTest extends SingleCacheManagerTest {
       }
 
       assertEquals(0, joined.size());
+      assertEquals(0, left.size());
+   }
+
+   public void testContinuousQueryChangingParameter() {
+      for (int i = 0; i < 2; i++) {
+         Person value = new Person();
+         value.setName("John");
+         value.setAge(30 + i);
+         cache().put(i, value);
+      }
+
+      QueryFactory<?> qf = Search.getQueryFactory(cache());
+
+      ContinuousQuery<Object, Object> cq = new ContinuousQuery<Object, Object>(cache());
+
+      Query query = qf.from(Person.class)
+            .select("age")
+            .having("age").lte(Expression.param("ageParam"))
+            .toBuilder().build();
+
+      query.setParameter("ageParam", 30);
+
+      CallCountingCQResultListener<Object, Object> listener = new CallCountingCQResultListener<>();
+      cq.addContinuousQueryListener(query, listener);
+
+      Map<Object, Integer> joined = listener.getJoined();
+      Map<Object, Integer> left = listener.getLeft();
+
+      assertEquals(1, joined.size());
+      assertEquals(0, left.size());
+      joined.clear();
+
+      cq.removeContinuousQueryListener(listener);
+
+      query.setParameter("ageParam", 32);
+
+      listener = new CallCountingCQResultListener<>();
+      cq.addContinuousQueryListener(query, listener);
+
+      joined = listener.getJoined();
+      left = listener.getLeft();
+
+      assertEquals(2, joined.size());
       assertEquals(0, left.size());
    }
 

@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Default {@link ConsistentHash} implementation. This object is immutable.
@@ -152,6 +154,9 @@ public class DefaultConsistentHash implements ConsistentHash {
       return hashFunction.hash(key) & Integer.MAX_VALUE;
    }
 
+   /**
+    * @deprecated Since 8.2, use {@link HashFunctionPartitioner#getSegmentEndHashes()} instead.
+    */
    public List<Integer> getSegmentEndHashes() {
       int numSegments = segmentOwners.length;
       List<Integer> hashes = new ArrayList<Integer>(numSegments);
@@ -207,12 +212,12 @@ public class DefaultConsistentHash implements ConsistentHash {
 
    @Override
    public boolean isKeyLocalToNode(Address nodeAddress, Object key) {
-      int segment = getSegment(key);
-      for (Address a : segmentOwners[segment]) {
-         if (a.equals(nodeAddress))
-            return true;
-      }
-      return false;
+      return isSegmentLocalToNode(nodeAddress, getSegment(key));
+   }
+
+   @Override
+   public boolean isSegmentLocalToNode(Address nodeAddress, int segmentId) {
+      return segmentOwners[segmentId].contains(nodeAddress);
    }
 
    @Override
@@ -347,6 +352,23 @@ public class DefaultConsistentHash implements ConsistentHash {
          capacityFactorsMap.put(members.get(i), capacityFactors[i]);
       }
       return capacityFactorsMap;
+   }
+
+   public String prettyPrintOwnership() {
+      StringBuilder sb = new StringBuilder();
+      for (Address member : getMembers()) {
+         sb.append("\n").append(member).append(":");
+         for (int segment = 0; segment < segmentOwners.length; segment++) {
+            int index = segmentOwners[segment].indexOf(member);
+            if (index >= 0) {
+               sb.append(' ').append(segment);
+               if (index == 0) {
+                  sb.append('\'');
+               }
+            }
+         }
+      }
+      return sb.toString();
    }
 
    public static class Externalizer extends InstanceReusingAdvancedExternalizer<DefaultConsistentHash> {

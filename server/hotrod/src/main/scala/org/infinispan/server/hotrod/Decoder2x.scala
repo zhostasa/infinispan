@@ -383,9 +383,10 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
                case _ => false
             }
             val reg = server.getClientListenerRegistry
-            reg.addClientListener(ch, h, listenerId, cache, includeState,
+            reg.addClientListener(this, ch, h, listenerId, cache, includeState,
                   (filterFactoryInfo, converterFactoryInfo), useRawData)
-            createSuccessResponse(h, null)
+            decoder.checkpointTo(HotRodDecoderState.DECODE_HEADER)
+            null
          case RemoveClientListenerRequest =>
             val listenerId = readRangedBytes(buffer)
             val reg = server.getClientListenerRegistry
@@ -404,7 +405,8 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
                for (factory <- readOptString(buffer)) yield (factory, readOptionalParams(buffer))
             }
             val batchSize = readUnsignedInt(buffer)
-            val iterationId = server.iterationManager.start(cache.getName, segments.map(JavaBitSet.valueOf), namedFactory, batchSize)
+            val metadata = Constants.isVersionPost24(h.version) && buffer.readByte() != 0
+            val iterationId = server.iterationManager.start(cache.getName, segments.map(JavaBitSet.valueOf), namedFactory, batchSize, metadata)
             new IterationStartResponse(h.version, h.messageId, h.cacheName, h.clientIntel, h.topologyId, iterationId)
          case IterationNextRequest =>
             val iterationId = readString(buffer)
