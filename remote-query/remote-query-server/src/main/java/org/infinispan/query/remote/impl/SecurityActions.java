@@ -5,6 +5,7 @@ import java.security.PrivilegedAction;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.security.Security;
@@ -28,6 +29,10 @@ final class SecurityActions {
 
    static ComponentRegistry getCacheComponentRegistry(AdvancedCache<?, ?> cache) {
       return doPrivileged(cache::getComponentRegistry);
+   }
+
+   static Configuration getCacheConfiguration(AdvancedCache<?, ?> cache) {
+      return doPrivileged(cache::getCacheConfiguration);
    }
 
    static <K, V> Cache<K, V> getCache(EmbeddedCacheManager cacheManager, String cacheName) {
