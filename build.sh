@@ -139,11 +139,12 @@ main() {
     else
         $MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS
     fi
-    if [ $? -eq 0 ]; then
+    RETURN_CODE=$?
+    if [ ${RETURN_CODE} -eq 0 ]; then
         say SUCCESS
     else
         say FAILURE
-        exit $?
+        exit $RETURN_CODE
     fi
 }
 
