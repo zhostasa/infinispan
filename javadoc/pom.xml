@@ -89,7 +89,7 @@
          <artifactId>infinispan-server-websocket</artifactId>
       </dependency>
 
-      <!-- <dependency> DISABLE UNTIL FIXED
+      <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-spring4-common</artifactId>
       </dependency>
@@ -102,7 +102,7 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-spring4-remote</artifactId>
-      </dependency> -->
+      </dependency>
 
       <dependency>
          <groupId>${project.groupId}</groupId>

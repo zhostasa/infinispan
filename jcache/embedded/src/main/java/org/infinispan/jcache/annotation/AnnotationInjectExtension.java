@@ -1,12 +1,15 @@
 package org.infinispan.jcache.annotation;
 
-import javax.cache.annotation.CachePut;
-import javax.cache.annotation.CacheRemove;
-import javax.cache.annotation.CacheRemoveAll;
-import javax.cache.annotation.CacheResult;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
+
+import org.infinispan.commons.logging.BasicLogFactory;
+import org.jboss.logging.BasicLogger;
+import org.infinispan.commons.util.Util;
+import org.infinispan.commons.CacheConfigurationException;
+
+import java.lang.annotation.Annotation;
 
 import org.kohsuke.MetaInfServices;
 
@@ -20,11 +23,17 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices
 public class AnnotationInjectExtension implements Extension {
 
+   private static final BasicLogger log = BasicLogFactory.getLog(AnnotationInjectExtension.class);
+
    void registerInterceptorBindings(@Observes BeforeBeanDiscovery event) {
-      event.addInterceptorBinding(CacheResult.class);
-      event.addInterceptorBinding(CachePut.class);
-      event.addInterceptorBinding(CacheRemove.class);
-      event.addInterceptorBinding(CacheRemoveAll.class);
+      try {
+         event.addInterceptorBinding(Util.<Annotation>loadClass("javax.cache.annotation.CacheResult", null));
+         event.addInterceptorBinding(Util.<Annotation>loadClass("javax.cache.annotation.CachePut", null));
+         event.addInterceptorBinding(Util.<Annotation>loadClass("javax.cache.annotation.CacheRemove", null));
+         event.addInterceptorBinding(Util.<Annotation>loadClass("javax.cache.annotation.CacheRemoveAll", null));
+      } catch (CacheConfigurationException ex) {
+         log.debug("Cache API not present on class path: " + ex.getMessage());
+      }
    }
 
 }

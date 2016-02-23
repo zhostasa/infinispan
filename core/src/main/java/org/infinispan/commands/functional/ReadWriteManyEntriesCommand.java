@@ -11,6 +11,9 @@ import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.metadata.Metadata;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,15 +60,17 @@ public final class ReadWriteManyEntriesCommand<K, V, R> implements WriteCommand 
    }
 
    @Override
-   public void setParameters(int commandId, Object[] parameters) {
-      entries = (Map<? extends K, ? extends V>) parameters[0];
-      f = (BiFunction<V, ReadWriteEntryView<K, V>, R>) parameters[1];
-      isForwarded = (Boolean) parameters[2];
+   public void writeTo(ObjectOutput output) throws IOException {
+      output.writeObject(entries);
+      output.writeObject(f);
+      output.writeBoolean(isForwarded);
    }
 
    @Override
-   public Object[] getParameters() {
-      return new Object[]{entries, f, isForwarded};
+   public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
+      entries = (Map<? extends K, ? extends V>) input.readObject();
+      f = (BiFunction<V, ReadWriteEntryView<K, V>, R>) input.readObject();
+      isForwarded = input.readBoolean();
    }
 
    public boolean isForwarded() {

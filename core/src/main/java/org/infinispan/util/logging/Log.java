@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.jboss.logging.Logger.Level.*;
 
@@ -1385,5 +1386,16 @@ public interface Log extends BasicLogger {
    @Message(value = "Could not migrate data for cache %s, check remote store config in the target cluster", id = 397)
    CacheException couldNotMigrateData(String name);
 
+   @Message(value ="CH Factory '%s' cannot restore a persisted CH of class '%s'", id = 398)
+   IllegalStateException persistentConsistentHashMismatch(String hashFactory, String consistentHashClass);
+
+   @Message(value = "Timeout while waiting for %d members in cluster. Last view had %s", id = 399)
+   CacheException timeoutWaitingForInitialNodes(int initialClusterSize, List<?> members);
+
+   @Message(value = "Node %s was suspected", id = 400)
+   SuspectException remoteNodeSuspected(Address address);
+
+   @Message(value = "Node %s timed out, time : %s %s", id = 401)
+   TimeoutException remoteNodeTimedOut(Address address, long time, TimeUnit unit);
 }
 

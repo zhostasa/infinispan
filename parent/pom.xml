@@ -150,7 +150,7 @@
       <version.leveldb>0.7</version.leveldb>
       <version.leveldbjni>1.7</version.leveldbjni>
       <version.log4j>2.3</version.log4j>
-      <version.lucene>5.3.1</version.lucene>
+      <version.lucene>5.4.1</version.lucene>
       <version.mc4j>1.2.6</version.mc4j>
       <version.mockito>1.9.5</version.mockito>
       <version.mockito_dep.objenesis>1.4</version.mockito_dep.objenesis>
@@ -172,11 +172,11 @@
       <version.weld>1.1.13.Final</version.weld>
       <version.weld-se>2.2.0.SP1</version.weld-se>
 
-      <version.org.wildfly>10.0.0.CR5</version.org.wildfly>
-      <version.org.wildfly.core>2.0.5.Final</version.org.wildfly.core>
-      <version.org.wildfly.arquillian>1.0.1.Final</version.org.wildfly.arquillian>
-      <version.org.wildfly.build-tools>1.1.0.CR2</version.org.wildfly.build-tools>
-      <version.org.wildfly.maven-plugin>1.1.0.Alpha4</version.org.wildfly.maven-plugin>
+      <version.org.wildfly>10.0.0.Final</version.org.wildfly>
+      <version.org.wildfly.core>2.0.10.Final</version.org.wildfly.core>
+      <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
+      <version.org.wildfly.build-tools>1.1.0.Final</version.org.wildfly.build-tools>
+      <version.org.wildfly.maven-plugin>1.1.0.Alpha5</version.org.wildfly.maven-plugin>
 
       <version.javassist>3.18.1-GA</version.javassist>
       <version.maven.buildhelper>1.8</version.maven.buildhelper>
@@ -186,7 +186,7 @@
       <version.maven.scala>2.15.2</version.maven.scala>
       <version.maven.surefire>2.18.1</version.maven.surefire>
       <version.maven.invoker>1.8</version.maven.invoker>
-      <version.metainf-services>1.5</version.metainf-services>
+      <version.metainf-services>1.7</version.metainf-services>
       <version.jacoco>0.5.10.201208310627</version.jacoco>
       <version.asm>3.3.1</version.asm>
       <version.pax.url>2.2.0</version.pax.url>
@@ -389,6 +389,11 @@
             <artifactId>infinispan-spring4-common</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-tasks-api</artifactId>
+            <version>${project.version}</version>
          </dependency>
          <dependency>
             <groupId>${project.groupId}</groupId>
@@ -601,11 +606,6 @@
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <version>${version.org.wildfly.arquillian}</version>
             <scope>test</scope>
-         </dependency>
-         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
-            <version>${version.org.wildfly.core}</version>
          </dependency>
          <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
@@ -1111,6 +1111,13 @@
                   </exclusion>
               </exclusions>
           </dependency>
+          <dependency>
+             <groupId>org.wildfly.core</groupId>
+             <artifactId>wildfly-core-parent</artifactId>
+             <version>${version.org.wildfly.core}</version>
+             <scope>import</scope>
+             <type>pom</type>
+          </dependency>
       </dependencies>
    </dependencyManagement>
    <dependencies>
@@ -1408,41 +1415,6 @@
                          <goal>compile</goal>
                       </goals>
                    </execution>
-                   <execution>
-                      <id>generate-blueprint</id>
-                      <phase>none</phase>
-                      <goals>
-                         <goal>script</goal>
-                      </goals>
-                      <configuration>
-                         <keepGeneratedScript>true</keepGeneratedScript>
-
-                         <script>
-
-                             import scala.io.Source
-                             import java.io.{File, PrintWriter}
-                             val serviceDir = new File(project.getBuild().getOutputDirectory() + "/META-INF/services")
-                             if (serviceDir.exists &amp;&amp; serviceDir.listFiles.length != 0) {
-                                val services =
-                                   for (file &lt;- serviceDir.listFiles; line &lt;- Source.fromFile(file).getLines())
-                                   yield {
-                                          val beanName = line.substring(line.lastIndexOf(".") + 1).toLowerCase
-                                          "&lt;bean id=\"" + beanName + "\" class=\"" + line + "\"/&gt;" + "\n" +
-                                          "&lt;service ref=\"" + beanName + "\" interface=\"" + file.getName + "\"/&gt;\n"
-                                         }
-                                val targetBlueprint = new File(project.getBuild().getOutputDirectory() + "/OSGI-INF/blueprint/blueprint.xml")
-                                val input = Source.fromFile(targetBlueprint).getLines.mkString("\n")
-                                val output = new PrintWriter(targetBlueprint)
-                                try {
-                                   output.println(input.replace("${services}", services.toArray.mkString("\n")))
-                                } finally {
-                                   output.close
-                                }
-                             }
-
-                         </script>
-                      </configuration>
-                   </execution>
                 </executions>
                 <configuration>
                    <jvmArgs>
@@ -1709,6 +1681,25 @@
                      <skip>${module.skipTestComponentMetaDataProcessing}</skip>
                      <target>
                         <copy file="${basedir}/src/test/resources/${project.artifactId}-tests-component-metadata.dat" todir="${project.build.testOutputDirectory}" />
+                     </target>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>generate-blueprint</id>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <phase>none</phase>
+                  <configuration>
+                     <target>
+                        <property name="classpath" refid="maven.compile.classpath" />
+                        <java classname="org.infinispan.commons.util.BlueprintGenerator" failonerror="true" fork="false">
+                           <arg value="${project.build.outputDirectory}" />
+                           <classpath>
+                              <pathelement path="${project.build.outputDirectory}" />
+                              <pathelement path="${classpath}" />
+                           </classpath>
+                        </java>
                      </target>
                   </configuration>
                </execution>

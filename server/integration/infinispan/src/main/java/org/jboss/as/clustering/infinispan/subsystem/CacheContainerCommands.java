@@ -1,8 +1,17 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.scripting.ScriptingManager;
+import org.infinispan.server.infinispan.SecurityActions;
 import org.infinispan.server.infinispan.spi.service.CacheContainerServiceName;
+import org.infinispan.tasks.Task;
+import org.infinispan.tasks.TaskContext;
+import org.infinispan.tasks.TaskExecution;
+import org.infinispan.tasks.TaskManager;
+import org.infinispan.topology.LocalTopologyManager;
 import org.infinispan.util.logging.events.EventLog;
+import org.infinispan.util.logging.events.EventLogCategory;
+import org.infinispan.util.logging.events.EventLogLevel;
 import org.infinispan.util.logging.events.EventLogManager;
 import org.infinispan.util.logging.events.EventLogger;
 import org.infinispan.xsite.GlobalXSiteAdminOperations;
@@ -17,7 +26,10 @@ import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Custom commands related to the cache container.
@@ -146,8 +158,12 @@ public abstract class CacheContainerCommands implements OperationStepHandler {
        protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
           int count = CacheContainerResource.COUNT.resolveModelAttribute(context, operation).asInt();
           int offset = CacheContainerResource.OFFSET.resolveModelAttribute(context, operation).asInt();
+          ModelNode categoryNode = CacheContainerResource.CATEGORY.resolveModelAttribute(context, operation);
+          Optional<EventLogCategory> category = categoryNode.isDefined() ? Optional.of(EventLogCategory.valueOf(categoryNode.asString())) : Optional.empty();
+          ModelNode levelNode = CacheContainerResource.LEVEL.resolveModelAttribute(context, operation);
+          Optional<EventLogLevel> level = levelNode.isDefined() ? Optional.of(EventLogLevel.valueOf(levelNode.asString())) : Optional.empty();
           EventLogger eventLogger = EventLogManager.getEventLogger(cacheManager);
-          List<EventLog> events = eventLogger.getEvents(offset, count);
+          List<EventLog> events = eventLogger.getEvents(offset, count, category, level);
           final ModelNode result = new ModelNode().setEmptyList();
           for (EventLog event : events) {
               ModelNode node = result.addEmptyObject();
@@ -163,4 +179,152 @@ public abstract class CacheContainerCommands implements OperationStepHandler {
           return result;
        }
     }
+
+    public static class TaskListCommand extends CacheContainerCommands {
+        public static final TaskListCommand INSTANCE = new TaskListCommand();
+
+        public TaskListCommand() {
+            super(0);
+        }
+
+        @Override
+        protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
+            TaskManager taskManager = cacheManager.getGlobalComponentRegistry().getComponent(TaskManager.class);
+            List<Task> tasks = taskManager.getTasks();
+            Collections.sort(tasks, (task1, task2) -> { return task1.getName().compareTo(task2.getName()); });
+            final ModelNode result = new ModelNode().setEmptyList();
+            for (Task task : tasks) {
+                ModelNode node = result.addEmptyObject();
+                node.get("name").set(task.getName());
+                node.get("type").set(task.getType());
+                node.get("mode").set(task.getExecutionMode().toString());
+            }
+            return result;
+        }
+    }
+
+    public static class TaskExecuteCommand extends CacheContainerCommands {
+        public static final TaskExecuteCommand INSTANCE = new TaskExecuteCommand();
+
+        public TaskExecuteCommand() {
+            super(0);
+        }
+
+        @Override
+        protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
+            String taskName = CacheContainerResource.TASK_NAME.resolveModelAttribute(context, operation).asString();
+            boolean taskAsync = CacheContainerResource.TASK_ASYNC.resolveModelAttribute(context, operation).asBoolean();
+            TaskManager taskManager = cacheManager.getGlobalComponentRegistry().getComponent(TaskManager.class);
+            TaskContext taskContext = new TaskContext();
+            ModelNode cacheNameNode = CacheContainerResource.TASK_CACHE_NAME.resolveModelAttribute(context, operation);
+            if (cacheNameNode.isDefined()) {
+                taskContext.cache(cacheManager.getCache(cacheNameNode.asString(), false));
+            }
+            ModelNode parameters = CacheContainerResource.TASK_PARAMETERS.resolveModelAttribute(context, operation);
+            if (parameters.isDefined()) {
+                parameters.asPropertyList().forEach(property -> taskContext.addParameter(property.getName(), property.getValue().asString()));
+            }
+            CompletableFuture<Object> taskFuture = taskManager.runTask(taskName, taskContext);
+            if(taskAsync) {
+                return new ModelNode();
+            } else {
+                Object result = taskFuture.get();
+                return new ModelNode(String.valueOf(result));
+            }
+        }
+    }
+
+    public static class TaskStatusCommand extends CacheContainerCommands {
+        public static final TaskStatusCommand INSTANCE = new TaskStatusCommand();
+
+        public TaskStatusCommand() {
+            super(0);
+        }
+
+        @Override
+        protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
+            TaskManager taskManager = cacheManager.getGlobalComponentRegistry().getComponent(TaskManager.class);
+            List<TaskExecution> taskExecutions = taskManager.getCurrentTasks();
+            Collections.sort(taskExecutions, (task1, task2) -> { return task1.getStart().compareTo(task2.getStart()); });
+            final ModelNode result = new ModelNode().setEmptyList();
+            for (TaskExecution execution : taskExecutions) {
+                ModelNode node = result.addEmptyObject();
+                node.get("name").set(execution.getName());
+                node.get("start").set(execution.getStart().toString());
+                node.get("where").set(execution.getWhere());
+                execution.getWhat().ifPresent(what -> node.get("context").set(what));
+                execution.getWho().ifPresent(who -> node.get("who").set(who));
+            }
+            return result;
+        }
+    }
+
+    public static class ScriptAddCommand extends CacheContainerCommands {
+        public static final ScriptAddCommand INSTANCE = new ScriptAddCommand();
+
+        public ScriptAddCommand() {
+            super(0);
+        }
+
+        @Override
+        protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
+            ScriptingManager scriptManager = cacheManager.getGlobalComponentRegistry().getComponent(ScriptingManager.class);
+            String scriptName = CacheContainerResource.SCRIPT_NAME.resolveModelAttribute(context, operation).asString();
+            String scriptCode = CacheContainerResource.SCRIPT_CODE.resolveModelAttribute(context, operation).asString();
+            scriptManager.addScript(scriptName, scriptCode);
+            return null;
+        }
+    }
+
+    public static class ScriptCatCommand extends CacheContainerCommands {
+        public static final ScriptCatCommand INSTANCE = new ScriptCatCommand();
+
+        public ScriptCatCommand() {
+            super(0);
+        }
+
+        @Override
+        protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
+            ScriptingManager scriptManager = cacheManager.getGlobalComponentRegistry().getComponent(ScriptingManager.class);
+            String scriptName = CacheContainerResource.SCRIPT_NAME.resolveModelAttribute(context, operation).asString();
+            String scriptCode = scriptManager.getScript(scriptName);
+            return scriptCode != null ? new ModelNode().set(scriptCode) : null;
+        }
+    }
+
+    public static class ScriptRemoveCommand extends CacheContainerCommands {
+        public static final ScriptRemoveCommand INSTANCE = new ScriptRemoveCommand();
+
+        public ScriptRemoveCommand() {
+            super(0);
+        }
+
+        @Override
+        protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
+            ScriptingManager scriptManager = cacheManager.getGlobalComponentRegistry().getComponent(ScriptingManager.class);
+            String scriptName = CacheContainerResource.SCRIPT_NAME.resolveModelAttribute(context, operation).asString();
+            scriptManager.removeScript(scriptName);
+            return null;
+        }
+    }
+
+   public static class ClusterRebalanceCommand extends CacheContainerCommands {
+
+      public static final ClusterRebalanceCommand INSTANCE = new ClusterRebalanceCommand();
+
+      private ClusterRebalanceCommand() {
+         super(0);
+      }
+
+      @Override
+      protected ModelNode invokeCommand(EmbeddedCacheManager cacheManager, OperationContext context, ModelNode operation) throws Exception {
+         boolean value = CacheContainerResource.BOOL_VALUE.resolveModelAttribute(context, operation).asBoolean();
+         LocalTopologyManager topologyManager = SecurityActions.getGlobalComponentRegistry(cacheManager)
+               .getComponent(LocalTopologyManager.class);
+         if (topologyManager != null) {
+            topologyManager.setRebalancingEnabled(value);
+         }
+         return null;
+      }
+   }
 }

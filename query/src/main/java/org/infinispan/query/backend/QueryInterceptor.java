@@ -16,6 +16,7 @@ import org.hibernate.search.backend.spi.Work;
 import org.hibernate.search.backend.spi.WorkType;
 import org.hibernate.search.backend.spi.Worker;
 import org.hibernate.search.spi.SearchIntegrator;
+import org.hibernate.search.store.ShardIdentifierProvider;
 import org.infinispan.Cache;
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.LocalFlagAffectedCommand;
@@ -31,23 +32,21 @@ import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
+import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.interceptors.base.CommandInterceptor;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledValue;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
-import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.query.Transformer;
+import org.infinispan.query.affinity.AffinityShardIdentifierProvider;
 import org.infinispan.query.impl.DefaultSearchWorkCreator;
 import org.infinispan.query.logging.Log;
-import org.infinispan.registry.ClusterRegistry;
-import org.infinispan.registry.ScopedKey;
+import org.infinispan.registry.InternalCacheRegistry;
+import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.util.logging.LogFactory;
 
 /**
@@ -68,10 +67,9 @@ public final class QueryInterceptor extends CommandInterceptor {
    private final IndexModificationStrategy indexingMode;
    private final SearchIntegrator searchFactory;
    private final KeyTransformationHandler keyTransformationHandler = new KeyTransformationHandler();
-   private final KnownClassesRegistryListener registryListener = new KnownClassesRegistryListener();
    private final AtomicBoolean stopping = new AtomicBoolean(false);
 
-   private ReadIntensiveClusterRegistryWrapper<String, Class<?>, Boolean> clusterRegistry;
+   private QueryKnownClasses queryKnownClasses;
 
    private SearchWorkCreator<Object> searchWorkCreator = new DefaultSearchWorkCreator<>();
 
@@ -80,6 +78,8 @@ public final class QueryInterceptor extends CommandInterceptor {
    private DataContainer dataContainer;
    protected TransactionManager transactionManager;
    protected TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+   private DistributionManager distributionManager;
+   private RpcManager rpcManager;
    protected ExecutorService asyncExecutor;
 
    private static final Log log = LogFactory.getLog(QueryInterceptor.class, Log.class);
@@ -99,21 +99,26 @@ public final class QueryInterceptor extends CommandInterceptor {
    protected void injectDependencies(TransactionManager transactionManager,
                                      TransactionSynchronizationRegistry transactionSynchronizationRegistry,
                                      Cache cache,
-                                     ClusterRegistry<String, Class<?>, Boolean> clusterRegistry,
+                                     EmbeddedCacheManager cacheManager,
+                                     InternalCacheRegistry internalCacheRegistry,
+                                     DistributionManager distributionManager,
+                                     RpcManager rpcManager,
                                      DataContainer dataContainer,
                                      @ComponentName(KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR) ExecutorService e) {
       this.transactionManager = transactionManager;
       this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+      this.distributionManager = distributionManager;
+      this.rpcManager = rpcManager;
       this.asyncExecutor = e;
       this.dataContainer = dataContainer;
-      this.clusterRegistry = new ReadIntensiveClusterRegistryWrapper(clusterRegistry, "QueryKnownClasses#" + cache.getName());
-      this.searchFactoryHandler = new SearchFactoryHandler(this.searchFactory, this.clusterRegistry, new TransactionHelper(transactionManager));
+      this.queryKnownClasses = new QueryKnownClasses(cache.getName(), cacheManager, internalCacheRegistry);
+      this.searchFactoryHandler = new SearchFactoryHandler(this.searchFactory, this.queryKnownClasses, new TransactionHelper(transactionManager));
    }
 
    @Start
    protected void start() {
-      clusterRegistry.addListener(registryListener);
-      Set<Class<?>> keys = clusterRegistry.keys();
+      queryKnownClasses.start(searchFactoryHandler);
+      Set<Class<?>> keys = queryKnownClasses.keys();
       Class<?>[] array = keys.toArray(new Class<?>[keys.size()]);
       //Important to enable them all in a single call, much more efficient:
       enableClasses(array);
@@ -122,29 +127,11 @@ public final class QueryInterceptor extends CommandInterceptor {
 
    @Stop
    protected void stop() {
-      clusterRegistry.removeListener(registryListener);
+      queryKnownClasses.stop();
    }
 
    public void prepareForStopping() {
       stopping.set(true);
-   }
-
-   @Listener
-   class KnownClassesRegistryListener {
-
-      @CacheEntryCreated
-      public void created(CacheEntryCreatedEvent<ScopedKey<String, Class>, Boolean> e) {
-         if (!e.isOriginLocal() && !e.isPre() && e.getValue()) {
-            searchFactoryHandler.handleClusterRegistryRegistration(e.getKey().getKey());
-         }
-      }
-
-      @CacheEntryModified
-      public void modified(CacheEntryModifiedEvent<ScopedKey<String, Class>, Boolean> e) {
-         if (!e.isOriginLocal() && !e.isPre() && e.getValue()) {
-            searchFactoryHandler.handleClusterRegistryRegistration(e.getKey().getKey());
-         }
-      }
    }
 
    protected boolean shouldModifyIndexes(FlagAffectedCommand command, InvocationContext ctx) {
@@ -209,7 +196,7 @@ public final class QueryInterceptor extends CommandInterceptor {
 
    private void purgeIndex(TransactionContext transactionContext, Class<?> entityType) {
       transactionContext = transactionContext == null ? makeTransactionalEventContext() : transactionContext;
-      Boolean isIndexable = clusterRegistry.get(entityType);
+      Boolean isIndexable = queryKnownClasses.get(entityType);
       if (isIndexable != null && isIndexable.booleanValue()) {
          if (searchFactoryHandler.isIndexed(entityType)) {
             performSearchWorks(searchWorkCreator.createPerEntityTypeWorks((Class<Object>) entityType, WorkType.PURGE_ALL), transactionContext);
@@ -219,7 +206,7 @@ public final class QueryInterceptor extends CommandInterceptor {
 
    private void purgeAllIndexes(TransactionContext transactionContext) {
       transactionContext = transactionContext == null ? makeTransactionalEventContext() : transactionContext;
-      for (Class c : clusterRegistry.keys()) {
+      for (Class c : queryKnownClasses.keys()) {
          if (searchFactoryHandler.isIndexed(c)) {
             //noinspection unchecked
             performSearchWorks(searchWorkCreator.createPerEntityTypeWorks(c, WorkType.PURGE_ALL), transactionContext);
@@ -232,10 +219,17 @@ public final class QueryInterceptor extends CommandInterceptor {
       performSearchWork(value, keyToString(key), WorkType.DELETE, transactionContext);
    }
 
+   private boolean isPrimaryOwner(Object key) {
+      return distributionManager == null || distributionManager.getPrimaryLocation(key).equals(rpcManager.getAddress());
+   }
+
    protected void updateIndexes(final boolean usingSkipIndexCleanupFlag, final Object value, final Object key, final TransactionContext transactionContext) {
       // Note: it's generally unsafe to assume there is no previous entry to cleanup: always use UPDATE
       // unless the specific flag is allowing this.
-      performSearchWork(value, keyToString(key), usingSkipIndexCleanupFlag ? WorkType.ADD : WorkType.UPDATE, transactionContext);
+      ShardIdentifierProvider shardIdentifierProvider = searchFactory.getIndexBinding(value.getClass()).getShardIdentifierProvider();
+      if (shardIdentifierProvider == null || !(shardIdentifierProvider instanceof AffinityShardIdentifierProvider) || isPrimaryOwner(key)) {
+         performSearchWork(value, keyToString(key), usingSkipIndexCleanupFlag ? WorkType.ADD : WorkType.UPDATE, transactionContext);
+      }
    }
 
    private void performSearchWork(Object value, Serializable id, WorkType workType, TransactionContext transactionContext) {
@@ -288,7 +282,7 @@ public final class QueryInterceptor extends CommandInterceptor {
 
    /**
     * Customize work creation during indexing
-    * @param searchWorkCreator custom {@link org.infinispan.query.backend.SearchWorkCreator} 
+    * @param searchWorkCreator custom {@link org.infinispan.query.backend.SearchWorkCreator}
     */
    public void setSearchWorkCreator(SearchWorkCreator<Object> searchWorkCreator) {
       this.searchWorkCreator = searchWorkCreator;
@@ -369,13 +363,12 @@ public final class QueryInterceptor extends CommandInterceptor {
    private void processReplaceCommand(final ReplaceCommand command, final InvocationContext ctx, final Object valueReplaced, TransactionContext transactionContext) {
       if (valueReplaced != null && command.isSuccessful() && shouldModifyIndexes(command, ctx)) {
          final boolean usingSkipIndexCleanupFlag = usingSkipIndexCleanup(command);
-         Object[] parameters = command.getParameters();
-         Object p2 = extractValue(parameters[2]);
+         Object p2 = extractValue(command.getNewValue());
          final boolean newValueIsIndexed = updateKnownTypesIfNeeded(p2);
          Object key = extractValue(command.getKey());
 
          if (!usingSkipIndexCleanupFlag) {
-            final Object p1 = extractValue(parameters[1]);
+            final Object p1 = extractValue(command.getOldValue());
             final boolean originalIsIndexed = updateKnownTypesIfNeeded(p1);
             if (p1 != null && originalIsIndexed) {
                transactionContext = transactionContext == null ? makeTransactionalEventContext() : transactionContext;

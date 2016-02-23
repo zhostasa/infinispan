@@ -336,8 +336,12 @@ class EndpointSubsystemReader_7_2 implements XMLStreamConstants, XMLElementReade
             ROOT_LOGGER.topologyUpdateTimeoutIgnored();
             break;
          }
+         case CACHE_SUFFIX: {
+            ROOT_LOGGER.topologyCacheSuffixIgnored();
+            break;
+         }
          default: {
-            ParseUtils.unexpectedAttribute(reader, i);
+            throw ParseUtils.unexpectedAttribute(reader, i);
          }
          }
       }
@@ -362,7 +366,7 @@ class EndpointSubsystemReader_7_2 implements XMLStreamConstants, XMLElementReade
             break;
          }
          default: {
-            ParseUtils.unexpectedAttribute(reader, i);
+            throw ParseUtils.unexpectedAttribute(reader, i);
          }
          }
       }
@@ -425,7 +429,7 @@ class EndpointSubsystemReader_7_2 implements XMLStreamConstants, XMLElementReade
             break;
          }
          default: {
-            ParseUtils.unexpectedAttribute(reader, i);
+            throw ParseUtils.unexpectedAttribute(reader, i);
          }
          }
       }
@@ -544,7 +548,7 @@ class EndpointSubsystemReader_7_2 implements XMLStreamConstants, XMLElementReade
             break;
          }
          default: {
-            ParseUtils.unexpectedAttribute(reader, i);
+            throw ParseUtils.unexpectedAttribute(reader, i);
          }
          }
 

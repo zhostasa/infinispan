@@ -21,19 +21,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.StringListAttributeDefinition;
+import org.infinispan.util.logging.events.EventLogCategory;
+import org.infinispan.util.logging.events.EventLogLevel;
+import org.jboss.as.controller.*;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -111,6 +101,14 @@ public class CacheContainerResource extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode().set(true))
                     .build();
 
+   static final SimpleAttributeDefinition CLUSTER_REBALANCE =
+         new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER_REBALANCE, ModelType.BOOLEAN, true)
+               .setAllowExpression(true)
+               .setFlags(AttributeAccess.Flag.RESTART_NONE)
+               .setDefaultValue(new ModelNode().set(true))
+               .setStorageRuntime()
+               .build();
+
     static final AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = {DEFAULT_CACHE, ALIASES, JNDI_NAME, START, CACHE_CONTAINER_MODULE, STATISTICS};
 
     // operations
@@ -126,6 +124,9 @@ public class CacheContainerResource extends SimpleResourceDefinition {
          new StringListAttributeDefinition.Builder("file-urls")
                .build();
 
+    static final SimpleAttributeDefinition PROTO_NAME =
+           new SimpleAttributeDefinition("file-name", ModelType.STRING, false);
+
     static final ListAttributeDefinition PROTO_NAMES =
            new StringListAttributeDefinition.Builder("file-names")
                    .build();
@@ -134,6 +135,15 @@ public class CacheContainerResource extends SimpleResourceDefinition {
            new StringListAttributeDefinition.Builder("file-contents")
                    .build();
 
+    static final OperationDefinition GET_PROTO_NAMES = new SimpleOperationDefinitionBuilder("get-proto-schema-names", new InfinispanResourceDescriptionResolver("cache-container"))
+           .setRuntimeOnly()
+           .build();
+
+    static final OperationDefinition GET_PROTO = new SimpleOperationDefinitionBuilder("get-proto-schema", new InfinispanResourceDescriptionResolver("cache-container"))
+           .setParameters(PROTO_NAME)
+           .setRuntimeOnly()
+           .build();
+
     static final OperationDefinition UPLOAD_PROTO = new SimpleOperationDefinitionBuilder("upload-proto-schemas", new InfinispanResourceDescriptionResolver("cache-container"))
            .setParameters(PROTO_NAMES, PROTO_URLS)
            .setRuntimeOnly()
@@ -141,6 +151,11 @@ public class CacheContainerResource extends SimpleResourceDefinition {
 
     static final OperationDefinition REGISTER_PROTO = new SimpleOperationDefinitionBuilder("register-proto-schemas", new InfinispanResourceDescriptionResolver("cache-container"))
            .setParameters(PROTO_NAMES, PROTO_CONTENTS)
+           .setRuntimeOnly()
+           .build();
+
+    static final OperationDefinition UNREGISTER_PROTO = new SimpleOperationDefinitionBuilder("unregister-proto-schemas", new InfinispanResourceDescriptionResolver("cache-container"))
+           .setParameters(PROTO_NAMES)
            .setRuntimeOnly()
            .build();
 
@@ -188,18 +203,103 @@ public class CacheContainerResource extends SimpleResourceDefinition {
            .setValidator(new IntRangeValidator(0, true))
            .build();
 
+   static final SimpleAttributeDefinition CATEGORY = SimpleAttributeDefinitionBuilder.create("category", ModelType.STRING, true)
+           .setAllowExpression(true)
+           .setValidator(new EnumValidator<EventLogCategory>(EventLogCategory.class, true, true))
+           .build();
+
+   static final SimpleAttributeDefinition LEVEL = SimpleAttributeDefinitionBuilder.create("level", ModelType.STRING, true)
+           .setAllowExpression(true)
+           .setValidator(new EnumValidator<EventLogLevel>(EventLogLevel.class, true, true))
+           .build();
 
    static final OperationDefinition READ_EVENT_LOG =
            new SimpleOperationDefinitionBuilder("read-event-log", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
-               .setParameters(COUNT, OFFSET)
+               .setParameters(COUNT, OFFSET, CATEGORY, LEVEL)
                .setReplyType(ModelType.LIST)
                .setReplyValueType(ModelType.OBJECT)
                .setReadOnly()
                .setRuntimeOnly()
                .build();
 
+    static final OperationDefinition TASK_LIST =
+           new SimpleOperationDefinitionBuilder("task-list", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
+                .setReplyType(ModelType.LIST)
+                .setReplyValueType(ModelType.OBJECT)
+                .setReadOnly()
+                .setRuntimeOnly()
+                .build();
 
-    private final ResolvePathHandler resolvePathHandler;
+    static final SimpleAttributeDefinition TASK_NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, false)
+           .setAllowExpression(true)
+           .build();
+
+    static final SimpleAttributeDefinition TASK_CACHE_NAME = SimpleAttributeDefinitionBuilder.create("cache-name", ModelType.STRING, true)
+           .setAllowExpression(true)
+           .build();
+
+    static final SimpleMapAttributeDefinition TASK_PARAMETERS = new SimpleMapAttributeDefinition.Builder("parameters", ModelType.STRING, true)
+           .setAllowExpression(true)
+           .build();
+
+    static final SimpleAttributeDefinition TASK_ASYNC = SimpleAttributeDefinitionBuilder.create("async", ModelType.BOOLEAN, true)
+           .setAllowExpression(true)
+           .setDefaultValue(new ModelNode(false))
+           .build();
+
+    static final OperationDefinition TASK_EXECUTE =
+           new SimpleOperationDefinitionBuilder("task-execute", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
+                .setParameters(TASK_NAME, TASK_CACHE_NAME, TASK_PARAMETERS, TASK_ASYNC)
+                .setReplyType(ModelType.LIST)
+                .setReplyValueType(ModelType.OBJECT)
+                .setReadOnly()
+                .setRuntimeOnly()
+                .build();
+
+    static final OperationDefinition TASK_STATUS =
+            new SimpleOperationDefinitionBuilder("task-status", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
+                    .setReplyType(ModelType.LIST)
+                    .setReplyValueType(ModelType.OBJECT)
+                    .setReadOnly()
+                    .setRuntimeOnly()
+                    .build();
+
+    static final SimpleAttributeDefinition SCRIPT_NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, false)
+            .setAllowExpression(true)
+            .build();
+
+    static final SimpleAttributeDefinition SCRIPT_CODE = SimpleAttributeDefinitionBuilder.create("code", ModelType.STRING, false)
+            .setAllowExpression(true)
+            .build();
+
+    static final OperationDefinition SCRIPT_ADD = new SimpleOperationDefinitionBuilder("script-add", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
+            .setParameters(SCRIPT_NAME, SCRIPT_CODE)
+            .setRuntimeOnly()
+            .build();
+
+    static final OperationDefinition SCRIPT_CAT = new SimpleOperationDefinitionBuilder("script-cat", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
+            .setParameters(SCRIPT_NAME)
+            .setReplyType(ModelType.STRING)
+            .setReadOnly()
+            .setRuntimeOnly()
+            .build();
+
+    static final OperationDefinition SCRIPT_REMOVE = new SimpleOperationDefinitionBuilder("script-remove", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
+            .setParameters(SCRIPT_NAME)
+            .setRuntimeOnly()
+            .build();
+
+   static final SimpleAttributeDefinition BOOL_VALUE = SimpleAttributeDefinitionBuilder.create(ModelKeys.VALUE, ModelType.BOOLEAN, false)
+         .setDefaultValue(new ModelNode(true))
+         .build();
+
+   static final OperationDefinition CLUSTER_REBALANCE_OPERATION = new SimpleOperationDefinitionBuilder(ModelKeys.CLUSTER_REBALANCE, new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
+         .setParameters(BOOL_VALUE)
+         .setRuntimeOnly()
+         .build();
+
+
+   private final ResolvePathHandler resolvePathHandler;
     private final boolean runtimeRegistration;
     public CacheContainerResource(final ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
         super(CONTAINER_PATH,
@@ -221,6 +321,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
         }
 
         if (runtimeRegistration) {
+            resourceRegistration.registerReadWriteAttribute(CLUSTER_REBALANCE, ClusterRebalanceAttributeHandler.INSTANCE, ClusterRebalanceAttributeHandler.INSTANCE);
             // register runtime cache container read-only metrics (attributes and handlers)
             CacheContainerMetricsHandler.INSTANCE.registerMetrics(resourceRegistration);
         }
@@ -232,14 +333,24 @@ public class CacheContainerResource extends SimpleResourceDefinition {
         // register add-alias and remove-alias
         resourceRegistration.registerOperationHandler(ALIAS_ADD, AddAliasCommand.INSTANCE);
         resourceRegistration.registerOperationHandler(ALIAS_REMOVE, RemoveAliasCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(GET_PROTO_NAMES, GetProtobufSchemaNamesHandler.INSTANCE);
+        resourceRegistration.registerOperationHandler(GET_PROTO, GetProtobufSchemaHandler.INSTANCE);
         resourceRegistration.registerOperationHandler(UPLOAD_PROTO, UploadProtoFileOperationHandler.INSTANCE);
         resourceRegistration.registerOperationHandler(REGISTER_PROTO, RegisterProtoSchemasOperationHandler.INSTANCE);
+        resourceRegistration.registerOperationHandler(UNREGISTER_PROTO, UnregisterProtoSchemasOperationHandler.INSTANCE);
         resourceRegistration.registerOperationHandler(CLI_INTERPRETER, CliInterpreterHandler.INSTANCE);
         resourceRegistration.registerOperationHandler(BACKUP_TAKE_SITE_OFFLINE, CacheContainerCommands.BackupTakeSiteOfflineCommand.INSTANCE);
         resourceRegistration.registerOperationHandler(BACKUP_BRING_SITE_ONLINE, CacheContainerCommands.BackupBringSiteOnlineCommand.INSTANCE);
         resourceRegistration.registerOperationHandler(BACKUP_PUSH_STATE, CacheContainerCommands.BackupPushStateCommand.INSTANCE);
         resourceRegistration.registerOperationHandler(BACKUP_CANCEL_PUSH_STATE, CacheContainerCommands.BackupCancelPushStateCommand.INSTANCE);
         resourceRegistration.registerOperationHandler(READ_EVENT_LOG, CacheContainerCommands.ReadEventLogCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(SCRIPT_ADD, CacheContainerCommands.ScriptAddCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(SCRIPT_CAT, CacheContainerCommands.ScriptCatCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(SCRIPT_REMOVE, CacheContainerCommands.ScriptRemoveCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(TASK_LIST, CacheContainerCommands.TaskListCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(TASK_EXECUTE, CacheContainerCommands.TaskExecuteCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(TASK_STATUS, CacheContainerCommands.TaskStatusCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(CLUSTER_REBALANCE_OPERATION, CacheContainerCommands.ClusterRebalanceCommand.INSTANCE);
     }
 
     @Override

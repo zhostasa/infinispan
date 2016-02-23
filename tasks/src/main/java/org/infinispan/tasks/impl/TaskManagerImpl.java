@@ -1,25 +1,14 @@
 package org.infinispan.tasks.impl;
 
-import java.lang.invoke.MethodHandles;
-import java.security.Principal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.security.auth.Subject;
-
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.security.Security;
+import org.infinispan.tasks.Task;
 import org.infinispan.tasks.TaskContext;
 import org.infinispan.tasks.TaskExecution;
 import org.infinispan.tasks.TaskManager;
@@ -27,6 +16,22 @@ import org.infinispan.tasks.logging.Log;
 import org.infinispan.tasks.spi.TaskEngine;
 import org.infinispan.util.TimeService;
 import org.infinispan.util.logging.LogFactory;
+import org.infinispan.util.logging.events.EventLogCategory;
+import org.infinispan.util.logging.events.EventLogManager;
+import org.infinispan.util.logging.events.EventLogger;
+
+import javax.security.auth.Subject;
+import java.lang.invoke.MethodHandles;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentMap;
+
+import static org.infinispan.tasks.logging.Messages.MESSAGES;
 
 /**
  * TaskManagerImpl.
@@ -38,13 +43,13 @@ import org.infinispan.util.logging.LogFactory;
 public class TaskManagerImpl implements TaskManager {
    private static final Log log = LogFactory.getLog(MethodHandles.lookup().lookupClass(), Log.class);
    private EmbeddedCacheManager cacheManager;
-   private Set<TaskEngine> engines;
+   private List<TaskEngine> engines;
    private ConcurrentMap<UUID, TaskExecution> runningTasks;
    private TimeService timeService;
    private boolean useSecurity;
 
    public TaskManagerImpl() {
-      engines = new HashSet<>();
+      engines = new ArrayList<>();
       runningTasks = CollectionFactory.makeConcurrentMap();
    }
 
@@ -81,9 +86,15 @@ public class TaskManagerImpl implements TaskManager {
             runningTasks.put(exec.getUUID(), exec);
             CompletableFuture<T> task = engine.runTask(name, context);
             return task.whenComplete((r, e) -> {
-               // TODO: hook up to the event logger, once that is implemented
+               EventLogger eventLog = EventLogManager.getEventLogger(cacheManager).scope(cacheManager.getAddress());
+               who.ifPresent(s -> eventLog.who(s));
+               context.getCache().ifPresent(cache -> eventLog.context(cache));
                if (e != null) {
-                  e.printStackTrace();
+                  eventLog.detail(e)
+                          .error(EventLogCategory.TASKS, MESSAGES.taskFailure(name));
+               } else {
+                  eventLog.detail(String.valueOf(r))
+                          .info(EventLogCategory.TASKS, MESSAGES.taskSuccess(name));
                }
                runningTasks.remove(exec.getUUID());
             });
@@ -93,13 +104,20 @@ public class TaskManagerImpl implements TaskManager {
    }
 
    @Override
-   public Collection<TaskExecution> getCurrentTasks() {
-      return runningTasks.values();
+   public List<TaskExecution> getCurrentTasks() {
+      return new ArrayList<>(runningTasks.values());
    }
 
    @Override
-   public Collection<TaskEngine> getEngines() {
-      return Collections.unmodifiableCollection(engines);
+   public List<TaskEngine> getEngines() {
+      return Collections.unmodifiableList(engines);
+   }
+
+   @Override
+   public List<Task> getTasks() {
+      List<Task> tasks = new ArrayList<>();
+      engines.forEach(engine -> tasks.addAll(engine.getTasks()));
+      return tasks;
    }
 
 }

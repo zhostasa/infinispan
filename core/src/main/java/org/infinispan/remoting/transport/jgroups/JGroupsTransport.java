@@ -46,11 +46,13 @@ import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.RspFilter;
 import org.jgroups.blocks.mux.Muxer;
 import org.jgroups.jmx.JmxConfigurator;
+import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.protocols.relay.SiteMaster;
 import org.jgroups.protocols.tom.TOA;
 import org.jgroups.stack.AddressGenerator;
 import org.jgroups.util.Buffer;
 import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
 import org.jgroups.util.TopologyUUID;
 
 import javax.management.MBeanServer;
@@ -67,6 +69,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -107,7 +110,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    protected StreamingMarshaller marshaller;
    protected CacheManagerNotifier notifier;
    protected GlobalComponentRegistry gcr;
-   private TimeService timeService;
+   protected TimeService timeService;
    protected InboundInvocationHandler globalHandler;
    private ScheduledExecutorService timeoutExecutor;
 
@@ -190,6 +193,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       startJGroupsChannelIfNeeded();
 
       waitForChannelToConnect();
+
+      waitForInitialNodes();
    }
 
    protected void startJGroupsChannelIfNeeded() {
@@ -234,14 +239,23 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
    @Override
    public void waitForView(int viewId) throws InterruptedException {
+      waitForView(viewId, 0, TimeUnit.SECONDS);
+   }
+
+   public boolean waitForView(int viewId, long time, TimeUnit timeUnit) throws InterruptedException {
       if (channel == null)
-         return;
+         return false;
       log.tracef("Waiting on view %d being accepted", viewId);
       viewUpdateLock.lock();
       try {
          while (channel != null && getViewId() < viewId) {
-            viewUpdateCondition.await();
+            if (time == 0) {
+               viewUpdateCondition.await();
+            } else {
+               return viewUpdateCondition.await(time, timeUnit);
+            }
          }
+         return true;
       } finally {
          viewUpdateLock.unlock();
       }
@@ -353,7 +367,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    }
 
    protected void initRPCDispatcher() {
-      dispatcher = new CommandAwareRpcDispatcher(channel, this, globalHandler, timeoutExecutor);
+      dispatcher = new CommandAwareRpcDispatcher(channel, this, globalHandler, timeoutExecutor, timeService);
       MarshallerAdapter adapter = new MarshallerAdapter(marshaller);
       dispatcher.setRequestMarshaller(adapter);
       dispatcher.setResponseMarshaller(adapter);
@@ -461,6 +475,25 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       }
    }
 
+   private void waitForInitialNodes() {
+      int initialClusterSize = configuration.transport().initialClusterSize();
+      if (initialClusterSize > 1) {
+         long timeout = configuration.transport().initialClusterTimeout();
+         while (channel.getView().getMembers().size() < initialClusterSize) {
+            try {
+               log.debugf("Waiting for %d nodes, current view has %d", initialClusterSize, channel.getView().getMembers().size());
+               if(!waitForView(viewId + 1, timeout, TimeUnit.MILLISECONDS)) {
+                  throw log.timeoutWaitingForInitialNodes(initialClusterSize, channel.getView().getMembers());
+               }
+            } catch (InterruptedException e) {
+               log.interruptedWaitingForCoordinator(e);
+               Thread.currentThread().interrupt();
+            }
+         }
+         log.debugf("Initial cluster size of %d nodes reached", initialClusterSize);
+      }
+   }
+
    @Override
    public List<Address> getMembers() {
       return members != null ? members : InfinispanCollections.<Address>emptyList();
@@ -540,7 +573,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       int membersSize = localMembers.size();
       boolean broadcast = jgAddressList == null || recipients.size() == membersSize;
       if (membersSize < 3 || (jgAddressList != null && jgAddressList.size() < 2)) broadcast = false;
-      RspListFuture rspListFuture = null;
+      CompletableFuture<RspList<Response>> rspListFuture = null;
       SingleResponseFuture singleResponseFuture = null;
       org.jgroups.Address singleJGAddress = null;
 
@@ -643,7 +676,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
    @Override
    public Map<Address, Response> invokeRemotely(Map<Address, ReplicableCommand> rpcCommands, ResponseMode mode,
-                                                long timeout, boolean usePriorityQueue, ResponseFilter responseFilter, boolean totalOrder, boolean anycast)
+                                                long timeout, boolean usePriorityQueue, ResponseFilter responseFilter,
+                                                boolean totalOrder, boolean anycast)
          throws Exception {
       DeliverOrder deliverOrder = DeliverOrder.PER_SENDER;
       if (totalOrder) {
@@ -736,9 +770,10 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       switch (mode) {
          case ASYNCHRONOUS:
             return org.jgroups.blocks.ResponseMode.GET_NONE;
+         case WAIT_FOR_VALID_RESPONSE:
+            return org.jgroups.blocks.ResponseMode.GET_FIRST;
          case SYNCHRONOUS:
          case SYNCHRONOUS_IGNORE_LEAVERS:
-         case WAIT_FOR_VALID_RESPONSE:
             return org.jgroups.blocks.ResponseMode.GET_ALL;
       }
       throw new CacheException("Unknown response mode " + mode);

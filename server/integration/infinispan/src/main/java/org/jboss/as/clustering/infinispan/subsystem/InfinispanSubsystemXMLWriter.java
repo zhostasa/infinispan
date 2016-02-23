@@ -80,6 +80,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     this.writeOptional(writer, Attribute.CHANNEL, transport, ModelKeys.CHANNEL);
                     this.writeOptional(writer, Attribute.LOCK_TIMEOUT, transport, ModelKeys.LOCK_TIMEOUT);
                     this.writeOptional(writer, Attribute.STRICT_PEER_TO_PEER, transport, ModelKeys.STRICT_PEER_TO_PEER);
+                    this.writeOptional(writer, Attribute.INITIAL_CLUSTER_SIZE, transport, ModelKeys.INITIAL_CLUSTER_SIZE);
+                    this.writeOptional(writer, Attribute.INITIAL_CLUSTER_TIMEOUT, transport, ModelKeys.INITIAL_CLUSTER_TIMEOUT);
                     writer.writeEndElement();
                 }
 
@@ -105,12 +107,14 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         }
 
                         ModelNode roles = authorization.get(ModelKeys.ROLE);
-                        for(ModelNode roleNode : roles.asList()) {
-                            ModelNode role = roleNode.get(0);
-                            writer.writeStartElement(Element.ROLE.getLocalName());
-                            AuthorizationRoleResource.NAME.marshallAsAttribute(role, writer);
-                            this.writeListAsAttribute(writer, Attribute.PERMISSIONS, role, ModelKeys.PERMISSIONS);
-                            writer.writeEndElement();
+                        if (roles.isDefined()) {
+                            for (ModelNode roleNode : roles.asList()) {
+                                ModelNode role = roleNode.get(0);
+                                writer.writeStartElement(Element.ROLE.getLocalName());
+                                AuthorizationRoleResource.NAME.marshallAsAttribute(role, writer);
+                                this.writeListAsAttribute(writer, Attribute.PERMISSIONS, role, ModelKeys.PERMISSIONS);
+                                writer.writeEndElement();
+                            }
                         }
 
                         writer.writeEndElement();

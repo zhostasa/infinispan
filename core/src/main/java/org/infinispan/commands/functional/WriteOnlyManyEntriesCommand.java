@@ -7,6 +7,9 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.lifecycle.ComponentStatus;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -41,19 +44,21 @@ public final class WriteOnlyManyEntriesCommand<K, V> extends AbstractWriteManyCo
 
    @Override
    public byte getCommandId() {
-      return COMMAND_ID;  // TODO: Customise this generated block
+      return COMMAND_ID;
    }
 
    @Override
-   public void setParameters(int commandId, Object[] parameters) {
-      entries = (Map<? extends K, ? extends V>) parameters[0];
-      f = (BiConsumer<V, WriteEntryView<V>>) parameters[1];
-      isForwarded = (Boolean) parameters[2];
+   public void writeTo(ObjectOutput output) throws IOException {
+      output.writeObject(entries);
+      output.writeObject(f);
+      output.writeBoolean(isForwarded);
    }
 
    @Override
-   public Object[] getParameters() {
-      return new Object[]{entries, f, isForwarded};
+   public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
+      entries = (Map<? extends K, ? extends V>) input.readObject();
+      f = (BiConsumer<V, WriteEntryView<V>>) input.readObject();
+      isForwarded = input.readBoolean();
    }
 
    @Override

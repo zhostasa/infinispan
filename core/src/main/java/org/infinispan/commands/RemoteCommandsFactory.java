@@ -56,6 +56,8 @@ import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.iteration.impl.EntryRequestCommand;
 import org.infinispan.iteration.impl.EntryResponseCommand;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.manager.impl.ReplicableCommandManagerFunction;
+import org.infinispan.manager.impl.ReplicableCommandRunnable;
 import org.infinispan.statetransfer.StateRequestCommand;
 import org.infinispan.statetransfer.StateResponseCommand;
 import org.infinispan.stream.impl.StreamRequestCommand;
@@ -104,7 +106,7 @@ public class RemoteCommandsFactory {
     *
     * @param id id of the command
     * @param parameters parameters to set
-    * @param type
+    * @param type type of the command
     * @return a replicable command
     */
    public ReplicableCommand fromStream(byte id, Object[] parameters, byte type) {
@@ -174,6 +176,12 @@ public class RemoteCommandsFactory {
             case RemoveExpiredCommand.COMMAND_ID:
                command = new RemoveExpiredCommand();
                break;
+            case ReplicableCommandRunnable.COMMAND_ID:
+               command = new ReplicableCommandRunnable();
+               break;
+            case ReplicableCommandManagerFunction.COMMAND_ID:
+               command = new ReplicableCommandManagerFunction();
+               break;
             default:
                throw new CacheException("Unknown command id " + id + "!");
          }
@@ -184,7 +192,6 @@ public class RemoteCommandsFactory {
          else
             throw new CacheException("Unknown command id " + id + "!");
       }
-      command.setParameters(id, parameters);
       return command;
    }
 
@@ -313,13 +320,12 @@ public class RemoteCommandsFactory {
                throw new CacheException("Unknown command id " + id + "!");
          }
       } else {
-         ModuleCommandFactory mcf = (ModuleCommandFactory) commandFactories.get(id);
+         ModuleCommandFactory mcf = commandFactories.get(id);
          if (mcf != null)
             return mcf.fromStream(id, parameters, cacheName);
          else
             throw new CacheException("Unknown command id " + id + "!");
       }
-      command.setParameters(id, parameters);
       return command;
    }
 }
