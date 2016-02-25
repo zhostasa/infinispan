@@ -19,7 +19,7 @@ import org.infinispan.commons.io.ByteBufferFactory;
 import org.infinispan.commons.io.ByteBufferFactoryImpl;
 import org.infinispan.commons.marshall.AbstractMarshaller;
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.server.test.category.HotRodLocal;
+import org.infinispan.server.test.category.HotRodSingleNode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -49,10 +49,10 @@ import static org.junit.Assert.assertNotNull;
  * @author Galder Zamarreño
  */
 @RunWith(Arquillian.class)
-@Category(HotRodLocal.class)
+@Category(HotRodSingleNode.class)
 public class HotRodCustomMarshallerEventIT {
 
-    private final String TEST_CACHE_NAME = "testcache";
+    private final String TEST_CACHE_NAME = "testCache";
 
     static RemoteCacheManager remoteCacheManager;
     RemoteCache<Id, Id> remoteCache;
@@ -62,7 +62,6 @@ public class HotRodCustomMarshallerEventIT {
 
     @Deployment(testable = false, name = "marshaller")
     @TargetsContainer("container1")
-    @OverProtocol("jmx-as7")
     public static Archive<?> deploy1() {
         return createArchive();
     }

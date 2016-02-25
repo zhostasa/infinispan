@@ -7,7 +7,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.server.test.category.HotRodClustered;
-import org.infinispan.server.test.category.HotRodLocal;
+import org.infinispan.server.test.category.HotRodSingleNode;
 import org.infinispan.server.test.util.RemoteCacheManagerFactory;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.AfterClass;
@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
-@Category({HotRodLocal.class, HotRodClustered.class})
+@Category({HotRodSingleNode.class, HotRodClustered.class})
 public class HotRodRemoteCacheCompatIT {
 
    private static final String CACHE_NAME = "compatibilityCache";

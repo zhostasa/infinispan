@@ -2,19 +2,19 @@ package org.infinispan.server.test.client.rest;
 
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
-import org.infinispan.server.test.category.RESTLocal;
+import org.infinispan.server.test.category.RESTSingleNode;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
+ * Test a custom REST client connected to a single Infinispan server.
+ * The server is running in standalone mode.
  *
- * @author <a href="mailto:jvilkola@redhat.com">Jozef Vilkolak</a>
- * @author <a href="mailto:mlinhard@redhat.com">Michal Linhard</a>
- * @version November 2013
+ * @author mgencur
  */
 @RunWith(Arquillian.class)
-@Category({ RESTLocal.class })
+@Category({ RESTSingleNode.class })
 public class RESTClientIT extends AbstractRESTClientIT {
 
     @InfinispanResource("container1")
