@@ -132,7 +132,7 @@
                             <skip>${skipTests}</skip>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>org.jboss.eap</groupId>
                                     <artifactId>wildfly-dist</artifactId>
                                     <version>${version.org.wildfly}</version>
                                     <type>zip</type>
@@ -145,7 +145,7 @@
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/wildfly-${version.org.wildfly}/modules</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/jboss-eap-${version.org.wildfly.short}/modules</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -164,7 +164,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/wildfly-${version.org.wildfly}</outputDirectory>
+                            <outputDirectory>${project.build.directory}/jboss-eap-${version.org.wildfly.short}</outputDirectory>
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>

@@ -30,7 +30,6 @@
         <module name="MissingDeprecated" />
         <module name="DefaultComesLast" />
         <module name="TypecastParenPad" />
-        <module name="RedundantThrows" />
         <module name="InnerTypeLast" />
         <module name="HideUtilityClassConstructor" />
         <module name="MutableException" />

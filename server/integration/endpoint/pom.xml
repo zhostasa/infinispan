@@ -50,8 +50,8 @@
                               <exclude>org.apache.xalan:xalan</exclude>
                               <exclude>org.hibernate:ejb3-persistence</exclude>
                               <exclude>org.hibernate.java-persistence:jpa-api</exclude>
-                              <exclude>org.wildfly:wildfly-clustering-infinispan</exclude>
-                              <exclude>org.wildfly:wildfly-clustering-jgroups</exclude>
+                              <exclude>org.jboss.eap:wildfly-clustering-infinispan</exclude>
+                              <exclude>org.jboss.eap:wildfly-clustering-jgroups</exclude>
                               <exclude>org.jboss.integration:jboss-jca-spi</exclude>
                               <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
                               <exclude>org.jboss.javaee:jboss-javaee</exclude>
@@ -112,7 +112,7 @@
          <exclusions>
              <exclusion>
                  <artifactId>wildfly-ee</artifactId>
-                 <groupId>org.wildfly</groupId>
+                 <groupId>org.jboss.eap</groupId>
              </exclusion>
          </exclusions>
       </dependency>
@@ -139,11 +139,11 @@
       </dependency>
 
       <dependency>
-         <groupId>org.wildfly</groupId>
+         <groupId>org.jboss.eap</groupId>
          <artifactId>wildfly-security</artifactId>
          <exclusions>
             <exclusion>
-               <groupId>org.wildfly</groupId>
+               <groupId>org.jboss.eap</groupId>
                <artifactId>wildfly-clustering-infinispan</artifactId>
             </exclusion>
          </exclusions>

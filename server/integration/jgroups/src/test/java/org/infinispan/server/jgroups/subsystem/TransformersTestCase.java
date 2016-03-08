@@ -70,7 +70,7 @@ import org.junit.runner.RunWith;
 public class TransformersTestCase extends OperationTestCaseBase {
 
     private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version);
+        return formatArtifact("org.jboss.eap:wildfly-clustering-jgroups:%s", version);
     }
 
     private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
