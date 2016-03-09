@@ -1397,5 +1397,15 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Node %s timed out, time : %s %s", id = 401)
    TimeoutException remoteNodeTimedOut(Address address, long time, TimeUnit unit);
-}
 
+   @Message(value = "Timeout waiting for view %d. Current view is %d, current status is %s", id = 402)
+   TimeoutException timeoutWaitingForView(int expectedViewId, int currentViewId,
+         Object clusterManagerStatus);
+
+   @LogMessage(level = WARN)
+   @Message(value = "No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 9.0).", id = 403)
+   void noIndexableClassesDefined();
+
+   @Message(value = "The configured entity class %s is not indexable. Please remove it from the indexing configuration.", id = 404)
+   CacheConfigurationException classNotIndexable(String className);
+}

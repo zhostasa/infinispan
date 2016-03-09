@@ -5,7 +5,6 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.infinispan.commons.util.CloseableIterator;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
@@ -521,9 +520,14 @@ public class DistributedCacheStream<R> extends AbstractCacheStream<R, Stream<R>,
                boolean stayLocal = false;
                if (runLocal) {
                   Set<Integer> segmentsForOwner = ch.getSegmentsForOwner(localAddress);
-                  stayLocal = segmentsToFilter != null && segmentsForOwner.containsAll(segmentsToFilter);
-                  segments = stayLocal ? segmentsForOwner : ch.getPrimarySegmentsForOwner(localAddress);
-                  segments.retainAll(segmentsToProcess);
+                  // If we own all of the segments locally, even as backup, we don't want the iterator to go remotely
+                  stayLocal = segmentsForOwner.containsAll(segmentsToProcess);
+                  if (stayLocal) {
+                     segments = segmentsToProcess;
+                  } else {
+                     segments = ch.getPrimarySegmentsForOwner(localAddress).stream()
+                             .filter(segmentsToProcess::contains).collect(Collectors.toSet());
+                  }
 
                   excludedKeys = segments.stream().flatMap(s -> results.referenceArray.get(s).stream())
                           .collect(Collectors.toSet());
@@ -603,9 +607,9 @@ public class DistributedCacheStream<R> extends AbstractCacheStream<R, Stream<R>,
          results.onCompletion(null, segments, localValue);
       } else {
          Set<Integer> ourSegments = ownedSegmentsSupplier.get();
-         ourSegments.retainAll(segmentsToProcess);
-         log.tracef("CH changed - making %s segments suspect for identifier %s", ourSegments, id);
-         results.onSegmentsLost(ourSegments);
+         Set<Integer> lostSegments = ourSegments.stream().filter(segmentsToProcess::contains).collect(Collectors.toSet());
+         log.tracef("CH changed - making %s segments suspect for identifier %s", lostSegments, id);
+         results.onSegmentsLost(lostSegments);
       }
    }
 
@@ -728,13 +732,24 @@ public class DistributedCacheStream<R> extends AbstractCacheStream<R, Stream<R>,
             if (completed.get()) {
                if (exception != null) {
                   throw exception;
+               } else if ((entry = queue.poll()) != null) {
+                  // We check the queue one last time to make sure we didn't have a concurrent queue addition and
+                  // completed iterator
+                  if (consumer != null) {
+                     consumer.accept(entry);
+                  }
+                  return entry;
                }
                return null;
             }
             nextLock.lock();
             try {
                boolean interrupted = false;
-               while ((entry = queue.poll()) == null && !completed.get()) {
+               while (!completed.get()) {
+                  // We should check to make sure nothing was added to the queue as well before sleeping
+                  if ((entry = queue.poll()) != null) {
+                     break;
+                  }
                   try {
                      nextCondition.await(100, TimeUnit.MILLISECONDS);
                   } catch (InterruptedException e) {
@@ -743,10 +758,19 @@ public class DistributedCacheStream<R> extends AbstractCacheStream<R, Stream<R>,
                   }
                }
                if (entry == null) {
-                  if (exception != null) {
-                     throw exception;
+                  // If there is no entry and we are completed check one last time if there are entries in the queue
+                  // It is possible for entries to be added to the queue and the iterator completed at the same time.
+                  // Completed is a sign of either 3 things: all entries have been retrieved (what this case is for),
+                  // an exception has been found in processing, or the user has manually closed the iterator.  In the
+                  // latter 2 cases no additional entries are added to the queue since processing is stopped, therefore
+                  // we can just process the rest of the elements in the queue with no worry.
+                  entry = queue.poll();
+                  if (entry == null) {
+                     if (exception != null) {
+                        throw exception;
+                     }
+                     return null;
                   }
-                  return null;
                } else if (interrupted) {
                   // Now reset the interrupt state before returning
                   Thread.currentThread().interrupt();

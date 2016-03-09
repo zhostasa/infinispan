@@ -8,9 +8,9 @@ import org.infinispan.configuration.cache.Index;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.test.Person;
-import org.infinispan.statetransfer.JoiningNode;
 import org.infinispan.test.CacheManagerCallable;
 import org.infinispan.test.MultipleCacheManagersTest;
+import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TransportFlags;
 
 import java.util.List;
@@ -37,6 +37,7 @@ public abstract class BaseReIndexingTest extends MultipleCacheManagersTest {
       builder = getDefaultClusteredCacheConfig(CacheMode.REPL_SYNC, false);
 
       builder.indexing().index(Index.ALL)
+            .addIndexedEntity(Person.class)
             .addProperty("default.directory_provider", "ram")
             .addProperty("lucene_version", "LUCENE_CURRENT");
 
@@ -95,9 +96,8 @@ public abstract class BaseReIndexingTest extends MultipleCacheManagersTest {
          @Override
          public void call() throws Exception {
             // New node joining
-            JoiningNode newNode = new JoiningNode(cm);
-            Cache<String, Person> newCache = newNode.getCache();
-            newNode.waitForJoin(120000, caches().get(0), caches().get(1), newCache);
+            Cache<String, Person> newCache = cm.getCache();
+            TestingUtil.waitForRehashToComplete(caches().get(0), caches().get(1), newCache);
 
             // Verify state transfer
             int size = newCache.size();

@@ -14,7 +14,6 @@ import org.infinispan.lifecycle.ModuleLifecycle;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.StreamingMarshaller;
-import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
 import org.infinispan.remoting.inboundhandler.PerCacheInboundInvocationHandler;
 import org.infinispan.remoting.responses.ResponseGenerator;
@@ -27,6 +26,7 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.infinispan.factories.KnownComponentNames.MODULE_COMMAND_INITIALIZERS;
@@ -89,7 +89,7 @@ public class ComponentRegistry extends AbstractComponentRegistry {
             for (ModuleCommandInitializer mci: initializers.values()) registerNonVolatileComponent(mci, mci.getClass());
          } else
             registerNonVolatileComponent(
-                  InfinispanCollections.emptyMap(), MODULE_COMMAND_INITIALIZERS);
+                  Collections.emptyMap(), MODULE_COMMAND_INITIALIZERS);
       }
       catch (Exception e) {
          throw new CacheException("Unable to construct a ComponentRegistry!", e);
@@ -212,7 +212,23 @@ public class ComponentRegistry extends AbstractComponentRegistry {
       globalComponents.start();
       boolean needToNotify = state != ComponentStatus.RUNNING && state != ComponentStatus.INITIALIZING;
 
-      // set this up *before* starting the components since some components - specifically state transfer - needs to be
+      // If FAILED, stop the existing components and transition to TERMINATED
+      if (state.needToDestroyFailedCache()) {
+         stop();
+      }
+
+      // If TERMINATED, rewire non-volatile components and transition to INSTANTIATED
+      if (state.needToInitializeBeforeStart()) {
+         state = ComponentStatus.INSTANTIATED;
+         rewire();
+      }
+
+      // Do nothing if the cache was already running
+      if (!state.startAllowed())
+         return;
+
+      // set this up *before* starting the components since some components - specifically state transfer -
+      // needs to be
       // able to locate this registry via the InboundInvocationHandler
       cacheComponents();
       this.globalComponents.registerNamedComponentRegistry(this, cacheName);
@@ -222,9 +238,6 @@ public class ComponentRegistry extends AbstractComponentRegistry {
       super.start();
 
       if (needToNotify && state == ComponentStatus.RUNNING) {
-         for (ModuleLifecycle l : globalComponents.moduleLifecycles) {
-            l.cacheStarted(this, cacheName);
-         }
          cacheManagerNotifier.notifyCacheStarted(cacheName);
       }
    }

@@ -19,6 +19,7 @@ are also useful documents to have alongside this user guide.
 
 // The top-level chapter on config.  This will include other sub-chapters.
 include::chapter-46-Configuring_cache.adoc[]
+include::chapter-47-Cache_manager.adoc[]
 include::chapter-53-Using_the_Cache_API.adoc[]
 include::chapter-43-Eviction.adoc[]
 include::chapter-23-Persistence.adoc[]
@@ -34,6 +35,7 @@ include::chapter-14-Infinispan_Server_Modules.adoc[]
 include::chapter-6-Querying_Infinispan.adoc[]
 include::chapter-13-Infinispan_as_a_storage_for_Lucene_indexes.adoc[]
 include::chapter-66-Map_Reduce_framework.adoc[]
+include::chapter-63-Streams.adoc[]
 include::chapter-41-Infinispan_Distributed_Execution_Framework.adoc[]
 include::chapter-15-Management_Tooling.adoc[]
 include::chapter-60-CDI_Support.adoc[]

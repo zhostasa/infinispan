@@ -112,6 +112,8 @@ public class ModelKeys {
     static final String IMPLEMENTATION = "implementation";
     static final String IMPLEMENTATION_NAME = "IMPLEMENTATION";
     static final String INDEX = "index";
+    static final String INDEXED_ENTITIES = "indexed-entities";
+    static final String INDEXED_ENTITY = "indexed-entity";
     static final String INDEXING = "indexing";
     static final String INDEXING_PROPERTIES = "indexing-properties";
     static final String INITIAL_CLUSTER_SIZE = "initial-cluster-size";
@@ -225,6 +227,7 @@ public class ModelKeys {
     static final String TAKE_BACKUP_OFFLINE_MIN_WAIT = "min-wait";
     static final String TAKE_OFFLINE = "take-offline";
     static final String TCP_NO_DELAY = "tcp-no-delay";
+    static final String TEMPLATE = "template";
     static final String TEMPORARY_LOCATION = "temporary-location";
     static final String THREAD_POOL_SIZE = "thread-pool-size";
     static final String TIMEOUT = "timeout";

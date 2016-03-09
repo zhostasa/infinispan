@@ -7,11 +7,12 @@ import org.infinispan.CacheStream;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.entries.ImmortalCacheEntry;
+import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.transaction.TransactionMode;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.Serializable;
@@ -35,7 +36,7 @@ import static org.testng.AssertJUnit.*;
  * Base test class for streams to verify proper behavior of all of the terminal operations for all of the various
  * stream classes
  */
-@Test
+@Test(groups="functional")
 public abstract class BaseStreamTest extends MultipleCacheManagersTest {
    protected final String CACHE_NAME = getClass().getName();
    protected ConfigurationBuilder builderUsed;
@@ -1968,5 +1969,43 @@ public abstract class BaseStreamTest extends MultipleCacheManagersTest {
       }
       assertEquals(range + 1, halfCount);
       assertEquals(range * 2, pos);
+   }
+
+   public void testKeySegmentFilter() {
+      Cache<Integer, String> cache = getCache(0);
+      int range = 12;
+      // First populate the cache with a bunch of values
+      IntStream.range(0, range).boxed().forEach(i -> cache.put(i, i + "-value"));
+
+      assertEquals(range, cache.size());
+      CacheSet<Map.Entry<Integer, String>> entrySet = cache.entrySet();
+
+      // Take the first half of the segments
+      int segments = cache.getCacheConfiguration().clustering().hash().numSegments() / 2;
+      AtomicInteger realCount = new AtomicInteger();
+
+      DistributionManager dm = cache.getAdvancedCache().getComponentRegistry().getComponent(DistributionManager.class);
+      ConsistentHash ch = dm.getConsistentHash();
+      cache.forEach((k, v) -> {
+         if (segments >= ch.getSegment(k)) {
+            realCount.incrementAndGet();
+         }
+      });
+
+      assertEquals(realCount.get(), createStream(entrySet).filterKeySegments(
+              IntStream.range(0, segments).boxed().collect(Collectors.toSet())).count());
+   }
+
+   public void testKeyFilter() {
+      Cache<Integer, String> cache = getCache(0);
+      int range = 12;
+      // First populate the cache with a bunch of values
+      IntStream.range(0, range).boxed().forEach(i -> cache.put(i, i + "-value"));
+
+      assertEquals(range, cache.size());
+      CacheSet<Map.Entry<Integer, String>> entrySet = cache.entrySet();
+
+      Set<Integer> keys = IntStream.of(2, 5, 8, 3, 1, range + 2).boxed().collect(Collectors.toSet());
+      assertEquals(keys.size() - 1, createStream(entrySet).filterKeys(keys).count());
    }
 }

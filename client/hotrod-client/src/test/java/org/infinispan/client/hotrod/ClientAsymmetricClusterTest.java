@@ -14,7 +14,7 @@ import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheCon
  * @author Galder Zamarreño
  * @since 5.2
  */
-@Test(groups = "functional", testName = "client.hotrod.ClientAsymmetricClusterTest")
+@Test(groups = "functional", testName = "client.hotrod.ClientAsymmetricClusterTest", enabled = false, description = "To be enabled with ISPN-6038 fix")
 public class ClientAsymmetricClusterTest extends MultiHotRodServersTest {
 
    private static final String CACHE_NAME = "asymmetricCache";
@@ -28,6 +28,7 @@ public class ClientAsymmetricClusterTest extends MultiHotRodServersTest {
 
       // Define replicated cache in only one of the nodes
       manager(0).defineConfiguration(CACHE_NAME, builder.build());
+      manager(0).getCache(CACHE_NAME);
    }
 
    public void testAsymmetricCluster() {

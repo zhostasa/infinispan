@@ -208,7 +208,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       assertEquals(caches(cacheName()).size(), members.size());
       members.remove(getCache().getAdvancedCache().getRpcManager().getAddress());
       
-      DistributedTaskBuilder<Integer> tb = des.createDistributedTaskBuilder( new LongRunningCallable());
+      DistributedTaskBuilder<Integer> tb = des.createDistributedTaskBuilder(new SleepingSimpleCallable());
       final Future<Integer> future = des.submit(members.get(0),tb.build());
       
       future.cancel(true);
@@ -220,7 +220,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       AdvancedCache<Object, Object> localCache = getCache().getAdvancedCache();      
       DistributedExecutorService des = createDES(localCache);      
       Future<Integer> future = des.submit(localCache.getRpcManager().getAddress(), new SleepingSimpleCallable());     
-      future.get(2000, TimeUnit.MILLISECONDS);
+      future.get(1000, TimeUnit.MILLISECONDS);
    }
    
    public void testBasicTargetDistributedCallableTargetSameNode() throws Exception {

@@ -60,16 +60,21 @@ public class RemoteCloseableIterator<E> implements CloseableIterator<Entry<Objec
    @Override
    public void close() {
       if (!closed) {
-         IterationEndResponse endResponse = operationsFactory.newIterationEndOperation(iterationId, transport).execute();
-         short status = endResponse.getStatus();
+         try {
+            IterationEndResponse endResponse = operationsFactory.newIterationEndOperation(iterationId, transport).execute();
+            short status = endResponse.getStatus();
 
-         if (HotRodConstants.isSuccess(status)) {
-            log.iterationClosed(iterationId);
+            if (HotRodConstants.isSuccess(status)) {
+               log.iterationClosed(iterationId);
+            }
+            if (HotRodConstants.isInvalidIteration(status)) {
+               throw log.errorClosingIteration(iterationId);
+            }
+         } catch (TransportException te) {
+            log.ignoringServerUnreachable(iterationId);
+         } finally {
+            closed = true;
          }
-         if (HotRodConstants.isInvalidIteration(status)) {
-            throw log.errorClosingIteration(iterationId);
-         }
-         closed = true;
       }
    }
 
@@ -102,39 +107,30 @@ public class RemoteCloseableIterator<E> implements CloseableIterator<Entry<Objec
 
       } catch (TransportException e) {
          log.warnf(e, "Error reaching the server during iteration");
-         restartIteration(segmentKeyTracker.missedSegments());
+         startInternal(segmentKeyTracker.missedSegments());
          fetch();
       }
    }
 
-   private void restartIteration(Set<Integer> missedSegments) {
-      startInternal(missedSegments);
-   }
-
-   private void start(Set<Integer> fromSegments) {
-      IterationStartResponse startResponse = startInternal(fromSegments);
-
-      this.segmentKeyTracker = KeyTrackerFactory.create(startResponse.getSegmentConsistentHash(), startResponse.getTopologyId());
-   }
-
-   private IterationStartResponse startInternal(Set<Integer> fromSegments) {
+   private IterationStartResponse startInternal(Set<Integer> segments) {
       if (log.isDebugEnabled()) {
-         log.debugf("Staring iteration with segments %s", fromSegments);
+         log.debugf("Starting iteration with segments %s", segments);
       }
-      IterationStartOperation iterationStartOperation = operationsFactory.newIterationStartOperation(filterConverterFactory, filterParams, fromSegments, batchSize, metadata);
+      IterationStartOperation iterationStartOperation = operationsFactory.newIterationStartOperation(filterConverterFactory, filterParams, segments, batchSize, metadata);
       IterationStartResponse startResponse = iterationStartOperation.execute();
       this.transport = startResponse.getTransport();
       if (log.isDebugEnabled()) {
-         log.debugf("Obtained transport", this.transport);
+         log.iterationTransportObtained(transport, iterationId);
       }
       this.iterationId = startResponse.getIterationId();
       if (log.isDebugEnabled()) {
-         log.debugf("IterationId:", this.iterationId);
+         log.startedIteration(iterationId);
       }
       return startResponse;
    }
 
    public void start() {
-      start(segments);
+      IterationStartResponse startResponse = startInternal(segments);
+      this.segmentKeyTracker = KeyTrackerFactory.create(startResponse.getSegmentConsistentHash(), startResponse.getTopologyId(), segments);
    }
 }

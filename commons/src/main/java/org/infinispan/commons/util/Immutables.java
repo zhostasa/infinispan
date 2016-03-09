@@ -7,17 +7,8 @@ import java.io.ObjectOutput;
 import java.io.Reader;
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.InvalidPropertiesFormatException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.Ids;
@@ -62,7 +53,7 @@ public class Immutables {
     */
    public static <T> List<T> immutableListCopy(List<T> list) {
       if (list == null) return null;
-      if (list.isEmpty()) return InfinispanCollections.emptyList();
+      if (list.isEmpty()) return Collections.emptyList();
       if (list.size() == 1) return Collections.singletonList(list.get(0));
       return new ImmutableListCopy<T>(list);
    }
@@ -128,7 +119,7 @@ public class Immutables {
     */
    public static <T> Set<T> immutableSetCopy(Set<T> set) {
       if (set == null) return null;
-      if (set.isEmpty()) return InfinispanCollections.emptySet();
+      if (set.isEmpty()) return Collections.emptySet();
       if (set.size() == 1) return Collections.singleton(set.iterator().next());
       Set<? extends T> copy = ObjectDuplicator.duplicateSet(set);
       if (copy == null)
@@ -159,7 +150,7 @@ public class Immutables {
     */
    public static <K, V> Map<K, V> immutableMapCopy(Map<K, V> map) {
       if (map == null) return null;
-      if (map.isEmpty()) return InfinispanCollections.emptyMap();
+      if (map.isEmpty()) return Collections.emptyMap();
       if (map.size() == 1) {
          Map.Entry<K, V> me = map.entrySet().iterator().next();
          return Collections.singletonMap(me.getKey(), me.getValue());
@@ -183,7 +174,7 @@ public class Immutables {
     */
    public static <T> Collection<T> immutableCollectionCopy(Collection<T> collection) {
       if (collection == null) return null;
-      if (collection.isEmpty()) return InfinispanCollections.emptySet();
+      if (collection.isEmpty()) return Collections.emptySet();
       if (collection.size() == 1) return Collections.singleton(collection.iterator().next());
 
       Collection<? extends T> copy = ObjectDuplicator.duplicateCollection(collection);
@@ -224,6 +215,17 @@ public class Immutables {
     */
    public static <K, V> Map.Entry<K, V> immutableEntry(Map.Entry<K, V> entry) {
       return new ImmutableEntry<K, V>(entry);
+   }
+
+   /**
+    * Wraps a key and value with an immutable {@link Map.Entry}}. There is no copying involved.
+    *
+    * @param key the key to wrap.
+    * @param value the value to wrap.
+    * @return an immutable {@link Map.Entry}} wrapper that delegates to the original mapping.
+    */
+   public static <K, V> Map.Entry<K, V> immutableEntry(K key, V value) {
+      return new ImmutableEntry<K, V>(key, value);
    }
 
    public interface  Immutable {
@@ -361,6 +363,12 @@ public class Immutables {
          this.key = entry.getKey();
          this.value = entry.getValue();
          this.hash = entry.hashCode();
+      }
+
+      ImmutableEntry(K key, V value) {
+         this.key = key;
+         this.value = value;
+         this.hash = Objects.hashCode(key) ^ Objects.hashCode(value);
       }
 
       @Override

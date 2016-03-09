@@ -6,7 +6,6 @@ import org.infinispan.Version;
 import org.infinispan.commands.module.ModuleCommandFactory;
 import org.infinispan.commands.module.ModuleCommandInitializer;
 import org.infinispan.commons.CacheException;
-import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.factories.annotations.SurvivesRestarts;
@@ -126,7 +125,7 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
             registerNonVolatileComponent(factories, KnownComponentNames.MODULE_COMMAND_FACTORIES);
          else
             registerNonVolatileComponent(
-                  InfinispanCollections.<Object, Object>emptyMap(), KnownComponentNames.MODULE_COMMAND_FACTORIES);
+                  Collections.<Object, Object>emptyMap(), KnownComponentNames.MODULE_COMMAND_FACTORIES);
          this.createdCaches = createdCaches;
 
          getOrCreateComponent(EventLogManager.class);
@@ -222,6 +221,10 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
    @Override
    public synchronized void start() {
       try {
+         // Do nothing if the global components are already running
+         if (!state.startAllowed())
+            return;
+
          boolean needToNotify = state != ComponentStatus.RUNNING && state != ComponentStatus.INITIALIZING;
          if (needToNotify) {
             for (ModuleLifecycle l : moduleLifecycles) {
@@ -268,6 +271,13 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
          for (ModuleLifecycle l : moduleLifecycles) {
             l.cacheManagerStopped(this);
          }
+      }
+   }
+
+   public void notifyCacheStarted(String cacheName) {
+      ComponentRegistry cr = getNamedComponentRegistry(cacheName);
+      for (ModuleLifecycle l : moduleLifecycles) {
+         l.cacheStarted(cr, cacheName);
       }
    }
 

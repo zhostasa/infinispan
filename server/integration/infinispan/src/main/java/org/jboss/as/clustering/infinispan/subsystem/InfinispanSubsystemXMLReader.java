@@ -726,6 +726,7 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
     private void addCacheConfiguration(String cacheType, PathAddress containerAddress, Map<PathAddress, ModelNode> operations,
             boolean configurationOnly, ModelNode cacheConfiguration,
             Map<PathAddress, ModelNode> additionalConfigurationOperations, PathAddress cacheConfigurationAddress) {
+        cacheConfiguration.get(CacheConfigurationResource.TEMPLATE.getName()).set(configurationOnly);
         if (configurationOnly) {
             // just create the configuration
             operations.put(cacheConfigurationAddress, cacheConfiguration);
@@ -2012,6 +2013,10 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
+                case INDEXED_ENTITIES: {
+                    parseIndexedEntities(reader, node);
+                    break;
+                }
                 case PROPERTY: {
                     int attributes = reader.getAttributeCount();
                     String property = null;
@@ -2041,6 +2046,24 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
             }
         }
        // ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseIndexedEntities(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+        ParseUtils.requireNoAttributes(reader);
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case INDEXED_ENTITY: {
+                    ParseUtils.requireNoAttributes(reader);
+                    String value = reader.getElementText();
+                    CacheConfigurationResource.INDEXED_ENTITIES.parseAndAddParameterElement(value, node, reader);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     private void parseBackups(XMLExtendedStreamReader reader, ModelNode cache, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
