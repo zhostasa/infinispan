@@ -26,6 +26,7 @@
       <module>cli</module>
       <module>feature-pack</module>
       <module>build</module>
+      <module>management/server-rhq-plugin</module>
    </modules>
 
    <profiles>
