@@ -4,7 +4,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.CacheSet;
 import org.infinispan.atomic.Delta;
 import org.infinispan.batch.BatchContainer;
-import org.infinispan.commons.util.concurrent.NotifyingFuture;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
@@ -13,9 +13,7 @@ import org.infinispan.distribution.DistributionManager;
 import org.infinispan.eviction.EvictionManager;
 import org.infinispan.expiration.ExpirationManager;
 import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.interceptors.base.CommandInterceptor;
-import org.infinispan.iteration.EntryIterable;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.partitionhandling.AvailabilityMode;
 import org.infinispan.remoting.rpc.RpcManager;
@@ -25,12 +23,12 @@ import org.infinispan.util.concurrent.locks.LockManager;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
-
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Similar to {@link org.infinispan.cache.impl.AbstractDelegatingCache}, but for {@link AdvancedCache}.
@@ -218,11 +216,6 @@ public class AbstractDelegatingAdvancedCache<K, V> extends AbstractDelegatingCac
    }
 
    @Override
-   public EntryIterable<K, V> filterEntries(KeyValueFilter<? super K, ? super V> filter) {
-      return cache.filterEntries(filter);
-   }
-
-   @Override
    public java.util.Map<K, V> getGroup(String groupName) {
       return cache.getGroup(groupName);
    }
@@ -253,7 +246,7 @@ public class AbstractDelegatingAdvancedCache<K, V> extends AbstractDelegatingCac
    }
 
    @Override
-   public NotifyingFuture<V> putAsync(K key, V value, Metadata metadata) {
+   public CompletableFuture<V> putAsync(K key, V value, Metadata metadata) {
       return cache.putAsync(key, value, metadata);
    }
 
@@ -278,11 +271,11 @@ public class AbstractDelegatingAdvancedCache<K, V> extends AbstractDelegatingCac
    }
 
    protected final void putForExternalRead(K key, V value, EnumSet<Flag> flags, ClassLoader classLoader) {
-      ((CacheImpl<K, V>) cache).putForExternalRead(key, value, flags, classLoader);
+      ((CacheImpl<K, V>) cache).putForExternalRead(key, value, EnumUtil.bitSetOf(flags), classLoader);
    }
 
    protected final void putForExternalRead(K key, V value, Metadata metadata, EnumSet<Flag> flags, ClassLoader classLoader) {
-      ((CacheImpl<K, V>) cache).putForExternalRead(key, value, metadata, flags, classLoader);
+      ((CacheImpl<K, V>) cache).putForExternalRead(key, value, metadata, EnumUtil.bitSetOf(flags), classLoader);
    }
 
    public interface AdvancedCacheWrapper<K, V> {

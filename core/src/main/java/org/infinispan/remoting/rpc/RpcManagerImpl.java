@@ -16,7 +16,6 @@ import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.remote.CacheRpcCommand;
 import org.infinispan.commons.CacheException;
-import org.infinispan.commons.util.concurrent.NotifyingNotifiableFuture;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.Inject;
@@ -30,7 +29,6 @@ import org.infinispan.jmx.annotations.ManagedOperation;
 import org.infinispan.jmx.annotations.MeasurementType;
 import org.infinispan.jmx.annotations.Parameter;
 import org.infinispan.jmx.annotations.Units;
-import org.infinispan.remoting.ReplicationQueue;
 import org.infinispan.remoting.inboundhandler.DeliverOrder;
 import org.infinispan.remoting.responses.Response;
 import org.infinispan.remoting.transport.Address;
@@ -66,18 +64,15 @@ public class RpcManagerImpl implements RpcManager, JmxStatisticsExposer {
 
    private boolean statisticsEnabled = false; // by default, don't gather statistics.
    private Configuration configuration;
-   private ReplicationQueue replicationQueue;
    private CommandsFactory cf;
    private StateTransferManager stateTransferManager;
    private TimeService timeService;
 
    @Inject
-   public void injectDependencies(Transport t, Configuration cfg,
-                                  ReplicationQueue replicationQueue, CommandsFactory cf,
+   public void injectDependencies(Transport t, Configuration cfg, CommandsFactory cf,
                                   StateTransferManager stateTransferManager, TimeService timeService) {
       this.t = t;
       this.configuration = cfg;
-      this.replicationQueue = replicationQueue;
       this.cf = cf;
       this.stateTransferManager = stateTransferManager;
       this.timeService = timeService;
@@ -110,25 +105,12 @@ public class RpcManagerImpl implements RpcManager, JmxStatisticsExposer {
       return pendingCH != null ? pendingCH.getMembers().toString() : "null";
    }
 
-   private boolean useReplicationQueue(boolean sync) {
-      return !sync && replicationQueue != null && replicationQueue.isEnabled();
-   }
-
    @Override
    public CompletableFuture<Map<Address, Response>> invokeRemotelyAsync(Collection<Address> recipients,
                                                                         ReplicableCommand rpc,
                                                                         RpcOptions options) {
       if (trace) log.tracef("%s invoking %s to recipient list %s with options %s", t.getAddress(), rpc, recipients, options);
 
-      //skip replication queue option was added because when the ReplicationQueue invokes remotely, the command was
-      //added to the queue again. this way, we break the cycle
-      if (!options.skipReplicationQueue() && useReplicationQueue(options.responseMode().isSynchronous())) {
-         if (trace) {
-            log.tracef("Using replication queue for command [%s]", rpc);
-         }
-         replicationQueue.add(rpc);
-         return CompletableFutures.returnEmptyMap();
-      }
       if (!configuration.clustering().cacheMode().isClustered())
          throw new IllegalStateException("Trying to invoke a remote command but the cache is not clustered");
 
@@ -270,25 +252,6 @@ public class RpcManagerImpl implements RpcManager, JmxStatisticsExposer {
    }
 
    @Override
-   public void invokeRemotelyInFuture(final NotifyingNotifiableFuture<Map<Address, Response>> future,
-                                      final Collection<Address> recipients, final ReplicableCommand rpc,
-                                      final RpcOptions options) {
-      if (trace) log.tracef("%s invoking in future call %s to recipient list %s with options %s", t.getAddress(),
-                            rpc, recipients, options);
-      CompletableFuture<Map<Address, Response>> rpcFuture = invokeRemotelyAsync(recipients, rpc, options);
-      CompletableFutures.connect(future, rpcFuture);
-   }
-
-   @Override
-   public void invokeRemotelyInFuture(final Collection<Address> recipients, final ReplicableCommand rpc,
-                                      final RpcOptions options, final NotifyingNotifiableFuture<Object> future) {
-      // The type of the future parameter is incorrect, so we're discarding the generic type information
-      @SuppressWarnings("unchecked")
-      NotifyingNotifiableFuture<Map<Address, Response>> f = (NotifyingNotifiableFuture)future;
-      invokeRemotelyInFuture(f, recipients, rpc, options);
-   }
-
-   @Override
    public Transport getTransport() {
       return t;
    }
@@ -403,7 +366,7 @@ public class RpcManagerImpl implements RpcManager, JmxStatisticsExposer {
 
    @Override
    public RpcOptionsBuilder getRpcOptionsBuilder(ResponseMode responseMode, DeliverOrder deliverOrder) {
-      return new RpcOptionsBuilder(configuration.clustering().sync().replTimeout(), TimeUnit.MILLISECONDS, responseMode, deliverOrder);
+      return new RpcOptionsBuilder(configuration.clustering().remoteTimeout(), TimeUnit.MILLISECONDS, responseMode, deliverOrder);
    }
 
    @Override

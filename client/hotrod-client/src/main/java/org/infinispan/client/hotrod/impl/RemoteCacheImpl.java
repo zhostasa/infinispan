@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -26,14 +27,33 @@ import org.infinispan.client.hotrod.event.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.exceptions.RemoteCacheManagerNotStartedException;
 import org.infinispan.client.hotrod.filter.Filters;
-import org.infinispan.client.hotrod.impl.operations.*;
 import org.infinispan.client.hotrod.impl.iteration.RemoteCloseableIterator;
+import org.infinispan.client.hotrod.impl.operations.AddClientListenerOperation;
+import org.infinispan.client.hotrod.impl.operations.BulkGetKeysOperation;
+import org.infinispan.client.hotrod.impl.operations.BulkGetOperation;
+import org.infinispan.client.hotrod.impl.operations.ClearOperation;
+import org.infinispan.client.hotrod.impl.operations.ContainsKeyOperation;
+import org.infinispan.client.hotrod.impl.operations.ExecuteOperation;
+import org.infinispan.client.hotrod.impl.operations.GetAllOperation;
+import org.infinispan.client.hotrod.impl.operations.GetOperation;
+import org.infinispan.client.hotrod.impl.operations.GetWithMetadataOperation;
+import org.infinispan.client.hotrod.impl.operations.GetWithVersionOperation;
+import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
+import org.infinispan.client.hotrod.impl.operations.PingOperation;
+import org.infinispan.client.hotrod.impl.operations.PutAllOperation;
+import org.infinispan.client.hotrod.impl.operations.PutIfAbsentOperation;
+import org.infinispan.client.hotrod.impl.operations.PutOperation;
+import org.infinispan.client.hotrod.impl.operations.RemoveClientListenerOperation;
+import org.infinispan.client.hotrod.impl.operations.RemoveIfUnmodifiedOperation;
+import org.infinispan.client.hotrod.impl.operations.RemoveOperation;
+import org.infinispan.client.hotrod.impl.operations.ReplaceIfUnmodifiedOperation;
+import org.infinispan.client.hotrod.impl.operations.ReplaceOperation;
+import org.infinispan.client.hotrod.impl.operations.SizeOperation;
+import org.infinispan.client.hotrod.impl.operations.StatsOperation;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.CloseableIterator;
-import org.infinispan.commons.util.concurrent.NotifyingFuture;
-import org.infinispan.commons.util.concurrent.NotifyingFutureImpl;
 import org.infinispan.query.dsl.Query;
 
 import static org.infinispan.client.hotrod.filter.Filters.makeFactoryParams;
@@ -91,32 +111,9 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    }
 
    @Override
-   public NotifyingFuture<Boolean> removeWithVersionAsync(final K key, final long version) {
+   public CompletableFuture<Boolean> removeWithVersionAsync(final K key, final long version) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<Boolean> result = new NotifyingFutureImpl<Boolean>();
-      Future<Boolean> future = executorService.submit(new Callable<Boolean>() {
-         @Override
-         public Boolean call() throws Exception {
-            try {
-               boolean removed = removeWithVersion(key, version);
-               try {
-                  result.notifyDone(removed);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return removed;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      return CompletableFuture.supplyAsync(() -> removeWithVersion(key, version), executorService);
    }
 
    @Override
@@ -134,32 +131,10 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    }
 
    @Override
-   public NotifyingFuture<Boolean> replaceWithVersionAsync(final K key, final V newValue, final long version, final int lifespanSeconds, final int maxIdleSeconds) {
+   public CompletableFuture<Boolean> replaceWithVersionAsync(final K key, final V newValue, final long version, final int lifespanSeconds, final int maxIdleSeconds) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<Boolean> result = new NotifyingFutureImpl<Boolean>();
-      Future<Boolean> future = executorService.submit(new Callable<Boolean>() {
-         @Override
-         public Boolean call() throws Exception {
-            try {
-               boolean removed = replaceWithVersion(key, newValue, version, lifespanSeconds, maxIdleSeconds);
-               try {
-                  result.notifyDone(removed);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return removed;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      return CompletableFuture.supplyAsync(() ->
+              replaceWithVersion(key, newValue, version, lifespanSeconds, maxIdleSeconds), executorService);
    }
 
    @Override
@@ -215,9 +190,16 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    @Override
    public VersionedValue<V> getVersioned(K key) {
       assertRemoteCacheManagerIsStarted();
-      GetWithVersionOperation<V> op = operationsFactory.newGetWithVersionOperation(
-         compatKeyIfNeeded(key), obj2bytes(key, true));
-      return op.execute();
+      if (ConfigurationProperties.isVersionPre12(remoteCacheManager.getConfiguration())) {
+         GetWithVersionOperation<V> op = operationsFactory.newGetWithVersionOperation(
+               compatKeyIfNeeded(key), obj2bytes(key, true));
+         return op.execute();
+      } else {
+         MetadataValue<V> result = getWithMetadata(key);
+         return result != null
+               ? new VersionedValueImpl<>(result.getVersion(), result.getValue())
+               : null;
+      }
    }
 
    @Override
@@ -243,33 +225,12 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    }
 
    @Override
-   public NotifyingFuture<Void> putAllAsync(final Map<? extends K, ? extends V> data, final long lifespan, final TimeUnit lifespanUnit, final long maxIdle, final TimeUnit maxIdleUnit) {
+   public CompletableFuture<Void> putAllAsync(final Map<? extends K, ? extends V> data, final long lifespan, final TimeUnit lifespanUnit, final long maxIdle, final TimeUnit maxIdleUnit) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<Void> result = new NotifyingFutureImpl<Void>();
-      Future<Void> future = executorService.submit(new Callable<Void>() {
-         @Override
-         public Void call() throws Exception {
-            try {
-               putAll(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-               try {
-                  result.notifyDone(null);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return null;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
-
+      return CompletableFuture.supplyAsync(() -> {
+         putAll(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+         return null;
+      }, executorService);
    }
 
    @Override
@@ -328,153 +289,53 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    }
 
    @Override
-   public NotifyingFuture<V> putAsync(final K key, final V value, final long lifespan, final TimeUnit lifespanUnit, final long maxIdle, final TimeUnit maxIdleUnit) {
+   public CompletableFuture<V> putAsync(final K key, final V value, final long lifespan, final TimeUnit lifespanUnit, final long maxIdle, final TimeUnit maxIdleUnit) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<V> result = new NotifyingFutureImpl<V>();
-      Future<V> future = executorService.submit(new WithFlagsCallable(operationsFactory.flags()) {
-         @Override
-         public V call() throws Exception {
-            try {
-               setFlagsIfPresent();
-               V prevValue =
-                     RemoteCacheImpl.this.put(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-               try {
-                  result.notifyDone(prevValue);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return prevValue;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      int flags = operationsFactory.flags();
+      return CompletableFuture.supplyAsync(() -> {
+         if (flags != 0)
+            operationsFactory.setFlags(flags);
+         return put(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+      }, executorService);
    }
 
    @Override
-   public NotifyingFuture<Void> clearAsync() {
+   public CompletableFuture<Void> clearAsync() {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<Void> result = new NotifyingFutureImpl<Void>();
-      Future<Void> future = executorService.submit(new Callable<Void>() {
-         @Override
-         public Void call() throws Exception {
-            try {
-               clear();
-               try {
-                  result.notifyDone(null);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return null;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      return CompletableFuture.runAsync(this::clear, executorService);
    }
 
    @Override
-   public NotifyingFuture<V> putIfAbsentAsync(final K key,final V value,final long lifespan,final TimeUnit lifespanUnit,final long maxIdle,final TimeUnit maxIdleUnit) {
+   public CompletableFuture<V> putIfAbsentAsync(final K key,final V value,final long lifespan,final TimeUnit lifespanUnit,final long maxIdle,final TimeUnit maxIdleUnit) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<V> result = new NotifyingFutureImpl<V>();
-      Future<V> future = executorService.submit(new WithFlagsCallable(operationsFactory.flags()) {
-         @Override
-         public V call() throws Exception {
-            try {
-               setFlagsIfPresent();
-               V prevValue = putIfAbsent(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-               try {
-                  result.notifyDone(prevValue);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return prevValue;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      int flags = operationsFactory.flags();
+      return CompletableFuture.supplyAsync(() -> {
+         if (flags != 0)
+            operationsFactory.setFlags(flags);
+         return putIfAbsent(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+      }, executorService);
    }
 
    @Override
-   public NotifyingFuture<V> removeAsync(final Object key) {
+   public CompletableFuture<V> removeAsync(final Object key) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<V> result = new NotifyingFutureImpl<V>();
-      Future<V> future = executorService.submit(new WithFlagsCallable(operationsFactory.flags()) {
-         @Override
-         public V call() throws Exception {
-            try {
-               setFlagsIfPresent();
-               V toReturn = remove(key);
-               try {
-                  result.notifyDone(toReturn);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return toReturn;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      int flags = operationsFactory.flags();
+      return CompletableFuture.supplyAsync(() -> {
+         if (flags != 0)
+            operationsFactory.setFlags(flags);
+         return remove(key);
+      }, executorService);
    }
 
    @Override
-   public NotifyingFuture<V> replaceAsync(final K key,final V value,final long lifespan,final TimeUnit lifespanUnit,final long maxIdle,final TimeUnit maxIdleUnit) {
+   public CompletableFuture<V> replaceAsync(final K key,final V value,final long lifespan,final TimeUnit lifespanUnit,final long maxIdle,final TimeUnit maxIdleUnit) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<V> result = new NotifyingFutureImpl<V>();
-      Future<V> future = executorService.submit(new WithFlagsCallable(operationsFactory.flags()) {
-         @Override
-         public V call() throws Exception {
-            try {
-               setFlagsIfPresent();
-               V old = replace(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-               try {
-                  result.notifyDone(old);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return old;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      int flags = operationsFactory.flags();
+      return CompletableFuture.supplyAsync(() -> {
+         if (flags != 0)
+            operationsFactory.setFlags(flags);
+         return replace(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+      }, executorService);
    }
 
    @Override
@@ -620,32 +481,9 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    }
 
    @Override
-   public NotifyingFuture<V> getAsync(final K key) {
+   public CompletableFuture<V> getAsync(final K key) {
       assertRemoteCacheManagerIsStarted();
-      final NotifyingFutureImpl<V> result = new NotifyingFutureImpl<V>();
-      Future<V> future = executorService.submit(new Callable<V>() {
-         @Override
-         public V call() throws Exception {
-            try {
-               V toReturn = get(key);
-               try {
-                  result.notifyDone(toReturn);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               return toReturn;
-            } catch (Exception e) {
-               try {
-                  result.notifyException(e);
-               } catch (Throwable t) {
-                  log.trace("Error when notifying", t);
-               }
-               throw e;
-            }
-         }
-      });
-      result.setFuture(future);
-      return result;
+      return CompletableFuture.supplyAsync(() -> get(key), executorService);
    }
 
    public PingOperation.PingResult ping() {

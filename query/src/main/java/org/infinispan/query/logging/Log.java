@@ -12,7 +12,11 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.*;
+import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.TRACE;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Log abstraction for the query module. For this module, message ids
@@ -55,7 +59,7 @@ public interface Log extends org.infinispan.util.logging.Log {
 
    @LogMessage(level = WARN)
    @Message(value = "Index named '%1$s' is ignoring configuration option 'directory_provider' set '%2$s':" +
-   		" overridden to use the Infinispan Directory", id = 14008)
+         " overridden to use the Infinispan Directory", id = 14008)
    void ignoreDirectoryProviderProperty(String indexName, String directoryOption);
 
    @LogMessage(level = WARN)
@@ -92,9 +96,8 @@ public interface Log extends org.infinispan.util.logging.Log {
    @Message(value = "Flushing index '%s'", id = 14017)
    void flushingIndex(String entityType);
 
-   @LogMessage(level = ERROR)
    @Message(value = "Error executing MassIndexer", id = 14018)
-   void errorExecutingMassIndexer(@Cause Throwable cause);
+   CacheException errorExecutingMassIndexer(@Cause Throwable cause);
 
    @Message(value = "Cannot run Lucene queries on a cache that does not have indexing enabled", id = 14019)
    IllegalStateException cannotRunLuceneQueriesIfNotIndexed();
@@ -102,7 +105,7 @@ public interface Log extends org.infinispan.util.logging.Log {
    @Message(value = "Query parameter '%s' was not set", id = 14020)
    IllegalStateException queryParameterNotSet(String paramName);
 
-   @Message(value = "Queries containing grouping and aggregation functions must use projections.",  id = 14021)
+   @Message(value = "Queries containing grouping and aggregation functions must use projections.", id = 14021)
    ParsingException groupingAndAggregationQueriesMustUseProjections();
 
    @Message(value = "Cannot have aggregate functions in GROUP BY clause", id = 14022)

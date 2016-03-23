@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 /**
  * Verifies it's possible to store an index in an indexed Cache.
  * I don't think this should be encouraged, but should at least be handled appropriately.
- * 
+ *
  * @author Sanne Grinovero
  * @since 5.2
  */
@@ -36,12 +36,11 @@ public class IndexStoredIndexedCacheTest extends MultipleCacheManagersTest {
       configurationBuilder
          .clustering()
          .cacheMode(CacheMode.DIST_SYNC)
+         .remoteTimeout(10000)
          .stateTransfer()
             .fetchInMemoryState(true)
          .l1()
             .enable()
-         .sync()
-            .replTimeout(10000)
       .transaction()
          .transactionMode(TransactionMode.TRANSACTIONAL)
       .locking()

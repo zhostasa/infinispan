@@ -21,7 +21,7 @@ import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
-import org.infinispan.client.hotrod.impl.transport.tcp.RequestBalancingStrategy;
+import org.infinispan.client.hotrod.impl.transport.tcp.FailoverRequestBalancingStrategy;
 import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransport;
 import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory;
 import org.infinispan.client.hotrod.logging.Log;
@@ -68,7 +68,6 @@ public abstract class AbstractRemoteCacheManagerIT {
                 .forceReturnValues(true)
                 .tcpNoDelay(false)
                 .tcpKeepAlive(true)
-                .pingOnStartup(false)
                 .transportFactory("org.infinispan.server.test.client.hotrod.HotRodTestTransportFactory")
                 .marshaller("org.infinispan.server.test.client.hotrod.HotRodTestMarshaller")
                 .asyncExecutorFactory().factoryClass("org.infinispan.server.test.client.hotrod.HotRodTestExecutorFactory")
@@ -126,7 +125,6 @@ public abstract class AbstractRemoteCacheManagerIT {
         builder.balancingStrategy("org.infinispan.client.hotrod.impl.transport.tcp.RoundRobinBalancingStrategy")
                 .forceReturnValues(false)
                 .tcpNoDelay(true)
-                .pingOnStartup(true)
                 .transportFactory("org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory")
                 .marshaller("org.infinispan.commons.marshall.jboss.GenericJBossMarshaller")
                 .asyncExecutorFactory().factoryClass("org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory")
@@ -369,8 +367,7 @@ public abstract class AbstractRemoteCacheManagerIT {
         assertEquals(config.tcpKeepAlive(), Boolean.parseBoolean(getTcpKeepAliveProperty(rc)));
         assertEquals(config.maxRetries(), Integer.parseInt(getMaxRetries(rc)));
 
-        // pingOnStartup and asyncExecutorFactory compared only with the configuration itself
-        assertEquals(config.pingOnStartup(), rc.getRemoteCacheManager().getConfiguration().pingOnStartup());
+        // asyncExecutorFactory compared only with the configuration itself
         assertEquals(config.asyncExecutorFactory().factoryClass().getName(),
                 rc.getRemoteCacheManager().getConfiguration().asyncExecutorFactory().factoryClass().getName());
 
@@ -397,7 +394,7 @@ public abstract class AbstractRemoteCacheManagerIT {
         RemoteCacheImpl rci = (RemoteCacheImpl) rc;
         OperationsFactory of = getOperationsFactoryField(rci);
         TcpTransportFactory ttf = (TcpTransportFactory) getTransportFactoryField(of);
-        RequestBalancingStrategy rbs = ttf.getBalancer(RemoteCacheManager.cacheNameBytes());
+        FailoverRequestBalancingStrategy rbs = ttf.getBalancer(RemoteCacheManager.cacheNameBytes());
         return rbs.getClass().getName();
     }
 

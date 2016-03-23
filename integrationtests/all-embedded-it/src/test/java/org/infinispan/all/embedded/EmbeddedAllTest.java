@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import javax.transaction.TransactionManager;
@@ -20,10 +21,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.distexec.DefaultExecutorService;
-import org.infinispan.distexec.mapreduce.Collector;
-import org.infinispan.distexec.mapreduce.MapReduceTask;
-import org.infinispan.distexec.mapreduce.Mapper;
-import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -183,7 +180,7 @@ public class EmbeddedAllTest {
    @Test
    public void testEmbeddedDistExec() throws Exception {
       DefaultExecutorService defaultExecutorService = new DefaultExecutorService(manager.getCache());
-      List<Future<String>> results = defaultExecutorService.submitEverywhere(new TestCallable());
+      List<CompletableFuture<String>> results = defaultExecutorService.submitEverywhere(new TestCallable());
       for(Future<String> result : results) {
          assertEquals("OK", result.get());
       }
@@ -194,37 +191,6 @@ public class EmbeddedAllTest {
          return "OK";
       }
    }
-
-   @Test
-   public void testEmbeddedMapReduce() throws Exception {
-      Cache<String, String> cache = manager.getCache();
-      cache.put("k1", "v1");
-      cache.put("k2", "v1");
-      MapReduceTask<String, String, String, Integer> task = new MapReduceTask<String, String, String, Integer>(cache);
-      task.mappedWith(new TestMapper()).reducedWith(new TestReducer());
-      Map<String, Integer> result = task.execute();
-      assertEquals(1, result.size());
-      assertEquals(2, result.get("v1").intValue());
-   }
-
-   static class TestMapper implements Mapper<String, String, String, Integer> {
-      public void map(String key, String value, Collector<String, Integer> collector) {
-         collector.emit(value, 1);
-      }
-   }
-
-   static class TestReducer implements Reducer<String, Integer> {
-
-      public Integer reduce(String reducedKey, Iterator<Integer> iter) {
-         int count = 0;
-         for(; iter.hasNext(); iter.next()) {
-            count++;
-         }
-         return count;
-      }
-
-   }
-
 
    private void testDataSurvived(Cache<Object, Object> cache) {
       String key1 = "key1_" + cache.getName();

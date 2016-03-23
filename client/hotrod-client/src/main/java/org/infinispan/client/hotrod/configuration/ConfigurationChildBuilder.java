@@ -7,7 +7,6 @@ import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHashV1;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHashV2;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.FailoverRequestBalancingStrategy;
-import org.infinispan.client.hotrod.impl.transport.tcp.RequestBalancingStrategy;
 import org.infinispan.commons.marshall.Marshaller;
 
 /**
@@ -55,7 +54,7 @@ public interface ConfigurationChildBuilder {
     * For replicated (vs distributed) Hot Rod server clusters, the client balances requests to the
     * servers according to this strategy.
     */
-   ConfigurationBuilder balancingStrategy(Class<? extends RequestBalancingStrategy> balancingStrategy);
+   ConfigurationBuilder balancingStrategy(Class<? extends FailoverRequestBalancingStrategy> balancingStrategy);
 
    /**
     * @param classLoader
@@ -113,11 +112,6 @@ public interface ConfigurationChildBuilder {
     * and deserialize user objects. This method is mutually exclusive with {@link #marshaller(Class)}.
     */
    ConfigurationBuilder marshaller(Marshaller marshaller);
-
-   /**
-    * If true, a ping request is sent to a back end server in order to fetch cluster's topology.
-    */
-   ConfigurationBuilder pingOnStartup(boolean pingOnStartup);
 
    /**
     * This property defines the protocol version that this client should use. Defaults to 1.1. Other

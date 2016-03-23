@@ -273,8 +273,6 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       c = cm.getCacheConfiguration("invalid");
       assertEquals(CacheMode.INVALIDATION_ASYNC, c.clustering().cacheMode());
       assertTrue(c.invocationBatching().enabled());
-      assertEquals(10, c.clustering().async().replQueueInterval());
-      assertEquals(1000, c.clustering().async().replQueueMaxElements());
       assertTrue(c.jmxStatistics().enabled());
       assertEquals(30500, c.locking().lockAcquisitionTimeout());
       assertEquals(2500, c.locking().concurrencyLevel());
@@ -297,9 +295,6 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       c = cm.getCacheConfiguration("repl");
       assertEquals(CacheMode.REPL_ASYNC, c.clustering().cacheMode());
       assertTrue(c.invocationBatching().enabled());
-      assertEquals(11, c.clustering().async().replQueueInterval());
-      assertEquals(1500, c.clustering().async().replQueueMaxElements());
-      assertFalse(c.clustering().async().asyncMarshalling());
       assertTrue(c.jmxStatistics().enabled());
       assertEquals(31000, c.locking().lockAcquisitionTimeout());
       assertEquals(3000, c.locking().concurrencyLevel());
@@ -330,10 +325,9 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertFalse(c.invocationBatching().enabled());
       assertEquals(1200000, c.clustering().l1().lifespan());
       assertEquals(4, c.clustering().hash().numOwners());
-      assertEquals(35000, c.clustering().sync().replTimeout());
+      assertEquals(35000, c.clustering().remoteTimeout());
       assertEquals(2, c.clustering().hash().numSegments());
       assertTrue(c.clustering().hash().consistentHashFactory() instanceof SyncConsistentHashFactory);
-      assertFalse(c.clustering().async().asyncMarshalling());
       assertTrue(c.clustering().partitionHandling().enabled());
       assertTrue(c.jmxStatistics().enabled());
       assertEquals(31500, c.locking().lockAcquisitionTimeout());

@@ -64,7 +64,6 @@
          <optional>${uberjar.deps.optional}</optional>
       </dependency>
 
-
       <dependency>
          <groupId>org.wildfly.core</groupId>
          <artifactId>wildfly-controller-client</artifactId>
@@ -199,14 +198,6 @@
                            <pattern>com.google</pattern>
                            <shadedPattern>infinispan.com.google</shadedPattern>
                         </relocation>
-                        <!-- XNIO is required by the remote JCache integration -->
-                        <!-- However we can not move it until https://issues.apache.org/jira/browse/MSHADE-182 is -->
-                        <!-- resolved and we also need to migrate to shade 3.0 -->
-                        <!-- Tracking JIRA: https://issues.jboss.org/browse/ISPN-6283 -->
-                        <!--<relocation>-->
-                           <!--<pattern>org.xnio</pattern>-->
-                           <!--<shadedPattern>infinispan.org.xnio</shadedPattern>-->
-                        <!--</relocation>-->
                         <relocation>
                            <pattern>org.jboss.threads</pattern>
                            <shadedPattern>infinispan.org.jboss.threads</shadedPattern>
@@ -235,12 +226,6 @@
                            <pattern>com.squareup</pattern>
                            <shadedPattern>infinispan.com.squareup</shadedPattern>
                         </relocation>
-
-
-
-
-
-
                      </relocations>
                      <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">

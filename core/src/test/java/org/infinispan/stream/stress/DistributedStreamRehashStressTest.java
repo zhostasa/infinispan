@@ -7,7 +7,6 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.entries.ImmortalCacheEntry;
-import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stream.CacheCollectors;
@@ -25,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -70,7 +68,7 @@ public class DistributedStreamRehashStressTest extends MultipleCacheManagersTest
       builderUsed.clustering().hash().numOwners(3);
       builderUsed.clustering().stateTransfer().chunkSize(25000);
       // This is increased just for the put all command when doing full tracing
-      builderUsed.clustering().sync().replTimeout(12000000);
+      builderUsed.clustering().remoteTimeout(12000000);
       // This way if an iterator gets stuck we know earlier
       builderUsed.clustering().stateTransfer().timeout(240, TimeUnit.SECONDS);
       createClusteredCaches(CACHE_COUNT, CACHE_NAME, builderUsed);

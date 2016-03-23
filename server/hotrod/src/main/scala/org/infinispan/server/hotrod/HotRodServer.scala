@@ -177,7 +177,7 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
 
    protected def createTopologyCacheConfig(distSyncTimeout: Long): ConfigurationBuilder = {
       val builder = new ConfigurationBuilder
-      builder.clustering().cacheMode(CacheMode.REPL_SYNC).sync().replTimeout(configuration.topologyReplTimeout)
+      builder.clustering().cacheMode(CacheMode.REPL_SYNC).remoteTimeout(configuration.topologyReplTimeout)
              .locking().lockAcquisitionTimeout(configuration.topologyLockTimeout)
              .eviction().strategy(EvictionStrategy.NONE)
              .expiration().lifespan(-1).maxIdle(-1)
@@ -307,10 +307,10 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
 
    override def stop: Unit = {
       if (viewChangeListener != null) {
-         cacheManager.removeListener(viewChangeListener)
+         SecurityActions.removeListener(cacheManager, viewChangeListener)
       }
       if (topologyChangeListener != null) {
-         addressCache.removeListener(topologyChangeListener)
+         SecurityActions.removeListener(addressCache, topologyChangeListener)
       }
       if (distributedExecutorService != null) {
          distributedExecutorService.shutdownNow()

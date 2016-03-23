@@ -2,12 +2,12 @@ package org.infinispan.client.hotrod;
 
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.util.CloseableIterator;
-import org.infinispan.commons.util.concurrent.NotifyingFuture;
 import org.infinispan.query.dsl.Query;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -82,7 +82,7 @@ public interface RemoteCache<K, V> extends BasicCache<K, V> {
    /**
     * @see #remove(Object, Object)
     */
-   NotifyingFuture<Boolean> removeWithVersionAsync(K key, long version);
+   CompletableFuture<Boolean> removeWithVersionAsync(K key, long version);
 
    /**
     * Replaces the given value only if its version matches the supplied version.
@@ -145,17 +145,17 @@ public interface RemoteCache<K, V> extends BasicCache<K, V> {
    /**
     * @see #replaceWithVersion(Object, Object, long)
     */
-   NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version);
+   CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version);
 
    /**
     * @see #replaceWithVersion(Object, Object, long)
     */
-   NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds);
+   CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds);
 
    /**
     * @see #replaceWithVersion(Object, Object, long)
     */
-   NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds, int maxIdleSeconds);
+   CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds, int maxIdleSeconds);
 
    /**
     * @see #retrieveEntries(String, Object[], java.util.Set, int)
@@ -195,7 +195,10 @@ public interface RemoteCache<K, V> extends BasicCache<K, V> {
 
    /**
     * Returns the {@link VersionedValue} associated to the supplied key param, or null if it doesn't exist.
+    *
+    * @deprecated Use {@link #getWithMetadata(Object)} instead
     */
+   @Deprecated
    VersionedValue<V> getVersioned(K key);
 
    /**
@@ -263,7 +266,7 @@ public interface RemoteCache<K, V> extends BasicCache<K, V> {
     * @see #putAll(java.util.Map, long, java.util.concurrent.TimeUnit)
     */
    @Override
-   NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> data);
+   CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data);
 
    /**
     * Synthetic operation.
@@ -271,7 +274,7 @@ public interface RemoteCache<K, V> extends BasicCache<K, V> {
     * @see #putAll(java.util.Map, long, java.util.concurrent.TimeUnit)
     */
    @Override
-   NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit unit);
+   CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit unit);
 
    /**
     * Synthetic operation.
@@ -279,7 +282,7 @@ public interface RemoteCache<K, V> extends BasicCache<K, V> {
     * @see #putAll(java.util.Map, long, java.util.concurrent.TimeUnit)
     */
    @Override
-   NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
+   CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
 
    /**
     * Synthetic operation.
@@ -315,13 +318,23 @@ public interface RemoteCache<K, V> extends BasicCache<K, V> {
     * @return the returned values depend on the configuration of the back-end infinispan servers. Read <a
     *         href="http://community.jboss.org/wiki/HotRodBulkGet-Design#Server_side">this</a> for more details. The
     *         returned Map is unmodifiable.
+    *
+    * @deprecated Bulk retrievals can be quite expensive if for large data sets.
+    * Alternatively, the different <code>retrieveEntries*</code> methods offer
+    * lazy, pull-style, methods that retrieve bulk data more efficiently.
     */
+   @Deprecated
    Map<K, V> getBulk();
 
    /**
     * Same as {@link #getBulk()}, but limits the returned set of values to the specified size. No ordering is guaranteed, and there is no
     * guarantee that "size" elements are returned( e.g. if the number of elements in the back-end server is smaller that "size")
+    *
+    * @deprecated Bulk retrievals can be quite expensive if for large data sets.
+    * Alternatively, the different <code>retrieveEntries*</code> methods offer
+    * lazy, pull-style, methods that retrieve bulk data more efficiently.
     */
+   @Deprecated
    Map<K, V> getBulk(int size);
 
    /**

@@ -2,21 +2,12 @@ package org.infinispan.stream.impl.termop.primitive;
 
 import org.infinispan.Cache;
 import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.stream.impl.KeyTrackingTerminalOperation;
-import org.infinispan.stream.impl.intops.IntermediateOperation;
-import org.infinispan.stream.impl.termop.BaseTerminalOperation;
 import org.infinispan.stream.CacheAware;
+import org.infinispan.stream.impl.intops.IntermediateOperation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.DoubleConsumer;
 import java.util.function.Supplier;
-import java.util.stream.BaseStream;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -25,75 +16,20 @@ import java.util.stream.Stream;
  * {@link DoubleStream}. Note this means it is an implied map intermediate operation.
  * @param <K> key type of the supplied stream
  */
-public class ForEachDoubleOperation<K> extends BaseTerminalOperation implements KeyTrackingTerminalOperation<K, Double, K> {
-   private final int batchSize;
+public class ForEachDoubleOperation<K> extends AbstractForEachDoubleOperation<K> {
    private final DoubleConsumer consumer;
 
    public ForEachDoubleOperation(Iterable<IntermediateOperation> intermediateOperations,
            Supplier<Stream<CacheEntry>> supplier, int batchSize, DoubleConsumer consumer) {
-      super(intermediateOperations, supplier);
-      this.batchSize = batchSize;
+      super(intermediateOperations, supplier, batchSize);
       this.consumer = consumer;
    }
 
    @Override
-   public boolean lostSegment(boolean stopIfLost) {
-      // TODO: stop this early
-      return true;
-   }
-
-   @Override
-   public List<Double> performOperation(IntermediateCollector<Collection<Double>> response) {
-      /**
-       * This is for rehash only! {@link org.infinispan.stream.impl.termop.SingleRunOperation} should always be used for
-       * non rehash
-       */
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
-   public Collection<CacheEntry<K, K>> performOperationRehashAware(
-           IntermediateCollector<Collection<CacheEntry<K, K>>> response) {
-      // We only support sequential streams for iterator rehash aware
-      BaseStream<?, ?> stream = supplier.get().sequential();
-
-      List<CacheEntry<K, K>> collectedValues = new ArrayList(batchSize);
-
-      double[] list = new double[batchSize];
-      AtomicInteger offset = new AtomicInteger();
-      Object[] currentKey = new Object[1];
-      stream = ((Stream<Map.Entry<K, ?>>) stream).peek(e -> {
-         if (offset.get() > 0) {
-            collectedValues.add(new ImmortalCacheEntry(currentKey[0], currentKey[0]));
-            if (collectedValues.size() >= batchSize) {
-               for (int i = 0; i < offset.get(); ++i) {
-                  consumer.accept(list[i]);
-               }
-               response.sendDataResonse(collectedValues);
-               collectedValues.clear();
-               offset.set(0);
-            }
-         }
-         currentKey[0] = e.getKey();
-      });
-      for (IntermediateOperation intermediateOperation : intermediateOperations) {
-         stream = intermediateOperation.perform(stream);
+   protected void handleArray(double[] array, int size) {
+      for (int i = 0; i < size; ++i) {
+         consumer.accept(array[i]);
       }
-
-      DoubleStream convertedStream = ((DoubleStream)stream);
-      // We rely on the fact that iterator processes 1 entry at a time when sequential
-      convertedStream.forEach(d -> list[offset.getAndIncrement()] = d);
-      if (offset.get() > 0) {
-         for (int i = 0; i < offset.get(); ++i) {
-            consumer.accept(list[i]);
-         }
-         collectedValues.add(new ImmortalCacheEntry(currentKey[0], currentKey[0]));
-      }
-      return collectedValues;
-   }
-
-   public int getBatchSize() {
-      return batchSize;
    }
 
    public DoubleConsumer getConsumer() {

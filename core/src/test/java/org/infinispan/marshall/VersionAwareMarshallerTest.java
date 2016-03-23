@@ -2,6 +2,7 @@ package org.infinispan.marshall;
 
 import org.infinispan.Cache;
 import org.infinispan.commands.CommandInvocationId;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.versioning.EntryVersionsMap;
 import org.infinispan.metadata.EmbeddedMetadata;
@@ -213,54 +214,42 @@ public class VersionAwareMarshallerTest extends AbstractInfinispanTest {
    public void testReplicableCommandsMarshalling() throws Exception {
       String cacheName = EmbeddedCacheManager.DEFAULT_CACHE_NAME;
       ClusteredGetCommand c2 = new ClusteredGetCommand("key", cacheName,
-            Collections.<Flag>emptySet(), false, null, AnyEquivalence.getInstance());
+                                                       EnumUtil.EMPTY_BIT_SET, false, null, AnyEquivalence.getInstance());
       marshallAndAssertEquality(c2);
 
       // SizeCommand does not have an empty constructor, so doesn't look to be one that is marshallable.
 
-      GetKeyValueCommand c4 = new GetKeyValueCommand("key", Collections.<Flag>emptySet());
-      byte[] bytes = marshaller.objectToByteBuffer(c4);
-      GetKeyValueCommand rc4 = (GetKeyValueCommand) marshaller.objectFromByteBuffer(bytes);
-      assert rc4.getCommandId() == c4.getCommandId() : "Writen[" + c4.getCommandId() + "] and read[" + rc4.getCommandId() + "] objects should be the same";
-      assert Arrays.equals(rc4.getParameters(), c4.getParameters()) : "Writen[" + c4.getParameters() + "] and read[" + rc4.getParameters() + "] objects should be the same";
+      GetKeyValueCommand c4 = new GetKeyValueCommand("key", EnumUtil.EMPTY_BIT_SET);
+      marshallAndAssertEquality(c4);
 
       PutKeyValueCommand c5 = new PutKeyValueCommand("k", "v", false, null,
-            new EmbeddedMetadata.Builder().build(), Collections.<Flag>emptySet(), AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
+            new EmbeddedMetadata.Builder().build(), EnumUtil.EMPTY_BIT_SET, AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
       marshallAndAssertEquality(c5);
 
-      RemoveCommand c6 = new RemoveCommand("key", null, null, Collections.<Flag>emptySet(), AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
+      RemoveCommand c6 = new RemoveCommand("key", null, null, EnumUtil.EMPTY_BIT_SET, AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
       marshallAndAssertEquality(c6);
 
       // EvictCommand does not have an empty constructor, so doesn't look to be one that is marshallable.
 
-      InvalidateCommand c7 = new InvalidateCommand(null, null, CommandInvocationId.generateId(null), "key1", "key2");
-      bytes = marshaller.objectToByteBuffer(c7);
-      InvalidateCommand rc7 = (InvalidateCommand) marshaller.objectFromByteBuffer(bytes);
-      assert rc7.getCommandId() == c7.getCommandId() : "Writen[" + c7.getCommandId() + "] and read[" + rc7.getCommandId() + "] objects should be the same";
-      assert Arrays.equals(rc7.getParameters(), c7.getParameters()) : "Writen[" + c7.getParameters() + "] and read[" + rc7.getParameters() + "] objects should be the same";
+      InvalidateCommand c7 = new InvalidateCommand(null, EnumUtil.EMPTY_BIT_SET, CommandInvocationId.generateId(null), "key1", "key2");
+      marshallAndAssertEquality(c7);
 
-      InvalidateCommand c71 = new InvalidateL1Command(null, null, null, Collections.<Flag>emptySet(), CommandInvocationId.generateId(null), "key1", "key2");
-      bytes = marshaller.objectToByteBuffer(c71);
-      InvalidateCommand rc71 = (InvalidateCommand) marshaller.objectFromByteBuffer(bytes);
-      assert rc71.getCommandId() == c71.getCommandId() : "Writen[" + c71.getCommandId() + "] and read[" + rc71.getCommandId() + "] objects should be the same";
-      assert Arrays.equals(rc71.getParameters(), c71.getParameters()) : "Writen[" + c71.getParameters() + "] and read[" + rc71.getParameters() + "] objects should be the same";
+      InvalidateCommand c71 = new InvalidateL1Command(null, null, null, EnumUtil.EMPTY_BIT_SET, CommandInvocationId.generateId(null), "key1", "key2");
+      marshallAndAssertEquality(c71);
 
       ReplaceCommand c8 = new ReplaceCommand("key", "oldvalue", "newvalue",
-            null, new EmbeddedMetadata.Builder().build(), Collections.EMPTY_SET, AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
+            null, new EmbeddedMetadata.Builder().build(), EnumUtil.EMPTY_BIT_SET, AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
       marshallAndAssertEquality(c8);
 
       ClearCommand c9 = new ClearCommand();
-      bytes = marshaller.objectToByteBuffer(c9);
-      ClearCommand rc9 = (ClearCommand) marshaller.objectFromByteBuffer(bytes);
-      assert rc9.getCommandId() == c9.getCommandId() : "Writen[" + c9.getCommandId() + "] and read[" + rc9.getCommandId() + "] objects should be the same";
-      assert Arrays.equals(rc9.getParameters(), c9.getParameters()) : "Writen[" + c9.getParameters() + "] and read[" + rc9.getParameters() + "] objects should be the same";
+      marshallAndAssertEquality(c9);
 
       Map<Integer, GlobalTransaction> m1 = new HashMap<Integer, GlobalTransaction>();
       for (int i = 0; i < 10; i++) {
          GlobalTransaction gtx = gtf.newGlobalTransaction(new JGroupsAddress(new IpAddress(1000 * i)), false);
          m1.put(1000 * i, gtx);
       }
-      PutMapCommand c10 = new PutMapCommand(m1, null, new EmbeddedMetadata.Builder().build(), Collections.<Flag>emptySet(), CommandInvocationId.generateId(null));
+      PutMapCommand c10 = new PutMapCommand(m1, null, new EmbeddedMetadata.Builder().build(), EnumUtil.EMPTY_BIT_SET, CommandInvocationId.generateId(null));
       marshallAndAssertEquality(c10);
 
       Address local = new JGroupsAddress(new IpAddress(12345));
@@ -328,9 +317,9 @@ public class VersionAwareMarshallerTest extends AbstractInfinispanTest {
    public void testMultiRpcCommand() throws Exception {
       String cacheName = EmbeddedCacheManager.DEFAULT_CACHE_NAME;
       ClusteredGetCommand c2 = new ClusteredGetCommand("key", cacheName,
-            Collections.<Flag>emptySet(), false, null, AnyEquivalence.getInstance());
+            EnumUtil.EMPTY_BIT_SET, false, null, AnyEquivalence.getInstance());
       PutKeyValueCommand c5 = new PutKeyValueCommand(
-            "k", "v", false, null, new EmbeddedMetadata.Builder().build(), Collections.<Flag>emptySet(), AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
+            "k", "v", false, null, new EmbeddedMetadata.Builder().build(), EnumUtil.EMPTY_BIT_SET, AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
       MultipleRpcCommand c99 = new MultipleRpcCommand(Arrays.<ReplicableCommand>asList(c2, c5), cacheName);
       marshallAndAssertEquality(c99);
    }
@@ -374,7 +363,7 @@ public class VersionAwareMarshallerTest extends AbstractInfinispanTest {
    public void testLongPutKeyValueCommand() throws Exception {
       PutKeyValueCommand c = new PutKeyValueCommand(
             "SESSION_173", "@TSXMHVROYNOFCJVEUJQGBCENNQDEWSCYSOHECJOHEICBEIGJVTIBB@TVNCWLTQCGTEJ@NBJLTMVGXCHXTSVE@BCRYGWPRVLXOJXBRJDVNBVXPRTRLBMHPOUYQKDEPDSADUAWPFSIOCINPSSFGABDUXRMTMMJMRTGBGBOAMGVMTKUDUAJGCAHCYW@LAXMDSFYOSXJXLUAJGQKPTHUKDOXRWKEFIVRTH@VIMQBGYPKWMS@HPOESTPIJE@OTOTWUWIOBLYKQQPTNGWVLRRCWHNIMWDQNOO@JHHEVYVQEODMWKFKKKSWURVDLXPTFQYIHLIM@GSBFWMDQGDQIJONNEVHGQTLDBRBML@BEWGHOQHHEBRFUQSLB@@CILXEAVQQBTXSITMBXHMHORHLTJF@MKMHQGHTSENWILTAKCCPVSQIPBVRAFSSEXIOVCPDXHUBIBUPBSCGPRECXEPMQHRHDOHIHVBPNDKOVLPCLKAJMNOTSF@SRXYVUEMQRCXVIETXVHOVNGYERBNM@RIMGHC@FNTUXSJSKALGHAFHGTFEANQUMBPUYFDSGLUYRRFDJHCW@JBWOBGMGTITAICRC@TPVCRKRMFPUSRRAHI@XOYKVGPHEBQD@@APEKSBCTBKREWAQGKHTJ@IHJD@YFSRDQPA@HKKELIJGFDYFEXFCOTCQIHKCQBLVDFHMGOWIDOWMVBDSJQOFGOIAPURRHVBGEJWYBUGGVHE@PU@NMQFMYTNYJDWPIADNVNCNYCCCPGODLAO@YYLVITEMNNKIFSDXKORJYWMFGKNYFPUQIC@AIDR@IWXCVALQBDOXRWIBXLKYTWDNHHSCUROAU@HVNENDAOP@RPTRIGLLLUNDQIDXJDDNF@P@PA@FEIBQKSKFQITTHDYGQRJMWPRLQC@NJVNVSKGOGYXPYSQHKPALKLFWNAOSQFTLEPVOII@RPDNRCVRDUMMFIVSWGIASUBMTGQSDGB@TBBYECFBRBGILJFCJ@JIQIQRVJXWIPGNVXKYATSPJTIPGCMCNPOKNEHBNUIAEQFQTYVLGAR@RVWVA@RMPBX@LRLJUEBUWO@PKXNIP@FKIQSVWKNO@FOJWDSIOLXHXJFBQPPVKKP@YKXPOOMBTLXMEHPRLLSFSVGMPXXNBCYVVSPNGMFBJUDCVOVGXPKVNTOFKVJUJOSDHSCOQRXOKBVP@WCUUFGMJAUQ@GRAGXICFCFICBSNASUBPAFRIPUK@OXOCCNOGTTSFVQKBQNB@DWGVEFSGTAXAPLBJ@SYHUNXWXPMR@KPFAJCIXPDURELFYPMUSLTJSQNDHHKJTIWCGNEKJF@CUWYTWLPNHYPHXNOGLSICKEFDULIXXSIGFMCQGURSRTUJDKRXBUUXIDFECMPXQX@CVYLDABEMFKUGBTBNMNBPCKCHWRJKSOGJFXMFYLLPUVUHBCNULEFAXPVKVKQKYCEFRUYPBRBDBDOVYLIQMQBLTUK@PRDCYBOKJGVUADFJFAFFXKJTNAJTHISWOSMVAYLIOGIORQQWFAKNU@KHPM@BYKTFSLSRHBATQTKUWSFAQS@Y@QIKCUWQYTODBRCYYYIAFMDVRURKVYJXHNGVLSQQFCXKLNUPCTEJSWIJUBFELSBUHANELHSIWLVQSSAIJRUEDOHHX@CKEBPOJRLRHEPLENSCDGEWXRTVUCSPFSAJUXDJOIUWFGPKHBVRVDMUUCPUDKRKVAXPSOBOPKPRRLFCKTLH@VGWKERASJYU@JAVWNBJGQOVF@QPSGJVEPAV@NAD@@FQRYPQIOAURILWXCKINPMBNUHPUID@YDQBHWAVDPPWRFKKGWJQTI@@OPSQ@ROUGHFNHCJBDFCHRLRTEMTUBWVCNOPYXKSSQDCXTOLOIIOCXBTPAUYDICFIXPJRB@CHFNXUCXANXYKXAISDSSLJGQOLBYXWHG@@KPARPCKOXAYVPDGRW@LDCRQBNMJREHWDYMXHEXAJQKHBIRAVHJQIVGOIXNINYQMJBXKM@DXESMBHLKHVSFDLVPOSOVMLHPSHQYY@DNMCGGGAJMHPVDLBGJP@EVDGLYBMD@NWHEYTBPIBPUPYOPOJVV@IVJXJMHIWWSIRKUWSR@U@@TDVMG@GRXVLCNEIISEVIVPOMJHKOWMRMITYDUQASWJIKVNYUFQVDT@BHTOMFXVFRKAARLNOGX@ADWCKHOVEMIGBWXINCUXEMVHSJJQDU@INTHDJQPSAQNAYONDBBFYGBTNGUSJHRKLCPHQMNLDHUQJPLLCDVTYLXTHJCBUXCRDY@YI@IQDCLJBBJC@NXGANXFIWPPNFVTDJWQ@@BIYJONOFP@RHTQEYPVHPPUS@UUENSNNF@WVGTSAVKDSQNMHP@VJORGTVWXVBPWKQNRWLSQFSBMXQKWRYMXPAYREXYGONKEWJMBCSLB@KSHXMIWMSBDGQWPDMUGVNMEWKMJKQECIRRVXBPBLGAFTUFHYSHLF@TGYETMDXRFAXVEUBSTGLSMWJMXJWMDPPDAFGNBMTQEMBDLRASMUMU@QTCDCPEGODHESDQVEIQYBJJPFXDLWPUNFAREYCY@YDDSTMKWCANNPXF@@WLMEXRPUNTWNOX@YKFNNTGMXIBBDA@TYLPJFNFHPQKMSNCLBME@FBPOIYNSDFBLHITKIFEFNXXOJAAFMRTGPALOANXF@YPY@RYTVOW@AKNM@C@LJKGBJMUYGGTXRHQCPOLNOGPPS@YSKAJSTQHLRBXUACXJYBLJSEHDNMLLUBSOIHQUI@VUNF@XAVRXUCYNCBDDGUDNVRYP@TPFPKGVNPTEDOTTUUFKCHQ@WWASQXLCBHNRBVSD@NVYT@GJQYSQGYPJO@WSEYDVKCBWANAFUWLDXOQYCYP@BSJFCBTXGKUNWLWUCYL@TNOWGDFHQTWQVYLQBBRQVMGNDBVXEFXTMMVYSHNVTTQAJCHKULOAJUSGJRPHQFCROWE@OMFUVRKGCWED@IAQGRLADOJGQKLCL@FCKTSITGMJRCCMPLOS@ONPQWFUROXYAUJQXIYVDCYBPYHPYCXNCRKRKLATLWWXLBLNOPUJFUJEDOIRKS@MMYPXIJNXPFOQJCHSCBEBGDUQYXQAWEEJDOSINXYLDXUJCQECU@WQSACTDFLGELHPGDFVDXFSSFOSYDLHQFVJESNAVAHKTUPBTPLSFSHYKLEXJXGWESVQQUTUPU@QXRTIDQ@IXBBOYINNHPEMTPRVRNJPQJFACFXUBKXOFHQSPOTLCQ@PLWGEFNKYCYFMKWPFUP@GLHKNMASGIENCACUISTG@YNQCNSOSBKOIXORKSHEOXHSMJJRUICJTCK@PWFRBPLXU@MUEMPFGDLUJEKD@ROUFBLKATXUCHEAQHEYDLCFDIRJSAXTV@CYMPQNMLTMFAHPRBLNSCVFBJMKQLAHWYIOLRMTOY@@RNKTUXHFYUMHGKCCGNEOIOQCISJEHCEVTTWM@TLFRIFDREHFBTTDEJRUNTWAEETGSVDOR@@UQNKFERMBVFJBOAYHPOKMSMRIERDA@JXYSJ@ORER@MBAVWCVGFNA@FRRPQSIIOIUGAJKVQXGINUUKPJPLQRMHPUBETEEIMIBPM@PETR@XD@DOHGRIBVXKLXQWHUFMTWEDYWFWRLPGDS@TANUXGIDTRVXKVCVEXYRKXQCTI@WNSFRAHJJGG@NIPPAAOJXQRTCLBYKDA@FFGHNUIGBFKOQMEDUEFELFLNKPCHA@OXJJRYNPDFSXIFSJYTDMSSBHDPUSQQDAVD@JAAWJDSVTERAJBFEPVRWKMYAPISPWLDPSRE@UMRQLXERTWRDLQVMVCOM@NYPXFLWMWKALMQVNJ@HCTMMIOLRWBJHCYFLMM@IWXPSHRRUNICSSWHOQHUVJE@HKJAADLBTPVLDAKCHRSURJCAXYTMYKHQMWDAWWASUW@HWGBVPTRHJGDWOGHPCNWSXTNKWONQGEKDDWGCKWVSAD@YLCCENMCHALHVDYQW@NQGNCY@M@GGV@RIR@OUS@PQIJMCFEIMGPYBXYR@NSIAUEXT@MOCNWRMLYHUUAFJCCLLRNFGKLPPIIH@BYRME@UJAKIFHOV@ILP@BGXRNJBIBARSOIMTDSHMGPIGRJBGHYRYXPFUHVOOMCQFNLM@CNCBTGO@UKXBOICNVCRGHADYQVAMNSFRONJ@WITET@BSHMQLWYMVGMQJVSJOXOUJDSXYVVBQJSVGREQLIQKWC@BMDNONHXFYPQENSJINQYKHVCTUTG@QQYJKJURDCKJTUQAM@DWNXWRNILYVAAJ@IADBIXKEIHVXLXUVMGQPAQTWJCDMVDVYUDTXQTCYXDPHKBAGMTAMKEM@QNOQJBREXNWFCXNXRPGOGEIR@KQJIGXAWXLTNCX@ID@XNRNYGRF@QPNWEX@XH@XKSXLQTLQPFSHAHXJLHUTNQWFFAJYHBWIFVJELDPSPLRRDPPNXSBYBEREEELIWNVYXOXYJQAIGHALUAWNUSSNMBHBFLRMMTKEKNSINECUGWTDNMROXI@BJJXKSPIIIXOAJBFVSITQDXTODBGKEPJMWK@JOL@SWTCGSHCOPHECTPJFUXIHUOSVMUTNNSLLJDEOMAGIXEAAVILRMOJXVHHPNPUYYODMXYAYGHI@BUB@NLP@KNPCYFRWAFES@WISBACDSPELEVTJEBNRVENSXXEVDVC@RIDIDSBPQIQNNSRPS@HCJ@XPIOFDXHUBCNFQKHMUYLXW@LMFMALHLESSXCOULRWDTJIVKKTLGFE@HKGVKUGMVHWACQOTSVNWBNUUGTMSQEJ@DXJQQYPOWVRQNQKXSLOEAA@@FRDCGCCQWQ@IY@EATGQGQIETPIJHOIQRYWLTGUENQYDNQSBI@IAUDEWDKICHNUGNAIXNICMBK@CJGSASMTFKWOBSI@KULNENWXV@VNFOANM@OJHFVV@IYRMDB@LHSGXIJMMFCGJKTKDXSMY@FHDNY@VSDUORGWVFMVKJXOCCDLSLMHCSXFBTW@RQTFNRDJUIKRD@PWPY",
-            false, null, new EmbeddedMetadata.Builder().build(), Collections.<Flag>emptySet(), AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
+            false, null, new EmbeddedMetadata.Builder().build(), EnumUtil.EMPTY_BIT_SET, AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
       marshallAndAssertEquality(c);
    }
 
@@ -451,7 +440,7 @@ public class VersionAwareMarshallerTest extends AbstractInfinispanTest {
    public void testNestedNonSerializable() throws Exception {
       PutKeyValueCommand cmd = new PutKeyValueCommand(
             "k", new Object(), false, null, new EmbeddedMetadata.Builder().build(),
-            Collections.<Flag>emptySet(), AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
+            EnumUtil.EMPTY_BIT_SET, AnyEquivalence.getInstance(), CommandInvocationId.generateId(null));
       try {
          marshaller.objectToByteBuffer(cmd);
       } catch (NotSerializableException e) {
@@ -572,6 +561,14 @@ public class VersionAwareMarshallerTest extends AbstractInfinispanTest {
       byte[] bytes = marshaller.objectToByteBuffer(writeObj);
       log.debugf("Payload size for object=%s : %s", writeObj, bytes.length);
       Object readObj = marshaller.objectFromByteBuffer(bytes);
+      assert readObj.equals(writeObj) : "Writen[" + writeObj + "] and read[" + readObj + "] objects should be the same";
+   }
+
+   protected void marshallAndAssertEquality(ReplicableCommand writeObj) throws Exception {
+      byte[] bytes = marshaller.objectToByteBuffer(writeObj);
+      log.debugf("Payload size for object=%s : %s", writeObj, bytes.length);
+      ReplicableCommand readObj = (ReplicableCommand) marshaller.objectFromByteBuffer(bytes);
+      assert readObj.getCommandId() == writeObj.getCommandId() : "Writen[" + writeObj.getCommandId() + "] and read[" + readObj.getCommandId() + "] objects should be the same";
       assert readObj.equals(writeObj) : "Writen[" + writeObj + "] and read[" + readObj + "] objects should be the same";
    }
 

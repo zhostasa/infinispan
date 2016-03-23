@@ -14,21 +14,19 @@ import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.remoting.transport.jgroups.SingleResponseFuture;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
-import org.infinispan.util.SerializableFunction;
-import org.infinispan.util.SerializableRunnable;
-import org.infinispan.util.TriConsumer;
+import org.infinispan.util.function.SerializableFunction;
+import org.infinispan.util.function.SerializableRunnable;
+import org.infinispan.util.function.TriConsumer;
 import org.infinispan.util.concurrent.CompletableFutures;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.jgroups.blocks.ResponseMode;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -233,12 +231,9 @@ public class ClusterExecutorImpl implements ClusterExecutor {
                                                      TriConsumer<? super Address, ? super V, ? super Throwable> triConsumer) {
       CompletableFuture<V> localFuture = startLocalInvocation(function);
       if (localFuture != null) {
-         localFuture.whenComplete((r, t) -> {
-              if (t != null) {
-                 triConsumer.accept(me, null, t);
-              } else {
-                 triConsumer.accept(me, r, null);
-              }
+         localFuture = localFuture.handle((r, t) -> {
+            triConsumer.accept(me, r, t);
+            return null;
          });
       }
       List<org.jgroups.Address> targets = getJGroupsTargets();
@@ -253,7 +248,7 @@ public class ClusterExecutorImpl implements ClusterExecutor {
             }
             SingleResponseFuture srf = card.invokeRemoteCommand(target, new ReplicableCommandManagerFunction(function),
                     ResponseMode.GET_ALL, unit.toMillis(time), DeliverOrder.NONE);
-            futures[i] = srf.whenComplete((r, t) -> {
+            futures[i] = srf.handle((r, t) -> {
                if (t != null) {
                   triConsumer.accept(JGroupsAddressCache.fromJGroupsAddress(r.getSender()), null, t);
                } else if (r.wasReceived()) {
@@ -279,10 +274,11 @@ public class ClusterExecutorImpl implements ClusterExecutor {
                   // We throw it so it is propagated to the parent CompletableFuture
                   throw new TimeoutException();
                }
+               return null;
             });
          }
          CompletableFuture<Void> remoteFutures = CompletableFuture.allOf(futures);
-         return localFuture != null ? localFuture.handle((r, t) -> null).thenCombine(remoteFutures, (t, u) -> null) : remoteFutures;
+         return localFuture != null ? localFuture.thenCombine(remoteFutures, (t, u) -> null) : remoteFutures;
       } else if (localFuture != null) {
          return localFuture.handle((r, t) -> null);
       } else {

@@ -1,7 +1,5 @@
 package org.infinispan.commands;
 
-import java.util.Map;
-
 import org.infinispan.commands.control.LockControlCommand;
 import org.infinispan.commands.functional.ReadWriteKeyCommand;
 import org.infinispan.commands.functional.ReadWriteKeyValueCommand;
@@ -15,8 +13,6 @@ import org.infinispan.commands.module.ModuleCommandFactory;
 import org.infinispan.commands.read.DistributedExecuteCommand;
 import org.infinispan.commands.read.GetCacheEntryCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
-import org.infinispan.commands.read.MapCombineCommand;
-import org.infinispan.commands.read.ReduceCommand;
 import org.infinispan.commands.remote.CacheRpcCommand;
 import org.infinispan.commands.remote.ClusteredGetAllCommand;
 import org.infinispan.commands.remote.ClusteredGetCommand;
@@ -53,8 +49,6 @@ import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
-import org.infinispan.iteration.impl.EntryRequestCommand;
-import org.infinispan.iteration.impl.EntryResponseCommand;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.impl.ReplicableCommandManagerFunction;
 import org.infinispan.manager.impl.ReplicableCommandRunnable;
@@ -68,6 +62,8 @@ import org.infinispan.xsite.SingleXSiteRpcCommand;
 import org.infinispan.xsite.XSiteAdminCommand;
 import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
 import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
+
+import java.util.Map;
 
 /**
  * Specifically used to create un-initialized {@link org.infinispan.commands.ReplicableCommand}s from a byte stream.
@@ -105,11 +101,10 @@ public class RemoteCommandsFactory {
     *
     *
     * @param id id of the command
-    * @param parameters parameters to set
     * @param type type of the command
     * @return a replicable command
     */
-   public ReplicableCommand fromStream(byte id, Object[] parameters, byte type) {
+   public ReplicableCommand fromStream(byte id, byte type) {
       ReplicableCommand command;
       if (type == 0) {
          switch (id) {
@@ -188,7 +183,7 @@ public class RemoteCommandsFactory {
       } else {
          ModuleCommandFactory mcf = commandFactories.get(id);
          if (mcf != null)
-            return mcf.fromStream(id, parameters);
+            return mcf.fromStream(id);
          else
             throw new CacheException("Unknown command id " + id + "!");
       }
@@ -199,12 +194,11 @@ public class RemoteCommandsFactory {
     * Resolve an {@link CacheRpcCommand} from the stream.
     *
     * @param id            id of the command
-    * @param parameters    parameters to be set
     * @param type          type of command (whether internal or user defined)
     * @param cacheName     cache name at which this command is directed
     * @return              an instance of {@link CacheRpcCommand}
     */
-   public CacheRpcCommand fromStream(byte id, Object[] parameters, byte type, String cacheName) {
+   public CacheRpcCommand fromStream(byte id, byte type, String cacheName) {
       CacheRpcCommand command;
       if (type == 0) {
          switch (id) {
@@ -265,12 +259,6 @@ public class RemoteCommandsFactory {
             case GetInDoubtTransactionsCommand.COMMAND_ID:
                command = new GetInDoubtTransactionsCommand(cacheName);
                break;
-            case MapCombineCommand.COMMAND_ID:
-               command = new MapCombineCommand(cacheName);
-               break;
-            case ReduceCommand.COMMAND_ID:
-               command = new ReduceCommand(cacheName);
-               break;
             case DistributedExecuteCommand.COMMAND_ID:
                command = new DistributedExecuteCommand(cacheName);
                break;
@@ -298,12 +286,6 @@ public class RemoteCommandsFactory {
             case SingleXSiteRpcCommand.COMMAND_ID:
                command = new SingleXSiteRpcCommand(cacheName);
                break;
-            case EntryRequestCommand.COMMAND_ID:
-               command = new EntryRequestCommand(cacheName);
-               break;
-            case EntryResponseCommand.COMMAND_ID:
-               command = new EntryResponseCommand(cacheName);
-               break;
             case ClusteredGetAllCommand.COMMAND_ID:
                command = new ClusteredGetAllCommand(cacheName);
                break;
@@ -322,7 +304,7 @@ public class RemoteCommandsFactory {
       } else {
          ModuleCommandFactory mcf = commandFactories.get(id);
          if (mcf != null)
-            return mcf.fromStream(id, parameters, cacheName);
+            return mcf.fromStream(id, cacheName);
          else
             throw new CacheException("Unknown command id " + id + "!");
       }

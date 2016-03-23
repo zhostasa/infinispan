@@ -1,20 +1,43 @@
 package org.infinispan;
 
+import org.infinispan.util.function.SerializableBiConsumer;
+import org.infinispan.util.function.SerializableBiFunction;
+import org.infinispan.util.function.SerializableBinaryOperator;
+import org.infinispan.util.function.SerializableComparator;
+import org.infinispan.util.function.SerializableConsumer;
+import org.infinispan.util.function.SerializableFunction;
+import org.infinispan.util.function.SerializableIntFunction;
+import org.infinispan.util.function.SerializablePredicate;
+import org.infinispan.util.function.SerializableSupplier;
+import org.infinispan.util.function.SerializableToDoubleFunction;
+import org.infinispan.util.function.SerializableToIntFunction;
+import org.infinispan.util.function.SerializableToLongFunction;
+
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 /**
- * A {@link Stream} that has additional operations to monitor or control behavior when used from a {@link Cache}.  Note that
- * you may only use these additional methods on the CacheStream before any intermediate operations are performed as
- * a {@link Stream} is returned from those methods.
+ * A {@link Stream} that has additional operations to monitor or control behavior when used from a {@link Cache}.
  *
  * <p>Whenever the iterator or spliterator methods are used the user <b>must</b> close the {@link Stream}
  * that the method was invoked on after completion of its operation.  Failure to do so may cause a thread leakage if
@@ -180,10 +203,40 @@ public interface CacheStream<R> extends Stream<R> {
     * wish to have a parallel variant you can use {@link java.util.stream.StreamSupport#stream(Spliterator, boolean)}
     * passing in the spliterator from the stream.  In either case remember you <b>must</b> close the stream after
     * you are done processing the iterator or spliterator..</p>
-    * @param action
+    * @param action consumer to be ran for each element in the stream
     */
    @Override
    void forEach(Consumer<? super R> action);
+
+   /**
+    * Same as {@link CacheStream#forEach(Consumer)} except that the Consumer must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param action consumer to be ran for each element in the stream
+    */
+   void forEach(SerializableConsumer<? super R> action);
+
+   /**
+    * Same as {@link CacheStream#forEach(Consumer)} except that it takes a {@link BiConsumer} that provides access
+    * to the underlying {@link Cache} that is backing this stream.
+    * <p>
+    * Note that the <code>CacheAware</code> interface is not supported for injection using this method as the cache
+    * is provided in the consumer directly.
+    * @param action consumer to be ran for each element in the stream
+    * @param <K> key type of the cache
+    * @param <V> value type of the cache
+    */
+   <K, V> void forEach(BiConsumer<Cache<K, V>, ? super R> action);
+
+   /**
+    * Same as {@link CacheStream#forEach(BiConsumer)} except that the <code>BiConsumer</code> must also implement
+    * <code>Serializable</code>
+    * @param action consumer to be ran for each element in the stream
+    * @param <K> key type of the cache
+    * @param <V> value type of the cache
+    */
+   <K, V> void forEach(SerializableBiConsumer<Cache<K, V>, ? super R> action);
 
    /**
     * {@inheritDoc}
@@ -220,7 +273,7 @@ public interface CacheStream<R> extends Stream<R> {
     * @return the new stream
     */
    @Override
-   Stream<R> sorted();
+   CacheStream<R> sorted();
 
    /**
     * {@inheritDoc}
@@ -233,7 +286,18 @@ public interface CacheStream<R> extends Stream<R> {
     * @return the new stream
     */
    @Override
-   Stream<R> sorted(Comparator<? super R> comparator);
+   CacheStream<R> sorted(Comparator<? super R> comparator);
+
+   /**
+    * Same as {@link CacheStream#sorted(Comparator)} except that the Comparator must
+    * also implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param comparator a non-interfering, stateless
+    *                   {@code Comparator} to be used to compare stream elements
+    * @return the new stream
+    */
+   CacheStream<R> sorted(SerializableComparator<? super R> comparator);
 
    /**
     * {@inheritDoc}
@@ -247,7 +311,7 @@ public interface CacheStream<R> extends Stream<R> {
     * @return the new stream
     */
    @Override
-   Stream<R> limit(long maxSize);
+   CacheStream<R> limit(long maxSize);
 
    /**
     * {@inheritDoc}
@@ -261,7 +325,31 @@ public interface CacheStream<R> extends Stream<R> {
     * @return the new stream
     */
    @Override
-   Stream<R> skip(long n);
+   CacheStream<R> skip(long n);
+
+   /**
+    * {@inheritDoc}
+    * <p>This operation is performed entirely on the local node irrespective of the backing cache.  This
+    * operation will act as an intermediate iterator operation requiring data be brought locally for proper behavior.
+    * This is described in more detail in the {@link CacheStream} documentation</p>
+    * <p>Depending on the terminal operator this may or may not require all entries or a subset after skip is applied
+    * to be in memory all at once.</p>
+    * <p>Any subsequent intermediate operations and the terminal operation are then performed locally.</p>
+    * @param  action the action to perform on this node locally for each entry
+    * @return the new stream
+    */
+   @Override
+   CacheStream<R> peek(Consumer<? super R> action);
+
+   /**
+    * Same as {@link CacheStream#peek(Consumer)} except that the Consumer must also implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param action a non-interfering action to perform on the elements as
+    *                 they are consumed from the stream
+    * @return the new stream
+    */
+   CacheStream<R> peek(SerializableConsumer<? super R> action);
 
    /**
     * {@inheritDoc}
@@ -274,7 +362,7 @@ public interface CacheStream<R> extends Stream<R> {
     * @return the new stream
     */
    @Override
-   Stream<R> distinct();
+   CacheStream<R> distinct();
 
    /**
     * {@inheritDoc}
@@ -291,4 +379,340 @@ public interface CacheStream<R> extends Stream<R> {
     */
    @Override
    <R1, A> R1 collect(Collector<? super R, A, R1> collector);
+
+   /**
+    * Same as {@link CacheStream#collect(Supplier, BiConsumer, BiConsumer)} except that the various arguments must
+    * also implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param <R1> type of the result
+    * @param supplier a function that creates a new result container. For a
+    *                 parallel execution, this function may be called
+    *                 multiple times and must return a fresh value each time.
+    *                 Must be serializable
+    * @param accumulator an associative, non-interfering, stateless
+    *                    function for incorporating an additional element into a result and
+    *                    must be serializable
+    * @param combiner an associative, non-interfering, stateless
+    *                    function for combining two values, which must be
+    *                    compatible with the accumulator function and serializable
+    * @return the result of the reduction
+    */
+   <R1> R1 collect(SerializableSupplier<R1> supplier, SerializableBiConsumer<R1, ? super R> accumulator,
+           SerializableBiConsumer<R1, R1> combiner);
+
+   /**
+    * Same as {@link CacheStream#allMatch(Predicate)} except that the Predicate must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param predicate a non-interfering, stateless
+    *                  predicate to apply to elements of this stream that is serializable
+    * @return {@code true} if either all elements of the stream match the
+    * provided predicate or the stream is empty, otherwise {@code false}
+    */
+   boolean allMatch(SerializablePredicate<? super R> predicate);
+
+   /**
+    * Same as {@link CacheStream#noneMatch(Predicate)} except that the Predicate must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param predicate a non-interfering, stateless
+    *                  predicate to apply to elements of this stream that is serializable
+    * @return {@code true} if either no elements of the stream match the
+    * provided predicate or the stream is empty, otherwise {@code false}
+    */
+   boolean noneMatch(SerializablePredicate<? super R> predicate);
+
+   /**
+    * Same as {@link CacheStream#anyMatch(Predicate)} except that the Predicate must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param predicate a non-interfering, stateless
+    *                  predicate to apply to elements of this stream that is serializable
+    * @return {@code true} if any elements of the stream match the provided
+    * predicate, otherwise {@code false}
+    */
+   boolean anyMatch(SerializablePredicate<? super R> predicate);
+
+   /**
+    * Same as {@link CacheStream#max(Comparator)} except that the Comparator must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param comparator a non-interfering, stateless
+    *                   {@code Comparator} to compare elements of this stream that is also serializable
+    * @return an {@code Optional} describing the maximum element of this stream,
+    * or an empty {@code Optional} if the stream is empty
+    */
+   Optional<R> max(SerializableComparator<? super R> comparator);
+
+   /**
+    * Same as {@link CacheStream#min(Comparator)} except that the Comparator must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param comparator a non-interfering, stateless
+    *                   {@code Comparator} to compare elements of this stream that is also serializable
+    * @return an {@code Optional} describing the minimum element of this stream,
+    * or an empty {@code Optional} if the stream is empty
+    */
+   Optional<R> min(SerializableComparator<? super R> comparator);
+
+   /**
+    * Same as {@link CacheStream#reduce(BinaryOperator)} except that the BinaryOperator must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param accumulator an associative, non-interfering, stateless
+    *                    function for combining two values that is also serializable
+    * @return an {@link Optional} describing the result of the reduction
+    */
+   Optional<R> reduce(SerializableBinaryOperator<R> accumulator);
+
+   /**
+    * Same as {@link CacheStream#reduce(Object, BinaryOperator)}  except that the BinaryOperator must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param identity the identity value for the accumulating function
+    * @param accumulator an associative, non-interfering, stateless
+    *                    function for combining two values that is also serializable
+    * @return the result of the reduction
+    */
+   R reduce(R identity, SerializableBinaryOperator<R> accumulator);
+
+   /**
+    * Same as {@link CacheStream#reduce(Object, BiFunction, BinaryOperator)} except that the BinaryOperator must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param <U> The type of the result
+    * @param identity the identity value for the combiner function
+    * @param accumulator an associative, non-interfering, stateless
+    *                    function for incorporating an additional element into a result  that is also serializable
+    * @param combiner an associative, non-interfering, stateless
+    *                    function for combining two values, which must be
+    *                    compatible with the accumulator function that is also serializable
+    * @return the result of the reduction
+    */
+   <U> U reduce(U identity, SerializableBiFunction<U, ? super R, U> accumulator, SerializableBinaryOperator<U> combiner);
+
+   /**
+    * Same as {@link CacheStream#toArray(IntFunction)} except that the BinaryOperator must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param <A> the element type of the resulting array
+    * @param generator a function which produces a new array of the desired
+    *                  type and the provided length that is also serializable
+    * @return an array containing the elements in this stream
+    */
+   <A> A[] toArray(SerializableIntFunction<A[]> generator);
+
+   /**
+    * {@inheritDoc}
+    * @return the new cache stream
+    */
+   @Override
+   CacheStream<R> filter(Predicate<? super R> predicate);
+
+   /**
+    * Same as {@link CacheStream#filter(Predicate)} except that the Predicate must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param predicate a non-interfering, stateless
+    *                  predicate to apply to each element to determine if it
+    *                  should be included
+    * @return the new cache stream
+    */
+   CacheStream<R> filter(SerializablePredicate<? super R> predicate);
+
+   /**
+    * {@inheritDoc}
+    * @return the new cache stream
+    */
+   @Override
+   <R1> CacheStream<R1> map(Function<? super R, ? extends R1> mapper);
+
+   /**
+    * Same as {@link CacheStream#map(Function)} except that the Function must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param <R1> The element type of the new stream
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element
+    * @return the new cache stream
+    */
+   <R1> CacheStream<R1> map(SerializableFunction<? super R, ? extends R1> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element
+    * @return the new double cache stream
+    */
+   @Override
+   DoubleCacheStream mapToDouble(ToDoubleFunction<? super R> mapper);
+
+   /**
+    * Same as {@link CacheStream#mapToDouble(ToDoubleFunction)}  except that the ToDoubleFunction must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element
+    * @return the new stream
+    */
+   DoubleCacheStream mapToDouble(SerializableToDoubleFunction<? super R> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element
+    * @return the new int cache stream
+    */
+   @Override
+   IntCacheStream mapToInt(ToIntFunction<? super R> mapper);
+
+   /**
+    * Same as {@link CacheStream#mapToInt(ToIntFunction)}  except that the ToIntFunction must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element
+    * @return the new stream
+    */
+   IntCacheStream mapToInt(SerializableToIntFunction<? super R> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element
+    * @return the new long cache stream
+    */
+   @Override
+   LongCacheStream mapToLong(ToLongFunction<? super R> mapper);
+
+   /**
+    * Same as {@link CacheStream#mapToLong(ToLongFunction)}  except that the ToLongFunction must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element
+    * @return the new stream
+    */
+   LongCacheStream mapToLong(SerializableToLongFunction<? super R> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @return the new cache stream
+    */
+   @Override
+   <R1> CacheStream<R1> flatMap(Function<? super R, ? extends Stream<? extends R1>> mapper);
+
+   /**
+    * Same as {@link CacheStream#flatMap(Function)} except that the Function must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param <R1> The element type of the new stream
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element which produces a stream
+    *               of new values
+    * @return the new cache stream
+    */
+   <R1> CacheStream<R1> flatMap(SerializableFunction<? super R, ? extends Stream<? extends R1>> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @return the new cache stream
+    */
+   @Override
+   DoubleCacheStream flatMapToDouble(Function<? super R, ? extends DoubleStream> mapper);
+
+   /**
+    * Same as {@link CacheStream#flatMapToDouble(Function)} except that the Function must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element which produces a stream
+    *               of new values
+    * @return the new stream
+    */
+   DoubleCacheStream flatMapToDouble(SerializableFunction<? super R, ? extends DoubleStream> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @return the new cache stream
+    */
+   @Override
+   IntCacheStream flatMapToInt(Function<? super R, ? extends IntStream> mapper);
+
+   /**
+    * Same as {@link CacheStream#flatMapToInt(Function)} except that the Function must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element which produces a stream
+    *               of new values
+    * @return the new stream
+    */
+   IntCacheStream flatMapToInt(SerializableFunction<? super R, ? extends IntStream> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @return the new cache stream
+    */
+   @Override
+   LongCacheStream flatMapToLong(Function<? super R, ? extends LongStream> mapper);
+
+   /**
+    * Same as {@link CacheStream#flatMapToLong(Function)} except that the Function must also
+    * implement <code>Serializable</code>
+    * <p>
+    * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
+    * @param mapper a non-interfering, stateless
+    *               function to apply to each element which produces a stream
+    *               of new values
+    * @return the new stream
+    */
+   LongCacheStream flatMapToLong(SerializableFunction<? super R, ? extends LongStream> mapper);
+
+   /**
+    * {@inheritDoc}
+    * @return a parallel cache stream
+    */
+   @Override
+   CacheStream<R> parallel();
+
+   /**
+    * {@inheritDoc}
+    * @return a sequential cache stream
+    */
+   @Override
+   CacheStream<R> sequential();
+
+   /**
+    * {@inheritDoc}
+    * @return an unordered cache stream
+    */
+   @Override
+   CacheStream<R> unordered();
+
+   /**
+    * {@inheritDoc}
+    * @param closeHandler
+    * @return a cache stream with the handler applied
+    */
+   @Override
+   CacheStream<R> onClose(Runnable closeHandler);
 }

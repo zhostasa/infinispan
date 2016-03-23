@@ -308,10 +308,6 @@ public interface Log extends BasicLogger {
    void exceptionHandlingCommand(ReplicableCommand cmd, @Cause Throwable t);
 
    @LogMessage(level = ERROR)
-   @Message(value = "Failed replicating %d elements in replication queue", id = 72)
-   void failedReplicatingQueue(int size, @Cause Throwable t);
-
-   @LogMessage(level = ERROR)
    @Message(value = "Unexpected error while replicating", id = 73)
    void unexpectedErrorReplicating(@Cause Throwable t);
 
@@ -727,7 +723,7 @@ public interface Log extends BasicLogger {
    void rebalanceError(String cacheName, Address node, @Cause Throwable cause);
 
    @LogMessage(level = ERROR)
-   @Message(value = "Failed to recover cluster state after the current node became the coordinator", id = 196)
+   @Message(value = "Failed to recover cluster state after the current node became the coordinator (or after merge)", id = 196)
    void failedToRecoverClusterState(@Cause Throwable cause);
 
    @LogMessage(level = WARN)
@@ -963,14 +959,6 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "Not using an L1 invalidation reaper thread. This could lead to memory leaks as the requestors map may grow indefinitely!", id = 264)
    void warnL1NotHavingReaperThread();
-
-   @LogMessage(level = WARN)
-   @Message(value = "Unable to reset GlobalComponentRegistry after a failed restart!", id = 265)
-   void unableToResetGlobalComponentRegistryAfterRestart(@Cause Exception e);
-
-   @LogMessage(level = WARN)
-   @Message(value = "Unable to reset GlobalComponentRegistry after a failed restart due to an exception of type %s with message %s. Use DEBUG level logging for full exception details.", id = 266)
-   void unableToResetGlobalComponentRegistryAfterRestart(String type, String message, @Cause Exception e);
 
    @LogMessage(level = WARN)
    @Message(value = "Problems creating interceptor %s", id = 267)
@@ -1235,12 +1223,6 @@ public interface Log extends BasicLogger {
    @Message(value = "Using a L1 lifespan of 0 or a negative value is meaningless", id = 351)
    CacheConfigurationException l1InvalidLifespan();
 
-   @Message(value = "Use of the replication queue is invalid when using DISTRIBUTED mode.", id = 352)
-   CacheConfigurationException noReplicationQueueDistributedCache();
-
-   @Message(value = "Use of the replication queue is only allowed with an ASYNCHRONOUS cluster mode.", id = 353)
-   CacheConfigurationException replicationQueueOnlyForAsyncCaches();
-
    @Message(value = "Cannot define both interceptor class (%s) and interceptor instance (%s)", id = 354)
    CacheConfigurationException interceptorClassAndInstanceDefined(String customInterceptorClassName, String customInterceptor);
 
@@ -1322,9 +1304,6 @@ public interface Log extends BasicLogger {
    @Message(value = "Invocation batching not enabled in current configuration! Please enable it.", id = 378)
    CacheConfigurationException invocationBatchingNotEnabled();
 
-   @Message(value = "Map Reduce Framework is not supported in simple cache", id = 379)
-   CacheConfigurationException mapReduceNotSupported();
-
    @Message(value = "Distributed Executors Framework is not supported in simple cache", id = 380)
    CacheConfigurationException distributedExecutorsNotSupported();
 
@@ -1390,7 +1369,7 @@ public interface Log extends BasicLogger {
    IllegalStateException persistentConsistentHashMismatch(String hashFactory, String consistentHashClass);
 
    @Message(value = "Timeout while waiting for %d members in cluster. Last view had %s", id = 399)
-   CacheException timeoutWaitingForInitialNodes(int initialClusterSize, List<?> members);
+   TimeoutException timeoutWaitingForInitialNodes(int initialClusterSize, List<?> members);
 
    @Message(value = "Node %s was suspected", id = 400)
    SuspectException remoteNodeSuspected(Address address);
@@ -1408,4 +1387,12 @@ public interface Log extends BasicLogger {
 
    @Message(value = "The configured entity class %s is not indexable. Please remove it from the indexing configuration.", id = 404)
    CacheConfigurationException classNotIndexable(String className);
+
+   @LogMessage(level = ERROR)
+   @Message(value = "Caught exception while invoking a cache manager listener!", id = 405)
+   void failedInvokingCacheManagerListener(@Cause Exception e);
+
+   @LogMessage(level = WARN)
+   @Message(value = "The replication queue is no longer supported since version 9.0. Attribute %s on line %d will be ignored.", id = 406)
+   void ignoredReplicationQueueAttribute(String attributeName, int line);
 }

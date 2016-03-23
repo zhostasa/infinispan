@@ -22,6 +22,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -75,7 +76,6 @@ public class DistributedServerTaskIT {
 
       for (String serverDir : serverDirs) {
          File f = new File(serverDir, "/standalone/deployments/custom-distributed-task.jar");
-         f.deleteOnExit();
          jar.as(ZipExporter.class).exportTo(f, true);
       }
    }
@@ -102,6 +102,17 @@ public class DistributedServerTaskIT {
       rcm1.getCache(DistributedJSExecutingServerTask.DIST_CACHE_NAME).clear();
    }
 
+   @AfterClass
+   public static void undeploy() {
+      String serverDir = System.getProperty("server1.dist");
+      File jar = new File(serverDir, "/standalone/deployments/custom-distributed-task.jar");
+      if (jar.exists())
+         jar.delete();
+      File f = new File(serverDir, "/standalone/deployments/custom-distributed-task.jar.deployed");
+      if (f.exists())
+         f.delete();
+   }
+
    @Test
    @SuppressWarnings("unchecked")
    public void shouldGatherNodeNamesInRemoteTasks() throws Exception {
@@ -120,7 +131,7 @@ public class DistributedServerTaskIT {
       params.put("throwException", true);
 
       exceptionRule.expect(HotRodClientException.class);
-      exceptionRule.expectMessage("CancellationException");
+      exceptionRule.expectMessage("Intentionally Thrown Exception");
 
       rcm1.getCache().execute(DistributedTestServerTask.NAME, params);
    }
@@ -139,7 +150,7 @@ public class DistributedServerTaskIT {
       rcm1.getCache(DistributedCacheUsingTask.CACHE_NAME).put(key, value);
 
       rcm1.getCache(DistributedCacheUsingTask.CACHE_NAME).execute(DistributedCacheUsingTask.NAME, params);
-      assertEquals(modifiedValue + ":" + paramValue, rcm1.getCache(DistributedCacheUsingTask.CACHE_NAME).get(key));
+      assertEquals("modified:modified:value:parameter:parameter", rcm1.getCache(DistributedCacheUsingTask.CACHE_NAME).get(key));
    }
 
    @Test

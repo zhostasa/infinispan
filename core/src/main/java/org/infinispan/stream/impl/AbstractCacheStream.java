@@ -1,6 +1,5 @@
 package org.infinispan.stream.impl;
 
-import org.infinispan.Cache;
 import org.infinispan.CacheStream;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.equivalence.Equivalence;
@@ -25,7 +24,6 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,9 +43,8 @@ import java.util.stream.StreamSupport;
  * primitive types.
  * @param <T> The type returned by the stream
  * @param <S> The stream interface
- * @param <T_CONS> The consumer for this stream
  */
-public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS> implements BaseStream<T, S> {
+public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, S2 extends S> implements BaseStream<T, S> {
    protected final Log log = LogFactory.getLog(getClass());
 
    protected final Queue<IntermediateOperation> intermediateOperations;
@@ -102,7 +99,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       intermediateOperations = new ArrayDeque<>();
    }
 
-   protected AbstractCacheStream(AbstractCacheStream<T, S, T_CONS> other) {
+   protected AbstractCacheStream(AbstractCacheStream<T, S, S2> other) {
       this.intermediateOperations = other.intermediateOperations;
       this.localIntermediateOperations = other.localIntermediateOperations;
       this.localAddress = other.localAddress;
@@ -171,7 +168,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       distinct = true;
    }
 
-   protected S addIntermediateOperation(IntermediateOperation<T, S, T, S> intermediateOperation) {
+   protected S2 addIntermediateOperation(IntermediateOperation<T, S, T, S> intermediateOperation) {
       intermediateOperation.handleInjection(registry);
       if (localIntermediateOperations == null) {
          intermediateOperations.add(intermediateOperation);
@@ -190,13 +187,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       }
    }
 
-   protected <T2, S2 extends BaseStream<T2, S2>, S3 extends S2> S3 addIntermediateOperationMap(
-           IntermediateOperation<T, S, T2, S2> intermediateOperation, S3 stream) {
-      addIntermediateOperationMap(intermediateOperation);
-      return stream;
-   }
-
-   protected abstract S unwrap();
+   protected abstract S2 unwrap();
 
    @Override
    public boolean isParallel() {
@@ -208,25 +199,25 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
    }
 
    @Override
-   public S sequential() {
+   public S2 sequential() {
       parallel = false;
       return unwrap();
    }
 
    @Override
-   public S parallel() {
+   public S2 parallel() {
       parallel = true;
       return unwrap();
    }
 
    @Override
-   public S unordered() {
+   public S2 unordered() {
       sorted = false;
       return unwrap();
    }
 
    @Override
-   public S onClose(Runnable closeHandler) {
+   public S2 onClose(Runnable closeHandler) {
       if (this.closeRunnable == null) {
          this.closeRunnable = closeHandler;
       } else {
@@ -242,15 +233,15 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       }
    }
 
-   <R> R performOperation(Function<S, ? extends R> function, boolean retryOnRehash, BinaryOperator<R> accumulator,
+   <R> R performOperation(Function<? super S2, ? extends R> function, boolean retryOnRehash, BinaryOperator<R> accumulator,
                           Predicate<? super R> earlyTerminatePredicate) {
       return performOperation(function, retryOnRehash, accumulator, earlyTerminatePredicate, true);
    }
 
-   <R> R performOperation(Function<S, ? extends R> function, boolean retryOnRehash, BinaryOperator<R> accumulator,
+   <R> R performOperation(Function<? super S2, ? extends R> function, boolean retryOnRehash, BinaryOperator<R> accumulator,
            Predicate<? super R> earlyTerminatePredicate, boolean ignoreSorting) {
       // These operations are not affected by sorting, only by distinct
-      if (intermediateType.shouldUseIntermediate(ignoreSorting ? false : sorted, distinct)) {
+      if (intermediateType.shouldUseIntermediate(!ignoreSorting && sorted, distinct)) {
          return performIntermediateRemoteOperation(function);
       } else {
          ResultsAccumulator<R> remoteResults = new ResultsAccumulator<>(accumulator);
@@ -262,7 +253,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       }
    }
 
-   <R> R performOperation(Function<S, ? extends R> function, ResultsAccumulator<R> remoteResults,
+   <R> R performOperation(Function<? super S2, ? extends R> function, ResultsAccumulator<R> remoteResults,
                           Predicate<? super R> earlyTerminatePredicate) {
       ConsistentHash ch = dm.getConsistentHash();
       TerminalOperation<R> op = new SingleRunOperation<>(intermediateOperations,
@@ -291,7 +282,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       }
    }
 
-   <R> R performOperationRehashAware(Function<S, ? extends R> function, boolean retryOnRehash,
+   <R> R performOperationRehashAware(Function<? super S2, ? extends R> function, boolean retryOnRehash,
                                      ResultsAccumulator<R> remoteResults, Predicate<? super R> earlyTerminatePredicate) {
       Set<Integer> segmentsToProcess = segmentsToFilter;
       TerminalOperation<R> op;
@@ -361,10 +352,8 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       return remoteResults.currentValue;
    }
 
-   abstract KeyTrackingTerminalOperation<Object, T, Object> getForEach(T_CONS consumer,
-           Supplier<Stream<CacheEntry>> supplier);
-
-   void performRehashForEach(T_CONS consumer) {
+   void performRehashKeyTrackingOperation(
+           Function<Supplier<Stream<CacheEntry>>, KeyTrackingTerminalOperation<Object, ? extends T, Object>> function) {
       final AtomicBoolean complete = new AtomicBoolean();
 
       ConsistentHash segmentInfoCH = dm.getReadConsistentHash();
@@ -388,7 +377,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
             segments = null;
             excludedKeys = Collections.emptySet();
          }
-         KeyTrackingTerminalOperation<Object, T, Object> op = getForEach(consumer, supplierForSegments(ch,
+         KeyTrackingTerminalOperation<Object, ? extends T, Object> op = function.apply(supplierForSegments(ch,
                  segmentsToProcess, excludedKeys));
          op.handleInjection(registry);
          Object id = csm.remoteStreamOperationRehashAware(getParallelDistribution(), parallel, ch, segmentsToProcess,
@@ -617,7 +606,6 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
    static class CollectionConsumer<R> implements ClusterStreamManager.ResultsCallback<Collection<R>>,
            KeyTrackingTerminalOperation.IntermediateCollector<Collection<R>> {
       private final Consumer<R> consumer;
-      private final Set<Integer> lostSegments = new ConcurrentHashSet<>();
 
       CollectionConsumer(Consumer<R> consumer) {
          this.consumer = consumer;
@@ -638,10 +626,6 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
 
       @Override
       public void onSegmentsLost(Set<Integer> segments) {
-         // Have to use for loop since ConcurrentHashSet doesn't support addAll
-         for (Integer segment : segments) {
-            lostSegments.add(segment);
-         }
       }
 
       @Override
@@ -668,7 +652,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
    protected Supplier<Stream<CacheEntry>> supplierForSegments(ConsistentHash ch, Set<Integer> targetSegments,
                                                               Set<Object> excludedKeys, boolean usePrimary) {
       if (!ch.getMembers().contains(localAddress)) {
-         return () -> Stream.empty();
+         return Stream::empty;
       }
       Set<Integer> segments;
       if (usePrimary) {
@@ -795,7 +779,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       }
    }
 
-   <R> R performIntermediateRemoteOperation(Function<S, ? extends R> function) {
+   <R> R performIntermediateRemoteOperation(Function<? super S2, ? extends R> function) {
       switch (intermediateType) {
          case OBJ:
             return performObjIntermediateRemoteOperation(function);
@@ -810,39 +794,39 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, T_CONS>
       }
    }
 
-   <R> R performIntegerIntermediateRemoteOperation(Function<S, ? extends R> function) {
+   <R> R performIntegerIntermediateRemoteOperation(Function<? super S2, ? extends R> function) {
       // TODO: once we don't have to box for primitive iterators we can remove this copy
       Queue<IntermediateOperation> copyOperations = new ArrayDeque<>(localIntermediateOperations);
       PrimitiveIterator.OfInt iterator = new DistributedIntCacheStream(this).remoteIterator();
-      SingleRunOperation<R, T, S> op = new SingleRunOperation<>(copyOperations,
+      SingleRunOperation<R, T, S, S2> op = new SingleRunOperation<>(copyOperations,
               () -> StreamSupport.intStream(Spliterators.spliteratorUnknownSize(
                       iterator, Spliterator.CONCURRENT), parallel), function);
       return op.performOperation();
    }
 
-   <R> R performDoubleIntermediateRemoteOperation(Function<S, ? extends R> function) {
+   <R> R performDoubleIntermediateRemoteOperation(Function<? super S2, ? extends R> function) {
       // TODO: once we don't have to box for primitive iterators we can remove this copy
       Queue<IntermediateOperation> copyOperations = new ArrayDeque<>(localIntermediateOperations);
       PrimitiveIterator.OfDouble iterator = new DistributedDoubleCacheStream(this).remoteIterator();
-      SingleRunOperation<R, T, S> op = new SingleRunOperation<>(copyOperations,
+      SingleRunOperation<R, T, S, S2> op = new SingleRunOperation<>(copyOperations,
               () -> StreamSupport.doubleStream(Spliterators.spliteratorUnknownSize(
                       iterator, Spliterator.CONCURRENT), parallel), function);
       return op.performOperation();
    }
 
-   <R> R performLongIntermediateRemoteOperation(Function<S, ? extends R> function) {
+   <R> R performLongIntermediateRemoteOperation(Function<? super S2, ? extends R> function) {
       // TODO: once we don't have to box for primitive iterators we can remove this copy
       Queue<IntermediateOperation> copyOperations = new ArrayDeque<>(localIntermediateOperations);
       PrimitiveIterator.OfLong iterator = new DistributedLongCacheStream(this).remoteIterator();
-      SingleRunOperation<R, T, S> op = new SingleRunOperation<>(copyOperations,
+      SingleRunOperation<R, T, S, S2> op = new SingleRunOperation<>(copyOperations,
               () -> StreamSupport.longStream(Spliterators.spliteratorUnknownSize(
                       iterator, Spliterator.CONCURRENT), parallel), function);
       return op.performOperation();
    }
 
-   <R> R performObjIntermediateRemoteOperation(Function<S, ? extends R> function) {
+   <R> R performObjIntermediateRemoteOperation(Function<? super S2, ? extends R> function) {
       Iterator<Object> iterator = new DistributedCacheStream<>(this).remoteIterator();
-      SingleRunOperation<R, T, S> op = new SingleRunOperation<>(localIntermediateOperations,
+      SingleRunOperation<R, T, S, S2> op = new SingleRunOperation<>(localIntermediateOperations,
               () -> StreamSupport.stream(Spliterators.spliteratorUnknownSize(
                       iterator, Spliterator.CONCURRENT), parallel), function);
       return op.performOperation();

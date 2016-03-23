@@ -2,12 +2,12 @@ package org.infinispan.replication;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commons.CacheException;
+import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.base.CommandInterceptor;
-import org.infinispan.commons.CacheException;
-import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.transaction.lookup.DummyTransactionManagerLookup;
@@ -48,14 +48,6 @@ public class ReplicationExceptionTest extends MultipleCacheManagersTest {
 
       ConfigurationBuilder replAsyncNoTx = getDefaultClusteredCacheConfig(CacheMode.REPL_ASYNC, false);
       defineConfigurationOnAllManagers("asyncReplCacheNoTx", replAsyncNoTx);
-
-      ConfigurationBuilder replQueue = getDefaultClusteredCacheConfig(CacheMode.REPL_ASYNC, true);
-      replQueue.clustering()
-            .async()
-            .useReplQueue(true)
-            .transaction().transactionManagerLookup(new DummyTransactionManagerLookup());
-      defineConfigurationOnAllManagers("replQueueCache", replQueue);
-
    }
 
    private TransactionManager beginTransaction() throws SystemException, NotSupportedException {
@@ -72,10 +64,6 @@ public class ReplicationExceptionTest extends MultipleCacheManagersTest {
 
    public void testNonSerializableAsyncRepl() throws Exception {
       doNonSerializableReplTest("asyncReplCacheNoTx");
-   }
-
-   public void testNonSerializableReplQueue() throws Exception {
-      doNonSerializableReplTest("replQueueCache");
    }
 
    private void doNonSerializableReplTest(String cacheName) {
@@ -131,8 +119,8 @@ public class ReplicationExceptionTest extends MultipleCacheManagersTest {
          }
       }, 0);
 
-      cache1.getCacheConfiguration().clustering().sync().replTimeout(10);
-      cache2.getCacheConfiguration().clustering().sync().replTimeout(10);
+      cache1.getCacheConfiguration().clustering().remoteTimeout(10);
+      cache2.getCacheConfiguration().clustering().remoteTimeout(10);
       TestingUtil.blockUntilViewsReceived(10000, cache1, cache2);
 
       cache1.put("k", "v");

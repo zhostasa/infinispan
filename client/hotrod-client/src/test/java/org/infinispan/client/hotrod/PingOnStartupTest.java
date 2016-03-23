@@ -35,14 +35,13 @@ public class PingOnStartupTest extends MultiHotRodServersTest {
    }
 
    public void testTopologyFetched() {
-      Properties props = new Properties();
       HotRodServer hotRodServer2 = server(1);
-      props.put("infinispan.client.hotrod.server_list",
-            "localhost:" + hotRodServer2.getPort() + ";localhost:" + hotRodServer2.getPort());
-      props.put("infinispan.client.hotrod.ping_on_startup", "true");
-
+      org.infinispan.client.hotrod.configuration.ConfigurationBuilder clientBuilder =
+            new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
+      clientBuilder
+            .addServers("localhost:" + hotRodServer2.getPort() + ";localhost:" + hotRodServer2.getPort());
       withRemoteCacheManager(new RemoteCacheManagerCallable(
-            new InternalRemoteCacheManager(props)) {
+            new InternalRemoteCacheManager(clientBuilder.build())) {
          @Override
          public void call() {
             TcpTransportFactory tcpTransportFactory =
@@ -60,14 +59,13 @@ public class PingOnStartupTest extends MultiHotRodServersTest {
    }
 
    public void testGetCacheWithPingOnStartupDisabledMultipleNodes() {
-      Properties props = new Properties();
       HotRodServer hotRodServer2 = server(1);
-      props.put("infinispan.client.hotrod.server_list",
-            "boomoo:12345;localhost:" + hotRodServer2.getPort());
-      props.put("infinispan.client.hotrod.ping_on_startup", "false");
-
+      org.infinispan.client.hotrod.configuration.ConfigurationBuilder clientBuilder =
+            new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
+      clientBuilder
+            .addServers("boomoo:12345;localhost:" + hotRodServer2.getPort());
       withRemoteCacheManager(new RemoteCacheManagerCallable(
-            new RemoteCacheManager(props)) {
+            new RemoteCacheManager(clientBuilder.build())) {
          @Override
          public void call() {
             RemoteCache<Object, Object> cache = rcm.getCache();
@@ -77,14 +75,13 @@ public class PingOnStartupTest extends MultiHotRodServersTest {
    }
 
    public void testGetCacheWorksIfNodeDown() {
-      Properties props = new Properties();
       HotRodServer hotRodServer2 = server(1);
-      props.put("infinispan.client.hotrod.server_list",
-            "boomoo:12345;localhost:" + hotRodServer2.getPort());
-      props.put("infinispan.client.hotrod.ping_on_startup", "true");
-
+      org.infinispan.client.hotrod.configuration.ConfigurationBuilder clientBuilder =
+            new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
+      clientBuilder
+            .addServers("boomoo:12345;localhost:" + hotRodServer2.getPort());
       withRemoteCacheManager(new RemoteCacheManagerCallable(
-            new RemoteCacheManager(props)) {
+            new RemoteCacheManager(clientBuilder.build())) {
          @Override
          public void call() {
             rcm.getCache();
@@ -93,13 +90,13 @@ public class PingOnStartupTest extends MultiHotRodServersTest {
    }
 
    public void testGetCacheWorksIfNodeNotDown() {
-      Properties props = new Properties();
       HotRodServer hotRodServer2 = server(1);
-      props.put("infinispan.client.hotrod.server_list",
-            "localhost:" + hotRodServer2.getPort());
-      props.put("infinispan.client.hotrod.ping_on_startup", "true");
+      org.infinispan.client.hotrod.configuration.ConfigurationBuilder clientBuilder =
+            new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
+      clientBuilder
+            .addServers("localhost:" + hotRodServer2.getPort());
       withRemoteCacheManager(new RemoteCacheManagerCallable(
-            new RemoteCacheManager(props)) {
+            new RemoteCacheManager(clientBuilder.build())) {
          @Override
          public void call() {
             rcm.getCache();

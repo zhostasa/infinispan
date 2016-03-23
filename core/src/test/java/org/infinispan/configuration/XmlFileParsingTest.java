@@ -412,33 +412,23 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
 
       assertEquals(CacheMode.INVALIDATION_SYNC, c.clustering().cacheMode());
       assertTrue(c.clustering().stateTransfer().awaitInitialTransfer());
-      assertEquals(15000, c.clustering().sync().replTimeout());
+      assertEquals(15000, c.clustering().remoteTimeout());
 
       c = cm.getCacheConfiguration("asyncInval");
 
       assertEquals(CacheMode.INVALIDATION_ASYNC, c.clustering().cacheMode());
-      assertEquals(15000, c.clustering().sync().replTimeout());
+      assertEquals(15000, c.clustering().remoteTimeout());
 
       c = cm.getCacheConfiguration("syncRepl");
 
       assertEquals(CacheMode.REPL_SYNC, c.clustering().cacheMode());
       assertTrue(!c.clustering().stateTransfer().fetchInMemoryState());
       assertTrue(c.clustering().stateTransfer().awaitInitialTransfer());
-      assertEquals(15000, c.clustering().sync().replTimeout());
+      assertEquals(15000, c.clustering().remoteTimeout());
 
       c = cm.getCacheConfiguration("asyncRepl");
 
       assertEquals(CacheMode.REPL_ASYNC, c.clustering().cacheMode());
-      assertTrue(!c.clustering().async().useReplQueue());
-      assertTrue(!c.clustering().async().asyncMarshalling());
-      assertTrue(!c.clustering().stateTransfer().fetchInMemoryState());
-      assertTrue(c.clustering().stateTransfer().awaitInitialTransfer());
-
-      c = cm.getCacheConfiguration("asyncReplQueue");
-
-      assertEquals(CacheMode.REPL_ASYNC, c.clustering().cacheMode());
-      assertTrue(c.clustering().async().useReplQueue());
-      assertTrue(!c.clustering().async().asyncMarshalling());
       assertTrue(!c.clustering().stateTransfer().fetchInMemoryState());
       assertTrue(c.clustering().stateTransfer().awaitInitialTransfer());
 
@@ -448,7 +438,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(CacheMode.REPL_SYNC, c.clustering().cacheMode());
       assertTrue(!c.clustering().stateTransfer().fetchInMemoryState());
       assertTrue(c.clustering().stateTransfer().awaitInitialTransfer());
-      assertEquals(15000, c.clustering().sync().replTimeout());
+      assertEquals(15000, c.clustering().remoteTimeout());
 
       c = cm.getCacheConfiguration("overriding");
 

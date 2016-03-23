@@ -37,7 +37,7 @@ public class ShardIndexManager extends DirectoryBasedIndexManager {
       ComponentRegistry componentRegistry = componentRegistryService.getComponentRegistry();
       Cache cache = componentRegistry.getComponent(Cache.class);
       cache.addListener(new TopologyChangeListener());
-      closeIndexWriter();
+      flushAndReleaseResources();
    }
 
    @Override
@@ -59,9 +59,8 @@ public class ShardIndexManager extends DirectoryBasedIndexManager {
       @SuppressWarnings("unused")
       public void onTopologyChange(TopologyChangedEvent<?, ?> tce) {
          if (!tce.isPre()) {
-            closeIndexWriter();
+            flushAndReleaseResources();
          }
       }
    }
 }
-

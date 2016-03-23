@@ -5,7 +5,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.Search;
-import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.embedded.impl.QueryCache;
@@ -27,10 +26,17 @@ import org.testng.annotations.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.calls;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 
 /**
  * @author anistor@redhat.com
@@ -66,12 +72,12 @@ public class QueryCacheEmbeddedTest extends SingleCacheManagerTest {
 
       // obtain the query factory and create a query builder
       QueryFactory qf = Search.getQueryFactory(cache);
-      QueryBuilder<Query> queryQueryBuilder = qf.from(UserHS.class)
+      QueryBuilder queryQueryBuilder = qf.from(UserHS.class)
             .having("name").eq("John")
             .toBuilder();
 
       // compute the same jpa query as it would be generated for the above query
-      String jpaQuery = ((BaseQueryBuilder<Query>) queryQueryBuilder).accept(new JPAQueryGenerator());
+      String jpaQuery = ((BaseQueryBuilder) queryQueryBuilder).accept(new JPAQueryGenerator());
 
       // everything set up, test follows ...
 

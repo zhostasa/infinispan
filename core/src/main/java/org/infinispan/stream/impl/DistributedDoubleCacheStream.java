@@ -1,9 +1,37 @@
 package org.infinispan.stream.impl;
 
+import org.infinispan.Cache;
+import org.infinispan.CacheStream;
+import org.infinispan.DoubleCacheStream;
+import org.infinispan.IntCacheStream;
+import org.infinispan.LongCacheStream;
 import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.stream.impl.intops.primitive.d.*;
+import org.infinispan.stream.impl.intops.primitive.d.BoxedDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.DistinctDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.FilterDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.FlatMapDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.LimitDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.MapDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.MapToIntDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.MapToLongDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.MapToObjDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.PeekDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.SkipDoubleOperation;
+import org.infinispan.stream.impl.intops.primitive.d.SortedDoubleOperation;
 import org.infinispan.stream.impl.termop.primitive.ForEachDoubleOperation;
 import org.infinispan.stream.impl.termop.primitive.ForEachFlatMapDoubleOperation;
+import org.infinispan.stream.impl.termop.primitive.ForEachFlatMapObjDoubleOperation;
+import org.infinispan.stream.impl.termop.primitive.ForEachObjDoubleOperation;
+import org.infinispan.util.function.SerializableDoubleBinaryOperator;
+import org.infinispan.util.function.SerializableDoubleConsumer;
+import org.infinispan.util.function.SerializableDoubleFunction;
+import org.infinispan.util.function.SerializableDoublePredicate;
+import org.infinispan.util.function.SerializableDoubleToIntFunction;
+import org.infinispan.util.function.SerializableDoubleToLongFunction;
+import org.infinispan.util.function.SerializableDoubleUnaryOperator;
+import org.infinispan.util.function.SerializableObjDoubleConsumer;
+import org.infinispan.util.function.SerializableBiConsumer;
+import org.infinispan.util.function.SerializableSupplier;
 
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
@@ -12,10 +40,19 @@ import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleFunction;
+import java.util.function.DoublePredicate;
+import java.util.function.DoubleToIntFunction;
+import java.util.function.DoubleToLongFunction;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
+import java.util.function.ObjDoubleConsumer;
+import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 /**
@@ -23,8 +60,8 @@ import java.util.stream.Stream;
  * class is only able to be created using {@link org.infinispan.CacheStream#mapToDouble(ToDoubleFunction)} or similar
  * methods from the {@link org.infinispan.CacheStream} interface.
  */
-public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, DoubleStream, DoubleConsumer>
-        implements DoubleStream {
+public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, DoubleStream, DoubleCacheStream>
+        implements DoubleCacheStream {
    /**
     * This constructor is to be used only when a user calls a map or flat map method changing to a DoubleStream
     * from a CacheStream, Stream, IntStream, LongStream etc.
@@ -35,80 +72,119 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
    }
 
    @Override
-   protected DoubleStream unwrap() {
+   protected DoubleCacheStream unwrap() {
       return this;
    }
 
    @Override
-   public DoubleStream filter(DoublePredicate predicate) {
+   public DoubleCacheStream filter(DoublePredicate predicate) {
       return addIntermediateOperation(new FilterDoubleOperation(predicate));
    }
 
    @Override
-   public DoubleStream map(DoubleUnaryOperator mapper) {
+   public DoubleCacheStream filter(SerializableDoublePredicate predicate) {
+      return filter((DoublePredicate) predicate);
+   }
+
+   @Override
+   public DoubleCacheStream map(DoubleUnaryOperator mapper) {
       // Don't need to update iterator operation as we already are guaranteed to be at least MAP
       return addIntermediateOperation(new MapDoubleOperation(mapper));
    }
 
    @Override
-   public <U> Stream<U> mapToObj(DoubleFunction<? extends U> mapper) {
-      // Don't need to update iterator operation as we already are guaranteed to be at least MAP
-      return addIntermediateOperationMap(new MapToObjDoubleOperation<>(mapper), cacheStream());
+   public DoubleCacheStream map(SerializableDoubleUnaryOperator mapper) {
+      return map((DoubleUnaryOperator) mapper);
    }
 
    @Override
-   public IntStream mapToInt(DoubleToIntFunction mapper) {
+   public <U> CacheStream<U> mapToObj(DoubleFunction<? extends U> mapper) {
       // Don't need to update iterator operation as we already are guaranteed to be at least MAP
-      return addIntermediateOperationMap(new MapToIntDoubleOperation(mapper), intCacheStream());
+      addIntermediateOperationMap(new MapToObjDoubleOperation<>(mapper));
+      return cacheStream();
    }
 
    @Override
-   public LongStream mapToLong(DoubleToLongFunction mapper) {
-      // Don't need to update iterator operation as we already are guaranteed to be at least MAP
-      return addIntermediateOperationMap(new MapToLongDoubleOperation(mapper), longCacheStream());
+   public <U> CacheStream<U> mapToObj(SerializableDoubleFunction<? extends U> mapper) {
+      return mapToObj((DoubleFunction<? extends U>) mapper);
    }
 
    @Override
-   public DoubleStream flatMap(DoubleFunction<? extends DoubleStream> mapper) {
+   public IntCacheStream mapToInt(DoubleToIntFunction mapper) {
+      // Don't need to update iterator operation as we already are guaranteed to be at least MAP
+      addIntermediateOperationMap(new MapToIntDoubleOperation(mapper));
+      return intCacheStream();
+   }
+
+   @Override
+   public IntCacheStream mapToInt(SerializableDoubleToIntFunction mapper) {
+      return mapToInt((DoubleToIntFunction) mapper);
+   }
+
+   @Override
+   public LongCacheStream mapToLong(DoubleToLongFunction mapper) {
+      // Don't need to update iterator operation as we already are guaranteed to be at least MAP
+      addIntermediateOperationMap(new MapToLongDoubleOperation(mapper));
+      return longCacheStream();
+   }
+
+   @Override
+   public LongCacheStream mapToLong(SerializableDoubleToLongFunction mapper) {
+      return mapToLong((DoubleToLongFunction) mapper);
+   }
+
+   @Override
+   public DoubleCacheStream flatMap(DoubleFunction<? extends DoubleStream> mapper) {
       iteratorOperation = IteratorOperation.FLAT_MAP;
       return addIntermediateOperation(new FlatMapDoubleOperation(mapper));
    }
 
    @Override
-   public DoubleStream distinct() {
+   public DoubleCacheStream flatMap(SerializableDoubleFunction<? extends DoubleStream> mapper) {
+      return flatMap((DoubleFunction<? extends DoubleStream>) mapper);
+   }
+
+   @Override
+   public DoubleCacheStream distinct() {
       DistinctDoubleOperation op = DistinctDoubleOperation.getInstance();
       markDistinct(op, IntermediateType.DOUBLE);
       return addIntermediateOperation(op);
    }
 
    @Override
-   public DoubleStream sorted() {
+   public DoubleCacheStream sorted() {
       markSorted(IntermediateType.DOUBLE);
       return addIntermediateOperation(SortedDoubleOperation.getInstance());
    }
 
    @Override
-   public DoubleStream peek(DoubleConsumer action) {
+   public DoubleCacheStream peek(DoubleConsumer action) {
       return addIntermediateOperation(new PeekDoubleOperation(action));
    }
 
    @Override
-   public DoubleStream limit(long maxSize) {
+   public DoubleCacheStream peek(SerializableDoubleConsumer action) {
+      return peek((DoubleConsumer) action);
+   }
+
+   @Override
+   public DoubleCacheStream limit(long maxSize) {
       LimitDoubleOperation op = new LimitDoubleOperation(maxSize);
       markDistinct(op, IntermediateType.DOUBLE);
       return addIntermediateOperation(op);
    }
 
    @Override
-   public DoubleStream skip(long n) {
+   public DoubleCacheStream skip(long n) {
       SkipDoubleOperation op = new SkipDoubleOperation(n);
       markSkip(IntermediateType.DOUBLE);
       return addIntermediateOperation(op);
    }
 
    @Override
-   public Stream<Double> boxed() {
-      return addIntermediateOperationMap(BoxedDoubleOperation.getInstance(), cacheStream());
+   public CacheStream<Double> boxed() {
+      addIntermediateOperationMap(BoxedDoubleOperation.getInstance());
+      return cacheStream();
    }
 
    // Rest are terminal operators
@@ -118,11 +194,29 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
       if (!rehashAware) {
          performOperation(TerminalFunctions.forEachFunction(action), false, (v1, v2) -> null, null);
       } else {
-         performRehashForEach(action);
+         performRehashKeyTrackingOperation(s -> getForEach(action, s));
       }
    }
 
    @Override
+   public void forEach(SerializableDoubleConsumer action) {
+      forEach((DoubleConsumer) action);
+   }
+
+   @Override
+   public <K, V> void forEach(ObjDoubleConsumer<Cache<K, V>> action) {
+      if (!rehashAware) {
+         performOperation(TerminalFunctions.forEachFunction(action), false, (v1, v2) -> null, null);
+      } else {
+         performRehashKeyTrackingOperation(s -> getForEach(action, s));
+      }
+   }
+
+   @Override
+   public <K, V> void forEach(SerializableObjDoubleConsumer<Cache<K, V>> action) {
+      forEach((ObjDoubleConsumer<Cache<K, V>>) action);
+   }
+
    KeyTrackingTerminalOperation<Object, Double, Object> getForEach(DoubleConsumer consumer,
            Supplier<Stream<CacheEntry>> supplier) {
       if (iteratorOperation == IteratorOperation.FLAT_MAP) {
@@ -132,10 +226,19 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
       }
    }
 
+   <K, V> KeyTrackingTerminalOperation<Object, Double, Object> getForEach(ObjDoubleConsumer<Cache<K, V>> consumer,
+           Supplier<Stream<CacheEntry>> supplier) {
+      if (iteratorOperation == IteratorOperation.FLAT_MAP) {
+         return new ForEachFlatMapObjDoubleOperation(intermediateOperations, supplier, distributedBatchSize, consumer);
+      } else {
+         return new ForEachObjDoubleOperation(intermediateOperations, supplier, distributedBatchSize, consumer);
+      }
+   }
+
    @Override
    public void forEachOrdered(DoubleConsumer action) {
       if (intermediateType.shouldUseIntermediate(sorted, distinct)) {
-         performIntermediateRemoteOperation(s -> {
+         performIntermediateRemoteOperation((DoubleStream s) -> {
             s.forEachOrdered(action);
             return null;
          });
@@ -156,8 +259,12 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
 
    @Override
    public double reduce(double identity, DoubleBinaryOperator op) {
-      return performOperation(TerminalFunctions.reduceFunction(identity, op), true,
-              (i1, i2) -> op.applyAsDouble(i1, i2), null);
+      return performOperation(TerminalFunctions.reduceFunction(identity, op), true, op::applyAsDouble, null);
+   }
+
+   @Override
+   public double reduce(double identity, SerializableDoubleBinaryOperator op) {
+      return reduce(identity, (DoubleBinaryOperator) op);
    }
 
    @Override
@@ -180,12 +287,23 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
    }
 
    @Override
+   public OptionalDouble reduce(SerializableDoubleBinaryOperator op) {
+      return reduce((DoubleBinaryOperator) op);
+   }
+
+   @Override
    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner) {
       return performOperation(TerminalFunctions.collectFunction(supplier, accumulator, combiner), true,
               (e1, e2) -> {
                  combiner.accept(e1, e2);
                  return e1;
               }, null);
+   }
+
+   @Override
+   public <R> R collect(SerializableSupplier<R> supplier, SerializableObjDoubleConsumer<R> accumulator,
+           SerializableBiConsumer<R, R> combiner) {
+      return collect((Supplier<R>) supplier, accumulator, combiner);
    }
 
    @Override
@@ -240,7 +358,7 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
                  return a1;
               }, null);
       if (results[1] > 0) {
-         return OptionalDouble.of((double) results[0] / results[1]);
+         return OptionalDouble.of(results[0] / results[1]);
       } else {
          return OptionalDouble.empty();
       }
@@ -260,8 +378,18 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
    }
 
    @Override
+   public boolean anyMatch(SerializableDoublePredicate predicate) {
+      return anyMatch((DoublePredicate) predicate);
+   }
+
+   @Override
    public boolean allMatch(DoublePredicate predicate) {
       return performOperation(TerminalFunctions.allMatchFunction(predicate), false, Boolean::logicalAnd, b -> !b);
+   }
+
+   @Override
+   public boolean allMatch(SerializableDoublePredicate predicate) {
+      return allMatch((DoublePredicate) predicate);
    }
 
    @Override
@@ -270,9 +398,14 @@ public class DistributedDoubleCacheStream extends AbstractCacheStream<Double, Do
    }
 
    @Override
+   public boolean noneMatch(SerializableDoublePredicate predicate) {
+      return noneMatch((DoublePredicate) predicate);
+   }
+
+   @Override
    public OptionalDouble findFirst() {
       if (intermediateType.shouldUseIntermediate(sorted, distinct)) {
-         return performIntermediateRemoteOperation(s -> s.findFirst());
+         return performIntermediateRemoteOperation((DoubleStream s) -> s.findFirst());
       } else {
          return findAny();
       }

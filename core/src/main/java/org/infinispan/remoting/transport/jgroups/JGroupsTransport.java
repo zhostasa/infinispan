@@ -26,8 +26,8 @@ import org.infinispan.remoting.rpc.ResponseMode;
 import org.infinispan.remoting.transport.AbstractTransport;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.BackupResponse;
-import org.infinispan.util.concurrent.CompletableFutures;
 import org.infinispan.util.TimeService;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -190,8 +190,6 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       initChannelAndRPCDispatcher();
       startJGroupsChannelIfNeeded();
 
-      waitForChannelToConnect();
-
       waitForInitialNodes();
    }
 
@@ -237,26 +235,24 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
    @Override
    public void waitForView(int viewId) throws InterruptedException {
-      waitForView(viewId, 0, TimeUnit.SECONDS);
+      waitForView(viewId, Long.MAX_VALUE, TimeUnit.NANOSECONDS);
    }
 
-   public boolean waitForView(int viewId, long time, TimeUnit timeUnit) throws InterruptedException {
+   public boolean waitForView(int viewId, long timeout, TimeUnit timeUnit) throws InterruptedException {
       if (channel == null)
          return false;
+
       log.tracef("Waiting on view %d being accepted", viewId);
+      long remainingNanos = timeUnit.toNanos(timeout);
       viewUpdateLock.lock();
       try {
-         while (channel != null && getViewId() < viewId) {
-            if (time == 0) {
-               viewUpdateCondition.await();
-            } else {
-               return viewUpdateCondition.await(time, timeUnit);
-            }
+         while (channel != null && getViewId() < viewId && remainingNanos > 0) {
+            remainingNanos = viewUpdateCondition.awaitNanos(remainingNanos);
          }
-         return true;
       } finally {
          viewUpdateLock.unlock();
       }
+      return remainingNanos > 0;
    }
 
    @Override
@@ -466,33 +462,33 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       return coordinator;
    }
 
-   public void waitForChannelToConnect() {
-      try {
-         waitForView(0);
-      } catch (InterruptedException e) {
-         // The start method can't throw checked exceptions
-         log.interruptedWaitingForCoordinator(e);
-         Thread.currentThread().interrupt();
-      }
-   }
-
    private void waitForInitialNodes() {
       int initialClusterSize = configuration.transport().initialClusterSize();
-      if (initialClusterSize > 1) {
-         long timeout = configuration.transport().initialClusterTimeout();
-         while (channel.getView().getMembers().size() < initialClusterSize) {
-            try {
-               log.debugf("Waiting for %d nodes, current view has %d", initialClusterSize, channel.getView().getMembers().size());
-               if(!waitForView(viewId + 1, timeout, TimeUnit.MILLISECONDS)) {
-                  throw log.timeoutWaitingForInitialNodes(initialClusterSize, channel.getView().getMembers());
-               }
-            } catch (InterruptedException e) {
-               log.interruptedWaitingForCoordinator(e);
-               Thread.currentThread().interrupt();
-            }
+      if (initialClusterSize <= 1)
+         return;
+
+      long timeout = configuration.transport().initialClusterTimeout();
+      long remainingNanos = TimeUnit.MILLISECONDS.toNanos(timeout);
+      viewUpdateLock.lock();
+      try {
+         while (channel != null && channel.getView().getMembers().size() < initialClusterSize &&
+               remainingNanos > 0) {
+            log.debugf("Waiting for %d nodes, current view has %d", initialClusterSize,
+                  channel.getView().getMembers().size());
+            remainingNanos = viewUpdateCondition.awaitNanos(remainingNanos);
          }
-         log.debugf("Initial cluster size of %d nodes reached", initialClusterSize);
+      } catch (InterruptedException e) {
+         log.interruptedWaitingForCoordinator(e);
+         Thread.currentThread().interrupt();
+      } finally {
+         viewUpdateLock.unlock();
       }
+
+      if (remainingNanos <= 0) {
+         throw log.timeoutWaitingForInitialNodes(initialClusterSize, channel.getView().getMembers());
+      }
+
+      log.debugf("Initial cluster size of %d nodes reached", initialClusterSize);
    }
 
    @Override
@@ -630,7 +626,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
          return singleResponseFuture.thenApply(rsp -> {
             if (trace) log.tracef("Response: %s", rsp);
             Address sender = fromJGroupsAddress(rsp.getSender());
-            Response response = checkRsp(rsp, sender, responseFilter != null, ignoreLeavers);
+            Response response = checkRsp(rsp, sender, ignoreTimeout(responseFilter), ignoreLeavers);
             return Collections.singletonMap(sender, response);
          });
       } else if (rspListFuture != null) {
@@ -643,7 +639,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
             for (Rsp<Response> rsp : rsps.values()) {
                hasResponses |= rsp.wasReceived();
                Address sender = fromJGroupsAddress(rsp.getSender());
-               Response response = checkRsp(rsp, sender, responseFilter != null, ignoreLeavers);
+               Response response = checkRsp(rsp, sender, ignoreTimeout(responseFilter), ignoreLeavers);
                if (response != null) {
                   hasValidResponses = true;
                   retval.put(sender, response);
@@ -673,6 +669,10 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       } else {
          throw new IllegalStateException("Should have one remote invocation future");
       }
+   }
+
+   private boolean ignoreTimeout(ResponseFilter responseFilter) {
+      return responseFilter != null && !responseFilter.needMoreResponses();
    }
 
    @Override
@@ -729,7 +729,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       boolean hasResponses = false;
       for (Rsp<Response> rsp : rsps) {
          Address sender = fromJGroupsAddress(rsp.getSender());
-         Response response = checkRsp(rsp, sender, responseFilter != null, ignoreLeavers);
+         Response response = checkRsp(rsp, sender, ignoreTimeout(responseFilter), ignoreLeavers);
          if (response != null) {
             retval.put(sender, response);
             hasResponses = true;
@@ -798,7 +798,9 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       } else if (rsp.wasSuspected()) {
          response = checkResponse(CacheNotFoundResponse.INSTANCE, sender, ignoreLeavers);
       } else {
-         if (!ignoreTimeout) throw new TimeoutException("Replication timeout for " + sender);
+         if (!ignoreTimeout) {
+            throw new TimeoutException("Replication timeout for " + sender);
+         }
          response = null;
       }
 

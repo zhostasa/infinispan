@@ -16,6 +16,8 @@ public class LocalAuthTestServerTask implements ServerTask {
     public static final String CACHE_NAME = "customTaskCache";
     public static final String KEY = "actionPerformed";
     public static final String ALLOWED_ROLE = "supervisor";
+    public static final String EXECUTED_VALUE = "executed";
+
     private TaskContext taskContext;
 
     @Override
@@ -37,9 +39,9 @@ public class LocalAuthTestServerTask implements ServerTask {
     public Object call() throws Exception {
         Cache cache = taskContext.getCache().get();
 
-        cache.getCacheManager().getCache(CACHE_NAME).put(KEY, true);
+        cache.put(KEY, true);
 
-        return null;
+        return EXECUTED_VALUE;
     }
 
 }

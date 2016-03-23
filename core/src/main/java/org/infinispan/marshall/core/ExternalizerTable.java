@@ -41,7 +41,6 @@ import org.infinispan.container.entries.metadata.MetadataTransientMortalCacheVal
 import org.infinispan.container.versioning.NumericVersion;
 import org.infinispan.container.versioning.SimpleClusteredVersion;
 import org.infinispan.context.Flag;
-import org.infinispan.distexec.mapreduce.MapReduceManagerImpl;
 import org.infinispan.distribution.ch.impl.AffinityPartitioner;
 import org.infinispan.distribution.ch.impl.DefaultConsistentHash;
 import org.infinispan.distribution.ch.impl.DefaultConsistentHashFactory;
@@ -85,7 +84,6 @@ import org.infinispan.notifications.cachelistener.filter.ConverterAsCacheEventCo
 import org.infinispan.notifications.cachelistener.filter.KeyFilterAsCacheEventFilter;
 import org.infinispan.notifications.cachelistener.filter.KeyValueFilterAsCacheEventFilter;
 import org.infinispan.partitionhandling.AvailabilityMode;
-import org.infinispan.registry.ScopedKey;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.responses.ExceptionResponse;
 import org.infinispan.remoting.responses.SuccessfulResponse;
@@ -339,7 +337,6 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new EmbeddedMetadata.Externalizer());
 
       addInternalExternalizer(new NumericVersion.Externalizer());
-      addInternalExternalizer(new ScopedKey.Externalizer());
       addInternalExternalizer(new KeyValuePair.Externalizer());
       addInternalExternalizer(new InternalMetadataImpl.Externalizer());
       addInternalExternalizer(new MarshalledEntryImpl.Externalizer(globalMarshaller));
@@ -354,8 +351,6 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new XSiteState.XSiteStateExternalizer());
       addInternalExternalizer(new CompositeKeyFilter.Externalizer());
       addInternalExternalizer(new CompositeKeyValueFilter.Externalizer());
-      addInternalExternalizer(new MapReduceManagerImpl.DeltaListExternalizer());
-      addInternalExternalizer(new MapReduceManagerImpl.DeltaAwareListExternalizer());
       addInternalExternalizer(new CacheStatusResponse.Externalizer());
       addInternalExternalizer(new CacheEventConverterAsConverter.Externalizer());
       addInternalExternalizer(new CacheEventFilterAsKeyValueFilter.Externalizer());

@@ -5,7 +5,6 @@ import java.util.Properties;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.FailoverRequestBalancingStrategy;
-import org.infinispan.client.hotrod.impl.transport.tcp.RequestBalancingStrategy;
 import org.infinispan.commons.marshall.Marshaller;
 
 /**
@@ -47,7 +46,7 @@ public abstract class AbstractConfigurationChildBuilder implements Configuration
    }
 
    @Override
-   public ConfigurationBuilder balancingStrategy(Class<? extends RequestBalancingStrategy> balancingStrategy) {
+   public ConfigurationBuilder balancingStrategy(Class<? extends FailoverRequestBalancingStrategy> balancingStrategy) {
       return builder.balancingStrategy(balancingStrategy);
    }
 
@@ -104,11 +103,6 @@ public abstract class AbstractConfigurationChildBuilder implements Configuration
    @Override
    public ConfigurationBuilder marshaller(Marshaller marshaller) {
       return builder.marshaller(marshaller);
-   }
-
-   @Override
-   public ConfigurationBuilder pingOnStartup(boolean pingOnStartup) {
-      return builder.pingOnStartup(pingOnStartup);
    }
 
    @Override

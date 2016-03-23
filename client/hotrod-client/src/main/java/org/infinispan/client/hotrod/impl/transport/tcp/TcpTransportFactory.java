@@ -93,7 +93,6 @@ public class TcpTransportFactory implements TransportFactory {
       synchronized (lock) {
          this.listenerNotifier = listenerNotifier;
          this.configuration = configuration;
-         boolean pingOnStartup = configuration.pingOnStartup();
          Collection<SocketAddress> servers = new ArrayList<>();
          initialServers = new ArrayList<>();
          for(ServerConfiguration server : configuration.servers()) {
@@ -135,9 +134,9 @@ public class TcpTransportFactory implements TransportFactory {
          }
          TransportObjectFactory connectionFactory;
          if (configuration.security().authentication().enabled()) {
-            connectionFactory = new SaslTransportObjectFactory(codec, this, defaultCacheTopologyId, pingOnStartup, configuration.security().authentication());
+            connectionFactory = new SaslTransportObjectFactory(codec, this, defaultCacheTopologyId, configuration.security().authentication());
          } else {
-            connectionFactory = new TransportObjectFactory(codec, this, defaultCacheTopologyId, pingOnStartup);
+            connectionFactory = new TransportObjectFactory(codec, this, defaultCacheTopologyId);
          }
          PropsKeyedObjectPoolFactory<SocketAddress, TcpTransport> poolFactory =
                new PropsKeyedObjectPoolFactory<SocketAddress, TcpTransport>(
@@ -147,8 +146,7 @@ public class TcpTransportFactory implements TransportFactory {
          balancers = CollectionFactory.makeMap(ByteArrayEquivalence.INSTANCE, AnyEquivalence.getInstance());
          addBalancer(RemoteCacheManager.cacheNameBytes());
 
-         if (configuration.pingOnStartup())
-            pingServersIgnoreException();
+         pingServersIgnoreException();
       }
    }
 
@@ -159,11 +157,7 @@ public class TcpTransportFactory implements TransportFactory {
       if (cfgBalancerInstance != null) {
          balancer = cfgBalancerInstance;
       } else {
-         RequestBalancingStrategy cfgBalancer = Util.getInstance(configuration.balancingStrategyClass());
-         balancer =
-                 (cfgBalancer instanceof FailoverRequestBalancingStrategy)
-                         ? (FailoverRequestBalancingStrategy) cfgBalancer
-                         : new FailoverToRequestBalancingStrategyDelegate(cfgBalancer);
+         balancer = Util.getInstance(configuration.balancingStrategyClass());
       }
       balancers.put(cacheName, balancer);
       balancer.setServers(topologyInfo.getServers());
@@ -306,14 +300,7 @@ public class TcpTransportFactory implements TransportFactory {
 
    @Override
    public void invalidateTransport(SocketAddress serverAddress, Transport transport) {
-      KeyedObjectPool<SocketAddress, TcpTransport> pool = getConnectionPool();
-      try {
-         // Transport could be null, in which case all connections
-         // to the server address will be invalidated
-         pool.invalidateObject(serverAddress, (TcpTransport) transport);
-      } catch (Exception e) {
-         log.unableToInvalidateTransport(serverAddress);
-      }
+      transport.invalidate();
    }
 
    @Override
@@ -614,7 +601,7 @@ public class TcpTransportFactory implements TransportFactory {
    /**
     * Note that the returned <code>RequestBalancingStrategy</code> may not be thread-safe.
     */
-   public RequestBalancingStrategy getBalancer(byte[] cacheName) {
+   public FailoverRequestBalancingStrategy getBalancer(byte[] cacheName) {
       synchronized (lock) {
          return balancers.get(cacheName);
       }
@@ -623,29 +610,6 @@ public class TcpTransportFactory implements TransportFactory {
    public GenericKeyedObjectPool<SocketAddress, TcpTransport> getConnectionPool() {
       synchronized (lock) {
          return connectionPool;
-      }
-   }
-
-   private static class FailoverToRequestBalancingStrategyDelegate implements FailoverRequestBalancingStrategy {
-      final RequestBalancingStrategy delegate;
-
-      private FailoverToRequestBalancingStrategyDelegate(RequestBalancingStrategy delegate) {
-         this.delegate = delegate;
-      }
-
-      @Override
-      public void setServers(Collection<SocketAddress> servers) {
-         delegate.setServers(servers);
-      }
-
-      @Override
-      public SocketAddress nextServer() {
-         return delegate.nextServer();
-      }
-
-      @Override
-      public SocketAddress nextServer(Set<SocketAddress> failedServers) {
-         return delegate.nextServer();
       }
    }
 

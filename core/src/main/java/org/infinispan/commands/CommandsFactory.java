@@ -1,29 +1,27 @@
 package org.infinispan.commands;
 
-import org.infinispan.commands.functional.*;
-import org.infinispan.commons.api.functional.EntryView;
-import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
-import org.infinispan.commons.api.functional.EntryView.ReadWriteEntryView;
-import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.commands.remote.GetKeysInGroupCommand;
-import org.infinispan.functional.impl.Params;
-import org.infinispan.iteration.impl.EntryRequestCommand;
-import org.infinispan.iteration.impl.EntryResponseCommand;
-import org.infinispan.metadata.Metadata;
 import org.infinispan.atomic.Delta;
 import org.infinispan.commands.control.LockControlCommand;
+import org.infinispan.commands.functional.ReadOnlyKeyCommand;
+import org.infinispan.commands.functional.ReadOnlyManyCommand;
+import org.infinispan.commands.functional.ReadWriteKeyCommand;
+import org.infinispan.commands.functional.ReadWriteKeyValueCommand;
+import org.infinispan.commands.functional.ReadWriteManyCommand;
+import org.infinispan.commands.functional.ReadWriteManyEntriesCommand;
+import org.infinispan.commands.functional.WriteOnlyKeyCommand;
+import org.infinispan.commands.functional.WriteOnlyKeyValueCommand;
+import org.infinispan.commands.functional.WriteOnlyManyCommand;
+import org.infinispan.commands.functional.WriteOnlyManyEntriesCommand;
 import org.infinispan.commands.read.DistributedExecuteCommand;
 import org.infinispan.commands.read.EntrySetCommand;
+import org.infinispan.commands.read.GetAllCommand;
 import org.infinispan.commands.read.GetCacheEntryCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
-import org.infinispan.commands.read.GetAllCommand;
 import org.infinispan.commands.read.KeySetCommand;
-import org.infinispan.commands.read.MapCombineCommand;
-import org.infinispan.commands.read.ReduceCommand;
 import org.infinispan.commands.read.SizeCommand;
-import org.infinispan.commands.remote.ClusteredGetCommand;
 import org.infinispan.commands.remote.ClusteredGetAllCommand;
+import org.infinispan.commands.remote.ClusteredGetCommand;
+import org.infinispan.commands.remote.GetKeysInGroupCommand;
 import org.infinispan.commands.remote.MultipleRpcCommand;
 import org.infinispan.commands.remote.SingleRpcCommand;
 import org.infinispan.commands.remote.recovery.CompleteTransactionCommand;
@@ -35,19 +33,28 @@ import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.tx.RollbackCommand;
 import org.infinispan.commands.tx.VersionedCommitCommand;
 import org.infinispan.commands.tx.VersionedPrepareCommand;
-import org.infinispan.commands.write.*;
-import org.infinispan.commons.CacheException;
+import org.infinispan.commands.write.ApplyDeltaCommand;
+import org.infinispan.commands.write.ClearCommand;
+import org.infinispan.commands.write.EvictCommand;
+import org.infinispan.commands.write.InvalidateCommand;
+import org.infinispan.commands.write.PutKeyValueCommand;
+import org.infinispan.commands.write.PutMapCommand;
+import org.infinispan.commands.write.RemoveCommand;
+import org.infinispan.commands.write.RemoveExpiredCommand;
+import org.infinispan.commands.write.ReplaceCommand;
+import org.infinispan.commands.write.WriteCommand;
+import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
+import org.infinispan.commons.api.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
 import org.infinispan.context.Flag;
-import org.infinispan.distexec.mapreduce.Mapper;
-import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
-import org.infinispan.filter.Converter;
-import org.infinispan.filter.KeyValueFilter;
+import org.infinispan.functional.impl.Params;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.remoting.transport.Address;
 import org.infinispan.statetransfer.StateChunk;
 import org.infinispan.statetransfer.StateRequestCommand;
 import org.infinispan.statetransfer.StateResponseCommand;
-import org.infinispan.remoting.transport.Address;
 import org.infinispan.stream.impl.StreamRequestCommand;
 import org.infinispan.stream.impl.StreamResponseCommand;
 import org.infinispan.transaction.xa.GlobalTransaction;
@@ -58,7 +65,6 @@ import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
 import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
 
 import javax.transaction.xa.Xid;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +76,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.infinispan.xsite.XSiteAdminCommand.*;
-import static org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand.*;
+import static org.infinispan.xsite.XSiteAdminCommand.AdminOperation;
+import static org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand.StateTransferControl;
 
 /**
  * A factory to build commands, initializing and injecting dependencies accordingly.  Commands built for a specific,
@@ -91,39 +97,41 @@ public interface CommandsFactory {
     * @param key key to put
     * @param value value to put
     * @param metadata metadata of entry
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return a PutKeyValueCommand
     */
-   PutKeyValueCommand buildPutKeyValueCommand(Object key, Object value, Metadata metadata, Set<Flag> flags);
+   PutKeyValueCommand buildPutKeyValueCommand(Object key, Object value, Metadata metadata, long flagsBitSet);
 
    /**
     * Builds a RemoveCommand
     * @param key key to remove
     * @param value value to check for ina  conditional remove, or null for an unconditional remove.
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return a RemoveCommand
     */
-   RemoveCommand buildRemoveCommand(Object key, Object value, Set<Flag> flags);
+   RemoveCommand buildRemoveCommand(Object key, Object value, long flagsBitSet);
 
    /**
     * Builds an InvalidateCommand
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @param keys keys to invalidate
     * @return an InvalidateCommand
     */
-   InvalidateCommand buildInvalidateCommand(Set<Flag> flags, Object... keys);
+   InvalidateCommand buildInvalidateCommand(long flagsBitSet, Object... keys);
 
    /**
     * Builds an InvalidateFromL1Command
+    *
+    * @param flagsBitSet Command flags provided by cache
     * @param keys keys to invalidate
     * @return an InvalidateFromL1Command
     */
-   InvalidateCommand buildInvalidateFromL1Command(Set<Flag> flags, Collection<Object> keys);
+   InvalidateCommand buildInvalidateFromL1Command(long flagsBitSet, Collection<Object> keys);
 
    /**
-    * @see #buildInvalidateFromL1Command(java.util.Set, java.util.Collection)
+    * @see #buildInvalidateFromL1Command(long, Collection)
     */
-   InvalidateCommand buildInvalidateFromL1Command(Address origin, Set<Flag> flags, Collection<Object> keys);
+   InvalidateCommand buildInvalidateFromL1Command(Address origin, long flagsBitSet, Collection<Object> keys);
 
    /**
     * Builds an expired remove command that is used to remove only a specific expired entry
@@ -140,10 +148,10 @@ public interface CommandsFactory {
     * @param oldValue existing value to check for if conditional, null if unconditional.
     * @param newValue value to replace with
     * @param metadata metadata of entry
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return a ReplaceCommand
     */
-   ReplaceCommand buildReplaceCommand(Object key, Object oldValue, Object newValue, Metadata metadata, Set<Flag> flags);
+   ReplaceCommand buildReplaceCommand(Object key, Object oldValue, Object newValue, Metadata metadata, long flagsBitSet);
 
    /**
     * Builds a SizeCommand
@@ -155,28 +163,28 @@ public interface CommandsFactory {
    /**
     * Builds a GetKeyValueCommand
     * @param key key to get
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return a GetKeyValueCommand
     */
-   GetKeyValueCommand buildGetKeyValueCommand(Object key, Set<Flag> flags);
+   GetKeyValueCommand buildGetKeyValueCommand(Object key, long flagsBitSet);
 
    /**
     * Builds a GetCacheEntryCommand
     * @param key key to get
-    * @param explicitFlags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return a GetCacheEntryCommand
     */
-   GetCacheEntryCommand buildGetCacheEntryCommand(Object key, Set<Flag> explicitFlags);
+   GetCacheEntryCommand buildGetCacheEntryCommand(Object key, long flagsBitSet);
 
    /**
     * Builds a GetAllCommand
     * @param keys keys to get
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @param returnEntries boolean indicating whether entire cache entries are
     *                      returned, otherwise return just the value parts
     * @return a GetKeyValueCommand
     */
-   GetAllCommand buildGetAllCommand(Collection<?> keys, Set<Flag> flags, boolean returnEntries);
+   GetAllCommand buildGetAllCommand(Collection<?> keys, long flagsBitSet, boolean returnEntries);
 
    /**
     * Builds a KeySetCommand
@@ -196,25 +204,25 @@ public interface CommandsFactory {
     * Builds a PutMapCommand
     * @param map map containing key/value entries to put
     * @param metadata metadata of entry
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return a PutMapCommand
     */
-   PutMapCommand buildPutMapCommand(Map<?, ?> map, Metadata metadata, Set<Flag> flags);
+   PutMapCommand buildPutMapCommand(Map<?, ?> map, Metadata metadata, long flagsBitSet);
 
    /**
     * Builds a ClearCommand
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return a ClearCommand
     */
-   ClearCommand buildClearCommand(Set<Flag> flags);
+   ClearCommand buildClearCommand(long flagsBitSet);
 
    /**
     * Builds an EvictCommand
     * @param key key to evict
-    * @param flags Command flags provided by cache
+    * @param flagsBitSet Command flags provided by cache
     * @return an EvictCommand
     */
-   EvictCommand buildEvictCommand(Object key, Set<Flag> flags);
+   EvictCommand buildEvictCommand(Object key, long flagsBitSet);
 
    /**
     * Builds a PrepareCommand
@@ -286,35 +294,37 @@ public interface CommandsFactory {
    /**
     * Builds a ClusteredGetCommand, which is a remote lookup command
     * @param key key to look up
+    * @param flagsBitSet Command flags provided by cache
     * @return a ClusteredGetCommand
     */
-   ClusteredGetCommand buildClusteredGetCommand(Object key, Set<Flag> flags, boolean acquireRemoteLock, GlobalTransaction gtx);
+   ClusteredGetCommand buildClusteredGetCommand(Object key, long flagsBitSet, boolean acquireRemoteLock, GlobalTransaction gtx);
 
    /**
     * Builds a ClusteredGetAllCommand, which is a remote lookup command
     * @param keys key to look up
+    * @param flagsBitSet Command flags provided by cache
     * @return a ClusteredGetAllCommand
     */
-   ClusteredGetAllCommand buildClusteredGetAllCommand(List<?> keys, Set<Flag> flags, GlobalTransaction gtx);
+   ClusteredGetAllCommand buildClusteredGetAllCommand(List<?> keys, long flagsBitSet, GlobalTransaction gtx);
 
    /**
     * Builds a LockControlCommand to control explicit remote locking
     *
-    *
     * @param keys keys to lock
+    * @param flagsBitSet Command flags provided by cache
     * @param gtx
     * @return a LockControlCommand
     */
-   LockControlCommand buildLockControlCommand(Collection<?> keys, Set<Flag> flags, GlobalTransaction gtx);
+   LockControlCommand buildLockControlCommand(Collection<?> keys, long flagsBitSet, GlobalTransaction gtx);
 
    /**
-    * Same as {@link #buildLockControlCommand(Object, java.util.Set, org.infinispan.transaction.xa.GlobalTransaction)}
+    * Same as {@link #buildLockControlCommand(Object, long, GlobalTransaction)}
     * but for locking a single key vs a collection of keys.
     */
-   LockControlCommand buildLockControlCommand(Object key, Set<Flag> flags, GlobalTransaction gtx);
+   LockControlCommand buildLockControlCommand(Object key, long flagsBitSet, GlobalTransaction gtx);
 
 
-   LockControlCommand buildLockControlCommand(Collection<?> keys, Set<Flag> flags);
+   LockControlCommand buildLockControlCommand(Collection<?> keys, long flagsBitSet);
 
    /**
     * Builds a StateRequestCommand used for requesting transactions and locks and for starting or canceling transfer of cache entries.
@@ -351,28 +361,6 @@ public interface CommandsFactory {
     * @return a DistributedExecuteCommand
     */
    <T>DistributedExecuteCommand<T> buildDistributedExecuteCommand(Callable<T> callable, Address sender, Collection keys);
-
-   /**
-    * Builds a MapCombineCommand used for migration and map phase execution of MapReduce tasks.
-    *
-    * @param m Mapper for MapReduceTask
-    * @param r Combiner for MapReduceTask
-    * @param keys keys used in MapReduceTask
-    * @return created MapCombineCommand
-    */
-   <KIn, VIn, KOut, VOut> MapCombineCommand<KIn, VIn, KOut, VOut> buildMapCombineCommand(
-            String taskId, Mapper<KIn, VIn, KOut, VOut> m, Reducer<KOut, VOut> r,
-            Collection<KIn> keys);
-
-   /**
-    * Builds a ReduceCommand used for migration and reduce phase execution of MapReduce tasks.
-    *
-    * @param r Reducer for MapReduceTask
-    * @param keys keys used in MapReduceTask
-    * @return created ReduceCommand
-    */
-   <KOut, VOut> ReduceCommand<KOut, VOut> buildReduceCommand(String taskId,
-            String destinationCache, Reducer<KOut, VOut> r, Collection<KOut> keys);
 
    /**
     * @see GetInDoubtTxInfoCommand
@@ -454,47 +442,13 @@ public interface CommandsFactory {
    SingleXSiteRpcCommand buildSingleXSiteRpcCommand(VisitableCommand command);
 
    /**
-    * Builds {@link org.infinispan.iteration.impl.EntryRequestCommand} used to request entries from a remote node for
-    * given segments
-    * @param identifier The unique identifier for this entry retrieval request
-    * @param segments The segments this request should retrieve
-    * @param filter The filter to apply to any found values to limit response data
-    * @param converter The converter to apply to any found values
-    * @param flags The flags used to modify behavior
-    * @param <K> The key type of the stored key
-    * @param <V> The value type of the stored values
-    * @param <C> The converted type after the value is applied from the converter
-    * @return the EntryRequestCommand created
-    */
-   <K, V, C> EntryRequestCommand<K, V, C> buildEntryRequestCommand(UUID identifier, Set<Integer> segments, Set<K> keysToFilter,
-                                                KeyValueFilter<? super K, ? super V> filter,
-                                                Converter<? super K, ? super V, C> converter, Set<Flag> flags);
-
-   /**
-    * Builds {@link org.infinispan.iteration.impl.EntryResponseCommand} use to respond with retrieved entries for
-    * given segments
-    * @param identifier The unique identifier for this entry retrieval request
-    * @param completedSegments The segments that are now completed per this response
-    * @param inDoubtSegments The segements that are now in doubt meaning they must be retrieved again from another
-    *                        node due to rehash
-    * @param values The entries retrieved from the remote node
-    * @param e If an exception occurred while running the processing on the remote node
-    * @param <K> The key type of the stored key
-    * @param <C> The converted type after the value is applied from the converter
-    * @return The EntryResponseCommand created
-    */
-   <K, C> EntryResponseCommand<K, C> buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments,
-                                                         Set<Integer> inDoubtSegments, Collection<CacheEntry<K, C>> values,
-                                                         CacheException e);
-
-   /**
     * Builds {@link org.infinispan.commands.remote.GetKeysInGroupCommand} used to fetch all the keys belonging to a group.
     *
-    * @param flags
+    * @param flagsBitSet Command flags provided by cache
     * @param groupName the group name.
     * @return the GetKeysInGroup created.
     */
-   GetKeysInGroupCommand buildGetKeysInGroupCommand(Set<Flag> flags, String groupName);
+   GetKeysInGroupCommand buildGetKeysInGroupCommand(long flagsBitSet, String groupName);
 
    <K> StreamRequestCommand<K> buildStreamRequestCommand(Object id, boolean parallelStream, StreamRequestCommand.Type type,
            Set<Integer> segments, Set<K> keys, Set<K> excludedKeys, boolean includeLoader, Object terminalOperation);
