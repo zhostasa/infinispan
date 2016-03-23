@@ -104,10 +104,10 @@
          <artifactId>infinispan-tools</artifactId>
       </dependency>
 
-      <dependency>
+      <!-- <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-tree</artifactId>
-      </dependency>
+      </dependency> -->
 
       <dependency>
          <groupId>${project.groupId}</groupId>

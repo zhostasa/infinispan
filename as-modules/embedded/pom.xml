@@ -88,10 +88,10 @@
          <artifactId>infinispan-query-dsl</artifactId>
       </dependency>
 
-      <dependency>
+      <!-- <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-tree</artifactId>
-      </dependency>
+      </dependency> -->
 
       <dependency>
          <groupId>org.hibernate</groupId>

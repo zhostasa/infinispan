@@ -120,9 +120,9 @@
             <maven-resource group="org.infinispan" artifact="infinispan-query" />
         </module-def>
 
-        <module-def name="org.infinispan.tree" slot="${infinispan.slot}">
+        <!-- <module-def name="org.infinispan.tree" slot="${infinispan.slot}">
             <maven-resource group="org.infinispan" artifact="infinispan-tree" />
-        </module-def>
+        </module-def> -->
 
         <module-def name="org.jboss.marshalling" slot="${infinispan.slot}">
             <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-osgi" />

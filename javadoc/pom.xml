@@ -104,10 +104,10 @@
          <artifactId>infinispan-spring4-remote</artifactId>
       </dependency>
 
-      <dependency>
+      <!-- <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-tree</artifactId>
-      </dependency>
+      </dependency> -->
 
       <dependency>
          <groupId>${project.groupId}</groupId>
@@ -165,10 +165,10 @@
                            <title>Server Connectors API</title>
                            <packages>org.infinispan.server*</packages>
                         </group>
-                        <group>
+                        <!-- <group>
                            <title>Tree API</title>
                            <packages>org.infinispan.tree*</packages>
-                        </group>
+                        </group> -->
                      </groups>
                      <includeDependencySources>true</includeDependencySources>
                      <includeTransitiveDependencySources>false</includeTransitiveDependencySources>

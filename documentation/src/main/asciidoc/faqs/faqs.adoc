@@ -125,10 +125,6 @@ Yes, you can combine one or more of these integrations in the same application:
 Infinispan's primary API - link:$$http://docs.jboss.org/infinispan/6.0/apidocs/org/infinispan/Cache.html$$[`org.infinispan.Cache`] - extends `java.util.concurrent.ConcurrentMap` and closely resembles `javax.cache.Cache` from link:$$http://jcp.org/en/jsr/detail?id=107$$[JSR 107].
 This is the most performant API to use, and should be used for all new projects. 
 
-link:$$http://docs.jboss.org/infinispan/6.0/apidocs/org/infinispan/tree/TreeCache.html$$[`org.infinispan.tree.TreeCache`] is a tree structured API that looks a lot like link:$$http://www.jboss.org/jbosscache/$$[JBoss Cache's] API.  Note that the similarities end at the interface though, since internal implementation and representation of the tree is completely different, using a much more efficient flat structure.
-
-link:$$http://docs.jboss.org/infinispan/6.0/apidocs/org/infinispan/tree/TreeCache.html$$[TreeCache] should be considered as a compatibility API, if you are migrating from JBoss Cache and cannot invest the time in rewriting your application, or your application specifically relies on a tree structure.
-
 ==== Which JVMs (JDKs) does Infinispan work with?
 Infinispan is developed and primarily tested against Oracle Java SE 8.
 It should work with most Java SE 9 implementations, including those from IBM, HP, Apple, Oracle, and OpenJDK.
@@ -672,4 +668,3 @@ version=281483566645249}]
 
 ==== How do I retrieve the clustering physical address?
 You can retrieve the physical address via link:$$http://docs.jboss.org/infinispan/6.0/apidocs/org/infinispan/remoting/transport/Transport.html#getPhysicalAddresses$$[`AdvancedCache.getRpcManager().getTransport().getPhysicalAddresses()`]
-
