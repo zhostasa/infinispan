@@ -176,7 +176,7 @@
                  creationDataType="configuration">
 
             <plugin-configuration>
-                <c:simple-property name="path" readOnly="true" default="websocket-connector"/>
+                <!--<c:simple-property name="path" readOnly="true" default="websocket-connector"/>-->
             </plugin-configuration>
 
             <operation name="remove" displayName="Remove Endpoint"

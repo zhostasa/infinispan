@@ -25,7 +25,7 @@
          <xs:element name="hotrod-connector" type="tns:hotrod-connector" />
          <xs:element name="memcached-connector" type="tns:memcached-connector" />
          <xs:element name="rest-connector" type="tns:rest-connector" />
-         <xs:element name="websocket-connector" type="tns:websocket-connector" />
+         <!--<xs:element name="websocket-connector" type="tns:websocket-connector" />-->
       </xs:choice>
    </xs:complexType>
 
@@ -133,11 +133,11 @@
       </xs:attribute>
    </xs:complexType>
 
-   <xs:complexType name="websocket-connector">
+   <!--<xs:complexType name="websocket-connector">
       <xs:complexContent>
          <xs:extension base="tns:protocol-connector" />
       </xs:complexContent>
-   </xs:complexType>
+   </xs:complexType>-->
 
    <xs:complexType name="topology-state-transfer">
       <xs:attribute name="cache-suffix" type="xs:string" use="optional">
