@@ -179,24 +179,6 @@ org.infinispan.distribution.ch.ReplicatedConsistentHashFactory::
   Users should never select this explicitly in a distributed cache.
 
 
-===== Capacity Factors
-The nodes in a cluster are not always identical.
-It is possible to have "non-standard" nodes that take _2x_ as much load as a regular
-node, or _0.5x_ as much load as a regular node, using the *capacityFactor* setting.
-The capacity factor can be any non-negative number, and the hashing algorithm will try to
-assign to each node a load weighted by its capacity factor (both as a primary owner and as
-a backup owner).
-
-NOTE: Capacity factors support is new in Infinispan 6.0.
-
-One interesting use case is nodes with a capacity factor of _0_.
-This could be useful when some nodes are too short-lived to be useful as data owners, but
-they can't use HotRod (or other remote protocols) because they need transactions.
-With cross-site replication as well, the "site master" should only deal with forwarding
-commands between sites and shouldn't handle user requests, so it makes sense to configure
-it with a capacity factor of 0.
-
-
 ===== Hashing Configuration
 This is how you configure hashing declaratively, via XML:
 
@@ -214,7 +196,6 @@ Configuration c = new ConfigurationBuilder()
       .hash()
          .numOwners(2)
          .numSegments(100)
-         .capacityFactor(2)
    .build();
 ----
 
