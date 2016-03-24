@@ -667,7 +667,7 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
                 break;
             }
             case QUEUE_SIZE: {
-                if (namespace.since(Namespace.INFINISPAN_SERVER_9_0)) {
+                if (namespace.since(Namespace.INFINISPAN_SERVER_8_3)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 } else {
                     log.warn("The queue-size attribute has been deprecated and has no effect, please update your configuration file.");
@@ -675,7 +675,7 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
                 }
             }
             case QUEUE_FLUSH_INTERVAL: {
-                if (namespace.since(Namespace.INFINISPAN_SERVER_9_0)) {
+                if (namespace.since(Namespace.INFINISPAN_SERVER_8_3)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 } else {
                     log.warn("The queue-flush-interval attribute has been deprecated and has no effect, please update your configuration file.");
