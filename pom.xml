@@ -44,7 +44,7 @@
       <module>server/core</module>
       <module>server/memcached</module>
       <module>server/hotrod</module>
-      <module>server/websocket</module>
+      <!-- <module>server/websocket</module> -->
       <module>server/rest</module>
       <module>client/hotrod-client</module>
       <!--<module>atomic-factory</module>-->

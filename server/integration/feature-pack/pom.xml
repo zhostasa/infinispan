@@ -271,7 +271,7 @@
             </exclusions>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-server-websocket</artifactId>
             <exclusions>
@@ -280,7 +280,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
         
         <dependency>
             <groupId>org.infinispan</groupId>

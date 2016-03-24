@@ -22,7 +22,6 @@ Infinispan logs fully support internationalization. The following is a list of m
     10001 - 11000    remote cache store
     11001 - 12000    server memcached
     12001 - 13000    server rest
-    13001 - 14000    server websocket
     14001 - 15000    query
     15001 - 16000    lucene directory
     16001 - 17000    rhq plugin

@@ -241,7 +241,6 @@ The last thing to figure out is which id to give to the message. Each module tha
 |remote cache store|10001 - 11000
 |server memcached|11001 - 12000
 |server rest|12001 - 13000
-|server websocket|13001 - 14000
 |query|14001 - 14800
 |query-dsl|14801 - 15000
 |lucene directory|15001 - 16000

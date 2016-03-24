@@ -13,7 +13,7 @@
          </hotrod-connector>
          <memcached-connector socket-binding="memcached" cache-container="local" />
          <rest-connector socket-binding="rest" cache-container="local" security-domain="other" auth-method="BASIC" />
-         <websocket-connector socket-binding="websocket" cache-container="local" />
+         <!--<websocket-connector socket-binding="websocket" cache-container="local" />-->
       </replacement>
    </supplement>
    <supplement name="clustered">
@@ -24,7 +24,7 @@
          </hotrod-connector>
          <memcached-connector socket-binding="memcached" cache-container="clustered" />
          <rest-connector socket-binding="rest" cache-container="clustered" security-domain="other" auth-method="BASIC" />
-         <websocket-connector socket-binding="websocket" cache-container="clustered" />
+         <!--<websocket-connector socket-binding="websocket" cache-container="clustered" />-->
       </replacement>
    </supplement>
    <supplement name="hotrod-rolling-upgrade">
@@ -94,6 +94,6 @@
    <socket-binding name="hotrod" port="11222" />
    <socket-binding name="hotrod-internal" port="11223" />
    <socket-binding name="memcached" port="11211" />
-   <socket-binding name="websocket" port="8181" />
+   <!--<socket-binding name="websocket" port="8181" />-->
    <socket-binding name="rest" port="8080" />
 </config>

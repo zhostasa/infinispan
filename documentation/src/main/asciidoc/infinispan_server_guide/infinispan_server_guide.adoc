@@ -588,15 +588,6 @@ The following connector declaration enables a Memcached server using the _memcac
 
 ----
 
-==== WebSocket
-
-[source,xml]
-----
-
-<websocket-connector socket-binding="websocket" cache-container="local"/>
-
-----
-
 ==== REST
 The REST connector differs from the above connectors because it piggybacks on the web subsystem. Therefore configurations such as socket binding, worker threads, timeouts, etc must be performed on the link:$$https://docs.jboss.org/author/pages/viewpage.action?pageId=53117098$$[web subsystem] . 
 
@@ -609,7 +600,7 @@ The REST connector differs from the above connectors because it piggybacks on th
 
 ==== Common Protocol Connector Settings
 
-The HotRod, Memcached and WebSocket protocol connectors support a number of tuning attributes in their declaration:
+The HotRod and Memcached protocol connectors support a number of tuning attributes in their declaration:
 
 
 *  _worker-threads_ Sets the number of worker threads. Defaults to 160.

@@ -79,10 +79,10 @@
          <classifier>classes</classifier>
       </dependency>
 
-      <dependency>
+      <!--<dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-server-websocket</artifactId>
-      </dependency>
+      </dependency>-->
 
       <dependency>
          <groupId>${project.groupId}</groupId>

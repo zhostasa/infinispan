@@ -66,9 +66,9 @@ class EndpointSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Su
       for (Property property : getConnectorsByType(node, ModelKeys.REST_CONNECTOR)) {
          writeRestConnector(writer, property.getValue());
       }
-      for (Property property : getConnectorsByType(node, ModelKeys.WEBSOCKET_CONNECTOR)) {
-         writeWebSocketConnector(writer, property.getValue());
-      }
+      //for (Property property : getConnectorsByType(node, ModelKeys.WEBSOCKET_CONNECTOR)) {
+      //   writeWebSocketConnector(writer, property.getValue());
+      //}
    }
 
    private List<Property> getConnectorsByType(final ModelNode node, String connectorType) {
@@ -112,13 +112,13 @@ class EndpointSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Su
       writer.writeEndElement();
    }
 
-   private void writeWebSocketConnector(final XMLExtendedStreamWriter writer, final ModelNode connector)
-         throws XMLStreamException {
-      writer.writeStartElement(Element.WEBSOCKET_CONNECTOR.getLocalName());
-      writeCommonConnector(writer, connector);
-      writeProtocolServerConnector(writer, connector);
-      writer.writeEndElement();
-   }
+   //private void writeWebSocketConnector(final XMLExtendedStreamWriter writer, final ModelNode connector)
+   //      throws XMLStreamException {
+   //   writer.writeStartElement(Element.WEBSOCKET_CONNECTOR.getLocalName());
+   //   writeCommonConnector(writer, connector);
+   //   writeProtocolServerConnector(writer, connector);
+   //   writer.writeEndElement();
+   //}
 
    private void writeCommonConnector(final XMLExtendedStreamWriter writer, final ModelNode connector)
          throws XMLStreamException {

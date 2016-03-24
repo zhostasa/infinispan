@@ -133,10 +133,10 @@
          <classifier>classes</classifier>
       </dependency>
       
-      <dependency>
+      <!--<dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-server-websocket</artifactId>
-      </dependency>
+      </dependency>-->
 
       <dependency>
          <groupId>org.jboss.eap</groupId>

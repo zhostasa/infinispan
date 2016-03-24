@@ -4,5 +4,5 @@
             </hotrod-connector>
             <memcached-connector socket-binding="memcached" cache-container="local"/>
             <rest-connector socket-binding="rest" cache-container="local"/>
-            <websocket-connector socket-binding="websocket" cache-container="local"/>
+            <!--<websocket-connector socket-binding="websocket" cache-container="local"/>-->
         </subsystem>
