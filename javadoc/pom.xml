@@ -135,7 +135,9 @@
                         <artifactId>infinispan-tools</artifactId>
                         <version>${project.version}</version>
                      </docletArtifact>
-                     <doctitle>Infinispan ${project.version} API</doctitle>
+                     <doctitle>JBoss Data Grid ${product.version} API</doctitle>
+                     <windowtitle>JBoss Data Grid ${product.version} API</windowtitle>
+                     <packagesheader>JBoss Data Grid ${product.version} API</packagesheader>
 
                      <docfilessubdirs>true</docfilessubdirs>
                      <detectLinks>false</detectLinks>
