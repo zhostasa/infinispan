@@ -257,11 +257,11 @@
             <artifactId>infinispan-tools</artifactId>
             <version>${project.version}</version>
          </dependency>
-         <dependency>
+         <!--<dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-tree</artifactId>
             <version>${project.version}</version>
-         </dependency>
+         </dependency>-->
          <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-jcache</artifactId>

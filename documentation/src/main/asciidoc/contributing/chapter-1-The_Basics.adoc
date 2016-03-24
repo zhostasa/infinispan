@@ -229,7 +229,6 @@ The last thing to figure out is which id to give to the message. Each module tha
 |===============
 |Module name|Id range
 |core|1 - 1000
-|tree|2001 - 3000
 |bdbje cache store|2001 - 3000
 |cassandra cache store|3001 - 4000
 |hotrod client|4001 - 5000

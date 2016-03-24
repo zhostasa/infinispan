@@ -10,7 +10,6 @@ development team.  Details on how to do so are on http://www.jboss.org/infinispa
 Infinispan logs fully support internationalization. The following is a list of modules and their message id reservation ranges:
 
      0001 -  1000    core
-     1001 -  2000    tree
      2001 -  3000    bdbje cache store
      3001 -  4000    cassandra cache store
      4001 -  5000    hotrod client
