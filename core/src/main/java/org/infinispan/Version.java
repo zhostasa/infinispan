@@ -13,7 +13,7 @@ import java.util.Arrays;
  */
 @Immutable
 public class Version {
-   private static final String MODULE_PREFIX = "ispn";
+   private static final String MODULE_PREFIX = "jdg";
    private static final int MAJOR_SHIFT = 11;
    private static final int MINOR_SHIFT = 6;
    private static final int MAJOR_MASK = 0x00f800;
@@ -34,7 +34,7 @@ public class Version {
       String parts[] = getParts(Injected.getVersion());
       versionId = readVersionBytes(parts[0], parts[1], parts[2], parts[3]);
       versionShort = getVersionShort(Injected.getVersion());
-      moduleSlot = String.format("%s-%s.%s", MODULE_PREFIX, parts[0], parts[1]);
+      moduleSlot = String.format("%s-7.0", MODULE_PREFIX);
       marshallVersion = Short.valueOf(parts[0] + parts[1]);
       majorMinor = String.format("%s.%s", parts[0], parts[1]);
    }
