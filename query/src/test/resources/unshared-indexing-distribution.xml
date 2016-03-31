@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:8.2 infinispan-config-8.2.xsd" xmlns="urn:infinispan:config:8.2">
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:8.3 infinispan-config-8.3.xsd" xmlns="urn:infinispan:config:8.3">
    <cache-container default-cache="default">
       <transport cluster="Infinispan-Query-Cluster" />
       <distributed-cache name="default" mode="SYNC">
