@@ -1196,12 +1196,12 @@
             <xs:documentation>Number of hash space segments (per cluster). The default value is 256, and should be at least 20 * cluster size.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="capacity-factor" type="xs:double" default="1">
+        <!--<xs:attribute name="capacity-factor" type="xs:double" default="1">
           <xs:annotation>
             <xs:documentation>Controls the proportion of entries that will reside on the local node,
               compared to the other nodes in the cluster. Value must be positive. The default is 1</xs:documentation>
           </xs:annotation>
-        </xs:attribute>
+        </xs:attribute>-->
         <xs:attribute name="l1-lifespan" type="xs:long">
           <xs:annotation>
             <xs:documentation>Maximum lifespan in milliseconds of an entry placed in the L1 cache.
@@ -1216,7 +1216,7 @@
             </xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="capacity" type="xs:float" default="1">
+        <!--<xs:attribute name="capacity" type="xs:float" default="1">
           <xs:annotation>
             <xs:documentation>
               Controls the proportion of entries that will reside on the local node, compared to the other nodes
@@ -1224,7 +1224,7 @@
               factor of 2 will have twice as many entries as a node with a capacity factor of 1.
             </xs:documentation>
           </xs:annotation>
-        </xs:attribute>
+        </xs:attribute>-->
         <xs:attribute name="consistent-hash-factory" type="xs:string">
           <xs:annotation>
             <xs:documentation>
