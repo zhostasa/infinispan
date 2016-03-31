@@ -1,10 +1,10 @@
 package org.infinispan.server.hotrod
 
-import java.util.function.Predicate
 import java.util.{EnumSet, ServiceLoader}
+import java.util.function.Predicate
 import javax.security.sasl.SaslServerFactory
 
-import io.netty.channel.{ChannelInitializer, Channel}
+import io.netty.channel.{Channel, ChannelInitializer}
 import org.infinispan
 import org.infinispan.AdvancedCache
 import org.infinispan.commons.equivalence.AnyEquivalence
@@ -109,7 +109,8 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
       super.startInternal(configuration, cacheManager)
 
       // Add self to topology cache last, after everything is initialized
-      isClustered = cacheManager.getCacheManagerConfiguration.transport().transport() != null
+      val globalConfig = cacheManager.getCacheManagerConfiguration
+      isClustered = globalConfig.transport().transport() != null
       if (isClustered) {
          defineTopologyCacheConfig(cacheManager)
          if (isDebugEnabled)
@@ -154,13 +155,14 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
    }
 
    private def preStartCaches() {
-      // Start defined caches to avoid issues with lazily started caches
+      // Start defined caches to avoid issues with lazily started caches. Skip internal caches if authorization is not
+      // enabled
+      val icr = cacheManager.getGlobalComponentRegistry.getComponent(classOf[InternalCacheRegistry])
+      val authz = cacheManager.getCacheManagerConfiguration.security.authorization.enabled
       for (cacheName <- asScalaIterator(cacheManager.getCacheNames.iterator)) {
-         if (!cacheName.startsWith(HotRodServerConfiguration.TOPOLOGY_CACHE_NAME_PREFIX)) {
-            val cache = getCacheInstance(cacheName, cacheManager, false)
-            val cacheCfg = SecurityActions.getCacheConfiguration(cache)
-            validateCacheConfiguration(cacheCfg)
-         }
+         val cache = getCacheInstance(cacheName, cacheManager, false, (!icr.internalCacheHasFlag(cacheName, InternalCacheRegistry.Flag.PROTECTED) || authz))
+         val cacheCfg = SecurityActions.getCacheConfiguration(cache)
+         validateCacheConfiguration(cacheCfg)
       }
    }
 
@@ -225,7 +227,7 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
       knownCaches.get(cacheName)
    }
 
-   def getCacheInstance(cacheName: String, cacheManager: EmbeddedCacheManager, skipCacheCheck: Boolean): Cache = {
+   def getCacheInstance(cacheName: String, cacheManager: EmbeddedCacheManager, skipCacheCheck: Boolean, addToKnownCaches: Boolean = true): Cache = {
       var cache: Cache = null
       if (!skipCacheCheck) cache = knownCaches.get(cacheName)
 
@@ -245,7 +247,9 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
          // We don't need synchronization as long as we store the cache last
          knownCacheConfigurations.put(cacheName, cacheConfiguration)
          knownCacheRegistries.put(cacheName, SecurityActions.getCacheComponentRegistry(tmpCache.getAdvancedCache))
-         knownCaches.put(cacheName, cache)
+         if (addToKnownCaches) {
+            knownCaches.put(cacheName, cache)
+         }
          // make sure we register a Migrator for this cache!
          tryRegisterMigrationManager(cacheName, cache)
       }

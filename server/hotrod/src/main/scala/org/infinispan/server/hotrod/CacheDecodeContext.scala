@@ -13,7 +13,6 @@ import org.infinispan.registry.InternalCacheRegistry
 import org.infinispan.remoting.rpc.RpcManager
 import org.infinispan.server.core.ServerConstants
 import org.infinispan.server.hotrod.OperationStatus._
-import org.infinispan.server.hotrod.configuration.HotRodServerConfiguration
 import org.infinispan.server.hotrod.logging.Log
 
 /**
@@ -84,29 +83,37 @@ class CacheDecodeContext(server: HotRodServer) extends ServerConstants with Log 
          notExecutedResp(prev)
    }
 
-   def obtainCache(cacheManager: EmbeddedCacheManager) = {
+   def obtainCache(cacheManager: EmbeddedCacheManager, loopback: Boolean) = {
       val cacheName = header.cacheName
       // Try to avoid calling cacheManager.getCacheNames() if possible, since this creates a lot of unnecessary garbage
       var cache = server.getKnownCacheInstance(cacheName)
       if (cache == null) {
          // Talking to the wrong cache are really request parsing errors
          // and hence should be treated as client errors
-         if (cacheName.startsWith(HotRodServerConfiguration.TOPOLOGY_CACHE_NAME_PREFIX)) {
+         val icr = cacheManager.getGlobalComponentRegistry.getComponent(classOf[InternalCacheRegistry])
+         if (icr.isPrivateCache(cacheName)) {
             throw new RequestParsingException(
-               "Remote requests are not allowed to topology cache. Do no send remote requests to cache '%s'".format(cacheName),
+               "Remote requests are not allowed to private caches. Do no send remote requests to cache '%s'".format(cacheName),
                header.version, header.messageId)
-         }
-
-         if (!cacheName.isEmpty && !(cacheManager.getCacheNames contains cacheName)) {
+         } else if (icr.internalCacheHasFlag(cacheName, InternalCacheRegistry.Flag.PROTECTED)) {
+            if (!cacheManager.getCacheManagerConfiguration.security.authorization.enabled && !loopback) {
+               throw new RequestParsingException(
+                  "Remote requests are allowed to protected caches only over loopback or if authorization is enabled. Do no send remote requests to cache '%s'".format(cacheName),
+                  header.version, header.messageId)
+            } else {
+               // We want to make sure the cache access is checked everytime, so don't store it as a "known" cache. More
+               // expensive, but these caches should not be accessed frequently
+               cache = server.getCacheInstance(cacheName, cacheManager, skipCacheCheck = true, addToKnownCaches = false)
+            }
+         } else if (!cacheName.isEmpty && !(cacheManager.getCacheNames contains cacheName)) {
             throw new CacheNotFoundException(
                "Cache with name '%s' not found amongst the configured caches".format(cacheName),
                header.version, header.messageId)
+         } else {
+            cache = server.getCacheInstance(cacheName, cacheManager, skipCacheCheck = true)
          }
-         cache = server.getCacheInstance(cacheName, cacheManager, skipCacheCheck = true)
       }
-
-      val cacheCfg = server.getCacheConfiguration(cacheName)
-      this.cache = decoder.getOptimizedCache(header, cache, cacheCfg)
+      this.cache = decoder.getOptimizedCache(header, cache, server.getCacheConfiguration(cacheName))
    }
 
    def buildMetadata: Metadata = {
