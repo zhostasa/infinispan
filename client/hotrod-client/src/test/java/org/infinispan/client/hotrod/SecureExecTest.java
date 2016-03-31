@@ -20,7 +20,6 @@ import org.infinispan.configuration.global.GlobalAuthorizationConfigurationBuild
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.scripting.ScriptingManager;
-import org.infinispan.scripting.impl.ScriptingManagerImpl;
 import org.infinispan.security.AuthorizationPermission;
 import org.infinispan.security.Security;
 import org.infinispan.security.impl.IdentityRoleMapper;
@@ -39,7 +38,7 @@ import org.testng.annotations.Test;
 @Test(testName = "client.hotrod.SecureExecTest", groups = "functional")
 @CleanupAfterMethod
 public class SecureExecTest extends AbstractAuthenticationTest {
-   static final Subject ADMIN = TestingUtil.makeSubject("admin", ScriptingManagerImpl.SCRIPT_MANAGER_ROLE);
+   static final Subject ADMIN = TestingUtil.makeSubject("admin", ScriptingManager.SCRIPT_MANAGER_ROLE);
    static final String CACHE_NAME = "secured-exec";
 
    @Override
@@ -187,5 +186,4 @@ public class SecureExecTest extends AbstractAuthenticationTest {
          }
       });
    }
-
 }

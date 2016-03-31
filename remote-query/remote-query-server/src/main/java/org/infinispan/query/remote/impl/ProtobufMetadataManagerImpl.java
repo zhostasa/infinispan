@@ -112,6 +112,10 @@ public final class ProtobufMetadataManagerImpl implements ProtobufMetadataManage
             .compatibility().enable().marshaller(new CompatibilityProtoStreamMarshaller())
             .customInterceptors().addInterceptor()
             .interceptor(new ProtobufMetadataManagerInterceptor()).after(PessimisticLockingInterceptor.class);
+      if (globalConfiguration.security().authorization().enabled()) {
+         globalConfiguration.security().authorization().roles().put(SCHEMA_MANAGER_ROLE, new CacheRoleImpl(SCHEMA_MANAGER_ROLE, AuthorizationPermission.ALL));
+         cfg.security().authorization().enable().role(SCHEMA_MANAGER_ROLE);
+      }
       return cfg;
    }
 
