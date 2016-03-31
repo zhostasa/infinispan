@@ -63,8 +63,8 @@ public class EndpointSubsystemTestCase extends ClusteringSubsystemTest {
    @Parameters
    public static Collection<Object[]> data() {
       Object[][] data = new Object[][] {
-            { "endpoint-7.2.xml", 16 },
-            { "endpoint-8.0.xml", 16 },
+            { "endpoint-7.2.xml", 15 },
+            { "endpoint-8.0.xml", 15 },
       };
       return Arrays.asList(data);
    }
