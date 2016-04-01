@@ -1,12 +1,12 @@
 package org.infinispan.server.hotrod.test
 
 import java.lang.reflect.Method
-import java.util
 import java.util.Arrays
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 
 import io.netty.channel.ChannelFuture
+import io.netty.channel.{Channel, ChannelInitializer}
 import org.infinispan.commons.api.BasicCacheContainer
 import org.infinispan.commons.equivalence.ByteArrayEquivalence
 import org.infinispan.commons.util.Util
@@ -17,17 +17,18 @@ import org.infinispan.notifications.Listener
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved
 import org.infinispan.notifications.cachelistener.event.{CacheEntryRemovedEvent, Event}
 import org.infinispan.remoting.transport.Address
+import org.infinispan.server.core.transport.TimeoutEnabledChannelInitializer
 import org.infinispan.server.hotrod.OperationStatus._
 import org.infinispan.server.hotrod._
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder
 import org.infinispan.server.hotrod.logging.Log
+import org.infinispan.server.hotrod.transport.{HotRodChannelInitializer, SingleByteFrameDecoderChannelInitializer}
 import org.infinispan.statetransfer.StateTransferManager
 import org.infinispan.test.TestingUtil
 import org.testng.Assert.{assertNull, assertTrue, _}
 import org.testng.AssertJUnit.assertEquals
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.ListBuffer
 
 /**
  * Test utils for Hot Rod tests.
@@ -71,16 +72,19 @@ object HotRodTestingUtil extends Log {
                          proxyHost: String, proxyPort: Int, delay: Long, defaultCacheName: String = BasicCacheContainer.DEFAULT_CACHE_NAME): HotRodServer = {
       val builder = new HotRodServerConfigurationBuilder
       builder.proxyHost(proxyHost).proxyPort(proxyPort).idleTimeout(idleTimeout).defaultCacheName(defaultCacheName)
-      startHotRodServer(manager, port, delay, builder)
+      startHotRodServer(manager, port, delay, false, builder)
    }
 
+   def startHotRodServer(manager: EmbeddedCacheManager, port: Int, idleTimeout: Int, builder: HotRodServerConfigurationBuilder): HotRodServer =
+      startHotRodServer(manager, port, idleTimeout, false, builder)
+
    def startHotRodServer(manager: EmbeddedCacheManager, port: Int, builder: HotRodServerConfigurationBuilder): HotRodServer =
-      startHotRodServer(manager, port, 0, builder)
+      startHotRodServer(manager, port, 0, false, builder)
 
    def startHotRodServer(manager: EmbeddedCacheManager, builder: HotRodServerConfigurationBuilder): HotRodServer =
-      startHotRodServer(manager, UniquePortThreadLocal.get.intValue, 0, builder)
+      startHotRodServer(manager, UniquePortThreadLocal.get.intValue, 0, false, builder)
 
-   def startHotRodServer(manager: EmbeddedCacheManager, port: Int, delay: Long, builder: HotRodServerConfigurationBuilder): HotRodServer = {
+   def startHotRodServer(manager: EmbeddedCacheManager, port: Int, delay: Long, perf: Boolean, builder: HotRodServerConfigurationBuilder): HotRodServer = {
       info("Start server in port %d", port)
       val server = new HotRodServer {
          override protected def createTopologyCacheConfig(distSyncTimeout: Long): ConfigurationBuilder = {
@@ -90,6 +94,27 @@ object HotRodTestingUtil extends Log {
             val cfg = super.createTopologyCacheConfig(distSyncTimeout)
             cfg.transaction().syncCommitPhase(false).syncRollbackPhase(false)
             cfg
+         }
+
+         override def getInitializer: ChannelInitializer[Channel] = {
+            // Pass by name since we have circular dependency
+            def getTransport() = {
+               transport
+            }
+            if (perf) {
+               if (configuration.idleTimeout > 0)
+                  new HotRodChannelInitializer(this, getTransport(), getEncoder, "test")
+                    with TimeoutEnabledChannelInitializer with SingleByteFrameDecoderChannelInitializer
+               else // Idle timeout logic is disabled with -1 or 0 values
+                  new HotRodChannelInitializer(this, getTransport(), getEncoder, "test")
+                    with SingleByteFrameDecoderChannelInitializer
+            } else {
+               if (configuration.idleTimeout > 0)
+                  new HotRodChannelInitializer(this, getTransport(), getEncoder, "test")
+                    with TimeoutEnabledChannelInitializer
+               else // Idle timeout logic is disabled with -1 or 0 values
+                  new HotRodChannelInitializer(this, getTransport(), getEncoder, "test")
+            }
          }
       }
       builder.host(host).port(port)
