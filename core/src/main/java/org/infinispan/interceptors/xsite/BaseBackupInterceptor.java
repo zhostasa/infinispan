@@ -7,6 +7,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.interceptors.DDSequentialInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.transaction.impl.LocalTransaction;
 import org.infinispan.transaction.impl.TransactionTable;
@@ -15,12 +16,14 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.infinispan.xsite.BackupSender;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * @author Mircea Markus
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public class BaseBackupInterceptor extends CommandInterceptor {
+public class BaseBackupInterceptor extends DDSequentialInterceptor {
 
    protected BackupSender backupSender;
    protected TransactionTable txTable;
@@ -34,17 +37,17 @@ public class BaseBackupInterceptor extends CommandInterceptor {
    }
 
    @Override
-   public final Object visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
+   public final CompletableFuture<Void> visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
       return handleMultipleKeysWriteCommand(ctx, command);
    }
 
-   protected Object handleMultipleKeysWriteCommand(InvocationContext ctx, WriteCommand command) throws Throwable {
+   protected CompletableFuture<Void> handleMultipleKeysWriteCommand(InvocationContext ctx, WriteCommand command) throws Throwable {
       if (!ctx.isOriginLocal() || skipXSiteBackup(command)) {
-         return invokeNextInterceptor(ctx, command);
+         return ctx.continueInvocation();
       }
-      Object result = invokeNextInterceptor(ctx, command);
+      Object result = ctx.forkInvocationSync(command);
       backupSender.processResponses(backupSender.backupWrite(command), command);
-      return result;
+      return ctx.shortCircuit(result);
    }
    
    protected boolean isTxFromRemoteSite(GlobalTransaction gtx) {
@@ -64,7 +67,6 @@ public class BaseBackupInterceptor extends CommandInterceptor {
       return command.hasFlag(Flag.SKIP_XSITE_BACKUP);
    }
    
-   @Override
    protected Log getLog() {
       return log;
    }

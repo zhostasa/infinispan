@@ -21,10 +21,10 @@ import org.infinispan.eviction.PassivationManager;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
-import org.infinispan.interceptors.ActivationInterceptor;
-import org.infinispan.interceptors.CacheWriterInterceptor;
-import org.infinispan.interceptors.InvalidationInterceptor;
-import org.infinispan.interceptors.base.CommandInterceptor;
+import org.infinispan.interceptors.SequentialInterceptor;
+import org.infinispan.interceptors.impl.ActivationInterceptor;
+import org.infinispan.interceptors.impl.CacheWriterInterceptor;
+import org.infinispan.interceptors.impl.InvalidationInterceptor;
 import org.infinispan.jmx.JmxStatisticsExposer;
 import org.infinispan.jmx.annotations.DataType;
 import org.infinispan.jmx.annotations.DisplayType;
@@ -639,16 +639,8 @@ public class ClusterCacheStatsImpl implements ClusterCacheStats, JmxStatisticsEx
       return hitRatio;
    }
 
-   public static <T extends CommandInterceptor> T getFirstInterceptorWhichExtends(AdvancedCache<?,?> cache, Class<T> interceptorClass) {
-
-      List<CommandInterceptor> interceptorChain = cache.getInterceptorChain();
-      for (CommandInterceptor interceptor : interceptorChain) {
-         boolean isSubclass = interceptorClass.isAssignableFrom(interceptor.getClass());
-         if (isSubclass) {
-            return (T) interceptor;
-         }
-      }
-      return null;
+   public static <T extends SequentialInterceptor> T getFirstInterceptorWhichExtends(AdvancedCache<?,?> cache, Class<T> interceptorClass) {
+      return interceptorClass.cast(cache.getSequentialInterceptorChain().findInterceptorExtending(interceptorClass));
    }
 
    private static CacheMode getCacheMode(Cache cache) {
@@ -721,7 +713,8 @@ public class ClusterCacheStatsImpl implements ClusterCacheStats, JmxStatisticsEx
          }
 
          //cache loaders
-         ActivationInterceptor aInterceptor = getFirstInterceptorWhichExtends(remoteCache, ActivationInterceptor.class);
+         ActivationInterceptor
+               aInterceptor = getFirstInterceptorWhichExtends(remoteCache, ActivationInterceptor.class);
          if (aInterceptor != null) {
             map.put(CACHE_LOADER_LOADS, aInterceptor.getCacheLoaderLoads());
             map.put(CACHE_LOADER_MISSES, aInterceptor.getCacheLoaderMisses());
@@ -730,7 +723,8 @@ public class ClusterCacheStatsImpl implements ClusterCacheStats, JmxStatisticsEx
             map.put(CACHE_LOADER_MISSES, 0);
          }
          //cache store
-         CacheWriterInterceptor interceptor = getFirstInterceptorWhichExtends(remoteCache, CacheWriterInterceptor.class);
+         CacheWriterInterceptor
+               interceptor = getFirstInterceptorWhichExtends(remoteCache, CacheWriterInterceptor.class);
          if (interceptor != null) {
             map.put(CACHE_WRITER_STORES, interceptor.getWritesToTheStores());
          } else {
