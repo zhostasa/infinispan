@@ -80,7 +80,7 @@
       <version.jboss.logging>3.3.0.Final-redhat-1</version.jboss.logging>
       <version.jgroups>3.6.9.Final-redhat-3</version.jgroups>
       <version.jta>1.0.1.Final-redhat-2</version.jta>
-      <version.netty>4.0.32.Final-redhat-1</version.netty>
+      <version.netty>4.0.36.Final-redhat-1</version.netty>
       <version.osgi>4.3.1</version.osgi>
       <version.rhq>4.4.0</version.rhq>
       <version.scala.major>2.11</version.scala.major>
@@ -375,7 +375,7 @@
             <artifactId>hibernate-core</artifactId>
             <version>${version.hibernate.core}</version>
          </dependency>
-         
+
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-core-domain</artifactId>
@@ -407,7 +407,7 @@
             <artifactId>rhq-core-native-system</artifactId>
             <version>${version.rhq}</version>
          </dependency>
-         
+
          <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-engine</artifactId>
