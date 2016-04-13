@@ -63,6 +63,7 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.test.fwk.TestInternalCacheEntryFactory;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.transaction.xa.TransactionFactory;
+import org.infinispan.util.ByteString;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -211,7 +212,7 @@ public class VersionAwareMarshallerTest extends AbstractInfinispanTest {
    }
 
    public void testReplicableCommandsMarshalling() throws Exception {
-      String cacheName = EmbeddedCacheManager.DEFAULT_CACHE_NAME;
+      ByteString cacheName = ByteString.fromString(EmbeddedCacheManager.DEFAULT_CACHE_NAME);
       ClusteredGetCommand c2 = new ClusteredGetCommand("key", cacheName,
                                                        EnumUtil.EMPTY_BIT_SET, false, null, AnyEquivalence.getInstance());
       marshallAndAssertEquality(c2);
@@ -282,7 +283,7 @@ public class VersionAwareMarshallerTest extends AbstractInfinispanTest {
    public void testStateTransferControlCommand() throws Exception {
       Cache<Object,Object> cache = cm.getCache();
 
-      String cacheName = EmbeddedCacheManager.DEFAULT_CACHE_NAME;
+      ByteString cacheName = ByteString.fromString(EmbeddedCacheManager.DEFAULT_CACHE_NAME);
       ImmortalCacheEntry entry1 = (ImmortalCacheEntry) TestInternalCacheEntryFactory.create("key", "value", System.currentTimeMillis() - 1000, -1, System.currentTimeMillis(), -1);
       Collection<InternalCacheEntry> state = new ArrayList<InternalCacheEntry>();
       state.add(entry1);

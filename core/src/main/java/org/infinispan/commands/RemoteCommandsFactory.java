@@ -57,6 +57,7 @@ import org.infinispan.stream.impl.StreamRequestCommand;
 import org.infinispan.stream.impl.StreamResponseCommand;
 import org.infinispan.stream.impl.StreamSegmentResponseCommand;
 import org.infinispan.topology.CacheTopologyControlCommand;
+import org.infinispan.util.ByteString;
 import org.infinispan.xsite.SingleXSiteRpcCommand;
 import org.infinispan.xsite.XSiteAdminCommand;
 import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
@@ -197,7 +198,7 @@ public class RemoteCommandsFactory {
     * @param cacheName     cache name at which this command is directed
     * @return              an instance of {@link CacheRpcCommand}
     */
-   public CacheRpcCommand fromStream(byte id, byte type, String cacheName) {
+   public CacheRpcCommand fromStream(byte id, byte type, ByteString cacheName) {
       CacheRpcCommand command;
       if (type == 0) {
          switch (id) {

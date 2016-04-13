@@ -20,6 +20,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.stream.impl.StreamRequestCommand;
 import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.topology.CacheTopologyControlCommand;
+import org.infinispan.util.ByteString;
 import org.infinispan.util.concurrent.BlockingTaskAwareExecutorService;
 import org.infinispan.util.concurrent.BlockingTaskAwareExecutorServiceImpl;
 import org.jgroups.Address;
@@ -87,7 +88,7 @@ public class AsynchronousInvocationTest extends AbstractInfinispanTest {
       builder.clustering().cacheMode(CacheMode.DIST_SYNC);
       cacheManager = createClusteredCacheManager(builder);
       Cache<Object, Object> cache = cacheManager.getCache();
-      String cacheName = cache.getName();
+      ByteString cacheName = ByteString.fromString(cache.getName());
       Transport transport = extractGlobalComponent(cacheManager, Transport.class);
       if (transport instanceof JGroupsTransport) {
          commandAwareRpcDispatcher = ((JGroupsTransport) transport).getCommandAwareRpcDispatcher();
