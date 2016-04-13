@@ -110,8 +110,8 @@
    '>
 ]>
 
-<plugin name="&pluginName;" version="6.6.0" displayName="JBoss Data Grid Server 6.6.x"
-        description="Supports management and monitoring of JBoss Data Grid Server 6.6.x" package="org.infinispan.server.rhq"
+<plugin name="&pluginName;" version="7.0.0" displayName="JBoss Data Grid Server 7.0.x"
+        description="Supports management and monitoring of JBoss Data Grid Server 7.0.x" package="org.infinispan.server.rhq"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:xmlns:rhq-plugin"
         xmlns:c="urn:xmlns:rhq-configuration">
 
