@@ -56,5 +56,46 @@ object OperationResponse extends Enumeration {
       OperationResponseJava.operationToResponse(request).asInstanceOf[OperationResponse]
    }
 
+   def fromResponse(response: OperationResponse): NewHotRodOperation = {
+      response match {
+         case PutResponse => NewHotRodOperation.PutRequest
+         case GetResponse => NewHotRodOperation.GetRequest
+         case PutIfAbsentResponse => NewHotRodOperation.PutIfAbsentRequest
+         case ReplaceResponse => NewHotRodOperation.ReplaceRequest
+         case ReplaceIfUnmodifiedResponse => NewHotRodOperation.ReplaceIfUnmodifiedRequest
+         case RemoveResponse => NewHotRodOperation.RemoveRequest
+         case RemoveIfUnmodifiedResponse => NewHotRodOperation.RemoveIfUnmodifiedRequest
+         case ContainsKeyResponse => NewHotRodOperation.ContainsKeyRequest
+         case GetWithVersionResponse => NewHotRodOperation.GetWithVersionRequest
+         case ClearResponse => NewHotRodOperation.ClearRequest
+         case StatsResponse => NewHotRodOperation.StatsRequest
+         case PingResponse => NewHotRodOperation.PingRequest
+         case BulkGetResponse => NewHotRodOperation.BulkGetRequest
+
+         case GetWithMetadataResponse => NewHotRodOperation.GetWithMetadataRequest
+         case BulkGetKeysResponse => NewHotRodOperation.BulkGetKeysRequest
+
+            // 1.3
+         case QueryResponse => NewHotRodOperation.QueryRequest
+
+            // 2.0
+         case AuthMechListResponse => NewHotRodOperation.AuthMechListRequest
+         case AuthResponse => NewHotRodOperation.AuthRequest
+         case AddClientListenerResponse => NewHotRodOperation.AddClientListenerRequest
+         case RemoveClientListenerResponse => NewHotRodOperation.RemoveClientListenerRequest
+         case SizeResponse => NewHotRodOperation.SizeRequest
+
+            // 2.1
+         case ExecResponse => NewHotRodOperation.ExecRequest
+         case PutAllResponse => NewHotRodOperation.PutAllRequest
+         case GetAllResponse => NewHotRodOperation.GetAllRequest
+
+            // 2.3
+         case IterationStartResponse => NewHotRodOperation.IterationStartRequest
+         case IterationNextResponse => NewHotRodOperation.IterationNextRequest
+         case IterationEndResponse => NewHotRodOperation.IterationEndRequest
+         case _ => null
+      }
+   }
 }
 
