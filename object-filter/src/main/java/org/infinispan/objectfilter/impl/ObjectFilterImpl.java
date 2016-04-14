@@ -89,7 +89,7 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
       if (projection != null && projection.length != 0) {
          translatedProjections = new ArrayList<>(projection.length);
          for (String projectionPath : projection) {
-            translatedProjections.add(metadataAdapter.translatePropertyPath(StringHelper.split(projectionPath)));
+            translatedProjections.add(metadataAdapter.mapPropertyNamePathToFieldIdPath(StringHelper.split(projectionPath)));
          }
       } else {
          translatedProjections = null;
@@ -108,7 +108,7 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
          // translate sort field paths
          translatedSortFields = new ArrayList<>(sortFields.length);
          for (SortField sortField : sortFields) {
-            translatedSortFields.add(metadataAdapter.translatePropertyPath(sortField.getPath().getPath()));
+            translatedSortFields.add(metadataAdapter.mapPropertyNamePathToFieldIdPath(sortField.getPath().getPath()));
          }
       } else {
          translatedSortFields = null;
@@ -185,7 +185,11 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
       if (namedParameters == null) {
          throw new IllegalArgumentException("namedParameters argument cannot be null");
       }
-      //todo validate params
+      for (String paramName : getParameterNames()) {
+         if (namedParameters.get(paramName) == null) {
+            throw new IllegalArgumentException("Query parameter '" + paramName + "' was not set");
+         }
+      }
       return new ObjectFilterImpl<>(this, namedParameters);
    }
 

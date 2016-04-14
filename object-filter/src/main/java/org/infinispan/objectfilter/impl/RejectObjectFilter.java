@@ -23,7 +23,11 @@ final class RejectObjectFilter<TypeMetadata>
       if (namedParameters == null) {
          throw new IllegalArgumentException("namedParameters argument cannot be null");
       }
-      //todo validate params
+      for (String paramName : getParameterNames()) {
+         if (namedParameters.get(paramName) == null) {
+            throw new IllegalArgumentException("Query parameter '" + paramName + "' was not set");
+         }
+      }
       return new RejectObjectFilter<>(namedParameters, parsingResult);
    }
 
