@@ -4,6 +4,8 @@ import org.infinispan.objectfilter.FilterCallback;
 import org.infinispan.objectfilter.ObjectFilter;
 import org.infinispan.objectfilter.SortField;
 import org.infinispan.objectfilter.impl.aggregation.FieldAccumulator;
+import org.infinispan.objectfilter.impl.hql.FilterParsingResult;
+import org.infinispan.objectfilter.impl.logging.Log;
 import org.infinispan.objectfilter.impl.predicateindex.AttributeNode;
 import org.infinispan.objectfilter.impl.predicateindex.FilterEvalContext;
 import org.infinispan.objectfilter.impl.predicateindex.MatcherEvalContext;
@@ -13,6 +15,7 @@ import org.infinispan.objectfilter.impl.predicateindex.be.BETreeMaker;
 import org.infinispan.objectfilter.impl.syntax.BooleanExpr;
 import org.infinispan.objectfilter.impl.syntax.BooleanFilterNormalizer;
 import org.infinispan.objectfilter.impl.util.StringHelper;
+import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,13 +23,15 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author anistor@redhat.com
  * @since 7.0
  */
-final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extends Comparable<AttributeId>> implements ObjectFilter {
+final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extends Comparable<AttributeId>>
+      extends ObjectFilterBase<TypeMetadata> implements ObjectFilter {
+
+   private static final Log log = Logger.getMessageLogger(Log.class, ObjectFilterImpl.class.getName());
 
    private static final FilterCallback emptyCallback = (isDelta, userContext, eventType, instance, projection, sortProjection) -> {
       // do nothing
@@ -37,14 +42,6 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
    private final MetadataAdapter<TypeMetadata, AttributeMetadata, AttributeId> metadataAdapter;
 
    private final FieldAccumulator[] acc;
-
-   private final BooleanExpr query;
-
-   private final Set<String> paramNames;
-
-   private final Map<String, Object> namedParameters;
-
-   private final String queryString;
 
    private final String[] projection;
 
@@ -64,8 +61,13 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
 
    ObjectFilterImpl(BaseMatcher<TypeMetadata, AttributeMetadata, AttributeId> matcher,
                     MetadataAdapter<TypeMetadata, AttributeMetadata, AttributeId> metadataAdapter,
-                    String queryString, Set<String> paramNames, BooleanExpr query,
-                    String[] projection, Class<?>[] projectionTypes, SortField[] sortFields, FieldAccumulator[] acc) {
+                    FilterParsingResult<TypeMetadata> parsingResult,
+                    FieldAccumulator[] acc) {
+      super(parsingResult, null);
+      this.projection = parsingResult.getProjections();
+      this.projectionTypes = parsingResult.getProjectedTypes();
+      this.sortFields = parsingResult.getSortFields();
+
       if (acc != null) {
          if (projectionTypes == null) {
             throw new IllegalArgumentException("Accumulators can only be used with projections");
@@ -75,16 +77,9 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
          }
       }
 
-      this.namedParameters = null;
-      this.paramNames = paramNames;
       this.matcher = matcher;
       this.metadataAdapter = metadataAdapter;
       this.acc = acc;
-      this.query = query;
-      this.queryString = queryString;
-      this.projection = projection;
-      this.projectionTypes = projectionTypes;
-      this.sortFields = sortFields;
 
       if (projection != null && projection.length != 0) {
          translatedProjections = new ArrayList<>(projection.length);
@@ -104,7 +99,7 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
                sortFieldMap.put(path, sf);
             }
          }
-         sortFields = sortFieldMap.values().toArray(new SortField[sortFieldMap.size()]);
+         SortField[] sortFields = sortFieldMap.values().toArray(new SortField[sortFieldMap.size()]);
          // translate sort field paths
          translatedSortFields = new ArrayList<>(sortFields.length);
          for (SortField sortField : sortFields) {
@@ -115,22 +110,19 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
       }
 
       BooleanFilterNormalizer booleanFilterNormalizer = new BooleanFilterNormalizer();
-      normalizedQuery = booleanFilterNormalizer.normalize(query);
+      normalizedQuery = booleanFilterNormalizer.normalize(parsingResult.getWhereClause());
 
-      if (paramNames.isEmpty()) {
+      if (getParameterNames().isEmpty()) {
          subscribe();
       }
    }
 
    private ObjectFilterImpl(ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId> other, Map<String, Object> namedParameters) {
-      this.namedParameters = Collections.unmodifiableMap(namedParameters);
+      super(other.parsingResult, Collections.unmodifiableMap(namedParameters));
 
-      this.paramNames = other.paramNames;
       this.matcher = other.matcher;
       this.metadataAdapter = other.metadataAdapter;
       this.acc = other.acc;
-      this.query = other.query;
-      this.queryString = other.queryString;
       this.projection = other.projection;
       this.projectionTypes = other.projectionTypes;
       this.sortFields = other.sortFields;
@@ -148,7 +140,7 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
       PredicateIndex<AttributeMetadata, AttributeId> predicateIndex = new PredicateIndex<>(metadataAdapter);
       root = predicateIndex.getRoot();
 
-      filterSubscription = new FilterSubscriptionImpl<>(queryString, namedParameters, false, metadataAdapter, beTree,
+      filterSubscription = new FilterSubscriptionImpl<>(parsingResult.getJpaQuery(), namedParameters, false, metadataAdapter, beTree,
             emptyCallback, projection, projectionTypes, translatedProjections, sortFields, translatedSortFields, null);
       filterSubscription.registerProjection(predicateIndex);
       filterSubscription.subscribe(predicateIndex);
@@ -171,19 +163,9 @@ final class ObjectFilterImpl<TypeMetadata, AttributeMetadata, AttributeId extend
    }
 
    @Override
-   public Set<String> getParameterNames() {
-      return paramNames;
-   }
-
-   @Override
-   public Map<String, Object> getParameters() {
-      return namedParameters;
-   }
-
-   @Override
    public ObjectFilter withParameters(Map<String, Object> namedParameters) {
       if (namedParameters == null) {
-         throw new IllegalArgumentException("namedParameters argument cannot be null");
+         throw log.getNamedParametersCannotBeNull();
       }
       for (String paramName : getParameterNames()) {
          if (namedParameters.get(paramName) == null) {

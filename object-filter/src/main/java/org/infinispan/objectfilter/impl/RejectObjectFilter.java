@@ -20,14 +20,7 @@ final class RejectObjectFilter<TypeMetadata>
 
    @Override
    public ObjectFilter withParameters(Map<String, Object> namedParameters) {
-      if (namedParameters == null) {
-         throw new IllegalArgumentException("namedParameters argument cannot be null");
-      }
-      for (String paramName : getParameterNames()) {
-         if (namedParameters.get(paramName) == null) {
-            throw new IllegalArgumentException("Query parameter '" + paramName + "' was not set");
-         }
-      }
+      validateParameters(namedParameters);
       return new RejectObjectFilter<>(namedParameters, parsingResult);
    }
 
