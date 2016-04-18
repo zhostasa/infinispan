@@ -12,12 +12,16 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.jcache.embedded.JCache;
 import org.infinispan.jcache.embedded.JCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.CacheManagerCallable;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
+import org.infinispan.test.fwk.TestResourceTrackingListener;
+import org.jboss.arquillian.testng.Arquillian;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "jcache.UnwrapTest")
-public class UnwrapTest {
+public class UnwrapTest extends AbstractInfinispanTest {
 
    public void testUnwrap() {
       withCacheManager(new CacheManagerCallable(

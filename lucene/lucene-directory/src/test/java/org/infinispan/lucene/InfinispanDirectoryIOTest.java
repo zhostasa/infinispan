@@ -24,6 +24,7 @@ import org.infinispan.lucene.readlocks.DistributedSegmentReadLocker;
 import org.infinispan.lucene.readlocks.SegmentReadLocker;
 import org.infinispan.lucene.testutils.RepeatableLongByteSequence;
 import org.infinispan.manager.CacheContainer;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.AssertJUnit;
 import org.testng.annotations.AfterMethod;
@@ -38,7 +39,7 @@ import org.testng.annotations.Test;
  */
 @SuppressWarnings("unchecked")
 @Test(groups = {"functional", "smoke"}, testName = "lucene.InfinispanDirectoryIOTest", singleThreaded = true)
-public class InfinispanDirectoryIOTest {
+public class InfinispanDirectoryIOTest extends AbstractInfinispanTest {
 
    /** The Test index name */
    private static final String INDEXNAME = "index";

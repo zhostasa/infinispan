@@ -9,6 +9,7 @@ import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.test.fwk.TestCacheManagerFactory._
 import org.testng.Assert._
 import org.testng.annotations.Test
+import org.infinispan.test.AbstractInfinispanTest
 
 /**
  * Hot Rod server unit test.
@@ -17,7 +18,7 @@ import org.testng.annotations.Test
  * @since 4.1
  */
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRodServerTest")
-class HotRodServerTest {
+class HotRodServerTest extends AbstractInfinispanTest {
 
    def testValidateProtocolServerNullProperties() {
       Stoppable.useCacheManager(createCacheManager(hotRodCacheConfiguration()), new Consumer[EmbeddedCacheManager] {

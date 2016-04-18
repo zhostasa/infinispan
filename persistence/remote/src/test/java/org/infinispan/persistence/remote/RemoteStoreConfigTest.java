@@ -10,6 +10,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.spi.CacheLoader;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.CacheManagerCallable;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -24,7 +25,7 @@ import org.testng.annotations.Test;
  * @since 4.1
  */
 @Test(testName = "persistence.remote.RemoteStoreConfigTest", groups = "functional")
-public class RemoteStoreConfigTest {
+public class RemoteStoreConfigTest extends AbstractInfinispanTest {
 
    public static final String CACHE_LOADER_CONFIG = "remote-cl-config.xml";
    private EmbeddedCacheManager cacheManager;

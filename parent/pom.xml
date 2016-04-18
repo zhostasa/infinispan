@@ -84,7 +84,7 @@
 
       <defaultExcludedTestGroup>unstable,stress,unstable_xsite</defaultExcludedTestGroup>
       <forkJvmArgs>-Xmx2G</forkJvmArgs>
-      <testNGListener>org.infinispan.test.fwk.UnitTestTestNGListener</testNGListener>
+      <testNGListener>org.infinispan.commons.test.TestNGTestListener</testNGListener>
       <infinispan.test.parallel.threads>15</infinispan.test.parallel.threads>
       <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
       <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
@@ -1914,14 +1914,14 @@
      <profile>
        <id>fail-all-tests</id>
        <properties>
-         <testNGListener>org.infinispan.test.fwk.UnitTestTestNGListener,org.infinispan.test.fwk.FailAllTestNGHook</testNGListener>
+         <testNGListener>org.infinispan.commons.test.TestNGTestListener,org.infinispan.test.fwk.FailAllTestNGHook</testNGListener>
          <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
        </properties>
      </profile>
      <profile>
        <id>fail-all-tests-setup</id>
        <properties>
-         <testNGListener>org.infinispan.test.fwk.UnitTestTestNGListener,org.infinispan.test.fwk.FailAllSetupTestNGHook</testNGListener>
+         <testNGListener>org.infinispan.commons.test.TestNGTestListener,org.infinispan.test.fwk.FailAllSetupTestNGHook</testNGListener>
          <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
        </properties>
      </profile>
@@ -2176,6 +2176,7 @@
                               <source>${dir.ispn}/cli/cli-interpreter/src/main/java</source>
                               <source>${dir.ispn}/client/hotrod-client/src/main/java</source>
                               <source>${dir.ispn}/commons/src/main/java</source>
+                              <source>${dir.ispn}/commons-test/src/main/java</source>
                               <source>${dir.ispn}/core/src/main/java</source>
                               <source>${dir.ispn}/demos/distexec/src/main/java</source>
                               <source>${dir.ispn}/demos/gridfs-webdav//src/main/java</source>

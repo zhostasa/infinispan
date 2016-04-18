@@ -7,6 +7,7 @@ import org.infinispan.server.core.test.Stoppable
 import org.infinispan.server.hotrod.HotRodServer
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.AbstractInfinispanTest
 import org.infinispan.test.fwk.TestCacheManagerFactory._
 import org.testng.Assert._
 import org.testng.annotations.Test
@@ -18,7 +19,7 @@ import org.testng.annotations.Test
   * @since 8.3
   */
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRodSslWithCertPasswdTest")
-class HotRodSslWithCertPasswdTest {
+class HotRodSslWithCertPasswdTest extends AbstractInfinispanTest {
 
    private val keyStoreFileName = getClass.getClassLoader.getResource("password_server_keystore.jks").getPath
    private val trustStoreFileName = getClass.getClassLoader.getResource("password_client_truststore.jks").getPath

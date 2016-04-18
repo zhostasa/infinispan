@@ -1,6 +1,5 @@
 package org.infinispan.jcache;
 
-import static org.infinispan.jcache.JCacheCustomKeyGenerator.CustomGeneratedCacheKey;
 import static org.infinispan.jcache.util.JCacheTestingUtil.getEntryCount;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -10,7 +9,10 @@ import java.lang.reflect.Method;
 
 import javax.cache.Cache;
 
+import org.infinispan.jcache.JCacheCustomKeyGenerator.CustomGeneratedCacheKey;
+import org.infinispan.test.fwk.TestResourceTrackingListener;
 import org.jboss.arquillian.testng.Arquillian;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 /**
@@ -20,6 +22,7 @@ import org.testng.annotations.Test;
  * @author Matej Cimbora
  */
 //TODO Test exception handling once implemented (e.g. cacheFor, evictFor, etc.)
+@Listeners(TestResourceTrackingListener.class)
 @Test(testName = "org.infinispan.jcache.AbstractTwoCachesAnnotationsTest", groups = "functional")
 public abstract class AbstractTwoCachesAnnotationsTest extends Arquillian {
 

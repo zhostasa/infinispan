@@ -9,6 +9,7 @@ import org.infinispan.server.core.test.Stoppable
 import org.infinispan.server.hotrod.configuration.{HotRodServerConfiguration, HotRodServerConfigurationBuilder}
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.server.hotrod.test.UniquePortThreadLocal
+import org.infinispan.test.AbstractInfinispanTest
 import org.infinispan.test.fwk.TestCacheManagerFactory
 import org.infinispan.util.concurrent.IsolationLevel
 import org.testng.Assert._
@@ -21,7 +22,7 @@ import org.testng.annotations.Test
  * @since 4.2
  */
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRodConfigurationTest")
-class HotRodConfigurationTest {
+class HotRodConfigurationTest extends AbstractInfinispanTest {
 
    def testUserDefinedTimeouts() {
       val builder = new HotRodServerConfigurationBuilder

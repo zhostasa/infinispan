@@ -2,9 +2,11 @@ package org.infinispan.lock;
 
 import static org.infinispan.context.Flag.FAIL_SILENTLY;
 import static org.infinispan.test.TestingUtil.withCacheManager;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -30,7 +32,6 @@ import org.infinispan.util.ReplicatedControlledConsistentHashFactory;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.testng.annotations.Test;
 
-
 @Test(testName = "lock.APITest", groups = "functional")
 @CleanupAfterMethod
 public class APITest extends MultipleCacheManagersTest {
@@ -50,6 +51,15 @@ public class APITest extends MultipleCacheManagersTest {
       registerCacheManager(cm1, cm2);
       cm1.getCache();
       cm2.getCache();
+   }
+
+   public void testProperties() {
+      Properties p = new Properties();
+
+      Object v = new Object();
+      p.put("bla", v);
+      assertEquals(v, p.get("bla"));
+      System.out.println(p.get("bla"));
    }
 
    public void testLockSuccess() throws Exception {

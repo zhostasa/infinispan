@@ -36,6 +36,12 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-spring4-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-spring4-common</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -44,8 +50,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-spring4-common</artifactId>
-            <type>test-jar</type>
+            <artifactId>infinispan-commons-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
