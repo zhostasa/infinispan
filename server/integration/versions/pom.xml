@@ -40,8 +40,8 @@
       <version.org.slf4j>1.7.2</version.org.slf4j>
       <version.org.apache.logging.log4j>2.3</version.org.apache.logging.log4j>
 
-      <version.org.wildfly>7.0.0.GA-redhat-1</version.org.wildfly>
-      <version.org.wildfly.core>2.1.1.Final-redhat-1</version.org.wildfly.core>
+      <version.org.wildfly>7.0.0.GA-redhat-2</version.org.wildfly>
+      <version.org.wildfly.core>2.1.2.Final-redhat-1</version.org.wildfly.core>
       <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
       <version.org.wildfly.build-tools>1.1.6.Final</version.org.wildfly.build-tools>
       
