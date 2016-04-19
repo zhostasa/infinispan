@@ -28,7 +28,7 @@
       <version.apache.ds>2.0.0-M16</version.apache.ds>
       <version.com.github.relaxng.relaxngDatatype>2011.1.0.redhat-10</version.com.github.relaxng.relaxngDatatype>
       <version.com.thoughtworks.paranamer>2.3</version.com.thoughtworks.paranamer>
-      <version.commons.logging>1.1.1</version.commons.logging>
+      <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
       <version.net.jcip.annotations>1.0.0.redhat-8</version.net.jcip.annotations>
       <version.org.jboss.jandex>2.0.2.Final-redhat-1</version.org.jboss.jandex>
       <version.org.jboss.jbossts.jbossjts>4.16.2.Final</version.org.jboss.jbossts.jbossjts>
@@ -45,7 +45,7 @@
       <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
       <version.org.wildfly.build-tools>1.1.6.Final</version.org.wildfly.build-tools>
       
-      <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
+      <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
       
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.antrun.maven.plugin>1.8</version.antrun.maven.plugin>
