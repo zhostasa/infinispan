@@ -26,7 +26,8 @@
       </includes>
       <unpackOptions>
          <excludes>
-            <exclude>org/apache/lucene/**</exclude>
+           <exclude>org/apache/lucene/**</exclude>
+           <exclude>org/hibernate/search/backend-elasticsearch/**</exclude>
          </excludes>
       </unpackOptions>
     </dependencySet>
