@@ -8,12 +8,9 @@ import io.netty.channel.ChannelPromise;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.util.Util;
 import org.infinispan.server.hotrod.CacheDecodeContext;
-import org.infinispan.server.hotrod.NewHotRodOperation;
-import org.jboss.logging.Logger;
+import org.infinispan.server.hotrod.HotRodOperation;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 /**
@@ -46,7 +43,7 @@ public class HotRodLoggingHandler extends ChannelDuplexHandler {
       // We need the information from the context now, because we could clear the context soon after the write completes
       CacheDecodeContext cacheDecodeContext = ctx.channel().attr(LoggingContextHandler.DECODE_CONTEXT_KEY).get();
 
-      NewHotRodOperation op;
+      HotRodOperation op;
       String cacheName;
       String status;
       String exception = ctx.channel().attr(LoggingContextHandler.EXCEPTION_MESSAGE_KEY).get();

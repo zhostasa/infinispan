@@ -56,44 +56,44 @@ object OperationResponse extends Enumeration {
       OperationResponseJava.operationToResponse(request).asInstanceOf[OperationResponse]
    }
 
-   def fromResponse(response: OperationResponse): NewHotRodOperation = {
+   def fromResponse(response: OperationResponse): HotRodOperation = {
       response match {
-         case PutResponse => NewHotRodOperation.PutRequest
-         case GetResponse => NewHotRodOperation.GetRequest
-         case PutIfAbsentResponse => NewHotRodOperation.PutIfAbsentRequest
-         case ReplaceResponse => NewHotRodOperation.ReplaceRequest
-         case ReplaceIfUnmodifiedResponse => NewHotRodOperation.ReplaceIfUnmodifiedRequest
-         case RemoveResponse => NewHotRodOperation.RemoveRequest
-         case RemoveIfUnmodifiedResponse => NewHotRodOperation.RemoveIfUnmodifiedRequest
-         case ContainsKeyResponse => NewHotRodOperation.ContainsKeyRequest
-         case GetWithVersionResponse => NewHotRodOperation.GetWithVersionRequest
-         case ClearResponse => NewHotRodOperation.ClearRequest
-         case StatsResponse => NewHotRodOperation.StatsRequest
-         case PingResponse => NewHotRodOperation.PingRequest
-         case BulkGetResponse => NewHotRodOperation.BulkGetRequest
+         case PutResponse => HotRodOperation.PutRequest
+         case GetResponse => HotRodOperation.GetRequest
+         case PutIfAbsentResponse => HotRodOperation.PutIfAbsentRequest
+         case ReplaceResponse => HotRodOperation.ReplaceRequest
+         case ReplaceIfUnmodifiedResponse => HotRodOperation.ReplaceIfUnmodifiedRequest
+         case RemoveResponse => HotRodOperation.RemoveRequest
+         case RemoveIfUnmodifiedResponse => HotRodOperation.RemoveIfUnmodifiedRequest
+         case ContainsKeyResponse => HotRodOperation.ContainsKeyRequest
+         case GetWithVersionResponse => HotRodOperation.GetWithVersionRequest
+         case ClearResponse => HotRodOperation.ClearRequest
+         case StatsResponse => HotRodOperation.StatsRequest
+         case PingResponse => HotRodOperation.PingRequest
+         case BulkGetResponse => HotRodOperation.BulkGetRequest
 
-         case GetWithMetadataResponse => NewHotRodOperation.GetWithMetadataRequest
-         case BulkGetKeysResponse => NewHotRodOperation.BulkGetKeysRequest
+         case GetWithMetadataResponse => HotRodOperation.GetWithMetadataRequest
+         case BulkGetKeysResponse => HotRodOperation.BulkGetKeysRequest
 
             // 1.3
-         case QueryResponse => NewHotRodOperation.QueryRequest
+         case QueryResponse => HotRodOperation.QueryRequest
 
             // 2.0
-         case AuthMechListResponse => NewHotRodOperation.AuthMechListRequest
-         case AuthResponse => NewHotRodOperation.AuthRequest
-         case AddClientListenerResponse => NewHotRodOperation.AddClientListenerRequest
-         case RemoveClientListenerResponse => NewHotRodOperation.RemoveClientListenerRequest
-         case SizeResponse => NewHotRodOperation.SizeRequest
+         case AuthMechListResponse => HotRodOperation.AuthMechListRequest
+         case AuthResponse => HotRodOperation.AuthRequest
+         case AddClientListenerResponse => HotRodOperation.AddClientListenerRequest
+         case RemoveClientListenerResponse => HotRodOperation.RemoveClientListenerRequest
+         case SizeResponse => HotRodOperation.SizeRequest
 
             // 2.1
-         case ExecResponse => NewHotRodOperation.ExecRequest
-         case PutAllResponse => NewHotRodOperation.PutAllRequest
-         case GetAllResponse => NewHotRodOperation.GetAllRequest
+         case ExecResponse => HotRodOperation.ExecRequest
+         case PutAllResponse => HotRodOperation.PutAllRequest
+         case GetAllResponse => HotRodOperation.GetAllRequest
 
             // 2.3
-         case IterationStartResponse => NewHotRodOperation.IterationStartRequest
-         case IterationNextResponse => NewHotRodOperation.IterationNextRequest
-         case IterationEndResponse => NewHotRodOperation.IterationEndRequest
+         case IterationStartResponse => HotRodOperation.IterationStartRequest
+         case IterationNextResponse => HotRodOperation.IterationNextRequest
+         case IterationEndResponse => HotRodOperation.IterationEndRequest
          case _ => null
       }
    }

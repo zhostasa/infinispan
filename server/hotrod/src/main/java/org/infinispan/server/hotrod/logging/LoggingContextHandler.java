@@ -3,16 +3,12 @@ package org.infinispan.server.hotrod.logging;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
 import org.infinispan.server.hotrod.CacheDecodeContext;
 import org.infinispan.server.hotrod.ErrorResponse;
-import org.infinispan.server.hotrod.NewHotRodOperation;
+import org.infinispan.server.hotrod.HotRodOperation;
 import org.infinispan.server.hotrod.OperationResponse;
-import org.infinispan.server.hotrod.Response;
-
-import java.util.concurrent.Callable;
 
 /**
  * Very simple handler that sole purpose is to put the decode context into the channel
@@ -33,7 +29,7 @@ public class LoggingContextHandler extends ChannelDuplexHandler {
 
 
    public static final AttributeKey<CacheDecodeContext> DECODE_CONTEXT_KEY = AttributeKey.newInstance("__decodeContextKey");
-   public static final AttributeKey<NewHotRodOperation> OPERATION_KEY = AttributeKey.newInstance("__operationKey");
+   public static final AttributeKey<HotRodOperation> OPERATION_KEY = AttributeKey.newInstance("__operationKey");
    public static final AttributeKey<String> CACHE_NAME_KEY = AttributeKey.newInstance("__cacheNameKey");
    public static final AttributeKey<String> EXCEPTION_MESSAGE_KEY = AttributeKey.newInstance("__exceptionMessageKey");
 
