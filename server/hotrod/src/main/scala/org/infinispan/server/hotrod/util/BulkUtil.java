@@ -2,17 +2,11 @@ package org.infinispan.server.hotrod.util;
 
 import org.infinispan.Cache;
 import org.infinispan.CacheStream;
-import org.infinispan.commons.CacheException;
-import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.util.IteratorMapper;
 import org.infinispan.configuration.cache.CompatibilityModeConfiguration;
-import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.server.hotrod.HotRodTypeConverter;
 
-import java.io.IOException;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
