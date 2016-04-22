@@ -26,6 +26,7 @@ public class ReadCommittedEntry implements MVCCEntry {
    private static final boolean trace = log.isTraceEnabled();
 
    protected Object key, value, oldValue;
+   protected long created, lastUsed;
    protected byte flags = 0;
    protected Metadata metadata;
 
@@ -50,7 +51,7 @@ public class ReadCommittedEntry implements MVCCEntry {
    // more space-efficient.  Note that this value will be stored in a byte, which means up to 8 flags can be stored in
    // a single byte.  Always start shifting with 0, the last shift cannot be greater than 7.
    protected enum Flags {
-      CHANGED(1 << 0),
+      CHANGED(1),
       CREATED(1 << 1),
       REMOVED(1 << 2),
       VALID(1 << 3),
@@ -72,7 +73,7 @@ public class ReadCommittedEntry implements MVCCEntry {
     * @param flag flag to test
     * @return true if set, false otherwise.
     */
-   protected final boolean isFlagSet(Flags flag) {
+   final boolean isFlagSet(Flags flag) {
       return (flags & flag.mask) != 0;
    }
 
@@ -90,7 +91,7 @@ public class ReadCommittedEntry implements MVCCEntry {
     *
     * @param flag flag to unset
     */
-   protected final void unsetFlag(Flags flag) {
+   private void unsetFlag(Flags flag) {
       flags &= ~flag.mask;
    }
 
@@ -220,6 +221,16 @@ public class ReadCommittedEntry implements MVCCEntry {
    }
 
    @Override
+   public long getCreated() {
+      return created;
+   }
+
+   @Override
+   public long getLastUsed() {
+      return lastUsed;
+   }
+
+   @Override
    public boolean isValid() {
       return isFlagSet(VALID);
    }
@@ -290,7 +301,7 @@ public class ReadCommittedEntry implements MVCCEntry {
    public void setLoaded(boolean loaded) {
    }
 
-   protected final void setFlag(boolean enable, Flags flag) {
+   final void setFlag(boolean enable, Flags flag) {
       if (enable)
          setFlag(flag);
       else
@@ -304,6 +315,16 @@ public class ReadCommittedEntry implements MVCCEntry {
       } catch (CloneNotSupportedException e) {
          throw new IllegalStateException(e);
       }
+   }
+
+   @Override
+   public void setCreated(long created) {
+      this.created = created;
+   }
+
+   @Override
+   public void setLastUsed(long lastUsed) {
+      this.lastUsed = lastUsed;
    }
 
    @Override

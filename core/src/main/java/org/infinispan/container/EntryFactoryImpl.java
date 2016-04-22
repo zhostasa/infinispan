@@ -1,5 +1,7 @@
 package org.infinispan.container;
 
+import org.infinispan.distribution.DistributionManager;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
 import org.infinispan.configuration.cache.Configuration;
@@ -34,7 +36,7 @@ public class EntryFactoryImpl implements EntryFactory {
    private static final Log log = LogFactory.getLog(EntryFactoryImpl.class);
    private final static boolean trace = log.isTraceEnabled();
    
-   protected boolean useRepeatableRead;
+   private boolean useRepeatableRead;
    private DataContainer container;
    private boolean isL1Enabled; //cache the value
    private Configuration configuration;
@@ -138,6 +140,8 @@ public class EntryFactoryImpl implements EntryFactory {
             return false;
          }
          contextEntry.setValue(externalEntry.getValue());
+         contextEntry.setCreated(externalEntry.getCreated());
+         contextEntry.setLastUsed(externalEntry.getLastUsed());
          contextEntry.setMetadata(externalEntry.getMetadata());
          if (trace)
             log.tracef("Updated context entry %s", contextEntry);
