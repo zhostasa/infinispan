@@ -294,7 +294,7 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
    @Override
    public BasicInvocationStage visitWriteOnlyManyEntriesCommand(InvocationContext ctx, WriteOnlyManyEntriesCommand command)
          throws Throwable {
-      return visitWriteManyCommand(ctx, command, command.getEntries().keySet());
+      return visitWriteManyCommand(ctx, command, command.getKeys());
    }
 
    @Override
@@ -306,7 +306,7 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
    @Override
    public BasicInvocationStage visitReadWriteManyEntriesCommand(InvocationContext ctx, ReadWriteManyEntriesCommand command)
          throws Throwable {
-      return visitWriteManyCommand(ctx, command, command.getEntries().keySet());
+      return visitWriteManyCommand(ctx, command, command.getKeys());
    }
 
    private <T extends WriteCommand & ParamsCommand> BasicInvocationStage visitWriteManyCommand(InvocationContext ctx,

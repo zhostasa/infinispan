@@ -60,6 +60,7 @@ public final class ReadWriteKeyValueCommand<K, V, R> extends AbstractWriteKeyCom
       output.writeObject(value);
       output.writeObject(f);
       MarshallUtil.marshallEnum(valueMatcher, output);
+      Params.writeObject(output, params);
       output.writeLong(Flag.copyWithoutRemotableFlags(getFlagsBitSet()));
       output.writeObject(commandInvocationId);
       output.writeObject(prevValue);
@@ -72,6 +73,7 @@ public final class ReadWriteKeyValueCommand<K, V, R> extends AbstractWriteKeyCom
       value = (V) input.readObject();
       f = (BiFunction<V, ReadWriteEntryView<K, V>, R>) input.readObject();
       valueMatcher = MarshallUtil.unmarshallEnum(input, ValueMatcher::valueOf);
+      params = Params.readObject(input);
       setFlagsBitSet(input.readLong());
       commandInvocationId = (CommandInvocationId) input.readObject();
       prevValue = (V) input.readObject();
