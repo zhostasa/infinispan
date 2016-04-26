@@ -15,7 +15,7 @@ import java.util.Iterator;
 public final class BulkUtil {
 
    // The scope constants correspond to values defined in by the Hot Rod protocol spec
-   // (http://infinispan.org/docs/7.0.x/user_guide/user_guide.html#_hot_rod_protocol_1_2)
+   // (http://infinispan.org/docs/9.0.x/user_guide/user_guide.html#_hot_rod_protocol_1_2)
    public static final int DEFAULT_SCOPE = 0;
    public static final int GLOBAL_SCOPE = 1;
    public static final int LOCAL_SCOPE = 2;
