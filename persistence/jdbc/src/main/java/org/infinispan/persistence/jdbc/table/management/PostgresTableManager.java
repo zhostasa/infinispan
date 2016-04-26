@@ -54,4 +54,21 @@ class PostgresTableManager extends AbstractTableManager {
       }
       return deleteRowSql;
    }
+
+   @Override
+   public boolean isUpsertSupported() {
+      // ON CONFLICT added in Postgres 9.5
+      return super.isUpsertSupported() && (metaData.getMajorVersion() >= 10 ||
+            (metaData.getMajorVersion() == 9 && metaData.getMinorVersion() >= 5));
+   }
+
+   @Override
+   public String getUpsertRowSql() {
+      if (upsertRowSql == null) {
+         upsertRowSql = String.format("%1$s ON CONFLICT (%2$s) DO UPDATE SET %3$s = EXCLUDED.%3$s, %4$s = EXCLUDED.%4$s",
+                                      getInsertRowSql(), config.idColumnName(), config.dataColumnName(),
+                                      config.timestampColumnName());
+      }
+      return upsertRowSql;
+   }
 }

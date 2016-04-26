@@ -32,4 +32,19 @@ class SQLServerTableManager extends AbstractTableManager {
       }
       return string;
    }
+
+   @Override
+   public String getUpsertRowSql() {
+      if (upsertRowSql == null) {
+         // As SQL Server does not handle a merge atomically, we must acquire the table lock here otherwise it's possible
+         // for deadlocks to occur.
+         upsertRowSql = String.format("MERGE %1$s WITH (TABLOCK) " +
+                     "USING (VALUES (?, ?, ?)) AS tmp (%2$s, %3$s, %4$s) " +
+                     "ON (%1$s.%2$s = tmp.%2$s) " +
+                     "WHEN MATCHED THEN UPDATE SET %3$s = tmp.%3$s, %4$s = tmp.%4$s " +
+                     "WHEN NOT MATCHED THEN INSERT (%2$s, %3$s, %4$s) VALUES (tmp.%2$s, tmp.%3$s, tmp.%4$s);",
+               getTableName(), config.dataColumnName(), config.timestampColumnName(), config.idColumnName());
+      }
+      return upsertRowSql;
+   }
 }
