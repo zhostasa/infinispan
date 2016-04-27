@@ -1,36 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<blueprint  default-activation="eager" 
+<blueprint  default-activation="eager"
             xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <bean id="parser72" class="org.infinispan.configuration.parsing.Parser72"/>
-    <service ref="parser72" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-
-    <bean id="defaultMapReduceTaskLifecycle" class="org.infinispan.distexec.mapreduce.spi.DefaultMapReduceTaskLifecycle"/>
-    <service ref="defaultMapReduceTaskLifecycle" interface="org.infinispan.distexec.mapreduce.spi.MapReduceTaskLifecycle"/>
+    <bean id="parser" class="org.infinispan.configuration.parsing.Parser"/>
+    <service ref="parser" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
 
     <bean id="defaultDistributedTaskLifecycle" class="org.infinispan.distexec.spi.DefaultDistributedTaskLifecycle"/>
     <service ref="defaultDistributedTaskLifecycle" interface="org.infinispan.distexec.spi.DistributedTaskLifecycle"/>
 
-    <bean id="jdbcStoreConfigurationParser72" class="org.infinispan.persistence.jdbc.configuration.JdbcStoreConfigurationParser72"/>
-    <service ref="jdbcStoreConfigurationParser72" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="jdbcStoreConfigurationParser" class="org.infinispan.persistence.jdbc.configuration.JdbcStoreConfigurationParser"/>
+    <service ref="jdbcStoreConfigurationParser" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
 
-    <bean id="jpaStoreConfigurationParser72" class="org.infinispan.persistence.jpa.configuration.JpaStoreConfigurationParser72"/>
-    <service ref="jpaStoreConfigurationParser72" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="jpaStoreConfigurationParser" class="org.infinispan.persistence.jpa.configuration.JpaStoreConfigurationParser"/>
+    <service ref="jpaStoreConfigurationParser" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
     <bean id="jpaStoreLifecycleManager" class="org.infinispan.persistence.jpa.impl.JpaStoreLifecycleManager"/>
     <service ref="jpaStoreLifecycleManager" interface="org.infinispan.lifecycle.ModuleLifecycle"/>
 
-    <bean id="levelDBStoreConfigurationParser72" class="org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationParser72"/>
-    <service ref="levelDBStoreConfigurationParser72" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="levelDBStoreConfigurationParser" class="org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationParser"/>
+    <service ref="levelDBStoreConfigurationParser" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
 
-    <bean id="remoteStoreConfigurationParser72" class="org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationParser72"/>
-    <service ref="remoteStoreConfigurationParser72" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="remoteStoreConfigurationParser" class="org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationParser"/>
+    <service ref="remoteStoreConfigurationParser" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
 
     <bean id="riverProviderDescriptor" class="org.jboss.marshalling.river.RiverProviderDescriptor"/>
     <service ref="riverProviderDescriptor" interface="org.jboss.marshalling.ProviderDescriptor"/>
-    
+
     <bean id="serialProviderDescriptor" class="org.jboss.marshalling.serial.SerialProviderDescriptor"/>
     <service ref="serialProviderDescriptor" interface="org.jboss.marshalling.ProviderDescriptor"/>
-  
+
 </blueprint>

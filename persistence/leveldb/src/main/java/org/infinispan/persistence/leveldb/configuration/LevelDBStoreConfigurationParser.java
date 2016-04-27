@@ -7,7 +7,7 @@ import org.infinispan.configuration.parsing.ConfigurationParser;
 import org.infinispan.configuration.parsing.Namespace;
 import org.infinispan.configuration.parsing.Namespaces;
 import org.infinispan.configuration.parsing.ParseUtils;
-import org.infinispan.configuration.parsing.Parser80;
+import org.infinispan.configuration.parsing.Parser;
 import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -19,18 +19,22 @@ import javax.xml.stream.XMLStreamException;
 /**
  *
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
- * @since 8.0
+ * @since 9.0
  */
 @MetaInfServices
 @Namespaces({
+   @Namespace(root = "leveldb-store"),
+   @Namespace(uri = "urn:infinispan:config:store:leveldb:9.0", root = "leveldb-store"),
    @Namespace(uri = "urn:infinispan:config:store:leveldb:8.0", root = "leveldb-store"),
-   @Namespace(root = "leveldb-store")
+   @Namespace(uri = "urn:infinispan:config:store:leveldb:7.2", root = "leveldb-store"),
+   @Namespace(uri = "urn:infinispan:config:store:leveldb:7.1", root = "leveldb-store"),
+   @Namespace(uri = "urn:infinispan:config:store:leveldb:7.0", root = "leveldb-store"),
 })
-public class LevelDBStoreConfigurationParser80 implements ConfigurationParser {
+public class LevelDBStoreConfigurationParser implements ConfigurationParser {
 
-   private static final Log log = LogFactory.getLog(LevelDBStoreConfigurationParser80.class);
+   private static final Log log = LogFactory.getLog(LevelDBStoreConfigurationParser.class);
 
-   public LevelDBStoreConfigurationParser80() {
+   public LevelDBStoreConfigurationParser() {
    }
 
    @Override
@@ -78,7 +82,7 @@ public class LevelDBStoreConfigurationParser80 implements ConfigurationParser {
                break;
             }
             default: {
-               Parser80.parseStoreAttribute(reader, i, builder);
+               Parser.parseStoreAttribute(reader, i, builder);
             }
          }
       }
@@ -99,7 +103,7 @@ public class LevelDBStoreConfigurationParser80 implements ConfigurationParser {
                break;
             }
             default: {
-               Parser80.parseStoreElement(reader, builder);
+               Parser.parseStoreElement(reader, builder);
             }
          }
       }

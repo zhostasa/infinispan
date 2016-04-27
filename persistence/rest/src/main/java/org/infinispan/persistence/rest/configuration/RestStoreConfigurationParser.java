@@ -7,7 +7,7 @@ import org.infinispan.configuration.parsing.ConfigurationParser;
 import org.infinispan.configuration.parsing.Namespace;
 import org.infinispan.configuration.parsing.Namespaces;
 import org.infinispan.configuration.parsing.ParseUtils;
-import org.infinispan.configuration.parsing.Parser72;
+import org.infinispan.configuration.parsing.Parser;
 import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
 import org.infinispan.persistence.rest.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -22,19 +22,22 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
  * Rest store configuration parser
  *
  * @author Galder Zamarreño
- * @since 7.2
+ * @since 9.0
  */
 @MetaInfServices
 @Namespaces({
-   @Namespace(uri = "urn:infinispan:config:store:rest:7.0", root = "rest-store"),
-   @Namespace(uri = "urn:infinispan:config:store:rest:7.1", root = "rest-store"),
+   @Namespace(root = "rest-store"),
+   @Namespace(uri = "urn:infinispan:config:store:rest:9.0", root = "rest-store"),
+   @Namespace(uri = "urn:infinispan:config:store:rest:8.0", root = "rest-store"),
    @Namespace(uri = "urn:infinispan:config:store:rest:7.2", root = "rest-store"),
+   @Namespace(uri = "urn:infinispan:config:store:rest:7.1", root = "rest-store"),
+   @Namespace(uri = "urn:infinispan:config:store:rest:7.0", root = "rest-store"),
 })
-public class RestStoreConfigurationParser72 implements ConfigurationParser {
+public class RestStoreConfigurationParser implements ConfigurationParser {
 
-   private static final Log log = LogFactory.getLog(RestStoreConfigurationParser72.class, Log.class);
+   private static final Log log = LogFactory.getLog(RestStoreConfigurationParser.class, Log.class);
 
-   public RestStoreConfigurationParser72() {
+   public RestStoreConfigurationParser() {
    }
 
    @Override
@@ -70,7 +73,7 @@ public class RestStoreConfigurationParser72 implements ConfigurationParser {
                break;
             }
             default: {
-               Parser72.parseStoreElement(reader, builder);
+               Parser.parseStoreElement(reader, builder);
                break;
             }
          }
@@ -164,7 +167,7 @@ public class RestStoreConfigurationParser72 implements ConfigurationParser {
                break;
             }
             default: {
-               Parser72.parseStoreAttribute(reader, i, builder);
+               Parser.parseStoreAttribute(reader, i, builder);
                break;
             }
          }

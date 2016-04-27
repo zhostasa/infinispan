@@ -80,7 +80,7 @@ import static org.infinispan.factories.KnownComponentNames.*;
  *
  * @author Tristan Tarrant
  * @author Galder Zamarreño
- * @since 8.0
+ * @since 9.0
  */
 @MetaInfServices
 @Namespaces({
@@ -88,17 +88,21 @@ import static org.infinispan.factories.KnownComponentNames.*;
       @Namespace(uri = "urn:infinispan:config:8.1", root = "infinispan"),
       @Namespace(uri = "urn:infinispan:config:8.2", root = "infinispan"),
       @Namespace(uri = "urn:infinispan:config:8.3", root = "infinispan"),
-      @Namespace(root = "infinispan")
-})
-public class Parser80 implements ConfigurationParser {
+      @Namespace(root = "infinispan"),
 
-   private static final Log log = LogFactory.getLog(Parser80.class);
+      @Namespace(uri = "urn:infinispan:config:7.0", root = "infinispan"),
+      @Namespace(uri = "urn:infinispan:config:7.1", root = "infinispan"),
+      @Namespace(uri = "urn:infinispan:config:7.2", root = "infinispan"),
+})
+public class Parser implements ConfigurationParser {
+
+   private static final Log log = LogFactory.getLog(Parser.class);
 
    private final Map<String, DefaultThreadFactory> threadFactories = new HashMap<String, DefaultThreadFactory>();
    private final Map<String, ThreadPoolConfigurationBuilder> threadPools = new HashMap<String, ThreadPoolConfigurationBuilder>();
    private final Map<String, String> threadPoolToThreadFactory = new HashMap<String, String>();
 
-   public Parser80() {
+   public Parser() {
    }
 
    @Override
@@ -517,10 +521,7 @@ public class Parser80 implements ConfigurationParser {
                if (reader.getSchema().since(9, 0)) {
                   throw ParseUtils.unexpectedAttribute(reader, attribute.getLocalName());
                } else {
-                  log.ignoredReplicationQueueAttribute(attribute.getLocalName(),
-                     reader.getLocation().getLineNumber());
-                  builder.replicationQueueThreadPool()
-                        .read(createThreadPoolConfiguration(value, ASYNC_REPLICATION_QUEUE_EXECUTOR));
+                  log.ignoredReplicationQueueAttribute(attribute.getLocalName(), reader.getLocation().getLineNumber());
                }
                break;
             }
@@ -1815,6 +1816,14 @@ public class Parser80 implements ConfigurationParser {
          int index, Attribute attribute, String value, ConfigurationBuilder builder, CacheMode baseCacheMode)
          throws XMLStreamException {
       switch (attribute) {
+         case ASYNC_MARSHALLING: {
+            if (reader.getSchema().since(9, 0)) {
+               throw ParseUtils.unexpectedAttribute(reader, attribute.getLocalName());
+            } else {
+               log.ignoredReplicationQueueAttribute(attribute.getLocalName(), reader.getLocation().getLineNumber());
+            }
+            break;
+         }
          case MODE: {
             Mode mode = Mode.valueOf(value);
             builder.clustering().cacheMode(mode.apply(baseCacheMode));
@@ -2421,6 +2430,17 @@ public class Parser80 implements ConfigurationParser {
          this.xaEnabled = xaEnabled;
          this.recoveryEnabled = recoveryEnabled;
          this.batchingEnabled = batchingEnabled;
+      }
+
+      public static TransactionMode fromConfiguration(org.infinispan.transaction.TransactionMode mode, boolean xaEnabled, boolean recoveryEnabled, boolean batchingEnabled) {
+         if (mode==org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL) {
+            return NONE;
+         }
+         for(TransactionMode txMode : TransactionMode.values()) {
+            if (txMode.mode == mode && txMode.xaEnabled == xaEnabled && txMode.recoveryEnabled == recoveryEnabled && txMode.batchingEnabled == batchingEnabled)
+               return txMode;
+         }
+         throw log.unknownTransactionConfiguration(mode, xaEnabled, recoveryEnabled, batchingEnabled);
       }
 
       public org.infinispan.transaction.TransactionMode getMode() {
