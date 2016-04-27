@@ -205,7 +205,7 @@ public class ConfigurationTest {
    public void testWithProperties() {
       ConfigurationBuilder builder = new ConfigurationBuilder();
       Properties p = new Properties();
-      p.setProperty(SERVER_LIST, "host1:11222;host2:11222");
+      p.setProperty(SERVER_LIST, "host1:11222; host2:11222");
       p.setProperty(ASYNC_EXECUTOR_FACTORY, "org.infinispan.client.hotrod.SomeAsyncExecutorFactory");
       p.setProperty(REQUEST_BALANCING_STRATEGY, "org.infinispan.client.hotrod.SomeRequestBalancingStrategy");
       p.setProperty(TRANSPORT_FACTORY, "org.infinispan.client.hotrod.SomeTransportfactory");
@@ -465,6 +465,10 @@ public class ConfigurationTest {
 
    private void validateConfiguration(Configuration configuration) {
       assertEquals(2, configuration.servers().size());
+      for (int i = 0; i < configuration.servers().size(); i++) {
+         assertEquals(String.format("host%d", i+1), configuration.servers().get(i).host());
+         assertEquals(11222, configuration.servers().get(i).port());
+      }
       assertEqualsConfig(SomeAsyncExecutorFactory.class, ASYNC_EXECUTOR_FACTORY, configuration);
       assertEqualsConfig(SomeRequestBalancingStrategy.class, REQUEST_BALANCING_STRATEGY, configuration);
       assertEqualsConfig(SomeTransportfactory.class, TRANSPORT_FACTORY, configuration);

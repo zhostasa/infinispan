@@ -100,7 +100,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    @Override
    public ConfigurationBuilder addServers(String servers) {
       for (String server : servers.split(";")) {
-         Matcher matcher = ADDRESS_PATTERN.matcher(server);
+         Matcher matcher = ADDRESS_PATTERN.matcher(server.trim());
          if (matcher.matches()) {
             String v6host = matcher.group(2);
             String v4host = matcher.group(3);
