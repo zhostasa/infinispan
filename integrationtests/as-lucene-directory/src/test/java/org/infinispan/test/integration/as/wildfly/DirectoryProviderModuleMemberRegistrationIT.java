@@ -15,16 +15,14 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.junit.runner.RunWith;
 
-import static org.infinispan.test.integration.as.VersionTestHelper.addHibernateSearchManifestDependencies;
 import static org.infinispan.test.integration.as.VersionTestHelper.addMainHibernateSearchManifestDependencies;
 
 /**
- * Test the Hibernate Search module combined with an Infinispan Directory usage.
- *
- * @author Sanne Grinovero
+ * Test the Hibernate Search module in EAP combined with an Infinispan Directory provided by JDG modules
  */
 @RunWith(Arquillian.class)
-public class InfinispanModuleMemberRegistrationIT extends MemberRegistrationBase {
+public class DirectoryProviderModuleMemberRegistrationIT extends MemberRegistrationBase {
+
 
    @Deployment(name = "dep.active-1")
    @TargetsContainer("container.active-1")
@@ -40,14 +38,14 @@ public class InfinispanModuleMemberRegistrationIT extends MemberRegistrationBase
 
    private static Archive<?> createTestArchive() {
       WebArchive webArchive = ShrinkWrap
-              .create(WebArchive.class, InfinispanModuleMemberRegistrationIT.class.getSimpleName() + ".war")
+              .create(WebArchive.class, DirectoryProviderModuleMemberRegistrationIT.class.getSimpleName() + ".war")
               .addClasses(Member.class, MemberRegistration.class, MemberRegistrationBase.class)
               .addAsResource(persistenceXml(), "META-INF/persistence.xml")
               //This test is simply reusing the default configuration file, but we copy
               //this configuration into the Archive to verify that resources can be loaded from it:
               .addAsResource("user-provided-infinispan.xml", "user-provided-infinispan.xml")
               .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-      addHibernateSearchManifestDependencies(webArchive);
+      addMainHibernateSearchManifestDependencies(webArchive);
       return webArchive;
    }
 
@@ -61,10 +59,6 @@ public class InfinispanModuleMemberRegistrationIT extends MemberRegistrationBase
               .createProperty()
               .name("hibernate.hbm2ddl.auto")
               .value("create-drop")
-              .up()
-              .createProperty()
-              .name("wildfly.jpa.hibernate.search.module")
-              .value("none")
               .up()
               .createProperty()
               .name("hibernate.search.default.lucene_version")
@@ -87,5 +81,4 @@ public class InfinispanModuleMemberRegistrationIT extends MemberRegistrationBase
               .exportAsString();
       return new StringAsset(persistenceXml);
    }
-
 }
