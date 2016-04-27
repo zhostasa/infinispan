@@ -26,10 +26,41 @@
          <type>test-jar</type>
          <scope>test</scope>
       </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-commons-test</artifactId>
+         <scope>test</scope>
+      </dependency>
       
       <dependency>
-         <groupId>gnu.getopt</groupId>
-         <artifactId>java-getopt</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>infinispan-cachestore-jdbc</artifactId>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>infinispan-cachestore-jpa</artifactId>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>infinispan-cachestore-leveldb</artifactId>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>infinispan-cachestore-remote</artifactId>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>infinispan-cachestore-rest</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>gnu-getopt</groupId>
+         <artifactId>getopt</artifactId>
       </dependency>
 
       <dependency>
@@ -37,7 +68,7 @@
          <artifactId>infinispan-server-core</artifactId>
          <scope>provided</scope>
       </dependency>
-      
+
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-query</artifactId>
@@ -47,6 +78,11 @@
       <dependency>
          <groupId>org.javassist</groupId>
          <artifactId>javassist</artifactId>
+      </dependency>
+
+      <dependency>
+        <groupId>org.kohsuke.metainf-services</groupId>
+        <artifactId>metainf-services</artifactId>
       </dependency>
 
       <dependency>
@@ -76,7 +112,7 @@
       </profile>
    </profiles>
 
-   <build>     
+   <build>
       <plugins>
          <plugin>
             <groupId>org.apache.felix</groupId>

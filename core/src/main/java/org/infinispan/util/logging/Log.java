@@ -1409,4 +1409,10 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Node %s attempting to join cache %s with incompatible state", id = 410)
    CacheJoinException nodeWithIncompatibleStateJoiningCache(Address joiner, String cacheName);
+
+   @Message(value = "Cannot determine a synthetic transaction configuration from mode=%s, xaEnabled=%s, recoveryEnabled=%s, batchingEnabled=%s", id = 412)
+   CacheConfigurationException unknownTransactionConfiguration(org.infinispan.transaction.TransactionMode mode, boolean xaEnabled, boolean recoveryEnabled, boolean batchingEnabled);
+
+   @Message(value = "Unable to instantiate serializer for StoreConfiguration %s", id = 413)
+   CacheConfigurationException unableToInstantiateSerializer(Class<?> storeConfigurationClass);
 }
