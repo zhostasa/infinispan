@@ -86,7 +86,7 @@ fi
 
 LOG_CONF=`echo $JAVA_OPTS | grep "logging.configuration"`
 if [ "x$LOG_CONF" = "x" ]; then
-    JAVA_OPTS="$JAVA_OPTS \"-Dlogging.configuration=file:$JBOSS_HOME/bin/ispn-cli-logging.properties\""
+    JAVA_OPTS="$JAVA_OPTS \"-Dlogging.configuration=file:$JBOSS_HOME/bin/cli-logging.properties\""
 else
     echo "logging.configuration already set in JAVA_OPTS"
 fi

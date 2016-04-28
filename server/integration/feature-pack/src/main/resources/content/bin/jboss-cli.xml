@@ -33,7 +33,7 @@
     <!-- Command and operation history log configuration -->
     <history>
         <enabled>true</enabled>
-        <file-name>.ispn-cli-history</file-name>
+        <file-name>.jdg-cli-history</file-name>
         <file-dir>${user.home}</file-dir>
         <max-size>500</max-size>
     </history>
