@@ -18,15 +18,13 @@ import org.infinispan.commons.logging.LogFactory;
 public class AttributeSet implements AttributeListener<Object> {
    private static final Log log = LogFactory.getLog(AttributeSet.class);
    private final String name;
-   private final Map<String, Attribute<? extends Object>> attributes;
+   private final Map<String, Attribute<?>> attributes;
    private boolean protect;
 
-   @SafeVarargs
    public AttributeSet(Class<?> klass, AttributeDefinition<?>... attributeDefinitions) {
       this(klass.getSimpleName(), attributeDefinitions);
    }
 
-   @SafeVarargs
    public AttributeSet(String name, AttributeDefinition<?>... attributeDefinitions) {
       this.name = name;
       this.attributes = new HashMap<>(attributeDefinitions.length);
@@ -41,7 +39,6 @@ public class AttributeSet implements AttributeListener<Object> {
       }
    }
 
-   @SafeVarargs
    public AttributeSet(Class<?> klass, AttributeSet attributeSet, AttributeDefinition<?>... attributeDefinitions) {
       this(klass.getSimpleName(), attributeSet, attributeDefinitions);
    }
@@ -49,7 +46,7 @@ public class AttributeSet implements AttributeListener<Object> {
    public AttributeSet(String name, AttributeSet attributeSet, AttributeDefinition<?>[] attributeDefinitions) {
       this.name = name;
       this.attributes = new HashMap<>(attributeDefinitions.length + attributeSet.attributes.size());
-      for (Attribute<? extends Object> attribute : attributeSet.attributes.values()) {
+      for (Attribute<?> attribute : attributeSet.attributes.values()) {
          this.attributes.put(attribute.name(), attribute.getAttributeDefinition().toAttribute());
       }
       for (AttributeDefinition<?> def : attributeDefinitions) {
@@ -87,7 +84,7 @@ public class AttributeSet implements AttributeListener<Object> {
 
    public void read(AttributeSet other) {
 
-      for (Iterator<Attribute<? extends Object>> iterator = attributes.values().iterator(); iterator.hasNext();) {
+      for (Iterator<Attribute<?>> iterator = attributes.values().iterator(); iterator.hasNext();) {
          Attribute<Object> attribute = (Attribute<Object>) iterator.next();
 
          Attribute<Object> a = other.attribute(attribute.name());
@@ -183,8 +180,8 @@ public class AttributeSet implements AttributeListener<Object> {
       if (protect) {
          throw log.protectedAttributeSet(name);
       }
-      for (Iterator<Attribute<? extends Object>> iterator = attributes.values().iterator(); iterator.hasNext();) {
-         iterator.next().reset();
+      for (Attribute<?> attribute : attributes.values()) {
+         attribute.reset();
       }
    }
 
