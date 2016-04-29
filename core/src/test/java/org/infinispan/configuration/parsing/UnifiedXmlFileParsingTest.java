@@ -60,6 +60,9 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
          @Override
          public void call() {
             switch (version) {
+               case 83:
+                  configurationCheck83(cm);
+                  break;
                case 82:
                   configurationCheck82(cm);
                   break;
@@ -79,6 +82,10 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
             }
          }
       });
+   }
+
+   private static void configurationCheck83(EmbeddedCacheManager cm) {
+      configurationCheck82(cm);
    }
 
    private static void configurationCheck82(EmbeddedCacheManager cm) {
@@ -191,18 +198,6 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
 
       assertTrue(cm.getCacheManagerConfiguration().evictionThreadPool().threadPoolFactory() instanceof ScheduledThreadPoolExecutorFactory);
       threadFactory = cm.getCacheManagerConfiguration().evictionThreadPool().threadFactory();
-      assertEquals("infinispan", threadFactory.threadGroup().getName());
-      assertEquals("%G %i", threadFactory.threadNamePattern());
-      assertEquals(5, threadFactory.initialPriority());
-
-      assertTrue(cm.getCacheManagerConfiguration().replicationQueueThreadPool().threadPoolFactory() instanceof ScheduledThreadPoolExecutorFactory);
-      threadFactory = cm.getCacheManagerConfiguration().replicationQueueThreadPool().threadFactory();
-      assertEquals("infinispan", threadFactory.threadGroup().getName());
-      assertEquals("%G %i", threadFactory.threadNamePattern());
-      assertEquals(5, threadFactory.initialPriority());
-
-      assertTrue(cm.getCacheManagerConfiguration().replicationQueueThreadPool().threadPoolFactory() instanceof ScheduledThreadPoolExecutorFactory);
-      threadFactory = cm.getCacheManagerConfiguration().replicationQueueThreadPool().threadFactory();
       assertEquals("infinispan", threadFactory.threadGroup().getName());
       assertEquals("%G %i", threadFactory.threadNamePattern());
       assertEquals(5, threadFactory.initialPriority());
