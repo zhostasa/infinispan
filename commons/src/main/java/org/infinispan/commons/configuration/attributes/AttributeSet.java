@@ -47,7 +47,7 @@ public class AttributeSet implements AttributeListener<Object> {
       this.name = name;
       if (attributeSet != null) {
          this.attributes = new LinkedHashMap<>(attributeDefinitions.length + attributeSet.attributes.size());
-         for (Attribute<? extends Object> attribute : attributeSet.attributes.values()) {
+         for (Attribute<?> attribute : attributeSet.attributes.values()) {
             this.attributes.put(attribute.name(), attribute.getAttributeDefinition().toAttribute());
          }
       } else {

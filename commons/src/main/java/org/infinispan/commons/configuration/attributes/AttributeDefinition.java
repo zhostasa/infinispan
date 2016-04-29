@@ -53,7 +53,6 @@ public final class AttributeDefinition<T> {
       return xmlName;
    }
 
-   @SuppressWarnings("unchecked")
    public Class<T> getType() {
       return type;
    }
@@ -154,7 +153,7 @@ public final class AttributeDefinition<T> {
       }
 
       public AttributeDefinition<T> build() {
-         return new AttributeDefinition(name, xmlName == null ? Util.xmlify(name) : xmlName, defaultValue, type, immutable, autoPersist, copier, validator, initializer);
+         return new AttributeDefinition<T>(name, xmlName == null ? Util.xmlify(name) : xmlName, defaultValue, type, immutable, autoPersist, copier, validator, initializer);
       }
    }
 
