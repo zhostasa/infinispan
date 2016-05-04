@@ -26,12 +26,6 @@
          <type>test-jar</type>
          <scope>test</scope>
       </dependency>
-
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>infinispan-commons-test</artifactId>
-         <scope>test</scope>
-      </dependency>
       
       <dependency>
         <groupId>${project.groupId}</groupId>
@@ -59,8 +53,8 @@
       </dependency>
 
       <dependency>
-         <groupId>gnu-getopt</groupId>
-         <artifactId>getopt</artifactId>
+         <groupId>gnu.getopt</groupId>
+         <artifactId>java-getopt</artifactId>
       </dependency>
 
       <dependency>
