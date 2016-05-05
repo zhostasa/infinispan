@@ -2200,5 +2200,43 @@
          </build>
       </profile>
 
+      <profile>
+           <id>jdk-other-testsuite</id>
+           <activation>
+               <property><name>env.JAVA_HOME_OTHER</name></property>
+           </activation>
+           <build>
+              <plugins>
+                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                       <jvm>${env.JAVA_HOME_OTHER}/bin/java</jvm>
+                       <parallel>tests</parallel>
+                       <threadCount>${infinispan.test.parallel.threads}</threadCount>
+                       <forkCount>1</forkCount>
+                       <reuseForks>true</reuseForks>
+                       <groups>${defaultTestGroup}</groups>
+                       <excludedGroups>${defaultExcludedTestGroup}</excludedGroups>
+                       <systemPropertyVariables>
+                          <infinispan.test.jgroups.protocol>${infinispan.test.jgroups.protocol}</infinispan.test.jgroups.protocol>
+                          <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
+                          <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+                          <log4j.configurationFile>${log4j.configurationFile}</log4j.configurationFile>
+                       </systemPropertyVariables>
+                       <trimStackTrace>false</trimStackTrace>
+                       <properties>
+                          <property>
+                             <name>listener</name>
+                             <value>${testNGListener}</value>
+                          </property>
+                       </properties>
+                       
+                       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel</argLine>
+                    </configuration>
+                 </plugin>
+              </plugins>
+           </build>
+        </profile>
    </profiles>
 </project>
