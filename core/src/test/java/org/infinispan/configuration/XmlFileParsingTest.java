@@ -8,6 +8,7 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.CapacityFactor;
 import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.InterceptorConfiguration;
@@ -500,7 +501,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(null, c.clustering().hash().consistentHash()); // this is just an override.
       assertEquals(3, c.clustering().hash().numOwners());
       assertTrue(c.clustering().l1().enabled());
-      assertEquals(0.0f, c.clustering().hash().capacityFactor());
+      assertEquals(0.0f, CapacityFactor.capacityFactor(c.clustering().hash()));
       if (!deprecated) assertEquals(1000, c.clustering().hash().numSegments());
 
       c = cm.getCacheConfiguration("groups");

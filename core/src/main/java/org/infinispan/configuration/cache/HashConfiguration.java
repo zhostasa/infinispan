@@ -146,9 +146,8 @@ public class HashConfiguration {
     * Controls the proportion of entries that will reside on the local node, compared to the other nodes in the
     * cluster. This is just a suggestion, there is no guarantee that a node with a capacity factor of {@code 2} will
     * have twice as many entries as a node with a capacity factor of {@code 1}.
-    * @private
     */
-   public float capacityFactor() {
+   /*package*/ float capacityFactor() {
       return capacityFactor.get();
    }
 

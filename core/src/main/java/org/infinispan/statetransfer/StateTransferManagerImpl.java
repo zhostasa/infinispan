@@ -5,6 +5,7 @@ import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.CapacityFactor;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.ConsistentHashFactory;
@@ -114,7 +115,7 @@ public class StateTransferManagerImpl implements StateTransferManager {
             configuration.clustering().stateTransfer().timeout(),
             configuration.transaction().transactionProtocol().isTotalOrder(),
             configuration.clustering().cacheMode().isDistributed(),
-            configuration.clustering().hash().capacityFactor(),
+            CapacityFactor.capacityFactor(configuration.clustering().hash()),
             localTopologyManager.getPersistentUUID(),
             persistentStateChecksum);
 

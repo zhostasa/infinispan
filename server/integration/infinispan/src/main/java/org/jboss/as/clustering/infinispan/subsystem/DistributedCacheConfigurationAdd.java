@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.CapacityFactor;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -78,10 +79,10 @@ public class DistributedCacheConfigurationAdd extends SharedStateCacheConfigurat
         final long lifespan = DistributedCacheConfigurationResource.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
 
         // process the additional distributed attributes and elements
-        builder.clustering().hash()
+        CapacityFactor.capacityFactor(builder.clustering().hash()
             .numOwners(owners)
-            .numSegments(segments)
-            .capacityFactor(capacityFactor)
+            .numSegments(segments),
+            capacityFactor)
         ;
 
         if (lifespan > 0) {

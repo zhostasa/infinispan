@@ -17,6 +17,7 @@ import org.infinispan.configuration.cache.BackupConfiguration;
 import org.infinispan.configuration.cache.BackupConfigurationBuilder;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.CapacityFactor;
 import org.infinispan.configuration.cache.ClusterLoaderConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -1939,7 +1940,7 @@ public class Parser80 implements ConfigurationParser {
                break;
             }
             case CAPACITY_FACTOR: {
-               builder.clustering().hash().capacityFactor(Float.parseFloat(value));
+               CapacityFactor.capacityFactor(builder.clustering().hash(), Float.parseFloat(value));
                break;
             }
             case CONSISTENT_HASH_FACTORY: {
