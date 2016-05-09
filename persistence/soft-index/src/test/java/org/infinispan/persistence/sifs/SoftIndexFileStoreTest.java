@@ -1,9 +1,10 @@
 package org.infinispan.persistence.sifs;
 
 import static org.infinispan.persistence.PersistenceUtil.internalMetadata;
-import static org.infinispan.test.TestingUtil.recursiveFileRemove;
+import static org.infinispan.commons.util.Util.recursiveFileRemove;
 import static org.testng.AssertJUnit.assertEquals;
 
+import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -38,7 +39,7 @@ public class SoftIndexFileStoreTest extends BaseStoreTest {
 
    @AfterClass
    protected void clearTempDir() {
-      recursiveFileRemove(tmpDirectory);
+      Util.recursiveFileRemove(tmpDirectory);
    }
 
    @Override
