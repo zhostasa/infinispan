@@ -1,12 +1,7 @@
 package org.infinispan.container;
 
-import org.infinispan.distribution.DistributionManager;
-import org.infinispan.expiration.ExpirationManager;
-import org.infinispan.metadata.Metadata;
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
-import org.infinispan.commands.FlagAffectedCommand;
-import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.DeltaAwareCacheEntry;
@@ -16,8 +11,10 @@ import org.infinispan.container.entries.ReadCommittedEntry;
 import org.infinispan.container.entries.RepeatableReadEntry;
 import org.infinispan.container.entries.StateChangingEntry;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.util.TimeService;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.infinispan.util.logging.Log;
@@ -35,7 +32,7 @@ import static org.infinispan.commons.util.Util.toStr;
 public class EntryFactoryImpl implements EntryFactory {
 
    private static final Log log = LogFactory.getLog(EntryFactoryImpl.class);
-   private final boolean trace = log.isTraceEnabled();
+   private final static boolean trace = log.isTraceEnabled();
    
    protected boolean useRepeatableRead;
    private DataContainer container;
