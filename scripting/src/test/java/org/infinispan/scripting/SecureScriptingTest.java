@@ -31,6 +31,7 @@ public class SecureScriptingTest extends AbstractScriptingTest {
    static final Subject RUNNER = TestingUtil.makeSubject("runner", "runner");
    static final Subject PHEIDIPPIDES = TestingUtil.makeSubject("pheidippides", "pheidippides");
    static final Subject ACHILLES = TestingUtil.makeSubject("achilles", "achilles");
+   static final String CACHE_NAME = "secured-script-exec";
 
    @Override
    protected EmbeddedCacheManager createCacheManager() throws Exception {
@@ -54,7 +55,17 @@ public class SecureScriptingTest extends AbstractScriptingTest {
          .role("admin")
             .permission(AuthorizationPermission.ALL);
       authConfig.role("runner").role("pheidippides").role("admin");
-      return TestCacheManagerFactory.createCacheManager(global, config);
+      EmbeddedCacheManager cm = TestCacheManagerFactory.createCacheManager(global, config);
+      Security.doAs(ADMIN, new PrivilegedExceptionAction<Void>() {
+         @Override
+         public Void run() throws Exception {
+            cm.getCache(ScriptingTest.CACHE_NAME);
+            cm.getCache(SecureScriptingTest.CACHE_NAME);
+            return null;
+         }
+      });
+
+      return cm;
    }
 
    @Override

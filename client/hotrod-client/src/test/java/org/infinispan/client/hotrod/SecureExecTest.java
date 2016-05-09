@@ -40,6 +40,7 @@ import org.testng.annotations.Test;
 @CleanupAfterMethod
 public class SecureExecTest extends AbstractAuthenticationTest {
    static final Subject ADMIN = TestingUtil.makeSubject("admin", ScriptingManagerImpl.SCRIPT_MANAGER_ROLE);
+   static final String CACHE_NAME = "secured-exec";
 
    @Override
    protected EmbeddedCacheManager createCacheManager() throws Exception {
@@ -62,6 +63,13 @@ public class SecureExecTest extends AbstractAuthenticationTest {
          .marshaller(new GenericJBossMarshaller())
          .security().authorization().enable().role("admin").role("RWEuser").role("RWuser");
       cacheManager = TestCacheManagerFactory.createCacheManager(global, config);
+      ConfigurationBuilder config2 = TestCacheManagerFactory.getDefaultCacheConfiguration(true);
+      config2
+            .dataContainer()
+            .keyEquivalence(new AnyServerEquivalence())
+            .valueEquivalence(new AnyServerEquivalence())
+            .security().authorization().enable().role("admin").role("RWEuser").role("RWuser");
+      cacheManager.defineConfiguration(CACHE_NAME, config2.build());
       cacheManager.getCache();
 
       return cacheManager;
@@ -165,9 +173,9 @@ public class SecureExecTest extends AbstractAuthenticationTest {
          uploadScript(scriptName, script);
       }
 
-      String result = remoteCacheManager.getCache().execute(scriptName, params);
+      String result = remoteCacheManager.getCache(CACHE_NAME).execute(scriptName, params);
       assertEquals("guinness", result);
-      assertEquals("guinness", remoteCacheManager.getCache().get("a"));
+      assertEquals("guinness", remoteCacheManager.getCache(CACHE_NAME).get("a"));
    }
 
    protected void uploadScript(String scriptName, String script) throws PrivilegedActionException {

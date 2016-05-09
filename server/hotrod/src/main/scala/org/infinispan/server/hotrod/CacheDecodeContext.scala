@@ -140,9 +140,10 @@ class CacheDecodeContext(server: HotRodServer) extends ServerConstants {
          val v = ce.getValue
          val lifespan = if (ice.getLifespan < 0) -1 else (ice.getLifespan / 1000).toInt
          val maxIdle = if (ice.getMaxIdle < 0) -1 else (ice.getMaxIdle / 1000).toInt
+         val version = Option(entryVersion).map(e => e.getVersion).getOrElse(0L)
          new GetWithMetadataResponse(header.version, header.messageId, header.cacheName,
             header.clientIntel, OperationResponse.GetWithMetadataResponse, Success, header.topologyId,
-            v, entryVersion.getVersion, ice.getCreated, lifespan, ice.getLastUsed, maxIdle)
+            v, version, ice.getCreated, lifespan, ice.getLastUsed, maxIdle)
       } else {
          new GetWithMetadataResponse(header.version, header.messageId, header.cacheName,
             header.clientIntel, OperationResponse.GetWithMetadataResponse, KeyDoesNotExist, header.topologyId,
