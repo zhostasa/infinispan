@@ -13,9 +13,9 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
+import org.infinispan.interceptors.AsyncInterceptor;
+import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.InterceptorChain;
-import org.infinispan.interceptors.SequentialInterceptor;
-import org.infinispan.interceptors.SequentialInterceptorChain;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -49,9 +49,9 @@ import java.util.concurrent.CompletableFuture;
  */
 @Deprecated
 @Scope(Scopes.NAMED_CACHE)
-public abstract class CommandInterceptor extends AbstractVisitor implements SequentialInterceptor {
+public abstract class CommandInterceptor extends AbstractVisitor implements AsyncInterceptor {
 
-   private SequentialInterceptorChain interceptorChain;
+   private AsyncInterceptorChain interceptorChain;
 
    protected Configuration cacheConfiguration;
 
@@ -62,7 +62,7 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Sequ
    }
 
    @Inject
-   public void injectConfiguration(Configuration configuration, SequentialInterceptorChain interceptorChain) {
+   public void injectConfiguration(Configuration configuration, AsyncInterceptorChain interceptorChain) {
       this.cacheConfiguration = configuration;
       this.interceptorChain = interceptorChain;
    }
@@ -74,12 +74,12 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Sequ
     * @return the next interceptor in the chain.
     */
    public final CommandInterceptor getNext() {
-      List<SequentialInterceptor> interceptors = interceptorChain.getInterceptors();
+      List<AsyncInterceptor> interceptors = interceptorChain.getInterceptors();
       int myIndex = interceptors.indexOf(this);
       if (myIndex < interceptors.size() - 1) {
-         SequentialInterceptor sequentialInterceptor = interceptors.get(myIndex + 1);
-         if (sequentialInterceptor instanceof CommandInterceptor)
-            return (CommandInterceptor) sequentialInterceptor;
+         AsyncInterceptor asyncInterceptor = interceptors.get(myIndex + 1);
+         if (asyncInterceptor instanceof CommandInterceptor)
+            return (CommandInterceptor) asyncInterceptor;
       }
       return null;
    }
@@ -91,7 +91,7 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Sequ
     * @return true if there is another interceptor in the chain after this; false otherwise.
     */
    public final boolean hasNext() {
-      List<SequentialInterceptor> interceptors = interceptorChain.getInterceptors();
+      List<AsyncInterceptor> interceptors = interceptorChain.getInterceptors();
       int myIndex = interceptors.indexOf(this);
       return myIndex < interceptors.size();
    }

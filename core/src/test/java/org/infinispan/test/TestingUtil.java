@@ -20,8 +20,8 @@ import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.filter.KeyFilter;
-import org.infinispan.interceptors.SequentialInterceptor;
-import org.infinispan.interceptors.SequentialInterceptorChain;
+import org.infinispan.interceptors.AsyncInterceptor;
+import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.jmx.PerThreadMBeanServerLookup;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -204,9 +204,9 @@ public class TestingUtil {
       }
    }
 
-   public static <T extends SequentialInterceptor> T findInterceptor(Cache<?, ?> cache,
+   public static <T extends AsyncInterceptor> T findInterceptor(Cache<?, ?> cache,
          Class<T> interceptorToFind) {
-      return cache.getAdvancedCache().getSequentialInterceptorChain()
+      return cache.getAdvancedCache().getAsyncInterceptorChain()
             .findInterceptorExtending(interceptorToFind);
    }
 
@@ -573,10 +573,7 @@ public class TestingUtil {
    }
 
    private static boolean isCacheViewChanged(List members, int finalViewSize) {
-      if (members == null || finalViewSize != members.size())
-         return false;
-      else
-         return true;
+      return !(members == null || finalViewSize != members.size());
    }
 
 
@@ -854,19 +851,19 @@ public class TestingUtil {
    }
 
    public static AbstractDelegatingMarshaller extractCacheMarshaller(Cache cache) {
-      ComponentRegistry cr = (ComponentRegistry) extractField(cache, "componentRegistry");
+      ComponentRegistry cr = extractField(cache, "componentRegistry");
       StreamingMarshaller marshaller = cr.getComponent(StreamingMarshaller.class, KnownComponentNames.CACHE_MARSHALLER);
       return (AbstractDelegatingMarshaller) marshaller;
    }
 
    public static AbstractDelegatingMarshaller extractGlobalMarshaller(EmbeddedCacheManager cm) {
-      GlobalComponentRegistry gcr = (GlobalComponentRegistry) extractField(cm, "globalComponentRegistry");
+      GlobalComponentRegistry gcr = extractField(cm, "globalComponentRegistry");
       return (AbstractDelegatingMarshaller)
             gcr.getComponent(StreamingMarshaller.class, KnownComponentNames.GLOBAL_MARSHALLER);
    }
 
    public static ExternalizerTable extractExtTable(CacheContainer cacheContainer) {
-      GlobalComponentRegistry gcr = (GlobalComponentRegistry) extractField(cacheContainer, "globalComponentRegistry");
+      GlobalComponentRegistry gcr = extractField(cacheContainer, "globalComponentRegistry");
       return gcr.getComponent(ExternalizerTable.class);
    }
 
@@ -887,7 +884,7 @@ public class TestingUtil {
          cr.wireDependencies(i);
       }
       while ((i = i.getNext()) != null);
-      SequentialInterceptorChain inch = cache.getAdvancedCache().getSequentialInterceptorChain();
+      AsyncInterceptorChain inch = cache.getAdvancedCache().getAsyncInterceptorChain();
       return inch.replaceInterceptor(replacingInterceptor, toBeReplacedInterceptorType);
    }
 
@@ -900,11 +897,11 @@ public class TestingUtil {
     * @param toBeReplacedInterceptorType the type of interceptor that should be swapped with the new one
     * @return true if the interceptor was replaced
     */
-   public static boolean replaceInterceptor(Cache cache, SequentialInterceptor replacingInterceptor, Class<? extends SequentialInterceptor> toBeReplacedInterceptorType) {
+   public static boolean replaceInterceptor(Cache cache, AsyncInterceptor replacingInterceptor, Class<? extends AsyncInterceptor> toBeReplacedInterceptorType) {
       ComponentRegistry cr = extractComponentRegistry(cache);
       // make sure all interceptors here are wired.
       cr.wireDependencies(replacingInterceptor);
-      SequentialInterceptorChain inch = cr.getComponent(SequentialInterceptorChain.class);
+      AsyncInterceptorChain inch = cr.getComponent(AsyncInterceptorChain.class);
       return inch.replaceInterceptor(replacingInterceptor, toBeReplacedInterceptorType);
    }
 
@@ -939,7 +936,7 @@ public class TestingUtil {
 
    public static void replicateCommand(Cache cache, VisitableCommand command) throws Throwable {
       ComponentRegistry cr = extractComponentRegistry(cache);
-      SequentialInterceptorChain ic = cr.getComponent(SequentialInterceptorChain.class);
+      AsyncInterceptorChain ic = cr.getComponent(AsyncInterceptorChain.class);
       InvocationContextFactory icf = cr.getComponent(InvocationContextFactory.class);
       InvocationContext ctxt = icf.createInvocationContext(true, -1);
       ic.invoke(ctxt, command);
@@ -1565,7 +1562,7 @@ public class TestingUtil {
       return wrap;
    }
 
-   public static interface WrapFactory<T, W, C> {
+   public interface WrapFactory<T, W, C> {
       W wrap(C wrapOn, T current);
    }
 

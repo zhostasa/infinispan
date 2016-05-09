@@ -6,7 +6,7 @@ import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.commons.configuration.attributes.IdentityAttributeCopier;
 import org.infinispan.commons.util.Util;
-import org.infinispan.interceptors.SequentialInterceptor;
+import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 
 /**
@@ -39,7 +39,7 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
    public static final AttributeDefinition<Position> POSITION = AttributeDefinition.builder("position", Position.OTHER_THAN_FIRST_OR_LAST).immutable().build();
    public static final AttributeDefinition<Class> AFTER = AttributeDefinition.builder("after", null, Class.class).immutable().build();
    public static final AttributeDefinition<Class> BEFORE = AttributeDefinition.builder("before", null, Class.class).immutable().build();
-   public static final AttributeDefinition<SequentialInterceptor> INTERCEPTOR = AttributeDefinition.builder("interceptor", null, SequentialInterceptor.class).copier(IdentityAttributeCopier.INSTANCE).immutable().build();
+   public static final AttributeDefinition<AsyncInterceptor> INTERCEPTOR = AttributeDefinition.builder("interceptor", null, AsyncInterceptor.class).copier(IdentityAttributeCopier.INSTANCE).immutable().build();
    public static final AttributeDefinition<Class> INTERCEPTOR_CLASS = AttributeDefinition.builder("interceptorClass", null, Class.class).xmlName("class").immutable().build();
    public static final AttributeDefinition<Integer> INDEX = AttributeDefinition.builder("index", -1).immutable().build();
 
@@ -50,7 +50,7 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
    private final Attribute<Position> position;
    private final Attribute<Class> after;
    private final Attribute<Class> before;
-   private final Attribute<SequentialInterceptor> interceptor;
+   private final Attribute<AsyncInterceptor> interceptor;
    private final Attribute<Class> interceptorClass;
    private final Attribute<Integer> index;
 
@@ -65,17 +65,17 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
    }
 
    @SuppressWarnings("unchecked")
-   public Class<? extends SequentialInterceptor> after() {
+   public Class<? extends AsyncInterceptor> after() {
       return after.get();
    }
 
    @SuppressWarnings("unchecked")
-   public Class<? extends SequentialInterceptor> before() {
+   public Class<? extends AsyncInterceptor> before() {
       return before.get();
    }
 
    /**
-    * @deprecated Since 9.0, please use {@link #sequentialInterceptor()} instead.
+    * @deprecated Since 9.0, please use {@link #asyncInterceptor()} instead.
     */
    @Deprecated
    public CommandInterceptor interceptor() {
@@ -86,9 +86,9 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
       }
    }
 
-   public SequentialInterceptor sequentialInterceptor() {
+   public AsyncInterceptor asyncInterceptor() {
       if (interceptor.isNull()) {
-         return (SequentialInterceptor) Util.getInstance(interceptorClass.get());
+         return (AsyncInterceptor) Util.getInstance(interceptorClass.get());
       } else {
          return interceptor.get();
       }
@@ -102,7 +102,7 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
       return interceptorClass.get();
    }
 
-   public Class<? extends SequentialInterceptor> sequentialInterceptorClass() {
+   public Class<? extends AsyncInterceptor> sequentialInterceptorClass() {
       return interceptorClass.get();
    }
 

@@ -9,7 +9,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
-import org.infinispan.interceptors.DDSequentialInterceptor;
+import org.infinispan.interceptors.DDAsyncInterceptor;
 import org.infinispan.remoting.transport.BackupResponse;
 import org.infinispan.transaction.impl.LocalTransaction;
 import org.infinispan.transaction.impl.TransactionTable;
@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public class BaseBackupInterceptor extends DDSequentialInterceptor {
+public class BaseBackupInterceptor extends DDAsyncInterceptor {
 
    protected BackupSender backupSender;
    protected TransactionTable txTable;

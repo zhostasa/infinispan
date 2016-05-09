@@ -11,8 +11,8 @@ import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.filter.KeyFilter;
 import org.infinispan.filter.KeyValueFilter;
-import org.infinispan.interceptors.SequentialInterceptor;
-import org.infinispan.interceptors.SequentialInterceptorChain;
+import org.infinispan.interceptors.AsyncInterceptor;
+import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.impl.CacheLoaderInterceptor;
 import org.infinispan.interceptors.impl.CacheWriterInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -334,6 +334,7 @@ public class ManualEvictionWithSizeBasedAndConcurrentOperationsInPrimaryOwnerTes
       assertInMemory(key1, "v3");
    }
 
+   @Override
    protected void configurePersistence(ConfigurationBuilder builder) {
       builder.persistence().passivation(false).addStore(DummyInMemoryStoreConfigurationBuilder.class)
             .storeName(storeName + storeNamePrefix.getAndIncrement());
@@ -533,8 +534,8 @@ public class ManualEvictionWithSizeBasedAndConcurrentOperationsInPrimaryOwnerTes
       volatile Runnable afterEvict;
 
       public AfterPassivationOrCacheWriter injectThis(Cache<Object, Object> injectInCache) {
-         SequentialInterceptorChain chain = extractComponent(injectInCache, SequentialInterceptorChain.class);
-         SequentialInterceptor interceptor = chain.findInterceptorExtending(CacheWriterInterceptor.class);
+         AsyncInterceptorChain chain = extractComponent(injectInCache, AsyncInterceptorChain.class);
+         AsyncInterceptor interceptor = chain.findInterceptorExtending(CacheWriterInterceptor.class);
          if (interceptor == null) {
             interceptor = chain.findInterceptorExtending(CacheLoaderInterceptor.class);
          }
