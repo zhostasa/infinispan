@@ -78,7 +78,7 @@
       <version.cdi>1.0.0.SP4-redhat-5</version.cdi>
       <version.jboss.marshalling>1.4.10.Final-redhat-3</version.jboss.marshalling>
       <version.jboss.logging>3.3.0.Final-redhat-1</version.jboss.logging>
-      <version.jgroups>3.6.9.Final-redhat-2</version.jgroups>
+      <version.jgroups>3.6.9.Final-redhat-3</version.jgroups>
       <version.jta>1.0.1.Final-redhat-2</version.jta>
       <version.netty>4.0.32.Final-redhat-1</version.netty>
       <version.osgi>4.3.1</version.osgi>
