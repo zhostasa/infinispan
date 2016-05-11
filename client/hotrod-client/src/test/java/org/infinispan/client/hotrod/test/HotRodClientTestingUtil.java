@@ -3,6 +3,8 @@ package org.infinispan.client.hotrod.test;
 import static org.infinispan.distribution.DistributionTestHelper.isFirstOwner;
 
 import java.io.IOException;
+import io.netty.channel.unix.Errors;
+import io.netty.channel.unix.Errors.NativeIoException;
 import java.io.InputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
