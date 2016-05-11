@@ -36,7 +36,7 @@
       <version.org.jboss.modules>1.5.1.Final-redhat-1</version.org.jboss.modules>
       <version.junit>4.11</version.junit>
       <version.org.infinispan>${project.version}</version.org.infinispan>
-      <version.org.infinispan.infinispan-management-console>8.3.0.ER4-redhat-1</version.org.infinispan.infinispan-management-console>
+      <version.org.infinispan.infinispan-management-console>8.3.0-redhat-SNAPSHOT</version.org.infinispan.infinispan-management-console>
       <version.org.infinispan.arquillian.container>1.2.0.Beta1</version.org.infinispan.arquillian.container>
       <version.org.slf4j>1.7.2</version.org.slf4j>
       <version.org.apache.logging.log4j>2.3</version.org.apache.logging.log4j>
@@ -45,7 +45,7 @@
       <version.org.wildfly.core>2.1.2.Final-redhat-1</version.org.wildfly.core>
       <version.org.wildfly.arquillian>1.1.0.Beta1</version.org.wildfly.arquillian>
       <version.org.wildfly.build-tools>1.1.6.Final</version.org.wildfly.build-tools>
-      <version.remoting.jmx.wildfly>2.0.1.Final</version.remoting.jmx.wildfly>
+      <version.remoting.jmx.wildfly>2.0.1.Final-redhat-1</version.remoting.jmx.wildfly>
       <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
       <version.org.wildfly.extras.creaper>0.9.5</version.org.wildfly.extras.creaper>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
