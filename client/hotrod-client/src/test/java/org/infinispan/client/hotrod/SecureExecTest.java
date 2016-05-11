@@ -39,7 +39,7 @@ import org.testng.annotations.Test;
 @Test(testName = "client.hotrod.SecureExecTest", groups = "functional")
 @CleanupAfterMethod
 public class SecureExecTest extends AbstractAuthenticationTest {
-   static final Subject ADMIN = TestingUtil.makeSubject("admin", ScriptingManager.SCRIPT_MANAGER_ROLE);
+   static final Subject ADMIN = TestingUtil.makeSubject("admin", ScriptingManagerImpl.SCRIPT_MANAGER_ROLE);
 
    @Override
    protected EmbeddedCacheManager createCacheManager() throws Exception {
