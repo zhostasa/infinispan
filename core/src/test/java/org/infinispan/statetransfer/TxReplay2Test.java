@@ -106,7 +106,7 @@ public class TxReplay2Test extends MultipleCacheManagersTest {
             CommandsFactory cf = TestingUtil.extractCommandsFactory(newBackupOwnerCache);
             cf.initializeReplicableCommand(command, true);
             try {
-               command.perform(null);
+               command.invoke();
             } catch (Throwable throwable) {
                throw new CacheException(throwable);
             }

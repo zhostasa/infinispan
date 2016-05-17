@@ -1,9 +1,14 @@
 package org.infinispan.commands;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.Cache;
 import org.infinispan.commands.remote.BaseRpcCommand;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.context.InvocationContext;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.statetransfer.StateTransferLock;
@@ -11,14 +16,10 @@ import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.topology.CacheTopology;
 import org.infinispan.util.ByteString;
 import org.infinispan.util.TimeService;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Command to create/start a cache on a subset of Infinispan cluster nodes
@@ -61,7 +62,7 @@ public class CreateCacheCommand extends BaseRpcCommand {
    }
 
    @Override
-   public Object perform(InvocationContext ctx) throws Throwable {
+   public CompletableFuture<Object> invokeAsync() throws Throwable {
       if (cacheConfigurationName == null) {
          throw new NullPointerException("Cache configuration name is required");
       }
@@ -77,7 +78,7 @@ public class CreateCacheCommand extends BaseRpcCommand {
       Cache<Object, Object> cache = cacheManager.getCache(cacheNameToCreate);
       waitForCacheToStabilize(cache, cacheConfig);
       log.debugf("Defined and started cache %s", cacheNameToCreate);
-      return true;
+      return CompletableFutures.completedNull();
    }
 
    protected void waitForCacheToStabilize(Cache<Object, Object> cache, Configuration cacheConfig)

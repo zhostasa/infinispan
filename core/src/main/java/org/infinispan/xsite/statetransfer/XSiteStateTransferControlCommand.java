@@ -1,14 +1,15 @@
 package org.infinispan.xsite.statetransfer;
 
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.util.ByteString;
-import org.infinispan.xsite.BackupReceiver;
-import org.infinispan.xsite.XSiteReplicateCommand;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.concurrent.CompletableFuture;
+
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.util.ByteString;
+import org.infinispan.util.concurrent.CompletableFutures;
+import org.infinispan.xsite.BackupReceiver;
+import org.infinispan.xsite.XSiteReplicateCommand;
 
 /**
  * Command used to control the state transfer between sites.
@@ -56,7 +57,7 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
    }
 
    @Override
-   public Object perform(InvocationContext ctx) throws Throwable {
+   public CompletableFuture<Object> invokeAsync() throws Throwable {
       switch (control) {
          case START_SEND:
             provider.startStateTransfer(siteName, getOrigin(), topologyId);
@@ -78,14 +79,14 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
             provider.startStateTransfer(siteName, getOrigin(), topologyId);
             break;
          case STATUS_REQUEST:
-            return stateTransferManager.getStatus();
+            return CompletableFuture.completedFuture(stateTransferManager.getStatus());
          case CLEAR_STATUS:
             stateTransferManager.clearStatus();
             break;
          default:
             throw new IllegalStateException("Unknown control command: " + control);
       }
-      return null;
+      return CompletableFutures.completedNull();
    }
 
    @Override

@@ -567,7 +567,7 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
       Response localResponse;
       try {
          if (trace) log.tracef("Attempting to execute command on self: %s", command);
-         localResponse = (Response) command.perform(null);
+         localResponse = (Response) command.invoke();
       } catch (Throwable throwable) {
          throw new Exception(throwable);
       }
@@ -587,9 +587,9 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
             try {
                if (trace) log.tracef("Attempting to execute command on self: %s", command);
                gcr.wireDependencies(command);
-               command.perform(null);
+               command.invoke();
             } catch (Throwable throwable) {
-               // The command already logs any exception in perform()
+               // The command already logs any exception in invoke()
             }
          });
       }

@@ -26,6 +26,7 @@ import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
+import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.util.logging.Log;
@@ -282,6 +283,9 @@ public class AsyncInterceptorChainImpl implements AsyncInterceptorChain {
       } catch (InterruptedException e) {
          Thread.currentThread().interrupt();
          throw new CacheException(e);
+      } catch (TimeoutException e) {
+         // Create a new exception here for easier debugging
+         throw new TimeoutException(e.getMessage(), e);
       } catch (RuntimeException e) {
          throw e;
       } catch (Throwable throwable) {

@@ -1,25 +1,26 @@
 package org.infinispan.commands.remote.recovery;
 
+import static org.infinispan.commons.util.Util.toStr;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+
+import javax.transaction.xa.Xid;
+
 import org.infinispan.commands.TopologyAffectedCommand;
-import org.infinispan.context.InvocationContext;
 import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.transaction.impl.RemoteTransaction;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.transaction.xa.recovery.RecoveryManager;
 import org.infinispan.util.ByteString;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.infinispan.util.concurrent.locks.LockManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.transaction.xa.Xid;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Set;
-
-import static org.infinispan.commons.util.Util.toStr;
 
 /**
  * Command for removing recovery related information from the cluster.
@@ -85,7 +86,7 @@ public class TxCompletionNotificationCommand  extends RecoveryCommand implements
    }
 
    @Override
-   public Object perform(InvocationContext ctx) throws Throwable {
+   public CompletableFuture<Object> invokeAsync() throws Throwable {
       log.tracef("Processing completed transaction %s", gtx);
       RemoteTransaction remoteTx = null;
       if (recoveryManager != null) { //recovery in use
@@ -104,11 +105,11 @@ public class TxCompletionNotificationCommand  extends RecoveryCommand implements
       } else if (remoteTx != null) {
          txTable.markTransactionCompleted(remoteTx.getGlobalTransaction(), successful);
       }
-      if (remoteTx == null) return null;
+      if (remoteTx == null) return CompletableFutures.completedNull();
       forwardCommandRemotely(remoteTx);
 
       lockManager.unlockAll(remoteTx.getLockedKeys(), remoteTx.getGlobalTransaction());
-      return null;
+      return CompletableFutures.completedNull();
    }
 
    public GlobalTransaction getGlobalTransaction() {
