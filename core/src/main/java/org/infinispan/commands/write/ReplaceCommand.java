@@ -124,7 +124,7 @@ public class ReplaceCommand extends AbstractDataWriteCommand implements Metadata
       output.writeObject(metadata);
       MarshallUtil.marshallEnum(valueMatcher, output);
       output.writeLong(Flag.copyWithoutRemotableFlags(getFlagsBitSet()));
-      output.writeObject(commandInvocationId);
+      CommandInvocationId.writeTo(output, commandInvocationId);
    }
 
    @Override
@@ -135,7 +135,7 @@ public class ReplaceCommand extends AbstractDataWriteCommand implements Metadata
       metadata = (Metadata) input.readObject();
       valueMatcher = MarshallUtil.unmarshallEnum(input, ValueMatcher::valueOf);
       setFlagsBitSet(input.readLong());
-      commandInvocationId = (CommandInvocationId) input.readObject();
+      commandInvocationId = CommandInvocationId.readFrom(input);
    }
 
    @Override

@@ -45,9 +45,6 @@ public class TransportSenderExceptionHandlingTest extends MultipleCacheManagersT
       StreamingMarshaller originalMarshaller2 = TestingUtil.extractGlobalMarshaller(manager(1));
       try {
          StreamingMarshaller mockMarshaller2 = spy(originalMarshaller2);
-         PutKeyValueCommand putCommand = new PutKeyValueCommand();
-         putCommand.setKey(key);
-         putCommand.setValue(value);
          doAnswer(invocation -> invocation.callRealMethod()).when(mockMarshaller2).objectToByteBuffer(anyObject());
          doAnswer(invocation -> {
             throw new EOFException();
