@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.infinispan.Version;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -29,7 +30,7 @@ public class VersionTestHelper {
    }
 
    public static void addHibernateSearchManifestDependencies(Archive<?> archive) {
-      archive.add( manifestDependencies( "org.hibernate.search.orm:${hibernate-search.module.slot} services"), "META-INF/MANIFEST.MF" );
+      archive.add(manifestDependencies("org.hibernate.search.orm:" + Version.getModuleSlot() + " services"), "META-INF/MANIFEST.MF");
    }
 
    public static void addMainHibernateSearchManifestDependencies(Archive<?> archive) {

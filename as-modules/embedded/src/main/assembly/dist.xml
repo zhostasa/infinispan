@@ -17,19 +17,9 @@
         <include>**/**</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/hibernate-search-modules</directory>
+      <outputDirectory />
+    </fileSet>
   </fileSets>
-  <dependencySets>
-    <dependencySet>
-      <unpack>true</unpack>
-      <includes>
-        <include>org.hibernate:hibernate-search-modules:zip:wildfly-10-dist</include>
-      </includes>
-      <unpackOptions>
-         <excludes>
-           <exclude>org/apache/lucene/**</exclude>
-           <exclude>org/hibernate/search/backend-elasticsearch/**</exclude>
-         </excludes>
-      </unpackOptions>
-    </dependencySet>
-  </dependencySets>
 </assembly>

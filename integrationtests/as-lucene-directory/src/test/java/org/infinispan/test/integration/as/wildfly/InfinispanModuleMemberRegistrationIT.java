@@ -16,7 +16,6 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.junit.runner.RunWith;
 
 import static org.infinispan.test.integration.as.VersionTestHelper.addHibernateSearchManifestDependencies;
-import static org.infinispan.test.integration.as.VersionTestHelper.addMainHibernateSearchManifestDependencies;
 
 /**
  * Test the Hibernate Search module combined with an Infinispan Directory usage.
