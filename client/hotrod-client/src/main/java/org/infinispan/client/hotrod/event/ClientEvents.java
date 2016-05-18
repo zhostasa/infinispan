@@ -114,11 +114,11 @@ public class ClientEvents {
 
       private final SerializationContext serializationContext;
 
-      private final ContinuousQueryListener queryListener;
+      private final ContinuousQueryListener listener;
 
-      public ClientEntryListener(SerializationContext serializationContext, ContinuousQueryListener queryListener) {
+      ClientEntryListener(SerializationContext serializationContext, ContinuousQueryListener listener) {
          this.serializationContext = serializationContext;
-         this.queryListener = queryListener;
+         this.listener = listener;
       }
 
       @ClientCacheEntryCreated
@@ -126,13 +126,14 @@ public class ClientEvents {
       @ClientCacheEntryRemoved
       @ClientCacheEntryExpired
       public void handleClientCacheEntryCreatedEvent(ClientCacheEntryCustomEvent<byte[]> event) throws IOException {
-         ContinuousQueryResult cqr = ProtobufUtil.fromByteArray(serializationContext, event.getEventData(), ContinuousQueryResult.class);
+         byte[] eventData = event.getEventData();
+         ContinuousQueryResult cqr = (ContinuousQueryResult) ProtobufUtil.fromWrappedByteArray(serializationContext, eventData);
          Object key = ProtobufUtil.fromWrappedByteArray(serializationContext, cqr.getKey());
          Object value = cqr.getValue() != null ? ProtobufUtil.fromWrappedByteArray(serializationContext, cqr.getValue()) : cqr.getProjection();
          if (cqr.isJoining()) {
-            queryListener.resultJoining(key, value);
+            listener.resultJoining(key, value);
          } else {
-            queryListener.resultLeaving(key);
+            listener.resultLeaving(key);
          }
       }
    }
