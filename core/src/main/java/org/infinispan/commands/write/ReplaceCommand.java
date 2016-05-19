@@ -208,12 +208,8 @@ public class ReplaceCommand extends AbstractDataWriteCommand implements Metadata
    }
 
    @Override
-   public void updateStatusFromRemoteResponse(Object remoteResponse) {
-      if (oldValue == null) {
-         successful = remoteResponse != null;
-      } else {
-         successful = (Boolean) remoteResponse;
-      }
+   public void fail() {
+      successful = false;
    }
 
    @Override

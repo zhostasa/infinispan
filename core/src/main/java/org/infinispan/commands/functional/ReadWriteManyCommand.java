@@ -153,16 +153,6 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
    }
 
    @Override
-   public void updateStatusFromRemoteResponse(Object remoteResponse) {
-      // TODO: Customise this generated block
-   }
-
-   @Override
-   public boolean ignoreCommandOnStatus(ComponentStatus status) {
-      return false;  // TODO: Customise this generated block
-   }
-
-   @Override
    public LoadType loadType() {
       return LoadType.OWNER;
    }

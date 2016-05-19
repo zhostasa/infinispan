@@ -71,7 +71,8 @@ public abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, Pa
    }
 
    @Override
-   public void updateStatusFromRemoteResponse(Object remoteResponse) {
+   public void fail() {
+      throw new UnsupportedOperationException();
    }
 
    @Override
