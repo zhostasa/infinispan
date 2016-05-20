@@ -65,14 +65,16 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
    private final class ProgressCallback implements FileDescriptorSource.ProgressCallback {
 
       private final InvocationContext ctx;
+      private final long flagsBitSet;
 
       private final Set<String> errorFiles = new TreeSet<>();
 
-      private ProgressCallback(InvocationContext ctx) {
+      private ProgressCallback(InvocationContext ctx, long flagsBitSet) {
          this.ctx = ctx;
+         this.flagsBitSet = flagsBitSet;
       }
 
-      public Set<String> getErrorFiles() {
+      Set<String> getErrorFiles() {
          return errorFiles;
       }
 
@@ -80,14 +82,14 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
       public void handleError(String fileName, DescriptorParserException exception) {
          // handle first error per file, ignore the rest if any
          if (errorFiles.add(fileName)) {
-            VisitableCommand cmd = commandsFactory.buildPutKeyValueCommand(fileName + ERRORS_KEY_SUFFIX, exception.getMessage(), null, EnumUtil.EMPTY_BIT_SET);
+            VisitableCommand cmd = commandsFactory.buildPutKeyValueCommand(fileName + ERRORS_KEY_SUFFIX, exception.getMessage(), null, flagsBitSet);
             invoker.invoke(ctx, cmd);
          }
       }
 
       @Override
       public void handleSuccess(String fileName) {
-         VisitableCommand cmd = commandsFactory.buildRemoveCommand(fileName + ERRORS_KEY_SUFFIX, null, EnumUtil.EMPTY_BIT_SET);
+         VisitableCommand cmd = commandsFactory.buildRemoveCommand(fileName + ERRORS_KEY_SUFFIX, null, flagsBitSet);
          invoker.invoke(ctx, cmd);
       }
    }
@@ -197,7 +199,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
             throw new CacheException("The value must be a string");
          }
          if (shouldIntercept(key)) {
-            if (!command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER)) {
+            if (!command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER) && !command.hasFlag(Flag.SKIP_LOCKING)) {
                if (!((String) key).endsWith(PROTO_KEY_SUFFIX)) {
                   throw new CacheException("The key must end with \".proto\" : " + key);
                }
@@ -218,8 +220,8 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
                .addProtoFile((String) key, (String) value);
 
          ProgressCallback progressCallback = null;
-         if (ctx.isOriginLocal() && !command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER)) {
-            progressCallback = new ProgressCallback(ctx);
+         if (ctx.isOriginLocal() && !command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER) ) {
+            progressCallback = new ProgressCallback(ctx, command.getFlagsBitSet());
             source.withProgressCallback(progressCallback);
          } else {
             source.withProgressCallback(EMPTY_CALLBACK);
@@ -232,7 +234,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
          }
 
          if (progressCallback != null) {
-            updateGlobalErrors(ctx, progressCallback.getErrorFiles());
+            updateGlobalErrors(ctx, progressCallback.getErrorFiles(), command.getFlagsBitSet());
          }
       }
 
@@ -268,7 +270,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
 
       ProgressCallback progressCallback = null;
       if (ctx.isOriginLocal()) {
-         progressCallback = new ProgressCallback(ctx);
+         progressCallback = new ProgressCallback(ctx, command.getFlagsBitSet());
          source.withProgressCallback(progressCallback);
       } else {
          source.withProgressCallback(EMPTY_CALLBACK);
@@ -281,7 +283,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
       }
 
       if (progressCallback != null) {
-         updateGlobalErrors(ctx, progressCallback.getErrorFiles());
+         updateGlobalErrors(ctx, progressCallback.getErrorFiles(), command.getFlagsBitSet());
       }
 
       return result;
@@ -365,7 +367,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
 
             ProgressCallback progressCallback = null;
             if (ctx.isOriginLocal()) {
-               progressCallback = new ProgressCallback(ctx);
+               progressCallback = new ProgressCallback(ctx, command.getFlagsBitSet());
                source.withProgressCallback(progressCallback);
             } else {
                source.withProgressCallback(EMPTY_CALLBACK);
@@ -378,7 +380,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
             }
 
             if (progressCallback != null) {
-               updateGlobalErrors(ctx, progressCallback.getErrorFiles());
+               updateGlobalErrors(ctx, progressCallback.getErrorFiles(), command.getFlagsBitSet());
             }
          }
 
@@ -401,11 +403,11 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
       return !((String) key).endsWith(ERRORS_KEY_SUFFIX);
    }
 
-   private void updateGlobalErrors(InvocationContext ctx, Set<String> errorFiles) {
+   private void updateGlobalErrors(InvocationContext ctx, Set<String> errorFiles, long flagsBitSet) {
       // remove or update .errors accordingly
       VisitableCommand cmd;
       if (errorFiles.isEmpty()) {
-         cmd = commandsFactory.buildRemoveCommand(ERRORS_KEY_SUFFIX, null, EnumUtil.EMPTY_BIT_SET);
+         cmd = commandsFactory.buildRemoveCommand(ERRORS_KEY_SUFFIX, null, flagsBitSet);
       } else {
          StringBuilder sb = new StringBuilder();
          for (String fileName : errorFiles) {
@@ -414,7 +416,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
             }
             sb.append(fileName);
          }
-         cmd = commandsFactory.buildPutKeyValueCommand(ERRORS_KEY_SUFFIX, sb.toString(), null, EnumUtil.EMPTY_BIT_SET);
+         cmd = commandsFactory.buildPutKeyValueCommand(ERRORS_KEY_SUFFIX, sb.toString(), null, flagsBitSet);
       }
       invoker.invoke(ctx, cmd);
    }
