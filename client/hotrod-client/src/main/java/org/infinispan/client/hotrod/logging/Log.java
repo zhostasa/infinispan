@@ -227,7 +227,7 @@ public interface Log extends BasicLogger {
    IncorrectClientListenerException clientListenerMustUseDesignatedFilterConverterFactory(String filterConverterFactoryName);
 
    @LogMessage(level = WARN)
-   @Message(value = "Ignoring error when closing whilst closing iteration '%s'", id = 4061)
+   @Message(value = "Ignoring error when closing iteration '%s'", id = 4061)
    void ignoringErrorDuringIterationClose(String iterationId, @Cause Exception e);
 
    @LogMessage(level = DEBUG)
