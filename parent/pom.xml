@@ -2136,7 +2136,7 @@
                               <source>${dir.ispn}/persistence/leveldb/src/main/java</source>
                               <source>${dir.ispn}/persistence/remote/src/main/java</source>
                               <source>${dir.ispn}/persistence/rest/src/main/java</source>
-                              <source>${dir.ispn}/persistence/soft-index/src/main/java</source>
+                              <!--<source>${dir.ispn}/persistence/soft-index/src/main/java</source>-->
                               <source>${dir.ispn}/query/src/main/java</source>
                               <source>${dir.ispn}/query-dsl/src/main/java</source>
                               <source>${dir.ispn}/remote-query/remote-query-client/src/main/java</source>
