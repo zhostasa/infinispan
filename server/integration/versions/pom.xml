@@ -32,7 +32,7 @@
       <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
       <version.net.jcip.annotations>1.0.0.redhat-8</version.net.jcip.annotations>
       <version.org.jboss.jandex>2.0.2.Final-redhat-1</version.org.jboss.jandex>
-      <version.org.jboss.jbossts.jbossjts>4.16.2.Final</version.org.jboss.jbossts.jbossjts>
+      <version.jbossjts>5.2.16.Final-redhat-1</version.jbossjts>
       <version.org.jboss.modules>1.5.1.Final-redhat-1</version.org.jboss.modules>
       <version.junit>4.11</version.junit>
       <version.org.infinispan>${project.version}</version.org.infinispan>
@@ -257,9 +257,9 @@
          </dependency>
 
          <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
-            <version>${version.org.jboss.jbossts.jbossjts}</version>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
+            <version>${version.jbossjts}</version>
          </dependency>
 
          <dependency>
