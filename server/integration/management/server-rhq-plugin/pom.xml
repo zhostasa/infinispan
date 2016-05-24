@@ -71,7 +71,7 @@
       </dependency>
       <dependency>
          <groupId>org.rhq</groupId>
-         <artifactId>rhq-jboss-as-7-plugin</artifactId>
+         <artifactId>rhq-wfly-10-plugin</artifactId>
          <exclusions>
             <exclusion>
                <groupId>com.sun.xml.bind</groupId>
