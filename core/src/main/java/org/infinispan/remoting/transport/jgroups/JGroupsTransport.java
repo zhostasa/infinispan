@@ -571,7 +571,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
       List<org.jgroups.Address> jgAddressList = toJGroupsAddressListExcludingSelf(recipients, totalOrder);
       if (jgAddressList != null && jgAddressList.isEmpty()) {
-         return CompletableFutures.returnEmptyMap();
+         return CompletableFutures.completedEmptyMap();
       }
 
       List<Address> localMembers = this.members;
@@ -609,7 +609,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
             }
          }
          if (skipRpc) {
-            return CompletableFutures.returnEmptyMap();
+            return CompletableFutures.completedEmptyMap();
          }
 
          if (singleRecipient) {
@@ -624,7 +624,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       }
 
       if (mode.isAsynchronous()) {
-         return CompletableFutures.returnEmptyMap();
+         return CompletableFutures.completedEmptyMap();
       }
 
       if (singleResponseFuture != null) {
