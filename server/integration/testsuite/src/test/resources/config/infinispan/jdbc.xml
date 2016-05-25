@@ -1,8 +1,8 @@
-       <subsystem xmlns="urn:infinispan:server:core:8.0" >
+       <subsystem xmlns="urn:infinispan:server:core:8.3" >
             <cache-container name="local" default-cache="stringWithPassivation" start="EAGER">
 
                 <local-cache name="stringWithPassivation" start="EAGER" >
-                    <eviction strategy="LRU" max-entries="2" />
+                    <eviction strategy="LRU" size="2" />
                     <string-keyed-jdbc-store datasource="${jndi.name}" passivation="true" preload="false" purge="false" name="STRING_WITH_PASSIVATION_STORE">
                         <property name="databaseType">${database.type}</property>
                         <string-keyed-table prefix="STRING_WITH_PASSIVATION">
@@ -27,7 +27,7 @@
                 <local-cache name="memcachedCache" start="EAGER" >
                     <string-keyed-jdbc-store datasource="${jndi.name}" passivation="false" preload="false" purge="false" name="STRING_ASYNC">
                         <property name="databaseType">${database.type}</property>
-                        <!--<write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="15" />-->
+                        <!--<write-behind modification-queue-size="2048" thread-pool-size="15" />-->
                         <string-keyed-table prefix="STRING_ASYNC">
                             <id-column name="id" type="${id.column.type}"/>
                             <data-column name="datum" type="${data.column.type}"/>
@@ -37,7 +37,7 @@
                 </local-cache>
 
                 <local-cache name="binaryWithPassivation" start="EAGER" >
-                    <eviction strategy="LRU" max-entries="2" />
+                    <eviction strategy="LRU" size="2" />
                     <binary-keyed-jdbc-store datasource="${jndi.name}" passivation="true" preload="false" purge="false" name="BINARY_WITH_PASSIVATION_STORE">
                         <property name="databaseType">${database.type}</property>
                         <binary-keyed-table prefix="BINARY_WITH_PASSIVATION">
@@ -60,7 +60,7 @@
                 </local-cache>
 
                 <local-cache name="mixedWithPassivation" start="EAGER" >
-                    <eviction strategy="LRU" max-entries="2" />
+                    <eviction strategy="LRU" size="2" />
                     <mixed-keyed-jdbc-store datasource="${jndi.name}" passivation="true" preload="false" purge="false" name="MIXED_WITH_PASSIVATION_STORE">
                         <property name="databaseType">${database.type}</property>
                         <binary-keyed-table prefix="MIXED_WITH_PASSIVATION_BKT">

@@ -79,7 +79,7 @@ This is the configuration of a custom(not shipped with infinispan) store:
             fetch-state="false" preload="true" shared="false"
             purge="true" read-only="false" singleton="false">
 
-            <write-behind flush-lock-timeout="12321" modification-queue-size="123" shutdown-timeout="321" thread-pool-size="23" />
+            <write-behind modification-queue-size="123" thread-pool-size="23" />
 
             <property name="myProp">${system.property}</property>
          </store>
@@ -557,9 +557,9 @@ In this sample configuration, the remote cache store is configured to use the re
 === Cluster cache loader
 The ClusterCacheLoader is a cache loader implementation that retrieves data from other cluster members.
 
-It is a cache loader only as it doesn't persist anything (it is not a Store), therefore features like _fetchPersistentState_ (and like) are not applicable. 
+It is a cache loader only as it doesn't persist anything (it is not a Store), therefore features like _fetchPersistentState_ (and like) are not applicable.
 
-A cluster cache loader can be used as a non-blocking (partial) alternative to _stateTransfer_ : keys not already available in the local node are fetched on-demand from other nodes in the cluster. This is a kind of lazy-loading of the cache content. 
+A cluster cache loader can be used as a non-blocking (partial) alternative to _stateTransfer_ : keys not already available in the local node are fetched on-demand from other nodes in the cluster. This is a kind of lazy-loading of the cache content.
 
 [source,xml]
 ----
