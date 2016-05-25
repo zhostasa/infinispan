@@ -98,8 +98,9 @@ import static org.infinispan.factories.KnownComponentNames.ASYNC_OPERATIONS_EXEC
  *
  * @author Radim Vansa &lt;rvansa@redhat.com&gt;
  */
-@MBean(objectName = CacheImpl.OBJECT_NAME, description = "Component that represents a simplified cache instance.")
+@MBean(objectName = SimpleCacheImpl.OBJECT_NAME, description = "Component that represents a simplified cache instance.")
 public class SimpleCacheImpl<K, V> implements AdvancedCache<K, V> {
+   public static final String OBJECT_NAME = "SimpleCache";
    private final static Log log = LogFactory.getLog(SimpleCacheImpl.class);
 
    private final static String NULL_KEYS_NOT_SUPPORTED = "Null keys are not supported!";

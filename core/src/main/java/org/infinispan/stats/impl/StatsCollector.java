@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.LongAdder;
 /**
  * @author Radim Vansa &lt;rvansa@redhat.com&gt;
  */
-@MBean(objectName = "Statistics", description = "General statistics such as timings, hit/miss ratio, etc.")
+@MBean(objectName = "Statistics[simple-cache]", description = "General statistics such as timings, hit/miss ratio, etc.")
 public class StatsCollector implements Stats, JmxStatisticsExposer {
    private final LongAdder hitTimes = new LongAdder();
    private final LongAdder missTimes = new LongAdder();
