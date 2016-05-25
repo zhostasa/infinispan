@@ -497,11 +497,7 @@ public class Parser60 implements ConfigurationParser {
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
             case ENABLED:
-               if (Boolean.parseBoolean(value)) {
-                  builder.storeAsBinary().enable();
-               } else {
-                  builder.storeAsBinary().disable();
-               }
+               builder.storeAsBinary().enabled(Boolean.parseBoolean(value));
                break;
             case STORE_KEYS_AS_BINARY:
                builder.storeAsBinary().storeKeysAsBinary(Boolean.parseBoolean(value));
@@ -1775,11 +1771,7 @@ public class Parser60 implements ConfigurationParser {
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
             case ENABLED:
-               if (Boolean.parseBoolean(value)) {
-                  builder.compatibility().enable();
-               } else {
-                  builder.compatibility().disable();
-               }
+               builder.compatibility().enabled(Boolean.parseBoolean(value));
                break;
             case MARSHALLER_CLASS:
                builder.compatibility().marshaller(Util.<Marshaller>getInstance(value, holder.getClassLoader()));
