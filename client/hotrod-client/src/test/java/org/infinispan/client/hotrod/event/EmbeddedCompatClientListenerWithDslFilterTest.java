@@ -132,6 +132,7 @@ public class EmbeddedCompatClientListenerWithDslFilterTest extends MultiHotRodSe
       user3.setGender(User.Gender.FEMALE);
       user3.setAge(31);
 
+      remoteCache.clear();
       remoteCache.put("user_" + user1.getId(), user1);
       remoteCache.put("user_" + user2.getId(), user2);
       remoteCache.put("user_" + user3.getId(), user3);
@@ -186,6 +187,7 @@ public class EmbeddedCompatClientListenerWithDslFilterTest extends MultiHotRodSe
       user3.setGender(User.Gender.FEMALE);
       user3.setAge(31);
 
+      remoteCache.clear();
       remoteCache.put("user_" + user1.getId(), user1);
       remoteCache.put("user_" + user2.getId(), user2);
       remoteCache.put("user_" + user3.getId(), user3);
