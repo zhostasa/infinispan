@@ -110,13 +110,13 @@ public class ClientEvents {
          converterFactoryName = Filters.CONTINUOUS_QUERY_FILTER_FACTORY_NAME,
          useRawData = true, includeCurrentState = true)
    @Deprecated
-   private static final class ClientEntryListener {
+   private static final class ClientEntryListener<K, C> {
 
       private final SerializationContext serializationContext;
 
-      private final ContinuousQueryListener listener;
+      private final ContinuousQueryListener<K, C> listener;
 
-      ClientEntryListener(SerializationContext serializationContext, ContinuousQueryListener listener) {
+      ClientEntryListener(SerializationContext serializationContext, ContinuousQueryListener<K, C> listener) {
          this.serializationContext = serializationContext;
          this.listener = listener;
       }
@@ -125,15 +125,24 @@ public class ClientEvents {
       @ClientCacheEntryModified
       @ClientCacheEntryRemoved
       @ClientCacheEntryExpired
-      public void handleClientCacheEntryCreatedEvent(ClientCacheEntryCustomEvent<byte[]> event) throws IOException {
+      public void handleEvent(ClientCacheEntryCustomEvent<byte[]> event) throws IOException {
          byte[] eventData = event.getEventData();
          ContinuousQueryResult cqr = (ContinuousQueryResult) ProtobufUtil.fromWrappedByteArray(serializationContext, eventData);
          Object key = ProtobufUtil.fromWrappedByteArray(serializationContext, cqr.getKey());
          Object value = cqr.getValue() != null ? ProtobufUtil.fromWrappedByteArray(serializationContext, cqr.getValue()) : cqr.getProjection();
-         if (cqr.isJoining()) {
-            listener.resultJoining(key, value);
-         } else {
-            listener.resultLeaving(key);
+
+         switch (cqr.getResultType()) {
+            case JOINING:
+               listener.resultJoining((K) key, (C) value);
+               break;
+            case UPDATED:
+               listener.resultUpdated((K) key, (C) value);
+               break;
+            case LEAVING:
+               listener.resultLeaving((K) key);
+               break;
+            default:
+               throw new IllegalStateException("Unexpected result type : " + cqr.getResultType());
          }
       }
    }
