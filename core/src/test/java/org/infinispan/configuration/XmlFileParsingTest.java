@@ -489,17 +489,6 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(3, c.clustering().hash().numOwners());
       assertTrue(c.clustering().l1().enabled());
 
-      c = cm.getCacheConfiguration("dist_with_capacity_factors");
-      assertEquals(CacheMode.DIST_SYNC, c.clustering().cacheMode());
-      assertEquals(600000, c.clustering().l1().lifespan());
-      if (deprecated) assertEquals(120000, c.clustering().hash().rehashRpcTimeout());
-      assertEquals(120000, c.clustering().stateTransfer().timeout());
-      assertEquals(null, c.clustering().hash().consistentHash()); // this is just an override.
-      assertEquals(3, c.clustering().hash().numOwners());
-      assertTrue(c.clustering().l1().enabled());
-      assertEquals(0.0f, CapacityFactor.capacityFactor(c.clustering().hash()));
-      if (!deprecated) assertEquals(1000, c.clustering().hash().numSegments());
-
       c = cm.getCacheConfiguration("groups");
       assertTrue(c.clustering().hash().groups().enabled());
       assertEquals(1, c.clustering().hash().groups().groupers().size());

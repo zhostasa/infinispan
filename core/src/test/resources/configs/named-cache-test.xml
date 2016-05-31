@@ -92,9 +92,6 @@
       <distributed-cache name="dist" mode="SYNC" owners="3" l1-lifespan="600000" l1-cleanup-interval="1200">
          <state-transfer timeout="120000" />
       </distributed-cache>
-      <distributed-cache name="dist_with_capacity_factors" mode="SYNC" owners="3" segments="1000" l1-lifespan="600000">
-         <state-transfer timeout="120000" />
-      </distributed-cache>
       <distributed-cache name="groups">
          <groups enabled="true">
             <grouper class="org.infinispan.distribution.groups.KXGrouper" />
