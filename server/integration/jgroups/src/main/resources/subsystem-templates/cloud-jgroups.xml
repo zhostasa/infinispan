@@ -29,7 +29,7 @@
             </stack>
             <stack name="s3-private">
                 <?TCP-TRANSPORT?>
-                <protocol type='S3_PING'>
+                <protocol type="S3_PING">
                     <property name="location">${jgroups.s3.bucket:}</property>
                     <property name="access_key">${jgroups.s3.access_key:}</property>
                     <property name="secret_access_key">${jgroups.s3.secret_access_key:}</property>
@@ -49,7 +49,7 @@
             </stack>
             <stack name="s3-presigned">
                 <?TCP-TRANSPORT?>
-                <protocol type='S3_PING'>
+                <protocol type="S3_PING">
                     <property name="pre_signed_delete_url">${jgroups.s3.pre_signed_delete_url:}</property>
                     <property name="pre_signed_put_url">${jgroups.s3.pre_signed_put_url:}</property>
                 </protocol>
@@ -68,7 +68,7 @@
             </stack>
             <stack name="s3-public">
                 <?TCP-TRANSPORT?>
-                <protocol type='S3_PING'>
+                <protocol type="S3_PING">
                     <property name="location">${jgroups.s3.bucket:}</property>
                 </protocol>
                 <protocol type="MERGE3" />
@@ -86,7 +86,7 @@
             </stack>
             <stack name="google">
                 <?TCP-TRANSPORT?>
-                <protocol type='GOOGLE_PING'>
+                <protocol type="GOOGLE_PING">
                     <property name="location">${jgroups.google.bucket:}</property>
                     <property name="access_key">${jgroups.google.access_key:}</property>
                     <property name="secret_access_key">${jgroups.google.secret_access_key:}</property>
