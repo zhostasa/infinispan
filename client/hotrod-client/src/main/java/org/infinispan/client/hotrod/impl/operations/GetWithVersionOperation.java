@@ -13,6 +13,7 @@ import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 
+
 /**
  * Corresponds to getWithVersion operation as described by
  * <a href="http://community.jboss.org/wiki/HotRodProtocol">Hot Rod protocol specification</a>.
@@ -41,7 +42,7 @@ public class GetWithVersionOperation<V> extends AbstractKeyOperation<VersionedVa
       } else if (HotRodConstants.isSuccess(status)) {
          long version = transport.readLong();
          if (trace) {
-            log.tracef("Received version: %d", version);
+            log.tracef("Received version: %d", (Long) version);
          }
          V value = codec.readUnmarshallByteArray(transport, status);
          result = new VersionedValueImpl<V>(version, value);

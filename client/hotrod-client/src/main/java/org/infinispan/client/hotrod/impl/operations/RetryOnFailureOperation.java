@@ -131,7 +131,7 @@ public abstract class RetryOnFailureOperation<T> extends HotRodOperation {
                throw new IllegalStateException("Unknown cluster switch status: " + status);
          }
       } else {
-         log.tracef(e, message, i, transportFactory.getMaxRetries());
+         log.tracef(e, message, (Integer) i, (Integer) transportFactory.getMaxRetries());
          return i;
       }
    }
@@ -142,7 +142,7 @@ public abstract class RetryOnFailureOperation<T> extends HotRodOperation {
          log.exceptionAndNoRetriesLeft(i,transportFactory.getMaxRetries(), e);
          throw e;
       } else {
-         log.tracef(e, message, i, transportFactory.getMaxRetries());
+         log.tracef(e, message, (Integer) i, (Integer) transportFactory.getMaxRetries());
       }
    }
 

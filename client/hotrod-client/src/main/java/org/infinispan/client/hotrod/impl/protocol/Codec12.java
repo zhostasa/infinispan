@@ -35,7 +35,7 @@ public class Codec12 extends Codec11 {
       //todo change once TX support is added
       transport.writeByte(params.txMarker);
       getLog().tracef("Wrote header for message %d. Operation code: %#04x. Flags: %#x",
-            params.messageId, params.opCode, joinedFlags);
+              (Long) params.messageId, (Short) params.opCode, (Integer) joinedFlags);
       return params;
    }
 

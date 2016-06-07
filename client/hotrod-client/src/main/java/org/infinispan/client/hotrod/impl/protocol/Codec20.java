@@ -296,7 +296,7 @@ public class Codec20 implements Codec, HotRodConstants {
       }
 
       if (trace)
-         localLog.tracef("Received response for messageId=%d", receivedMessageId);
+         localLog.tracef("Received response for messageId=%d", (Long) receivedMessageId);
 
       return receivedMessageId;
    }
@@ -350,7 +350,7 @@ public class Codec20 implements Codec, HotRodConstants {
                msgFromServer = transport.readString();
                if (trace)
                   localLog.tracef("A remote node was suspected while executing messageId=%d. " +
-                        "Check if retry possible. Message from server: %s", params.messageId, msgFromServer);
+                        "Check if retry possible. Message from server: %s", (Long) params.messageId, msgFromServer);
 
                throw new RemoteNodeSuspectException(msgFromServer, params.messageId, status);
             default: {
@@ -429,7 +429,7 @@ public class Codec20 implements Codec, HotRodConstants {
       } else {
          if (trace)
             log.tracef("Outdated topology received (topology id = %s, topology age = %s), so ignoring it: %s",
-               newTopologyId, topologyAge, Arrays.toString(addresses));
+                    (Integer) newTopologyId, (Integer) topologyAge, Arrays.toString(addresses));
       }
    }
 

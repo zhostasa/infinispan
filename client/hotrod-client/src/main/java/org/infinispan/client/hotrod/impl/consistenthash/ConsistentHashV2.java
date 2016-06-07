@@ -14,7 +14,6 @@ import org.infinispan.commons.hash.Hash;
 import org.infinispan.commons.hash.MurmurHash3;
 import org.infinispan.commons.util.Util;
 import org.jboss.logging.BasicLogger;
-
 /**
  * Version 2 of the ConsistentHash function.  Uses MurmurHash3.
  *
@@ -61,7 +60,7 @@ public class ConsistentHashV2 implements ConsistentHash {
       }
 
       int hashWheelSize = positions.size();
-      log.tracef("Positions (%d entries) are: %s", hashWheelSize, positions);
+      log.tracef("Positions (%d entries) are: %s", (Integer) hashWheelSize, positions);
 
       hashes = new int[hashWheelSize];
       Iterator<Integer> it = positions.keySet().iterator();

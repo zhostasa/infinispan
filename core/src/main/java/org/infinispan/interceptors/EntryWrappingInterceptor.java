@@ -517,7 +517,7 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
                      if (!ctx.isOriginLocal() || !(command instanceof DataCommand) ||
                                ctx.hasLockedKey(((DataCommand)command).getKey())) {
                         if (trace) log.tracef("Cache topology changed while the command was executing: expected %d, got %d",
-                              commandTopologyId, currentTopologyId);
+                                           (Integer)commandTopologyId, (Integer)currentTopologyId);
                         // This shouldn't be necessary, as we'll have a fresh command instance when retrying
                         writeCommand.setValueMatcher(writeCommand.getValueMatcher().matcherForRetry());
                         throw new OutdatedTopologyException("Cache topology changed while the command was executing: expected " +

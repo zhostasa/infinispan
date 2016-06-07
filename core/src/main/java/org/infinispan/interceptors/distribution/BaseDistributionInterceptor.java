@@ -441,7 +441,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
          int currentTopologyId = stateTransferManager.getCacheTopology().getTopologyId();
          boolean topologyChanged = currentTopologyId != commandTopologyId && commandTopologyId != -1;
          if (trace) {
-            log.tracef("Command topology id is %d, current topology id is %d", commandTopologyId, currentTopologyId);
+            log.tracef("Command topology id is %d, current topology id is %d", (Integer)commandTopologyId, (Integer)currentTopologyId);
          }
          if (topologyChanged) {
             throw new OutdatedTopologyException("Cache topology changed while the command was executing: expected " +
@@ -536,7 +536,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
          int currentTopologyId = stateTransferManager.getCacheTopology().getTopologyId();
          boolean topologyChanged = currentTopologyId != commandTopologyId && commandTopologyId != -1;
          if (trace) {
-            log.tracef("Command topology id is %d, current topology id is %d", commandTopologyId, currentTopologyId);
+            log.tracef("Command topology id is %d, current topology id is %d", (Integer)commandTopologyId, (Integer)currentTopologyId);
          }
          if (topologyChanged) {
             throw new OutdatedTopologyException("Cache topology changed while the command was executing: expected " +

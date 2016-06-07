@@ -286,7 +286,7 @@ class IndexNode {
             return;
          }
          if (trace)
-            log.tracef("Created (1) %d new nodes, GC %08x", result.newNodes.size(), System.identityHashCode(node));
+            log.tracef("Created (1) %d new nodes, GC %08x", (Integer)result.newNodes.size(), (Integer)System.identityHashCode(node));
          garbage.push(node);
          for (;;) {
             if (stack.isEmpty()) {
@@ -313,7 +313,7 @@ class IndexNode {
                return;
             }
             if (trace)
-               log.tracef("Created (2) %d new nodes, GC %08x", result.newNodes.size(), System.identityHashCode(path.node));
+               log.tracef("Created (2) %d new nodes, GC %08x", (Integer)result.newNodes.size(), (Integer)System.identityHashCode(path.node));
             garbage.push(path.node);
          }
       } finally {

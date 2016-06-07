@@ -189,7 +189,7 @@ public class TcpTransport extends AbstractTransport {
       try {
          resultInt = socketInputStream.read();
          if (trace)
-            log.tracef("Read byte %d from socket input in %s", resultInt, socket);
+            log.tracef("Read byte %d from socket input in %s", (Integer) resultInt, socket);
       } catch (IOException e) {
          invalid = true;
          throw new TransportException(e, serverAddress);
@@ -215,7 +215,7 @@ public class TcpTransport extends AbstractTransport {
          try {
             int len = size - offset;
             if (trace) {
-               log.tracef("Offset: %d, len=%d, size=%d", offset, len, size);
+               log.tracef("Offset: %d, len=%d, size=%d", (Integer) offset, (Integer) len, (Integer) size);
             }
             read = socketInputStream.read(result, offset, len);
          } catch (IOException e) {

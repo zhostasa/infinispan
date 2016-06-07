@@ -62,7 +62,7 @@ public class RestTargetMigrator implements TargetMigrator {
                      cache.get(key);
                      int i = count.getAndIncrement();
                      if (log.isDebugEnabled() && i % 100 == 0)
-                        log.debugf(">>    Moved %s keys\n", i);
+                        log.debugf(">>    Moved %s keys\n", (Integer) i);
                   } catch (Exception e) {
                      if ((key instanceof String) && ((String) key).matches("___MigrationManager_.+_KnownKeys___")) {
                         // ISPN-3724 Ignore keys from other migrators.

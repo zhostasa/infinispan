@@ -32,7 +32,7 @@ class SegmentKeyTracker implements KeyTracker {
       this.marshaller = marshaller;
       int numSegments = segmentConsistentHash.getNumSegments();
       keysPerSegment = new AtomicReferenceArray<>(numSegments);
-      if (log.isDebugEnabled()) log.debugf("Created SegmentKeyTracker with %d segments", numSegments);
+      if (log.isDebugEnabled()) log.debugf("Created SegmentKeyTracker with %d segments", (Integer) numSegments);
       this.segmentConsistentHash = segmentConsistentHash;
       IntStream segmentStream = segments == null ?
               IntStream.range(0, segmentConsistentHash.getNumSegments()) : segments.stream().mapToInt(i -> i);

@@ -45,7 +45,7 @@ public final class SegmentConsistentHash implements ConsistentHash {
    public SocketAddress getServer(Object key) {
       int segmentId = getSegment(key);
       if (trace)
-         log.tracef("Find server in segment id %s for key %s", segmentId, Util.toStr(key));
+         log.tracef("Find server in segment id %s for key %s", (Integer) segmentId, Util.toStr(key));
 
       return segmentOwners[segmentId][0];
    }

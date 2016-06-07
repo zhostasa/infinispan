@@ -22,4 +22,81 @@
             </properties>
         </profile>
     </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>verify-forbidden-apis</id>
+                        <configuration>
+                            <targetVersion>1.8</targetVersion>
+                            <failOnUnsupportedJava>false</failOnUnsupportedJava>
+                            <excludes>
+                                <!-- JBoss Logger formats messages according to default Locale (bug or feature?) -->
+                                <exclude>**/Log_$logger.class</exclude>
+                            </excludes>
+                            <failOnMissingClasses>false</failOnMissingClasses>
+                            <failOnUnresolvableSignatures>false</failOnUnresolvableSignatures>
+                            <signatures>
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, int ,int)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, int, int, int)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, int, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, int, java.lang.Object, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, int)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, int, int)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, int, int, int)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, int, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, int, java.lang.Object, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, long)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, long, long)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, long, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, long, long, long)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, long, long, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.String, long, java.lang.Object , java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, long)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, long, long)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, long, java.lang.Object)
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, long, long, long )
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, long, long, java.lang.Object )
+                                org.jboss.logging.BasicLogger#tracef(java.lang.Throwable, java.lang.String, long, java.lang.Object, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, int)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, int, int)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, int, int, int)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, int, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, int, java.lang.Object, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, int)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, int, int)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, int, int, int)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, int, int, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, int, java.lang.Object, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, long)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, long, long)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, long, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, long, long, long)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, long, long, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.String, long, java.lang.Object, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long, long)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long, long, long)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long, long, java.lang.Object)
+                                org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long, java.lang.Object, java.lang.Object)                                     </signatures>
+                        </configuration>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

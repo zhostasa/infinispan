@@ -26,6 +26,7 @@ import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Either;
 import org.infinispan.commons.util.Util;
 
+
 /**
  * A Hot Rod encoder/decoder for version 1.0 of the protocol.
  *
@@ -79,7 +80,7 @@ public class Codec10 implements Codec {
       //todo change once TX support is added
       transport.writeByte(params.txMarker);
       if (trace) getLog().tracef("Wrote header for message %d. Operation code: %#04x. Flags: %#x",
-         params.messageId, params.opCode, flagInt);
+              (Long) params.messageId, (Short) params.opCode, (Integer) flagInt);
       return params;
    }
 
@@ -105,7 +106,7 @@ public class Codec10 implements Codec {
          throw new InvalidResponseException(String.format(message, params.messageId, receivedMessageId));
       }
       if (trace)
-         localLog.tracef("Received response for message id: %d", receivedMessageId);
+         localLog.tracef("Received response for message id: %d", (Long) receivedMessageId);
 
       short receivedOpCode = transport.readByte();
       // Read both the status and new topology (if present),
@@ -187,7 +188,7 @@ public class Codec10 implements Codec {
                   // Handle both Infinispan's and JGroups' suspicions
                   if (trace)
                      localLog.tracef("A remote node was suspected while executing messageId=%d. " +
-                        "Check if retry possible. Message from server: %s", params.messageId, msgFromServer);
+                        "Check if retry possible. Message from server: %s", (Long) params.messageId, msgFromServer);
                   // TODO: This will be better handled with its own status id in version 2 of protocol
                   throw new RemoteNodeSuspectException(msgFromServer, params.messageId, status);
                } else {
