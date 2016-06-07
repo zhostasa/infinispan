@@ -242,7 +242,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       if (channel == null)
          return false;
 
-      log.tracef("Waiting on view %d being accepted", viewId);
+      if(trace)
+         log.tracef("Waiting on view %d being accepted", (Integer) viewId);
       long remainingNanos = timeUnit.toNanos(timeout);
       viewUpdateLock.lock();
       try {
@@ -548,7 +549,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
                                                                         boolean anycast) throws Exception {
       if (recipients != null && recipients.isEmpty()) {
          // don't send if recipients list is empty
-         log.trace("Destination list is empty: no need to send message");
+         if(trace)
+            log.trace("Destination list is empty: no need to send message");
          return CompletableFuture.completedFuture(Collections.emptyMap());
       }
       boolean totalOrder = deliverOrder == DeliverOrder.TOTAL;
@@ -695,7 +697,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
          throws Exception {
       if (rpcCommands == null || rpcCommands.isEmpty()) {
          // don't send if recipients list is empty
-         log.trace("Destination list is empty: no need to send message");
+         if(trace)
+            log.trace("Destination list is empty: no need to send message");
          return Collections.emptyMap();
       }
 
@@ -747,7 +750,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
    @Override
    public BackupResponse backupRemotely(Collection<XSiteBackup> backups, XSiteReplicateCommand rpcCommand) throws Exception {
-      log.tracef("About to send to backups %s, command %s", backups, rpcCommand);
+      if(trace)
+         log.tracef("About to send to backups %s, command %s", backups, rpcCommand);
       Buffer buf = dispatcher.marshallCall(dispatcher.getMarshaller(), rpcCommand);
       Map<XSiteBackup, Future<Object>> syncBackupCalls = new HashMap<>(backups.size());
       for (XSiteBackup xsb : backups) {
@@ -789,7 +793,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       Response response;
       if (rsp.wasReceived()) {
          if (rsp.hasException()) {
-            log.tracef(rsp.getException(), "Unexpected exception from %s", sender);
+            if(trace)
+               log.tracef(rsp.getException(), "Unexpected exception from %s", sender);
             throw log.remoteException(sender, rsp.getException());
          } else {
             response = checkResponse(rsp.getValue(), sender, ignoreLeavers);
