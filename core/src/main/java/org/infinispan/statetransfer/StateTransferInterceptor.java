@@ -27,6 +27,7 @@ import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.Inject;
@@ -394,7 +395,7 @@ public class StateTransferInterceptor extends BaseStateTransferInterceptor {
    private boolean isLocalOnly(VisitableCommand command) {
       boolean cacheModeLocal = false;
       if (command instanceof FlagAffectedCommand) {
-         cacheModeLocal = ((FlagAffectedCommand)command).hasFlag(Flag.CACHE_MODE_LOCAL);
+         cacheModeLocal = ((FlagAffectedCommand)command).hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL);
       }
       return cacheModeLocal;
    }

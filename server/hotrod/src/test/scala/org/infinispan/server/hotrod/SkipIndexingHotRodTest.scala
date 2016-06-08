@@ -1,10 +1,12 @@
 package org.infinispan.server.hotrod
 
 import org.infinispan.interceptors.base.BaseCustomInterceptor
-import org.infinispan.context.{Flag, InvocationContext}
+import org.infinispan.context.InvocationContext
 import org.infinispan.commands.{LocalFlagAffectedCommand, VisitableCommand}
 import org.infinispan.commons.CacheException
 import java.lang.reflect.Method
+
+import org.infinispan.context.impl.FlagBitSets
 import test.HotRodTestingUtil._
 import org.testng.annotations.Test
 
@@ -164,7 +166,7 @@ class SkipIndexingFlagCheckCommandInterceptor extends BaseCustomInterceptor {
    protected override def handleDefault(ctx: InvocationContext, command: VisitableCommand): AnyRef = {
       command match {
          case flagAffectedCommand: LocalFlagAffectedCommand =>
-            val hasFlag = flagAffectedCommand.hasFlag(Flag.SKIP_INDEXING)
+            val hasFlag = flagAffectedCommand.hasAnyFlag(FlagBitSets.SKIP_INDEXING)
             if (expectSkipIndexingFlag && !hasFlag) {
                throw new CacheException("SKIP_INDEXING flag is expected!")
             } else if (!expectSkipIndexingFlag && hasFlag) {

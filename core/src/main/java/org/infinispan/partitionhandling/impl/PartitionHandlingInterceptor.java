@@ -22,8 +22,8 @@ import org.infinispan.commands.write.PutMapCommand;
 import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commons.util.InfinispanCollections;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.annotations.Inject;
@@ -49,8 +49,7 @@ public class PartitionHandlingInterceptor extends CommandInterceptor {
       if (!ctx.isOriginLocal()) {
          return true;
       }
-      Set<Flag> flags = command.getFlags();
-      return flags == null || !flags.contains(Flag.CACHE_MODE_LOCAL);
+      return !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL);
    }
 
    @Override

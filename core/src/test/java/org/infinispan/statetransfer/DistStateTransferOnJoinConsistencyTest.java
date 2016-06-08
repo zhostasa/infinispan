@@ -7,8 +7,8 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.interceptors.InvocationContextInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.test.MultipleCacheManagersTest;
@@ -147,7 +147,7 @@ public class DistStateTransferOnJoinConsistencyTest extends MultipleCacheManager
          protected Object handleDefault(InvocationContext ctx, VisitableCommand cmd) throws Throwable {
             // if this 'put' command is caused by state transfer we delay it to ensure other cache operations
             // are performed first and create opportunity for inconsistencies
-            if (cmd instanceof PutKeyValueCommand && ((PutKeyValueCommand) cmd).hasFlag(Flag.PUT_FOR_STATE_TRANSFER)) {
+            if (cmd instanceof PutKeyValueCommand && ((PutKeyValueCommand) cmd).hasAnyFlag(FlagBitSets.PUT_FOR_STATE_TRANSFER)) {
                // signal we encounter a state transfer PUT
                applyStateStartedLatch.countDown();
                // wait until it is ok to apply state

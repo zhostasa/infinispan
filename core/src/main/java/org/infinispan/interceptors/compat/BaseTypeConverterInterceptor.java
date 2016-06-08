@@ -20,7 +20,6 @@ import org.infinispan.compat.TypeConverter;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.versioning.VersionGenerator;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.annotations.Inject;
@@ -67,16 +66,16 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    /**
     * Subclasses need to return a TypeConverter instance that is appropriate for a cache operation with the specified flags.
     *
-    * @param flags the set of flags for the current cache operation
+    * @param flagsBitSet the set of flags for the current cache operation
     * @return the converter, never {@code null}
     */
-   protected abstract TypeConverter<Object, Object, Object, Object> determineTypeConverter(Set<Flag> flags);
+   protected abstract TypeConverter<Object, Object, Object, Object> determineTypeConverter(long flagsBitSet);
 
    @Override
    public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
       Object key = command.getKey();
       TypeConverter<Object, Object, Object, Object> converter =
-            determineTypeConverter(command.getFlags());
+            determineTypeConverter(command.getFlagsBitSet());
       if (ctx.isOriginLocal()) {
          command.setKey(converter.boxKey(key));
          command.setValue(converter.boxValue(command.getValue()));
@@ -90,7 +89,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
       if (ctx.isOriginLocal()) {
          Map<Object, Object> map = command.getMap();
          TypeConverter<Object, Object, Object, Object> converter =
-               determineTypeConverter(command.getFlags());
+               determineTypeConverter(command.getFlagsBitSet());
          Map<Object, Object> convertedMap = new HashMap<>(map.size());
          for (Entry<Object, Object> entry : map.entrySet()) {
             convertedMap.put(converter.boxKey(entry.getKey()),
@@ -106,7 +105,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    public Object visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command) throws Throwable {
       Object key = command.getKey();
       TypeConverter<Object, Object, Object, Object> converter =
-            determineTypeConverter(command.getFlags());
+            determineTypeConverter(command.getFlagsBitSet());
       if (ctx.isOriginLocal()) {
          command.setKey(converter.boxKey(key));
       }
@@ -124,7 +123,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    public Object visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
       Object key = command.getKey();
       TypeConverter<Object, Object, Object, Object> converter =
-            determineTypeConverter(command.getFlags());
+            determineTypeConverter(command.getFlagsBitSet());
       if (ctx.isOriginLocal()) {
          command.setKey(converter.boxKey(key));
       }
@@ -151,7 +150,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    public Object visitGetAllCommand(InvocationContext ctx, GetAllCommand command) throws Throwable {
       Collection<?> keys = command.getKeys();
       TypeConverter<Object, Object, Object, Object> converter =
-            determineTypeConverter(command.getFlags());
+            determineTypeConverter(command.getFlagsBitSet());
       if (ctx.isOriginLocal()) {
          Set<Object> boxedKeys = new LinkedHashSet<>(keys.size());
          for (Object key : keys) {
@@ -201,7 +200,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    public Object visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
       Object key = command.getKey();
       TypeConverter<Object, Object, Object, Object> converter =
-            determineTypeConverter(command.getFlags());
+            determineTypeConverter(command.getFlagsBitSet());
       Object oldValue = command.getOldValue();
       if (ctx.isOriginLocal()) {
          command.setKey(converter.boxKey(key));
@@ -234,7 +233,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    public Object visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
       Object key = command.getKey();
       TypeConverter<Object, Object, Object, Object> converter =
-            determineTypeConverter(command.getFlags());
+            determineTypeConverter(command.getFlagsBitSet());
       Object conditionalValue = command.getValue();
       if (ctx.isOriginLocal()) {
          command.setKey(converter.boxKey(key));
@@ -254,7 +253,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    @Override
    public CacheSet<K> visitKeySetCommand(InvocationContext ctx, KeySetCommand command) throws Throwable {
       if (ctx.isOriginLocal()) {
-         TypeConverter<Object, Object, Object, Object> converter = determineTypeConverter(command.getFlags());
+         TypeConverter<Object, Object, Object, Object> converter = determineTypeConverter(command.getFlagsBitSet());
          CacheSet<K> set = (CacheSet<K>) super.visitKeySetCommand(ctx, command);
 
          return new AbstractDelegatingKeyCacheSet<K, V>(getCacheWithFlags(cache, command), set) {
@@ -293,7 +292,7 @@ public abstract class BaseTypeConverterInterceptor<K, V> extends CommandIntercep
    @Override
    public CacheSet<CacheEntry<K, V>> visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command) throws Throwable {
       if (ctx.isOriginLocal()) {
-         TypeConverter<Object, Object, Object, Object> converter = determineTypeConverter(command.getFlags());
+         TypeConverter<Object, Object, Object, Object> converter = determineTypeConverter(command.getFlagsBitSet());
          CacheSet<CacheEntry<K, V>> set = (CacheSet<CacheEntry<K, V>>) super.visitEntrySetCommand(ctx, command);
 
          return new AbstractDelegatingEntryCacheSet<K, V>(getCacheWithFlags(cache, command), set) {

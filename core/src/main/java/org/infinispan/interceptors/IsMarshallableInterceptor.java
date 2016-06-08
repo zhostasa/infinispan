@@ -15,10 +15,10 @@ import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.commons.marshall.StreamingMarshaller;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
@@ -142,7 +142,7 @@ public class IsMarshallableInterceptor extends CommandInterceptor {
       // any cache store is configured, check whether it'll be skipped
       return ctx.isOriginLocal()
             && cacheConfiguration.clustering().cacheMode().isClustered()
-            && !command.hasFlag(Flag.CACHE_MODE_LOCAL);
+            && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL);
    }
 
    private boolean isStoreInvocation(FlagAffectedCommand command) {
@@ -151,7 +151,7 @@ public class IsMarshallableInterceptor extends CommandInterceptor {
       // any cache store is configured, check whether it'll be skipped
       return !cacheConfiguration.clustering().cacheMode().isClustered()
             && !cacheConfiguration.persistence().stores().isEmpty()
-            && !command.hasFlag(Flag.SKIP_CACHE_STORE);
+            && !command.hasAnyFlag(FlagBitSets.SKIP_CACHE_STORE);
    }
 
    private boolean isStoreAsBinary() {
@@ -161,8 +161,8 @@ public class IsMarshallableInterceptor extends CommandInterceptor {
    private boolean getMightGoRemote(InvocationContext ctx, Object key, FlagAffectedCommand command) {
       return ctx.isOriginLocal()
             && cacheConfiguration.clustering().cacheMode().isDistributed()
-            && !command.hasFlag(Flag.SKIP_REMOTE_LOOKUP)
-            && !command.hasFlag(Flag.CACHE_MODE_LOCAL)
+            && !command.hasAnyFlag(FlagBitSets.SKIP_REMOTE_LOOKUP)
+            && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)
             && !distManager.getLocality(key).isLocal();
    }
 

@@ -13,8 +13,8 @@ import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.util.EnumUtil;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.interceptors.InterceptorChain;
@@ -199,7 +199,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
             throw new CacheException("The value must be a string");
          }
          if (shouldIntercept(key)) {
-            if (!command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER) && !command.hasFlag(Flag.SKIP_LOCKING)) {
+            if (!command.hasAnyFlag(FlagBitSets.PUT_FOR_STATE_TRANSFER) && !command.hasAnyFlag(FlagBitSets.SKIP_LOCKING)) {
                if (!((String) key).endsWith(PROTO_KEY_SUFFIX)) {
                   throw new CacheException("The key must end with \".proto\" : " + key);
                }
@@ -220,7 +220,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomInterceptor imp
                .addProtoFile((String) key, (String) value);
 
          ProgressCallback progressCallback = null;
-         if (ctx.isOriginLocal() && !command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER) ) {
+         if (ctx.isOriginLocal() && !command.hasAnyFlag(FlagBitSets.PUT_FOR_STATE_TRANSFER) ) {
             progressCallback = new ProgressCallback(ctx, command.getFlagsBitSet());
             source.withProgressCallback(progressCallback);
          } else {

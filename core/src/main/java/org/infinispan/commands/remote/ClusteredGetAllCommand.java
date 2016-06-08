@@ -21,6 +21,7 @@ import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.interceptors.InterceptorChain;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.transaction.xa.GlobalTransaction;
@@ -111,7 +112,7 @@ public class ClusteredGetAllCommand<K, V> extends LocalFlagAffectedRpcCommand {
    }
 
    private void acquireLocksIfNeeded() throws Throwable {
-      if (hasFlag(Flag.FORCE_WRITE_LOCK)) {
+      if (hasAnyFlag(FlagBitSets.FORCE_WRITE_LOCK)) {
          LockControlCommand lockControlCommand = commandsFactory.buildLockControlCommand(keys, getFlagsBitSet(), gtx);
          lockControlCommand.init(invoker, icf, txTable);
          lockControlCommand.perform(null);

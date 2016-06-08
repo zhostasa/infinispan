@@ -20,8 +20,8 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.EntryFactory;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.distribution.L1Manager;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
@@ -203,8 +203,8 @@ public class L1NonTxInterceptor extends BaseRpcInterceptor {
    }
 
    protected boolean skipL1Lookup(LocalFlagAffectedCommand command, Object key) {
-      return command.hasFlag(Flag.CACHE_MODE_LOCAL) || command.hasFlag(Flag.SKIP_REMOTE_LOOKUP)
-            || command.hasFlag(Flag.IGNORE_RETURN_VALUES) || cdl.localNodeIsOwner(key)
+      return command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL) || command.hasAnyFlag(FlagBitSets.SKIP_REMOTE_LOOKUP)
+            || command.hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES) || cdl.localNodeIsOwner(key)
             || dataContainer.containsKey(key);
    }
 
@@ -292,7 +292,7 @@ public class L1NonTxInterceptor extends BaseRpcInterceptor {
    }
 
    private Object handleDataWriteCommand(InvocationContext ctx, DataWriteCommand command, boolean assumeOriginKeptEntryInL1) throws Throwable {
-      if (command.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+      if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
          if (trace) {
             log.tracef("local mode forced, suppressing L1 calls.");
          }

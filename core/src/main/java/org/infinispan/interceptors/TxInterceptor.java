@@ -30,6 +30,7 @@ import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.RemoteTxInvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
@@ -365,7 +366,7 @@ public class TxInterceptor<K, V> extends CommandInterceptor implements JmxStatis
          throw e;
       } catch (Throwable throwable) {
          // Don't mark the transaction for rollback if it's fail silent (i.e. putForExternalRead)
-         if (ctx.isOriginLocal() && ctx.isInTxScope() && !command.hasFlag(Flag.FAIL_SILENTLY)) {
+         if (ctx.isOriginLocal() && ctx.isInTxScope() && !command.hasAnyFlag(FlagBitSets.FAIL_SILENTLY)) {
             TxInvocationContext txCtx = (TxInvocationContext) ctx;
             txCtx.getTransaction().setRollbackOnly();
          }

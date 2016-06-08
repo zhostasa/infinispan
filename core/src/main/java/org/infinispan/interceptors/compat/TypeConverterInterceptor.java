@@ -3,14 +3,15 @@ package org.infinispan.interceptors.compat;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.util.Collection;
-import java.util.Set;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.commons.util.ServiceFinder;
 import org.infinispan.commons.util.Util;
 import org.infinispan.compat.TypeConverter;
 import org.infinispan.context.Flag;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -50,13 +51,11 @@ public class TypeConverterInterceptor<K, V> extends BaseTypeConverterInterceptor
       return converter;
    }
 
-   protected TypeConverter<Object, Object, Object, Object> determineTypeConverter(Set<Flag> flags) {
-      if (flags != null) {
-         if (flags.contains(Flag.OPERATION_HOTROD))
-            return hotRodConverter;
-         else if (flags.contains(Flag.OPERATION_MEMCACHED))
-            return memcachedConverter;
-      }
+   protected TypeConverter<Object, Object, Object, Object> determineTypeConverter(long flagsBitSet) {
+      if (EnumUtil.containsAny(flagsBitSet, FlagBitSets.OPERATION_HOTROD))
+         return hotRodConverter;
+      else if (EnumUtil.containsAny(flagsBitSet, FlagBitSets.OPERATION_MEMCACHED))
+         return memcachedConverter;
 
       return embeddedConverter;
    }

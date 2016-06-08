@@ -4,8 +4,8 @@ import org.infinispan.client.hotrod.test.HotRodClientTestingUtil;
 import org.infinispan.commands.LocalFlagAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commons.CacheException;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.interceptors.base.BaseCustomInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -228,7 +228,7 @@ public class SkipIndexingFlagTest extends SingleCacheManagerTest {
       @Override
       protected Object handleDefault(InvocationContext ctx, VisitableCommand command) throws Throwable {
          if (command instanceof LocalFlagAffectedCommand) {
-            boolean hasFlag = ((LocalFlagAffectedCommand) command).hasFlag(Flag.SKIP_INDEXING);
+            boolean hasFlag = ((LocalFlagAffectedCommand) command).hasAnyFlag(FlagBitSets.SKIP_INDEXING);
             if (expectSkipIndexingFlag && !hasFlag) {
                throw new CacheException("SKIP_INDEXING flag is expected!");
             } else if (!expectSkipIndexingFlag && hasFlag) {

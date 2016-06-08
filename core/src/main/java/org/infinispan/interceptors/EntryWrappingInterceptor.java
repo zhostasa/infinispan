@@ -2,7 +2,6 @@ package org.infinispan.interceptors;
 
 import static org.infinispan.commons.util.Util.toStr;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,6 +27,7 @@ import org.infinispan.container.entries.NullCacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.SingleKeyNonTxInvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.group.GroupFilter;
 import org.infinispan.distribution.group.GroupManager;
@@ -70,8 +70,8 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
 
    private static final Log log = LogFactory.getLog(EntryWrappingInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
-   private static final EnumSet<Flag> EVICT_FLAGS =
-         EnumSet.of(Flag.SKIP_OWNERSHIP_CHECK, Flag.CACHE_MODE_LOCAL);
+   private static final long EVICT_FLAGS_BITSET =
+         FlagBitSets.SKIP_OWNERSHIP_CHECK | FlagBitSets.CACHE_MODE_LOCAL;
 
    @Override
    protected Log getLog() {
@@ -211,18 +211,18 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
 
    private void wrapEntryForPutIfNeeded(InvocationContext ctx, AbstractDataWriteCommand command) throws Throwable {
       if (shouldWrap(command.getKey(), ctx, command)) {
-         boolean skipRead = command.hasFlag(Flag.IGNORE_RETURN_VALUES) && !command.isConditional();
+         boolean skipRead = command.hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES) && !command.isConditional();
          entryFactory.wrapEntryForWriting(ctx, command.getKey(), EntryFactory.Wrap.WRAP_ALL, skipRead, false);
       }
    }
 
    private boolean shouldWrap(Object key, InvocationContext ctx, FlagAffectedCommand command) {
-      if (command.hasFlag(Flag.SKIP_OWNERSHIP_CHECK)) {
+      if (command.hasAnyFlag(FlagBitSets.SKIP_OWNERSHIP_CHECK)) {
          if (trace)
             log.tracef("Skipping ownership check and wrapping key %s", toStr(key));
 
          return true;
-      } else if (command.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+      } else if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
          if (trace) {
             log.tracef("CACHE_MODE_LOCAL is set. Wrapping key %s", toStr(key));
          }
@@ -230,7 +230,8 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
       }
       boolean result;
       boolean isTransactional = cacheConfiguration.transaction().transactionMode().isTransactional();
-      boolean isPutForExternalRead = command.hasFlag(Flag.PUT_FOR_EXTERNAL_READ);
+      boolean isPutForExternalRead =
+            command.hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ);
 
       // Invalidated caches should always wrap entries in order to local
       // changes from nodes that are not lock owners for these entries.
@@ -270,7 +271,7 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
       if (shouldWrap(command.getKey(), ctx, command)) {
          boolean forceWrap = command.getValueMatcher().nonExistentEntryCanMatch();
          EntryFactory.Wrap wrap = forceWrap ? EntryFactory.Wrap.WRAP_ALL : EntryFactory.Wrap.WRAP_NON_NULL;
-         boolean skipRead = command.hasFlag(Flag.IGNORE_RETURN_VALUES) && !command.isConditional();
+         boolean skipRead = command.hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES) && !command.isConditional();
          entryFactory.wrapEntryForWriting(ctx, command.getKey(), wrap, skipRead, false);
       }
    }
@@ -304,7 +305,7 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
 
    @Override
    public Object visitEvictCommand(InvocationContext ctx, EvictCommand command) throws Throwable {
-      command.addFlags(EVICT_FLAGS); //to force the wrapping
+      command.setFlagsBitSet(EVICT_FLAGS_BITSET); //to force the wrapping
       return visitRemoveCommand(ctx, command);
    }
 
@@ -444,9 +445,9 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
                ((TxInvocationContext) ctx).getCacheTransaction().getStateTransferFlag() :
                null;
       } else {
-         if (command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER)) {
+         if (command.hasAnyFlag(FlagBitSets.PUT_FOR_STATE_TRANSFER)) {
             return Flag.PUT_FOR_STATE_TRANSFER;
-         } else if (command.hasFlag(Flag.PUT_FOR_X_SITE_STATE_TRANSFER)) {
+         } else if (command.hasAnyFlag(FlagBitSets.PUT_FOR_X_SITE_STATE_TRANSFER)) {
             return Flag.PUT_FOR_X_SITE_STATE_TRANSFER;
          }
       }
@@ -495,7 +496,8 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
                WriteCommand writeCommand = (WriteCommand) command;
                // Can't perform the check during preload or if the cache isn't clustered
                boolean isSync = (cacheConfiguration.clustering().cacheMode().isSynchronous() &&
-                     !command.hasFlag(Flag.FORCE_ASYNCHRONOUS)) || command.hasFlag(Flag.FORCE_SYNCHRONOUS);
+                     !command.hasAnyFlag(FlagBitSets.FORCE_ASYNCHRONOUS)) ||
+                     command.hasAnyFlag(FlagBitSets.FORCE_SYNCHRONOUS);
                if (writeCommand.isSuccessful() && stateConsumer != null &&
                      stateConsumer.getCacheTopology() != null) {
                   int commandTopologyId = command.getTopologyId();
@@ -668,7 +670,7 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
       if (!ctx.isOriginLocal() || command.isReplayEntryWrapping()) {
          for (WriteCommand c : command.getModifications()) {
             c.acceptVisitor(ctx, entryWrappingVisitor);
-            if (c.hasFlag(Flag.PUT_FOR_X_SITE_STATE_TRANSFER)) {
+            if (c.hasAnyFlag(FlagBitSets.PUT_FOR_X_SITE_STATE_TRANSFER)) {
                ctx.getCacheTransaction().setStateTransferFlag(Flag.PUT_FOR_X_SITE_STATE_TRANSFER);
             }
          }

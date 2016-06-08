@@ -10,6 +10,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.interceptors.base.BaseCustomInterceptor;
@@ -22,15 +23,12 @@ import org.infinispan.transaction.LockingMode;
 import org.testng.annotations.Test;
 
 import javax.transaction.TransactionManager;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.infinispan.test.TestingUtil.findInterceptor;
 import static org.infinispan.test.TestingUtil.waitForRehashToComplete;
 import static org.testng.AssertJUnit.assertEquals;
 
@@ -130,7 +128,7 @@ public class GetWithForceWriteLockRetryTest extends MultipleCacheManagersTest {
       public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command)
             throws Throwable {
          Object result = super.visitPutKeyValueCommand(ctx, command);
-         if (!ctx.isInTxScope() && !command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER)) {
+         if (!ctx.isInTxScope() && !command.hasAnyFlag(FlagBitSets.PUT_FOR_STATE_TRANSFER)) {
             doBlock(ctx, command);
          }
          return result;

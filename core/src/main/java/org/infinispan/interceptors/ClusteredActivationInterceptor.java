@@ -1,8 +1,8 @@
 package org.infinispan.interceptors;
 
 import org.infinispan.commands.write.WriteCommand;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
@@ -51,7 +51,7 @@ public class ClusteredActivationInterceptor extends ActivationInterceptor {
                return true;
             }
          } else {
-            if (!cdl.localNodeIsPrimaryOwner(key) && !cmd.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+            if (!cdl.localNodeIsPrimaryOwner(key) && !cmd.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
                if (trace) {
                   log.tracef("Skip load for command %s. This node is not the primary owner of %s", cmd, toStr(key));
                }

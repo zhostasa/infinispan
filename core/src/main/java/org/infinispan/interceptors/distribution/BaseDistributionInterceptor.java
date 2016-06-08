@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.ReplicableCommand;
@@ -26,8 +25,8 @@ import org.infinispan.container.EntryFactory;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.entries.InternalCacheValue;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.RemoteValueRetrievedListener;
@@ -449,8 +448,8 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
 
    @Override
    public Object visitGetAllCommand(InvocationContext ctx, GetAllCommand command) throws Throwable {
-      if (command.hasFlag(Flag.CACHE_MODE_LOCAL)
-            || command.hasFlag(Flag.SKIP_REMOTE_LOOKUP)) {
+      if (command.hasAnyFlag(
+            FlagBitSets.CACHE_MODE_LOCAL | FlagBitSets.SKIP_REMOTE_LOOKUP)) {
          return invokeNextInterceptor(ctx, command);
       }
 
@@ -545,8 +544,8 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
    @Override
    public Object visitReadOnlyManyCommand(InvocationContext ctx, ReadOnlyManyCommand command) throws Throwable {
       // TODO: Can we reimplement GetAll in terms of ReadOnlyManyCommand?
-      if (command.hasFlag(Flag.CACHE_MODE_LOCAL)
-         || command.hasFlag(Flag.SKIP_REMOTE_LOOKUP)) {
+      if (command.hasAnyFlag(
+            FlagBitSets.CACHE_MODE_LOCAL | FlagBitSets.SKIP_REMOTE_LOOKUP)) {
          return invokeNextInterceptor(ctx, command);
       }
 
@@ -653,7 +652,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
     * fetch it from a remote node. Does not check if the value is already in the context.
     */
    protected boolean readNeedsRemoteValue(InvocationContext ctx, AbstractDataCommand command) {
-      return ctx.isOriginLocal() && !command.hasFlag(Flag.CACHE_MODE_LOCAL) &&
-            !command.hasFlag(Flag.SKIP_REMOTE_LOOKUP);
+      return ctx.isOriginLocal() && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL) &&
+            !command.hasAnyFlag(FlagBitSets.SKIP_REMOTE_LOOKUP);
    }
 }

@@ -16,6 +16,7 @@ import org.infinispan.container.versioning.EntryVersionsMap;
 import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.annotations.Inject;
@@ -495,7 +496,7 @@ public interface ClusteringDependentLogic {
             boolean doCommit = true;
             // ignore locality for removals, even if skipOwnershipCheck is not true
             boolean skipOwnershipCheck = command != null &&
-                  command.hasFlag(Flag.SKIP_OWNERSHIP_CHECK);
+                  command.hasAnyFlag(FlagBitSets.SKIP_OWNERSHIP_CHECK);
 
             boolean isForeignOwned = !skipOwnershipCheck && !localNodeIsOwner(entry.getKey());
             if (isForeignOwned && !entry.isRemoved()) {

@@ -5,6 +5,7 @@ import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
@@ -79,12 +80,12 @@ public class PutKeyValueCommand extends AbstractDataWriteCommand implements Meta
 
    @Override
    public boolean readsExistingValues() {
-      return putIfAbsent || !hasFlag(Flag.IGNORE_RETURN_VALUES);
+      return putIfAbsent || !hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES);
    }
 
    @Override
    public boolean alwaysReadsExistingValues() {
-      return hasFlag(Flag.DELTA_WRITE);
+      return hasAnyFlag(FlagBitSets.DELTA_WRITE);
    }
 
    @Override

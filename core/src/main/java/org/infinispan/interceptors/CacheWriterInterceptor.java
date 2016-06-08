@@ -22,8 +22,8 @@ import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.container.versioning.EntryVersionsMap;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
@@ -309,7 +309,7 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
       if (!isStoreEnabled())
          return false;
 
-      if (command.hasFlag(Flag.SKIP_CACHE_STORE)) {
+      if (command.hasAnyFlag(FlagBitSets.SKIP_CACHE_STORE)) {
          log.trace("Skipping cache store since the call contain a skip cache store flag");
          return false;
       }
@@ -349,7 +349,8 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
                ice = entryFactory.create(entry);
             }
             MarshalledEntryImpl marshalledEntry = new MarshalledEntryImpl(ice.getKey(), ice.getValue(), internalMetadata(ice), marshaller);
-            persistenceManager.writeToAllStores(marshalledEntry, command.hasFlag(Flag.SKIP_SHARED_CACHE_STORE) ? PRIVATE : BOTH);
+            persistenceManager.writeToAllStores(marshalledEntry, command.hasAnyFlag(
+                  FlagBitSets.SKIP_SHARED_CACHE_STORE) ? PRIVATE : BOTH);
          }
          return null;
       }
@@ -387,7 +388,7 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
             if (generateStatistics) putCount++;
             InternalCacheValue sv = getStoredValue(key, ctx);
             MarshalledEntryImpl me = new MarshalledEntryImpl(key, sv.getValue(), internalMetadata(sv), marshaller);
-            persistenceManager.writeToAllStores(me, command.hasFlag(Flag.SKIP_SHARED_CACHE_STORE) ? PRIVATE : BOTH);
+            persistenceManager.writeToAllStores(me, command.hasAnyFlag(FlagBitSets.SKIP_SHARED_CACHE_STORE) ? PRIVATE : BOTH);
          }
          return null;
       }
@@ -419,7 +420,8 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
    }
 
    protected boolean skipSharedStores(InvocationContext ctx, Object key, FlagAffectedCommand command) {
-      return !ctx.isOriginLocal() || command.hasFlag(Flag.SKIP_SHARED_CACHE_STORE);
+      return !ctx.isOriginLocal() ||
+            command.hasAnyFlag(FlagBitSets.SKIP_SHARED_CACHE_STORE);
    }
 
    InternalCacheValue getStoredValue(Object key, InvocationContext ctx) {

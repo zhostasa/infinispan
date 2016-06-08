@@ -13,8 +13,8 @@ import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.tx.RollbackCommand;
 import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.interceptors.base.CommandInterceptor;
@@ -100,7 +100,7 @@ public class CallInterceptor extends CommandInterceptor {
          Map<Object, Object> map = (Map<Object, Object>) ret;
          // TODO: it would be nice to know if a listener was registered for this and
          // not do the full iteration if there was no visitor listener registered
-         if (command.getFlags() == null || !command.getFlags().contains(Flag.SKIP_LISTENER_NOTIFICATION)) {
+         if (!command.hasAnyFlag(FlagBitSets.SKIP_LISTENER_NOTIFICATION)) {
             for (Map.Entry<Object, Object> entry : map.entrySet()) {
                Object value = entry.getValue();
                if (value != null) {
