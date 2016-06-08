@@ -219,7 +219,7 @@ public class ExternalizerTable implements ObjectTable {
             }
          } else {
             if (trace) {
-               log.tracef("Unknown type. Input stream has %s to read", input.available());
+               log.tracef("Unknown type. Input stream has %s to read", (Integer) input.available());
                log.tracef("Check contents of read externalizers: %s", readers);
             }
 

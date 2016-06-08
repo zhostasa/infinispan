@@ -292,7 +292,7 @@ public class TransactionTable implements org.infinispan.transaction.TransactionT
          }
 
          if (trace) log.tracef("Completed cleaning transactions originating on leavers. Remote transactions remaining: %d",
-                               remoteTransactions.size());
+                 (Integer) remoteTransactions.size());
       }
    }
 
@@ -558,7 +558,7 @@ public class TransactionTable implements org.infinispan.transaction.TransactionT
                if (trace) log.tracef("Changing minimum topology ID from %s to %s", (Integer)minTxTopologyId, (Integer)minTopologyIdFound);
                minTxTopologyId = minTopologyIdFound;
             } else {
-               if (trace) log.tracef("Minimum topology ID still is %s; nothing to change", minTopologyIdFound);
+               if (trace) log.tracef("Minimum topology ID still is %s; nothing to change", (Integer) minTopologyIdFound);
             }
          }
       } finally {
@@ -733,7 +733,7 @@ public class TransactionTable implements org.infinispan.transaction.TransactionT
             return;
 
          try {
-            if (trace) log.tracef("About to cleanup completed transaction. Initial size is %d", completedTransactions.size());
+            if (trace) log.tracef("About to cleanup completed transaction. Initial size is %d", (Integer) completedTransactions.size());
             long beginning = timeService.time();
             long minCompleteTimestamp = timeService.time() - TimeUnit.MILLISECONDS.toNanos(configuration.transaction().completedTxTimeout());
             int removedEntries = 0;

@@ -51,7 +51,7 @@ public class MultipleRpcCommand extends BaseRpcInvokingCommand {
     */
    @Override
    public Object perform(InvocationContext ctx) throws Throwable {
-      if (trace) log.tracef("Executing remotely originated commands: %d", commands.length);
+      if (trace) log.tracef("Executing remotely originated commands: %d", (Integer) commands.length);
       for (ReplicableCommand command : commands) {
          if (command instanceof TransactionBoundaryCommand) {
             command.perform(null);

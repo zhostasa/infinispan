@@ -145,7 +145,7 @@ public class TcpTransport extends AbstractTransport {
       try {
          socketOutputStream.write(toAppend);
          if (trace) {
-            log.tracef("Wrote %d bytes", toAppend.length);
+            log.tracef("Wrote %d bytes", (Integer) toAppend.length);
          }
       } catch (IOException e) {
          invalid = true;
@@ -159,7 +159,7 @@ public class TcpTransport extends AbstractTransport {
       try {
          socketOutputStream.write(toWrite);
          if (trace) {
-            log.tracef("Wrote byte %d", toWrite);
+            log.tracef("Wrote byte %d", (Short) toWrite);
          }
 
       } catch (IOException e) {
@@ -235,7 +235,7 @@ public class TcpTransport extends AbstractTransport {
          }
       } while (!done);
       if (trace) {
-         log.tracef("Successfully read array with size: %d", size);
+         log.tracef("Successfully read array with size: %d", (Integer) size);
       }
       return result;
    }

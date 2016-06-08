@@ -136,7 +136,7 @@ public abstract class BasePerCacheInboundInvocationHandler implements PerCacheIn
    public final boolean isCommandSentBeforeFirstTopology(int commandTopologyId) {
       if (0 <= commandTopologyId && commandTopologyId < stateTransferManager.getFirstTopologyAsMember()) {
          if (isTraceEnabled()) {
-            getLog().tracef("Ignoring command sent before the local node was a member (command topology id is %d)", commandTopologyId);
+            getLog().tracef("Ignoring command sent before the local node was a member (command topology id is %d)", (Integer) commandTopologyId);
          }
          return true;
       }

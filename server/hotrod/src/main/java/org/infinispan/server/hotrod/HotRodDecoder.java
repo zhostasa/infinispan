@@ -70,7 +70,7 @@ public class HotRodDecoder extends ByteToMessageDecoder {
    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
       try {
          if (decodeCtx.isTrace()) {
-            log.tracef("Decode using instance @%x", System.identityHashCode(this));
+            log.tracef("Decode using instance @%x", (Integer) System.identityHashCode(this));
          }
 
          if (resetRequested) {
@@ -172,7 +172,7 @@ public class HotRodDecoder extends ByteToMessageDecoder {
             if (previousException == null) {
                throw new InvalidMagicIdException("Error reading magic byte or message id: " + magic);
             } else {
-               log.tracef("Error happened previously, ignoring %d byte until we find the magic number again", magic);
+               log.tracef("Error happened previously, ignoring %d byte until we find the magic number again", (Short) magic);
                return false;
             }
          } else {

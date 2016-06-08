@@ -255,7 +255,7 @@ public class JdbcStringBasedStore implements AdvancedLoadWriteStore {
          ps = conn.prepareStatement(sql);
          int result = ps.executeUpdate();
          if (trace) {
-            log.tracef("Successfully removed %d rows.", result);
+            log.tracef("Successfully removed %d rows.", (Integer) result);
          }
       } catch (SQLException ex) {
          log.failedClearingJdbcCacheStore(ex);
@@ -282,7 +282,7 @@ public class JdbcStringBasedStore implements AdvancedLoadWriteStore {
                ps.setLong(1, ctx.getTimeService().wallClockTime());
                int result = ps.executeUpdate();
                if (trace) {
-                  log.tracef("Successfully purged %d rows.", result);
+                  log.tracef("Successfully purged %d rows.", (Integer) result);
                }
             } catch (SQLException ex) {
                log.failedClearingJdbcCacheStore(ex);

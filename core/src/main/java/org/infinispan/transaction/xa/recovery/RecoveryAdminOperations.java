@@ -38,7 +38,7 @@ public class RecoveryAdminOperations {
    public String showInDoubtTransactions() {
       Set<RecoveryManager.InDoubtTxInfo> info = getRecoveryInfoFromCluster();
       if (trace) {
-         log.tracef("Found in doubt transactions: %s", info.size());
+         log.tracef("Found in doubt transactions: %s", (Integer) info.size());
       }
       StringBuilder result = new StringBuilder();
       for (RecoveryManager.InDoubtTxInfo i : info) {

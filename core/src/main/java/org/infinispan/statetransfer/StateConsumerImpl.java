@@ -396,7 +396,7 @@ public class StateConsumerImpl implements StateConsumer {
                   cacheNotifier.notifyDataRehashed(previousReadCh, cacheTopology.getCurrentCH(), previousWriteCh,
                         cacheTopology.getTopologyId(), false);
                   if (trace) {
-                     log.tracef("Unlock State Transfer in Progress for topology ID %s", cacheTopology.getTopologyId());
+                     log.tracef("Unlock State Transfer in Progress for topology ID %s", (Integer) cacheTopology.getTopologyId());
                   }
                   if (isTotalOrder) {
                      totalOrderManager.notifyStateTransferEnd();

@@ -101,7 +101,7 @@ class DistributedQueueingSegmentListener<K, V> extends BaseQueueingSegmentListen
       Queue<KeyValuePair<CacheEntryEvent<K, V>, ListenerInvocation<Event<K, V>>>> queue = queues.get(segment);
       if (queue != null) {
          if (trace) {
-            log.tracef("Completed segment %s", segment);
+            log.tracef("Completed segment %s", (Integer) segment);
          }
          for (KeyValuePair<CacheEntryEvent<K, V>, ListenerInvocation<Event<K, V>>> event : queue) {
             // The InitialTransferInvocation already did the converter if needed

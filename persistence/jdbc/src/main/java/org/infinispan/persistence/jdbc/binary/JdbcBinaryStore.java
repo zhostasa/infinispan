@@ -41,6 +41,7 @@ import org.infinispan.persistence.support.Bucket;
 import org.infinispan.util.concurrent.locks.StripedLock;
 import org.infinispan.util.logging.LogFactory;
 
+
 /**
  * {@link org.infinispan.persistence.spi.AdvancedLoadWriteStore} implementation that will store all the buckets as rows
  * in database, each row corresponding to a bucket. This is in contrast to {@link org.infinispan.persistence.jdbc.stringbased.JdbcStringBasedStore}
@@ -242,7 +243,7 @@ public class JdbcBinaryStore implements AdvancedLoadWriteStore {
          ps = conn.prepareStatement(sql);
          int result = ps.executeUpdate();
          if (trace) {
-            log.tracef("Successfully removed %d rows.", result);
+            log.tracef("Successfully removed %d rows.", (Integer) result);
          }
       } catch (SQLException ex) {
          log.failedClearingJdbcCacheStore(ex);

@@ -68,7 +68,7 @@ public class StateTransferLockImpl implements StateTransferLock {
                ") that is lower than the current one (" + transactionDataTopologyId + ")");
       }
       if (trace) {
-         log.tracef("Signalling transaction data received for topology %d", topologyId);
+         log.tracef("Signalling transaction data received for topology %d", (Integer) topologyId);
       }
       transactionDataTopologyId = topologyId;
       transactionDataLock.lock();
@@ -119,7 +119,7 @@ public class StateTransferLockImpl implements StateTransferLock {
                ") that is lower than the current one (" + this.topologyId + ")");
       }
       if (trace) {
-         log.tracef("Signalling topology %d is installed", topologyId);
+         log.tracef("Signalling topology %d is installed", (Integer) topologyId);
       }
       this.topologyId = topologyId;
 

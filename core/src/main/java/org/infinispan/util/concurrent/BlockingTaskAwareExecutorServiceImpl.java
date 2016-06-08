@@ -51,14 +51,14 @@ public class BlockingTaskAwareExecutorServiceImpl extends AbstractExecutorServic
       if (runnable.isReady()) {
          doExecute(runnable);
          if (trace) {
-            log.tracef("Added a new task directly: %d task(s) are waiting", blockedTasks.size());
+            log.tracef("Added a new task directly: %d task(s) are waiting", (Integer) blockedTasks.size());
          }
       } else {
          //we no longer submit directly to the executor service.
          blockedTasks.offer(runnable);
          controllerThread.checkForReadyTask();
          if (trace) {
-            log.tracef("Added a new task to the queue: %d task(s) are waiting", blockedTasks.size());
+            log.tracef("Added a new task to the queue: %d task(s) are waiting", (Integer) blockedTasks.size());
          }
       }
    }

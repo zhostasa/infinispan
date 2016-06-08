@@ -172,7 +172,7 @@ public class StateProviderImpl implements StateProvider {
          collectTransactionsToTransfer(destination, transactions, transactionTable.getRemoteTransactions(), segments, cacheTopology);
          collectTransactionsToTransfer(destination, transactions, transactionTable.getLocalTransactions(), segments, cacheTopology);
          if (trace) {
-            log.tracef("Found %d transaction(s) to transfer", transactions.size());
+            log.tracef("Found %d transaction(s) to transfer", (Integer) transactions.size());
          }
       }
       return transactions;

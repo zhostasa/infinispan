@@ -100,7 +100,7 @@ public class Codec11 extends Codec10 {
          servers2Hash.put(address, hashes);
       }
       hashes.add(hashCode);
-      if (trace) getLog().tracef("Hash code is: %d", hashCode);
+      if (trace) getLog().tracef("Hash code is: %d", (Integer) hashCode);
    }
 
    // IMPORTANT NOTE: Hot Rod protocol agrees to this calculation for a virtual

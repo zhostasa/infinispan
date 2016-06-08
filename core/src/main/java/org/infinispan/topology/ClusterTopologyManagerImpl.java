@@ -327,7 +327,7 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
       clusterManagerLock.lock();
       try {
          if (newViewId < transport.getViewId()) {
-            log.tracef("Ignoring old cluster view notification: %s", newViewId);
+            log.tracef("Ignoring old cluster view notification: %s", (Integer) newViewId);
             return;
          }
 

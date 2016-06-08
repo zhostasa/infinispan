@@ -358,11 +358,11 @@ public class Streams {
       // size, then we only want to read that much
       readLength = Math.min((int) length, buffer.length);
       if (trace) {
-         log.tracef("initial read length: %d", readLength);
+         log.tracef("initial read length: %d", (Integer) readLength);
       }
 
       while (readLength != 0 && (read = input.read(buffer, 0, readLength)) != -1) {
-         if (trace) log.tracef("read bytes: %d", read);
+         if (trace) log.tracef("read bytes: %d", (Integer) read);
          output.write(buffer, 0, read);
          total += read;
          if (trace) log.tracef("total bytes read: %d", (Long)total);

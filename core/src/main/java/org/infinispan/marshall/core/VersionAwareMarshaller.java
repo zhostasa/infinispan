@@ -111,7 +111,7 @@ public class VersionAwareMarshaller extends AbstractMarshaller implements Stream
       try {
          final int version = VERSION_510;
          out.writeShort(version);
-         if (trace) log.tracef("Wrote version %s", version);
+         if (trace) log.tracef("Wrote version %s", (Integer) version);
       } catch (Exception e) {
          finishObjectOutput(out);
          log.unableToReadVersionId();
@@ -143,7 +143,7 @@ public class VersionAwareMarshaller extends AbstractMarshaller implements Stream
       int versionId;
       try {
          versionId = in.readShort();
-         if (trace) log.tracef("Read version %s", versionId);
+         if (trace) log.tracef("Read version %s", (Integer) versionId);
       }
       catch (Exception e) {
          finishObjectInput(in);

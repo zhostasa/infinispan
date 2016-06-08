@@ -59,7 +59,7 @@ public class SemaphoreCompletionService<T> implements CompletionService<T> {
     * to make the permit available again.
     */
    public void continueTaskInBackground() {
-      if (trace) log.tracef("Moving task to background, available permits %d", semaphore.availablePermits());
+      if (trace) log.tracef("Moving task to background, available permits %d", (Integer) semaphore.availablePermits());
       // Prevent other tasks from running with this task's permit
       semaphore.removePermit();
    }
@@ -76,7 +76,7 @@ public class SemaphoreCompletionService<T> implements CompletionService<T> {
          executor.execute(futureTask);
       } else {
          semaphore.release();
-         if (trace) log.tracef("Background task finished, available permits %d", semaphore.availablePermits());
+         if (trace) log.tracef("Background task finished, available permits %d", (Integer) semaphore.availablePermits());
          executeFront();
       }
       return futureTask;

@@ -125,7 +125,7 @@ public class Codec10 implements Codec {
                "Invalid response operation. Expected %#x and received %#x",
                params.opRespCode, receivedOpCode));
       }
-      if (trace) localLog.tracef("Received operation code is: %#04x", receivedOpCode);
+      if (trace) localLog.tracef("Received operation code is: %#04x", (Short) receivedOpCode);
 
       return status;
    }
@@ -169,7 +169,7 @@ public class Codec10 implements Codec {
 
    protected void checkForErrorsInResponseStatus(Transport transport, HeaderParams params, short status) {
       final Log localLog = getLog();
-      if (trace) localLog.tracef("Received operation status: %#x", status);
+      if (trace) localLog.tracef("Received operation status: %#x", (Short) status);
 
       try {
          switch (status) {
@@ -275,7 +275,7 @@ public class Codec10 implements Codec {
             servers2Hash.put(address, hashes);
          }
          hashes.add(hashCode);
-         if (trace) localLog.tracef("Hash code is: %d", hashCode);
+         if (trace) localLog.tracef("Hash code is: %d", (Integer) hashCode);
       }
       return servers2Hash;
    }

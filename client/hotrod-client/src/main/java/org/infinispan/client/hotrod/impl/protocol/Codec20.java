@@ -137,7 +137,7 @@ public class Codec20 implements Codec, HotRodConstants {
       }
 
       if (trace)
-         getLog().tracef("Received operation code is: %#04x", receivedOpCode);
+         getLog().tracef("Received operation code is: %#04x", (Short) receivedOpCode);
 
       return status;
    }
@@ -322,7 +322,7 @@ public class Codec20 implements Codec, HotRodConstants {
 
    protected void checkForErrorsInResponseStatus(Transport transport, HeaderParams params, short status) {
       final Log localLog = getLog();
-      if (trace) localLog.tracef("Received operation status: %#x", status);
+      if (trace) localLog.tracef("Received operation status: %#x", (Short) status);
 
       String msgFromServer;
       try {
@@ -421,7 +421,7 @@ public class Codec20 implements Codec, HotRodConstants {
                localLog.trace("Not using a consistent hash function (hash function version == 0).");
          } else {
             if (trace)
-               localLog.tracef("Updating client hash function with %s number of segments", numSegments);
+               localLog.tracef("Updating client hash function with %s number of segments", (Integer) numSegments);
 
          }
          transportFactory.updateHashFunction(segmentOwners,

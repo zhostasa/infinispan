@@ -129,7 +129,7 @@ public class ContextHandler extends SimpleChannelInboundHandler<CacheDecodeConte
          case BulkGetRequest:
             int size = (int) msg.operationDecodeContext();
             if (msg.isTrace()) {
-               log.tracef("About to create bulk response count = %d", size);
+               log.tracef("About to create bulk response count = %d", (Integer) size);
             }
             writeResponse(msg, ctx.channel(), new BulkGetResponse(h.version(), h.messageId(), h.cacheName(), h.clientIntel(),
                     h.topologyId(), size, msg.cache().entrySet()));
@@ -137,7 +137,7 @@ public class ContextHandler extends SimpleChannelInboundHandler<CacheDecodeConte
          case BulkGetKeysRequest:
             int scope = (int) msg.operationDecodeContext();
             if (msg.isTrace()) {
-               log.tracef("About to create bulk get keys response scope = %d", scope);
+               log.tracef("About to create bulk get keys response scope = %d", (Integer) scope);
             }
             writeResponse(msg, ctx.channel(), new BulkGetKeysResponse(h.version(), h.messageId(), h.cacheName(), h.clientIntel(),
                     h.topologyId(), scope, BulkUtil.getAllKeys(msg.cache(), scope)));
