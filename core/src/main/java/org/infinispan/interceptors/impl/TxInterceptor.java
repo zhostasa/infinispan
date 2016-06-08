@@ -386,7 +386,7 @@ public class TxInterceptor<K, V> extends DDAsyncInterceptor implements JmxStatis
          boolean implicitWith1Pc = useOnePhaseForAutoCommitTx && localTransaction.isImplicitTransaction();
          if (implicitWith1Pc) {
             //in this situation we don't support concurrent updates so skip locking entirely
-            command.addFlag(Flag.SKIP_LOCKING);
+            command.addFlags(FlagBitSets.SKIP_LOCKING);
          }
       }
       return invokeNext(ctx, command).handle((rCtx, rCommand, rv, t) -> {

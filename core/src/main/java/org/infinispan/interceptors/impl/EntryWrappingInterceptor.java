@@ -3,7 +3,6 @@ package org.infinispan.interceptors.impl;
 import static org.infinispan.commons.util.Util.toStr;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -90,8 +89,8 @@ import org.infinispan.xsite.statetransfer.XSiteStateConsumer;
 public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    private static final Log log = LogFactory.getLog(EntryWrappingInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
-   private static final EnumSet<Flag> EVICT_FLAGS =
-         EnumSet.of(Flag.SKIP_OWNERSHIP_CHECK, Flag.CACHE_MODE_LOCAL);
+   private static final long EVICT_FLAGS_BITSET =
+         FlagBitSets.SKIP_OWNERSHIP_CHECK | FlagBitSets.CACHE_MODE_LOCAL;
 
    private EntryFactory entryFactory;
    private DataContainer<Object, Object> dataContainer;
@@ -109,7 +108,6 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    private boolean useRepeatableRead;
    private boolean writeSkewCheck;
 
-   private boolean transactional;
    private boolean defaultSynchronous;
    private boolean totalOrder;
 
@@ -162,7 +160,6 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    @Start
    public void start() {
       isInvalidation = cacheConfiguration.clustering().cacheMode().isInvalidation();
-      transactional = cacheConfiguration.transaction().transactionMode().isTransactional();
       defaultSynchronous = cacheConfiguration.clustering().cacheMode().isSynchronous();
       totalOrder = cacheConfiguration.transaction().transactionProtocol().isTotalOrder();
       localAddress = cdl.getAddress();
@@ -393,7 +390,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
 
    @Override
    public BasicInvocationStage visitEvictCommand(InvocationContext ctx, EvictCommand command) throws Throwable {
-      command.addFlags(EVICT_FLAGS); //to force the wrapping
+      command.setFlagsBitSet(EVICT_FLAGS_BITSET); //to force the wrapping
       return visitRemoveCommand(ctx, command);
    }
 

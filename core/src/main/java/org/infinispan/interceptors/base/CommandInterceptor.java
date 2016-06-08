@@ -10,6 +10,7 @@ import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.Visitor;
 import org.infinispan.commands.read.GetKeyValueCommand;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
@@ -151,9 +152,9 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Asyn
    }
 
    protected <K, V> Cache<K, V> getCacheWithFlags(Cache<K, V> cache, FlagAffectedCommand command) {
-      Set<Flag> flags = command.getFlags();
-      if (flags != null && !flags.isEmpty()) {
-         return cache.getAdvancedCache().withFlags(flags.toArray(new Flag[flags.size()]));
+      long flags = command.getFlagsBitSet();
+      if (flags != EnumUtil.EMPTY_BIT_SET) {
+         return cache.getAdvancedCache().withFlags(EnumUtil.enumArrayOf(flags, Flag.class));
       } else {
          return cache;
       }

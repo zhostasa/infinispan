@@ -77,7 +77,6 @@ import org.infinispan.commands.write.RemoveExpiredCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.api.functional.EntryView;
-import org.infinispan.context.Flag;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -196,8 +195,8 @@ public class ControlledCommandFactory implements CommandsFactory {
    }
 
    @Override
-   public SizeCommand buildSizeCommand(Set<Flag> flags) {
-      return actual.buildSizeCommand(flags);
+   public SizeCommand buildSizeCommand(long flagsBitSet) {
+      return actual.buildSizeCommand(flagsBitSet);
    }
 
    @Override
@@ -211,13 +210,13 @@ public class ControlledCommandFactory implements CommandsFactory {
    }
 
    @Override
-   public KeySetCommand buildKeySetCommand(Set<Flag> flags) {
-      return actual.buildKeySetCommand(flags);
+   public KeySetCommand buildKeySetCommand(long flagsBitSet) {
+      return actual.buildKeySetCommand(flagsBitSet);
    }
 
    @Override
-   public EntrySetCommand buildEntrySetCommand(Set<Flag> flags) {
-      return actual.buildEntrySetCommand(flags);
+   public EntrySetCommand buildEntrySetCommand(long flagsBitSet) {
+      return actual.buildEntrySetCommand(flagsBitSet);
    }
 
    @Override

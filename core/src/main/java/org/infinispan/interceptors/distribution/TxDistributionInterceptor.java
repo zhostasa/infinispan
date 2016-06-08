@@ -303,7 +303,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
          K key = e.getKey();
          if (ctx.isOriginLocal() || cdl.localNodeIsOwner(key)) {
             if (ctx.lookupEntry(key) == null) {
-               if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL) || command.hasAnyFlag(FlagBitSets.SKIP_REMOTE_LOOKUP) || !needsPreviousValue(ctx, command)) {
+               if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL | FlagBitSets.SKIP_REMOTE_LOOKUP) || !needsPreviousValue(ctx, command)) {
                   entryFactory.wrapExternalEntry(ctx, key, null, true);
                } else {
                   if (remoteGets == null) {

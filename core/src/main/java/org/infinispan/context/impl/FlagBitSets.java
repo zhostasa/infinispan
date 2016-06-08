@@ -37,4 +37,11 @@ public class FlagBitSets {
    public static final long OPERATION_MEMCACHED = EnumUtil.bitSetOf(Flag.OPERATION_MEMCACHED);
    public static final long SKIP_INDEX_CLEANUP = EnumUtil.bitSetOf(Flag.SKIP_INDEX_CLEANUP);
    public static final long COMMAND_RETRY = EnumUtil.bitSetOf(Flag.COMMAND_RETRY);
+
+   /**
+    * Creates a copy of a Flag BitSet removing instances of FAIL_SILENTLY.
+    */
+   public static long copyWithoutRemotableFlags(long flagsBitSet) {
+      return EnumUtil.diffBitSets(flagsBitSet, FAIL_SILENTLY);
+   }
 }

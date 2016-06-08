@@ -152,7 +152,7 @@ public class LockControlCommand extends AbstractTransactionBoundaryCommand imple
       super.writeTo(output);
       output.writeBoolean(unlock);
       MarshallUtil.marshallCollection(keys, output);
-      output.writeLong(Flag.copyWithoutRemotableFlags(flags));
+      output.writeLong(FlagBitSets.copyWithoutRemotableFlags(flags));
    }
 
    @Override

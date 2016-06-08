@@ -1,13 +1,11 @@
 package org.infinispan.commands.functional;
 
-import java.util.Set;
-
 import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.util.EnumUtil;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.functional.impl.Params;
+import org.infinispan.lifecycle.ComponentStatus;
 
 /**
  * @deprecated Since 8.3, will be removed.
@@ -63,23 +61,17 @@ abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, ParamsCom
    }
 
    @Override
-   public Set<Flag> getFlags() {
-      return null;  // TODO: Customise this generated block
+   public boolean canBlock() {
+      return true;
    }
 
    @Override
-   public void setFlags(Set<Flag> flags) {
-      // TODO: Customise this generated block
+   public boolean ignoreCommandOnStatus(ComponentStatus status) {
+      return false;
    }
 
    @Override
-   public void setFlags(Flag... flags) {
-      // TODO: Customise this generated block
-   }
-
-   @Override
-   public boolean hasFlag(Flag flag) {
-      return false;  // TODO: Customise this generated block
+   public void updateStatusFromRemoteResponse(Object remoteResponse) {
    }
 
    @Override

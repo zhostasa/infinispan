@@ -17,7 +17,6 @@ import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.MetadataAwareCommand;
 import org.infinispan.commands.Visitor;
 import org.infinispan.container.entries.MVCCEntry;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -109,7 +108,7 @@ public class PutMapCommand extends AbstractTopologyAffectedCommand implements Wr
    @Override
    public Object perform(InvocationContext ctx) throws Throwable {
       // Previous values are used by the query interceptor to locate the index for the old value
-      Map<Object, Object> previousValues = hasFlag(Flag.IGNORE_RETURN_VALUES) ? null : new HashMap<>(map.size());
+      Map<Object, Object> previousValues = hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES) ? null : new HashMap<>(map.size());
       for (Entry<Object, Object> e : map.entrySet()) {
          Object key = e.getKey();
          MVCCEntry<Object, Object> contextEntry = lookupMvccEntry(ctx, key);
@@ -162,7 +161,7 @@ public class PutMapCommand extends AbstractTopologyAffectedCommand implements Wr
       output.writeObject(map);
       output.writeObject(metadata);
       output.writeBoolean(isForwarded);
-      output.writeLong(Flag.copyWithoutRemotableFlags(getFlagsBitSet()));
+      output.writeLong(FlagBitSets.copyWithoutRemotableFlags(getFlagsBitSet()));
       CommandInvocationId.writeTo(output, commandInvocationId);
    }
 
@@ -260,7 +259,7 @@ public class PutMapCommand extends AbstractTopologyAffectedCommand implements Wr
 
    @Override
    public boolean isReturnValueExpected() {
-      return !hasFlag(Flag.IGNORE_RETURN_VALUES);
+      return !hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES);
    }
 
    @Override
@@ -275,7 +274,7 @@ public class PutMapCommand extends AbstractTopologyAffectedCommand implements Wr
 
    @Override
    public LoadType loadType() {
-      return hasFlag(Flag.IGNORE_RETURN_VALUES) ? LoadType.DONT_LOAD : LoadType.PRIMARY;
+      return hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES) ? LoadType.DONT_LOAD : LoadType.PRIMARY;
    }
 
    @Override

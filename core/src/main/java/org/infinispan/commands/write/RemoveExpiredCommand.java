@@ -11,8 +11,8 @@ import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.container.entries.MVCCEntry;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
@@ -121,7 +121,7 @@ public class RemoveExpiredCommand extends RemoveCommand {
       CommandInvocationId.writeTo(output, commandInvocationId);
       output.writeObject(key);
       output.writeObject(value);
-      output.writeLong(Flag.copyWithoutRemotableFlags(getFlagsBitSet()));
+      output.writeLong(FlagBitSets.copyWithoutRemotableFlags(getFlagsBitSet()));
       output.writeLong(lifespan);
    }
 
@@ -161,7 +161,13 @@ public class RemoveExpiredCommand extends RemoveCommand {
    }
 
    @Override
+   public long getFlagsBitSet() {
+      // Override the flags
+      return FlagBitSets.SKIP_CACHE_LOAD;
+   }
+
+   @Override
    public void initBackupWriteRcpCommand(BackupWriteRcpCommand command) {
-      command.setRemoveExpired(commandInvocationId, key, value, EnumUtil.bitSetOf(Flag.SKIP_CACHE_LOAD), getTopologyId());
+      command.setRemoveExpired(commandInvocationId, key, value, FlagBitSets.SKIP_CACHE_LOAD, getTopologyId());
    }
 }
