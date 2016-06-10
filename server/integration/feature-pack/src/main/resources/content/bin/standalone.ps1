@@ -1,6 +1,6 @@
 #############################################################################
 #                                                                          ##
-#    WildFly Startup Script for starting the standalone server             ##
+#    JBoss Data Grid Startup Script for starting the standalone server     ##
 #                                                                          ##
 #############################################################################
 

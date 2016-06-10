@@ -1,6 +1,6 @@
 rem ### -*- batch file -*- ######################################################
 rem #                                                                          ##
-rem #  JBoss Data Grid Bootstrap Script Configuration                          ##
+rem #  JBoss Bootstrap Script Configuration                                    ##
 rem #                                                                          ##
 rem #############################################################################
 
@@ -11,14 +11,6 @@ rem # This batch file is executed by run.bat to initialize the environment
 rem # variables that run.bat uses. It is recommended to use this file to
 rem # configure these variables, rather than modifying run.bat itself.
 rem #
-
-rem Uncomment the following line to disable manipulation of JAVA_OPTS (JVM parameters)
-rem set PRESERVE_JAVA_OPTS=true
-
-if not "x%JAVA_OPTS%" == "x" (
-  echo "JAVA_OPTS already set in environment; overriding default settings with values: %JAVA_OPTS%"
-  goto JAVA_OPTS_SET
-)
 
 rem #
 rem # Specify the JBoss Profiler configuration file to load.
@@ -42,17 +34,16 @@ rem set "JAVA=C:\opt\jdk1.6.0_23\bin\java"
 
 rem #
 rem # Specify options to pass to the Java VM. Note, there are some additional
-rem # options that are always passed by run.bat.
+rem # options that are always passed by domain.bat.
 rem #
 
+if not "x%JAVA_OPTS%" == "x" (
+  echo "JAVA_OPTS already set in environment; overriding default settings with values: %JAVA_OPTS%"
+  goto JAVA_OPTS_SET
+)
+
 rem # JVM memory allocation pool parameters - modify as appropriate.
-set "JAVA_OPTS=-server -Xms1303m -Xmx1303m -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=256m"
-rem # Alternate configuration, 8GB heap
-rem set "JAVA_OPTS=-server -Xms8G -Xmx8G -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=256m -XX:+UseLargePages -XX:NewRatio=3 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+DisableExplicitGC"
-rem # Alternate configuration, 32GB heap
-rem set "JAVA_OPTS=-Xms32G -Xmx32G -Xmn8G -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=256m -XX:+UseLargePages -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+DisableExplicitGC"
-rem # Alternate configuration, 64GB heap
-rem set "JAVA_OPTS=-Xms64G -Xmx64G -Xmn16G -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=256m -XX:+UseLargePages -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+DisableExplicitGC"
+set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxMetaspaceSize=256m"
 
 rem # Prefer IPv4
 set "JAVA_OPTS=%JAVA_OPTS% -Djava.net.preferIPv4Stack=true"
@@ -61,16 +52,28 @@ rem # Make Byteman classes visible in all module loaders
 rem # This is necessary to inject Byteman rules into AS7 deployments
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 
-rem # Sample JPDA settings for remote socket debugging
-rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
-
-rem # Sample JPDA settings for shared memory debugging
-rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
-
 rem # Use JBoss Modules lockless mode
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"
+
+:JAVA_OPTS_SET
+
+rem The ProcessController process uses its own set of java options
+if "x%PROCESS_CONTROLLER_JAVA_OPTS%" == "x" (
+  set "PROCESS_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
+)
+
+rem The HostController process uses its own set of java options
+if "x%HOST_CONTROLLER_JAVA_OPTS%" == "x" (
+  set "HOST_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
+)
 
 rem # Uncomment this to run with a security manager enabled
 rem set "SECMGR=true"
 
-:JAVA_OPTS_SET
+rem # Sample JPDA settings for remote socket debugging
+rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8788,server=y,suspend=n"
+rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
+
+rem # Sample JPDA settings for shared memory debugging
+rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
+rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
