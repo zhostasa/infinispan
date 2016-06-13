@@ -32,7 +32,7 @@
                 <!-- Exclude lucene module since Infinispan also ship it -->
                 <exclude name="org/apache/lucene/**"/>
                 <!-- Exclude experimental elasticsearch backend -->
-                <exclude name="org/hibernate/search/backend-elasticsearch/**"/>
+                <exclude name="org/hibernate/search/elasticsearch/**"/>
                 <!-- Exclude aliases -->
                 <exclude name="**/${hibernate.search.slot}/**"/>
             </exclusions>
