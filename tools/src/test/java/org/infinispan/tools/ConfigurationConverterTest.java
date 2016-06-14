@@ -410,25 +410,25 @@ public class ConfigurationConverterTest extends AbstractInfinispanTest {
       assertEquals(6, config.customInterceptors().interceptors().size());
 
       assertEquals("FIRST", config.customInterceptors().interceptors().get(0).position().name());
-      assertTrue(config.customInterceptors().interceptors().get(0).sequentialInterceptor() instanceof FooInterceptor);
+      assertTrue(config.customInterceptors().interceptors().get(0).interceptor() instanceof FooInterceptor);
 
       assertEquals("LAST", config.customInterceptors().interceptors().get(1).position().name());
-      assertTrue(config.customInterceptors().interceptors().get(1).sequentialInterceptor() instanceof FooInterceptor);
+      assertTrue(config.customInterceptors().interceptors().get(1).interceptor() instanceof FooInterceptor);
 
       assertEquals("OTHER_THAN_FIRST_OR_LAST", config.customInterceptors().interceptors().get(2).position().name());
       assertEquals(3, config.customInterceptors().interceptors().get(2).index());
-      assertTrue(config.customInterceptors().interceptors().get(2).sequentialInterceptor() instanceof FooInterceptor);
+      assertTrue(config.customInterceptors().interceptors().get(2).interceptor() instanceof FooInterceptor);
 
       assertEquals("OTHER_THAN_FIRST_OR_LAST", config.customInterceptors().interceptors().get(3).position().name());
       assertEquals(FooInterceptor.class, config.customInterceptors().interceptors().get(3).before());
-      assertTrue(config.customInterceptors().interceptors().get(3).sequentialInterceptor() instanceof FooInterceptor);
+      assertTrue(config.customInterceptors().interceptors().get(3).interceptor() instanceof FooInterceptor);
 
       assertEquals("OTHER_THAN_FIRST_OR_LAST", config.customInterceptors().interceptors().get(4).position().name());
       assertEquals(FooInterceptor.class, config.customInterceptors().interceptors().get(4).after());
-      assertTrue(config.customInterceptors().interceptors().get(4).sequentialInterceptor() instanceof FooInterceptor);
+      assertTrue(config.customInterceptors().interceptors().get(4).interceptor() instanceof FooInterceptor);
 
       assertEquals("FIRST", config.customInterceptors().interceptors().get(5).position().name());
-      assertTrue(config.customInterceptors().interceptors().get(0).sequentialInterceptor() instanceof FooInterceptor);
+      assertTrue(config.customInterceptors().interceptors().get(0).interceptor() instanceof FooInterceptor);
    }
 
    private void assertDeadlockDetectionConverted(EmbeddedCacheManager cm) {

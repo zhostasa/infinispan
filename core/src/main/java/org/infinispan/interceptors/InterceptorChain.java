@@ -51,7 +51,7 @@ public class InterceptorChain {
    @Start
    private void printChainInfo() {
       if (log.isDebugEnabled()) {
-         log.debugf("Interceptor chain size: %d", size());
+         log.debugf("Interceptor chain size: %d", (Integer) size());
          log.debugf("Interceptor chain is: %s", toString());
       }
    }
