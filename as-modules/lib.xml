@@ -149,6 +149,26 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="change-dependency-slot">
+        <attribute name="basedir"/>
+        <attribute name="module"/>
+        <attribute name="target-slot"/>
+        <sequential>
+            <xslt basedir="@{basedir}" style="../slot.xslt" destdir="@{basedir}" extension=".xml.temp" suppressWarnings="true">
+                <include name="**/module.xml"/>
+                <param name="slot-value" expression="@{target-slot}"/>
+                <param name="module-name" expression="@{module}"/>
+            </xslt>
+            <move todir="@{basedir}">
+                <fileset dir="@{basedir}">
+                    <include name="**/module.xml.temp"/>
+                </fileset>
+                <mapper type="glob" from="*.xml.temp" to="*.xml"/>
+            </move>
+        </sequential>
+
+    </macrodef>
+
     <macrodef name="maven-resource" >
         <attribute name="group"/>
         <attribute name="artifact"/>

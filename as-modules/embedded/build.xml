@@ -45,6 +45,9 @@
             <substitution expression="${infinispan.slot}"/>
         </replaceregexp>
 
+        <!-- Replace commons annotations slot with the one provided by JDG -->
+        <change-dependency-slot basedir="${hibernate-search-modules.dir}" module="org.hibernate.commons-annotations" target-slot="${infinispan.slot}"/>
+
     </target>
 
     <!-- These modules are for JDG-specific functionality -->
@@ -189,6 +192,10 @@
 
         <module-def name="org.hibernate.hql.parser" slot="${infinispan.slot}">
             <maven-resource group="org.hibernate.hql" artifact="hibernate-hql-parser" />
+        </module-def>
+
+        <module-def name="org.hibernate.commons-annotations" slot="${infinispan.slot}">
+            <maven-resource group="org.hibernate.common" artifact="hibernate-commons-annotations" />
         </module-def>
     </target>
 

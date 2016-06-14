@@ -153,6 +153,12 @@
       </dependency>
 
       <dependency>
+         <groupId>org.hibernate.common</groupId>
+         <artifactId>hibernate-commons-annotations</artifactId>
+         <version>${version.hibernate_dep.hibernate-commons-annotations}</version>
+      </dependency>
+
+      <dependency>
          <groupId>javax.cache</groupId>
          <artifactId>cache-api</artifactId>
          <scope>provided</scope>
