@@ -106,11 +106,6 @@ public final class DeploymentJmsMasterSlaveAndInfinispan {
             .createProperty()
             .name("hibernate.search.default.worker.execution")
             .value("sync")
-            .up()
-            // Disable the automatically enabled Hibernate Search instance which is included in WildFly
-            .createProperty()
-            .name( "wildfly.jpa.hibernate.search.module" )
-            .value( "none" )
             .up();
    }
 

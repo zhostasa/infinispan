@@ -35,6 +35,8 @@
                 <exclude name="org/hibernate/search/elasticsearch/**"/>
                 <!-- Exclude aliases -->
                 <exclude name="**/${hibernate.search.slot}/**"/>
+                <!-- Exclude hibernate-search-orm which is only needed for hibernate search shipped with EAP -->
+                <exclude name="org/hibernate/search/orm/**"/>
             </exclusions>
         </external-module-zip>
 

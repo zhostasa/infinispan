@@ -15,8 +15,6 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.junit.runner.RunWith;
 
-import static org.infinispan.test.integration.as.VersionTestHelper.addHibernateSearchManifestDependencies;
-
 /**
  * Test the Hibernate Search module combined with an Infinispan Directory usage.
  *
@@ -38,7 +36,7 @@ public class InfinispanModuleMemberRegistrationIT extends MemberRegistrationBase
    }
 
    private static Archive<?> createTestArchive() {
-      WebArchive webArchive = ShrinkWrap
+      return ShrinkWrap
               .create(WebArchive.class, InfinispanModuleMemberRegistrationIT.class.getSimpleName() + ".war")
               .addClasses(Member.class, MemberRegistration.class, MemberRegistrationBase.class)
               .addAsResource(persistenceXml(), "META-INF/persistence.xml")
@@ -46,8 +44,6 @@ public class InfinispanModuleMemberRegistrationIT extends MemberRegistrationBase
               //this configuration into the Archive to verify that resources can be loaded from it:
               .addAsResource("user-provided-infinispan.xml", "user-provided-infinispan.xml")
               .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-      addHibernateSearchManifestDependencies(webArchive);
-      return webArchive;
    }
 
    private static Asset persistenceXml() {
@@ -60,10 +56,6 @@ public class InfinispanModuleMemberRegistrationIT extends MemberRegistrationBase
               .createProperty()
               .name("hibernate.hbm2ddl.auto")
               .value("create-drop")
-              .up()
-              .createProperty()
-              .name("wildfly.jpa.hibernate.search.module")
-              .value("none")
               .up()
               .createProperty()
               .name("hibernate.search.default.lucene_version")

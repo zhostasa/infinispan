@@ -45,7 +45,7 @@ public class SearchNewEntityJmsMasterSlaveUsingInfinispanAndModulesIT extends Se
       //version included in WildFly by default (usually older than the Infinispan version being built) and the latest Hibernate Search slot,
       //which is being wired up to the Infinispan version being built.
       //So this test makes sure both version of Infinispan can co-exist in this use case.
-      archive.add(manifestDependencies("org.infinispan:main, org.hibernate.search.orm:" + Version.getModuleSlot() + " services"), "META-INF/MANIFEST.MF");
+      archive.add(manifestDependencies("org.infinispan:main, org.hibernate.search.orm services"), "META-INF/MANIFEST.MF");
    }
 
 }

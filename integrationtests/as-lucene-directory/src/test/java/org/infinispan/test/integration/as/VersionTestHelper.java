@@ -29,10 +29,6 @@ public class VersionTestHelper {
       //not meant to be created
    }
 
-   public static void addHibernateSearchManifestDependencies(Archive<?> archive) {
-      archive.add(manifestDependencies("org.hibernate.search.orm:" + Version.getModuleSlot() + " services"), "META-INF/MANIFEST.MF");
-   }
-
    public static void addMainHibernateSearchManifestDependencies(Archive<?> archive) {
       archive.add( manifestDependencies( "org.hibernate.search.orm services"), "META-INF/MANIFEST.MF" );
    }
