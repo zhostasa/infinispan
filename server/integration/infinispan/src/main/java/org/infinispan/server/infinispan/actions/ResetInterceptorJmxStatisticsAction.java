@@ -26,7 +26,7 @@ public class ResetInterceptorJmxStatisticsAction<T extends CommandInterceptor & 
 
    @Override
    public Void run() {
-      T interceptor = getFirstInterceptorWhichExtends(cache.getSequentialInterceptorChain().getInterceptors(), interceptorClass);
+      T interceptor = getFirstInterceptorWhichExtends(cache.getInterceptorChain(), interceptorClass);
       if (interceptor != null) {
          interceptor.resetStatistics();
       }

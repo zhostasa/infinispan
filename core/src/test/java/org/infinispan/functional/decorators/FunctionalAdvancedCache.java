@@ -28,7 +28,6 @@ import org.infinispan.filter.KeyFilter;
 import org.infinispan.functional.impl.FunctionalMapImpl;
 import org.infinispan.functional.impl.ReadWriteMapImpl;
 import org.infinispan.functional.impl.WriteOnlyMapImpl;
-import org.infinispan.interceptors.SequentialInterceptorChain;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -277,11 +276,6 @@ public final class FunctionalAdvancedCache<K, V> implements AdvancedCache<K, V> 
    @Override
    public void addInterceptor(CommandInterceptor i, int position) {
       // TODO: Customise this generated block
-   }
-
-   @Override
-   public SequentialInterceptorChain getSequentialInterceptorChain() {
-      throw new UnsupportedOperationException();
    }
 
    @Override

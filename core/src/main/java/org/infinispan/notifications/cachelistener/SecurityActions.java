@@ -6,8 +6,7 @@ import java.util.List;
 
 import org.infinispan.Cache;
 import org.infinispan.distexec.DefaultExecutorService;
-import org.infinispan.interceptors.SequentialInterceptor;
-import org.infinispan.interceptors.SequentialInterceptorChain;
+import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.security.Security;
 import org.infinispan.security.actions.GetCacheInterceptorChainAction;
 import org.infinispan.security.actions.GetDefaultExecutorServiceAction;
@@ -35,12 +34,8 @@ final class SecurityActions {
       return doPrivileged(action);
    }
 
-   static List<SequentialInterceptor> getInterceptorChain(final Cache<?, ?> cache) {
+   static List<CommandInterceptor> getInterceptorChain(final Cache<?, ?> cache) {
       GetCacheInterceptorChainAction action = new GetCacheInterceptorChainAction(cache.getAdvancedCache());
       return doPrivileged(action);
-   }
-
-   static SequentialInterceptorChain getSequentialInterceptorChain(final Cache<?, ?> cache) {
-      return doPrivileged(() -> cache.getAdvancedCache().getSequentialInterceptorChain());
    }
 }

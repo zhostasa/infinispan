@@ -34,8 +34,6 @@ import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.filter.KeyFilter;
-import org.infinispan.interceptors.EmptySequentialInterceptorChain;
-import org.infinispan.interceptors.SequentialInterceptorChain;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.jmx.annotations.DataType;
 import org.infinispan.jmx.annotations.DisplayType;
@@ -945,11 +943,6 @@ public class SimpleCacheImpl<K, V> implements AdvancedCache<K, V> {
    @Override
    public void addInterceptor(CommandInterceptor i, int position) {
       throw log.interceptorStackNotSupported();
-   }
-
-   @Override
-   public SequentialInterceptorChain getSequentialInterceptorChain() {
-      return EmptySequentialInterceptorChain.INSTANCE;
    }
 
    @Override

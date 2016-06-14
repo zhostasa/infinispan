@@ -13,16 +13,11 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
-import org.infinispan.interceptors.BaseSequentialInterceptor;
 import org.infinispan.interceptors.InterceptorChain;
-import org.infinispan.interceptors.SequentialInterceptor;
-import org.infinispan.interceptors.SequentialInterceptorChain;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * This is the base class for all interceptors to extend, and implements the {@link Visitor} interface allowing it to
@@ -46,13 +41,12 @@ import java.util.concurrent.CompletableFuture;
  * @see VisitableCommand
  * @see Visitor
  * @see InterceptorChain
- * @deprecated Since 9.0, please extend {@link BaseSequentialInterceptor} instead.
+ * @since 4.0
  */
-@Deprecated
 @Scope(Scopes.NAMED_CACHE)
-public abstract class CommandInterceptor extends AbstractVisitor implements SequentialInterceptor {
+public abstract class CommandInterceptor extends AbstractVisitor {
 
-   private SequentialInterceptorChain interceptorChain;
+   private CommandInterceptor next;
 
    protected Configuration cacheConfiguration;
 
@@ -63,44 +57,33 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Sequ
    }
 
    @Inject
-   public void injectConfiguration(Configuration configuration, SequentialInterceptorChain interceptorChain) {
+   public void injectConfiguration(Configuration configuration) {
       this.cacheConfiguration = configuration;
-      this.interceptorChain = interceptorChain;
    }
 
    /**
     * Retrieves the next interceptor in the chain.
-    * Since 9.0, it returns {@code null} if the next interceptor does not extend {@code CommandInterceptor}.
     *
     * @return the next interceptor in the chain.
     */
    public final CommandInterceptor getNext() {
-      List<SequentialInterceptor> interceptors = interceptorChain.getInterceptors();
-      int myIndex = interceptors.indexOf(this);
-      if (myIndex < interceptors.size() - 1) {
-         SequentialInterceptor sequentialInterceptor = interceptors.get(myIndex + 1);
-         if (sequentialInterceptor instanceof CommandInterceptor)
-            return (CommandInterceptor) sequentialInterceptor;
-      }
-      return null;
+      return next;
    }
 
    /**
-    * Note: Unlike {@link #getNext()}, this method does not ignore interceptors that do not extend
-    * {@code CommandInterceptor}
-    *
     * @return true if there is another interceptor in the chain after this; false otherwise.
     */
    public final boolean hasNext() {
-      List<SequentialInterceptor> interceptors = interceptorChain.getInterceptors();
-      int myIndex = interceptors.indexOf(this);
-      return myIndex < interceptors.size();
+      return getNext() != null;
    }
 
    /**
-    * Does nothing since 9.0.
+    * Sets the next interceptor in the chain to the interceptor passed in.
+    *
+    * @param next next interceptor in the chain.
     */
-   public final void setNext(CommandInterceptor ignored) {
+   public final void setNext(CommandInterceptor next) {
+      this.next = next;
    }
 
    /**
@@ -113,7 +96,7 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Sequ
     * @throws Throwable in the event of problems
     */
    public final Object invokeNextInterceptor(InvocationContext ctx, VisitableCommand command) throws Throwable {
-      return ctx.forkInvocationSync(command);
+      return command.acceptVisitor(ctx, next);
    }
 
    /**
@@ -149,13 +132,5 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Sequ
       } else {
          return cache;
       }
-   }
-
-   @Override
-   public CompletableFuture<Void> visitCommand(InvocationContext ctx, VisitableCommand command)
-         throws Throwable {
-      // Any exceptions will be propagated to the caller
-      Object returnValue = command.acceptVisitor(ctx, this);
-      return ctx.shortCircuit(returnValue);
    }
 }

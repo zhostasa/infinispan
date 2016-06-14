@@ -6,7 +6,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
 import org.infinispan.interceptors.CacheLoaderInterceptor;
-import org.infinispan.interceptors.SequentialInterceptorChain;
+import org.infinispan.interceptors.InterceptorChain;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.marshall.core.MarshalledEntryImpl;
@@ -70,9 +70,8 @@ public class LocalConditionalCommandTest extends SingleCacheManagerTest {
    }
 
    private static CacheLoaderInterceptor cacheLoaderInterceptor(Cache<?, ?> cache) {
-      SequentialInterceptorChain chain =
-            TestingUtil.extractComponent(cache, SequentialInterceptorChain.class);
-      return (CacheLoaderInterceptor) chain.findInterceptorExtending(CacheLoaderInterceptor.class);
+      InterceptorChain chain = TestingUtil.extractComponent(cache, InterceptorChain.class);
+      return (CacheLoaderInterceptor) chain.getInterceptorsWhichExtend(CacheLoaderInterceptor.class).get(0);
    }
 
    private void doTest(Cache<String, String> cache, ConditionalOperation operation, Flag flag) {

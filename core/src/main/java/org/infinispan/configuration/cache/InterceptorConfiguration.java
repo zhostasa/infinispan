@@ -5,8 +5,8 @@ import org.infinispan.commons.configuration.attributes.Attribute;
 import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.commons.configuration.attributes.IdentityAttributeCopier;
+import org.infinispan.commons.configuration.attributes.SimpleInstanceAttributeCopier;
 import org.infinispan.commons.util.Util;
-import org.infinispan.interceptors.SequentialInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 
 /**
@@ -16,7 +16,7 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
    /**
     * Positional placing of a new custom interceptor
     */
-   public enum Position {
+   public static enum Position {
       /**
        * Specifies that the new interceptor is placed first in the chain.
        */
@@ -35,8 +35,8 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
    public static final AttributeDefinition<Position> POSITION = AttributeDefinition.builder("position", Position.OTHER_THAN_FIRST_OR_LAST).immutable().build();
    public static final AttributeDefinition<Class> AFTER = AttributeDefinition.builder("after", null, Class.class).immutable().build();
    public static final AttributeDefinition<Class> BEFORE = AttributeDefinition.builder("before", null, Class.class).immutable().build();
-   public static final AttributeDefinition<SequentialInterceptor> INTERCEPTOR = AttributeDefinition.builder("interceptor", null, SequentialInterceptor.class).copier(IdentityAttributeCopier.INSTANCE).immutable().build();
-   public static final AttributeDefinition<Class> INTERCEPTOR_CLASS = AttributeDefinition.builder("interceptorClass", null, Class.class).xmlName("class").immutable().build();
+   public static final AttributeDefinition<CommandInterceptor> INTERCEPTOR = AttributeDefinition.builder("interceptor", null, CommandInterceptor.class).copier(IdentityAttributeCopier.INSTANCE).immutable().build();
+   public static final AttributeDefinition<Class> INTERCEPTOR_CLASS = AttributeDefinition.builder("interceptorClass", null, Class.class).immutable().build();
    public static final AttributeDefinition<Integer> INDEX = AttributeDefinition.builder("index", -1).immutable().build();
 
    public static AttributeSet attributeDefinitionSet() {
@@ -46,7 +46,7 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
    private final Attribute<Position> position;
    private final Attribute<Class> after;
    private final Attribute<Class> before;
-   private final Attribute<SequentialInterceptor> interceptor;
+   private final Attribute<CommandInterceptor> interceptor;
    private final Attribute<Class> interceptorClass;
    private final Attribute<Integer> index;
 
@@ -61,44 +61,24 @@ public class InterceptorConfiguration extends AbstractTypedPropertiesConfigurati
    }
 
    @SuppressWarnings("unchecked")
-   public Class<? extends SequentialInterceptor> after() {
+   public Class<? extends CommandInterceptor> after() {
       return after.get();
    }
 
    @SuppressWarnings("unchecked")
-   public Class<? extends SequentialInterceptor> before() {
+   public Class<? extends CommandInterceptor> before() {
       return before.get();
    }
 
-   /**
-    * @deprecated Since 9.0, please use {@link #sequentialInterceptor()} instead.
-    */
-   @Deprecated
    public CommandInterceptor interceptor() {
       if (interceptor.isNull()) {
          return (CommandInterceptor) Util.getInstance(interceptorClass.get());
-      } else {
-         return (CommandInterceptor) interceptor.get();
-      }
-   }
-
-   public SequentialInterceptor sequentialInterceptor() {
-      if (interceptor.isNull()) {
-         return (SequentialInterceptor) Util.getInstance(interceptorClass.get());
       } else {
          return interceptor.get();
       }
    }
 
-   /**
-    * @deprecated Since 9.0, please use {@link #sequentialInterceptorClass()} instead.
-    */
-   @Deprecated
    public Class<? extends CommandInterceptor> interceptorClass() {
-      return interceptorClass.get();
-   }
-
-   public Class<? extends SequentialInterceptor> sequentialInterceptorClass() {
       return interceptorClass.get();
    }
 
