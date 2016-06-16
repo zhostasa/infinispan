@@ -242,7 +242,7 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
          result = true;
       } else {
          if (isUsingLockDelegation || isTransactional) {
-            result = cdl.localNodeIsPrimaryOwner(key) || (cdl.localNodeIsOwner(key) && !ctx.isOriginLocal());
+            result = ctx.isOriginLocal() ? cdl.localNodeIsPrimaryOwner(key) : cdl.localNodeIsOwner(key);
          } else {
             result = cdl.localNodeIsOwner(key);
          }
