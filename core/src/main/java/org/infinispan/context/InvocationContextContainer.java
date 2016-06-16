@@ -35,4 +35,8 @@ public interface InvocationContextContainer {
     * Must be called as each thread exists the interceptor chain.
     */
    void clearThreadLocal();
+
+   default void clearThreadLocal(InvocationContext context) {
+      clearThreadLocal();
+   }
 }

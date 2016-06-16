@@ -52,6 +52,14 @@ public class InvocationContextContainerImpl implements InvocationContextContaine
       ctxHolder.remove();
    }
 
+
+   @Override
+   public void clearThreadLocal(InvocationContext context) {
+      if (isThreadLocalRequired(context)) {
+         ctxHolder.remove();
+      }
+   }
+
    private boolean isThreadLocalRequired(InvocationContext context) {
       return context.getClassLoader() != null &&
             context.getClassLoader() != configuredClassLoader;

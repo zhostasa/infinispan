@@ -149,7 +149,7 @@ public class InvocationContextInterceptor extends CommandInterceptor {
             LogFactory.popNDC(trace);
          }
       } finally {
-         invocationContextContainer.clearThreadLocal();
+         invocationContextContainer.clearThreadLocal(ctx);
       }
    }
 
