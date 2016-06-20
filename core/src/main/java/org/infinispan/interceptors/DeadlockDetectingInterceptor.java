@@ -33,6 +33,7 @@ public class DeadlockDetectingInterceptor extends CommandInterceptor {
 
    private static final Log log = LogFactory.getLog(DeadlockDetectingInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
+   private boolean distOrRepl;
 
    @Override
    protected Log getLog() {
@@ -47,6 +48,8 @@ public class DeadlockDetectingInterceptor extends CommandInterceptor {
       if (!cacheConfiguration.deadlockDetection().enabled()) {
          throw new IllegalStateException("This interceptor should not be present in the chain as deadlock detection is not used!");
       }
+      CacheMode cacheMode = cacheConfiguration.clustering().cacheMode();
+      distOrRepl = cacheMode.isDistributed() || cacheMode.isReplicated();
    }
 
    @Override
@@ -71,8 +74,7 @@ public class DeadlockDetectingInterceptor extends CommandInterceptor {
          globalTransaction.setRemoteLockIntention(command.getKeys());
          //in the case of DIST we need to propagate the list of keys. In all other situations in can be determined
          // based on the actual command
-         CacheMode cacheMode = cacheConfiguration.clustering().cacheMode();
-         if (cacheMode.isDistributed() || cacheMode.isReplicated()) {
+         if (distOrRepl) {
             if (trace) log.tracef("Locks as seen at origin are: %s", ctx.getLockedKeys());
             ((DldGlobalTransaction) ctx.getGlobalTransaction()).setLocksHeldAtOrigin(ctx.getLockedKeys());
          }

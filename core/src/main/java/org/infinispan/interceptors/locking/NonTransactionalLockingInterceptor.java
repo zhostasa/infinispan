@@ -28,11 +28,7 @@ public class NonTransactionalLockingInterceptor extends AbstractLockingIntercept
    @Override
    protected final Object visitDataReadCommand(InvocationContext ctx, DataCommand command) throws Throwable {
       assertNonTransactional(ctx);
-      try {
-         return invokeNextInterceptor(ctx, command);
-      } finally {
-         lockManager.unlockAll(ctx);//possibly needed because of L1 locks being acquired
-      }
+      return invokeNextInterceptor(ctx, command);
    }
 
    @Override
@@ -44,11 +40,7 @@ public class NonTransactionalLockingInterceptor extends AbstractLockingIntercept
    @Override
    public Object visitGetAllCommand(InvocationContext ctx, GetAllCommand command) throws Throwable {
       assertNonTransactional(ctx);
-      try {
-         return invokeNextInterceptor(ctx, command);
-      } finally {
-         lockManager.unlockAll(ctx);//possibly needed because of L1 locks being acquired
-      }
+      return invokeNextInterceptor(ctx, command);
    }
 
    public Object visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {

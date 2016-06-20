@@ -28,10 +28,17 @@ public class TotalOrderVersionedDistributionInterceptor extends VersionedDistrib
 
    private static final Log log = LogFactory.getLog(TotalOrderVersionedDistributionInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
+   private boolean onePhaseTotalOrderCommit;
+
+   @Override
+   public void start() {
+      super.start();
+      onePhaseTotalOrderCommit = Configurations.isOnePhaseTotalOrderCommit(cacheConfiguration);
+   }
 
    @Override
    public Object visitRollbackCommand(TxInvocationContext ctx, RollbackCommand command) throws Throwable {
-      if (Configurations.isOnePhaseTotalOrderCommit(cacheConfiguration) || !ctx.hasModifications() ||
+      if (onePhaseTotalOrderCommit || !ctx.hasModifications() ||
             !shouldTotalOrderRollbackBeInvokedRemotely(ctx)) {
          return invokeNextInterceptor(ctx, command);
       }
@@ -41,7 +48,7 @@ public class TotalOrderVersionedDistributionInterceptor extends VersionedDistrib
 
    @Override
    public Object visitCommitCommand(TxInvocationContext ctx, CommitCommand command) throws Throwable {
-      if (Configurations.isOnePhaseTotalOrderCommit(cacheConfiguration) || !ctx.hasModifications()) {
+      if (onePhaseTotalOrderCommit || !ctx.hasModifications()) {
          return invokeNextInterceptor(ctx, command);
       }
       totalOrderTxCommit(ctx);
