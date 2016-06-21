@@ -7,6 +7,7 @@ import org.infinispan.protostream.config.Configuration;
 import org.infinispan.protostream.descriptors.Descriptor;
 import org.infinispan.protostream.descriptors.EnumDescriptor;
 import org.infinispan.protostream.descriptors.FileDescriptor;
+import org.infinispan.protostream.descriptors.GenericDescriptor;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ final class DelegatingSerializationContext implements SerializationContext {
    @Override
    public void registerProtoFiles(FileDescriptorSource source) throws IOException {
       Map<String, char[]> fileDescriptors = source.getFileDescriptors();
-      Map<String, String> files = new HashMap<String, String>(fileDescriptors.size());
+      Map<String, String> files = new HashMap<>(fileDescriptors.size());
       for (String key : fileDescriptors.keySet()) {
          files.put(key, new String(fileDescriptors.get(key)));
       }
@@ -98,6 +99,11 @@ final class DelegatingSerializationContext implements SerializationContext {
    @Override
    public String getTypeNameById(Integer typeId) {
       return delegate.getTypeNameById(typeId);
+   }
+
+   @Override
+   public GenericDescriptor getDescriptorByTypeId(Integer typeId) {
+      return delegate.getDescriptorByTypeId(typeId);
    }
 
    @Override
