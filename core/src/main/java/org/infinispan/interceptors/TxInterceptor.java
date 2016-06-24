@@ -381,7 +381,7 @@ public class TxInterceptor<K, V> extends CommandInterceptor implements JmxStatis
       Transaction transaction = ctx.getTransaction();
       if (transaction == null) throw new IllegalStateException("This should only be called in an tx scope");
       int status = transaction.getStatus();
-      LocalTransaction localTransaction = txTable.getLocalTransaction(transaction);
+      LocalTransaction localTransaction = (LocalTransaction) ctx.getCacheTransaction();
       if (isNotValid(status)) {
          if (!localTransaction.isEnlisted()) {
             // This transaction wouldn't be removed by TM.commit() or TM.rollback()
