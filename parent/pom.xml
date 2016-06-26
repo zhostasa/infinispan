@@ -168,7 +168,7 @@
       <version.spring-session>1.2.2.RELEASE-redhat-1</version.spring-session>
       <version.spring-boot>1.4.0.RELEASE</version.spring-boot>
       <version.spring4>4.1.0.RELEASE</version.spring4>
-      <version.spymemcached>2.5</version.spymemcached>
+      <version.spymemcached>2.12.1</version.spymemcached>
       <version.testng>6.8.8</version.testng>
       <version.testng.arquillian>6.5.2</version.testng.arquillian>
       <version.webdav.servlet>2.0.1</version.webdav.servlet>
@@ -186,7 +186,6 @@
       <version.maven.buildhelper>1.8</version.maven.buildhelper>
       <version.maven.bundle>2.4.0</version.maven.bundle>
       <version.maven.source>2.3</version.maven.source>
-      <version.maven.genjavadoc>0.9</version.maven.genjavadoc>
       <version.maven.scala>2.15.2-redhat-1</version.maven.scala>
       <version.maven.surefire>2.18.1</version.maven.surefire>
       <version.maven.invoker>1.8</version.maven.invoker>
@@ -787,8 +786,8 @@
             </exclusions>
          </dependency>
          <dependency>
-            <groupId>spy</groupId>
-            <artifactId>memcached</artifactId>
+            <groupId>net.spy</groupId>
+            <artifactId>spymemcached</artifactId>
             <version>${version.spymemcached}</version>
          </dependency>
          <dependency>
@@ -1376,11 +1375,6 @@
                       <goals>
                          <goal>testCompile</goal>
                       </goals>
-                      <configuration>
-                         <args>
-                            <arg>-P:genjavadoc:out=${project.build.directory}/genjavadoctest</arg>
-                         </args>
-                      </configuration>
                    </execution>
                    <execution>
                       <phase>none</phase>
@@ -1393,16 +1387,6 @@
                    <jvmArgs>
                       <jvmArg>-Xmx256m</jvmArg>
                    </jvmArgs>
-                   <args>
-                      <arg>-P:genjavadoc:out=${project.parent.build.directory}/genjavadoc</arg>
-                   </args>
-                   <compilerPlugins>
-                      <compilerPlugin>
-                         <groupId>com.typesafe.genjavadoc</groupId>
-                         <artifactId>genjavadoc-plugin_${version.scala}</artifactId>
-                         <version>${version.maven.genjavadoc}</version>
-                      </compilerPlugin>
-                   </compilerPlugins>
                 </configuration>
              </plugin>
              <plugin>

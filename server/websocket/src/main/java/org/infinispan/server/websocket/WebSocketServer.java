@@ -1,16 +1,23 @@
 package org.infinispan.server.websocket;
 
-import io.netty.channel.*;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.lang.invoke.MethodHandles;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.infinispan.Cache;
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.core.AbstractProtocolServer;
 import org.infinispan.server.core.CacheIgnoreAware;
-import org.infinispan.server.core.configuration.ProtocolServerConfiguration;
+import org.infinispan.server.core.transport.NettyInitializer;
+import org.infinispan.server.core.transport.NettyInitializers;
+import org.infinispan.server.websocket.configuration.WebSocketServerConfiguration;
 import org.infinispan.server.websocket.handlers.GetHandler;
 import org.infinispan.server.websocket.handlers.NotifyHandler;
 import org.infinispan.server.websocket.handlers.PutHandler;
@@ -32,7 +39,7 @@ import java.util.Map;
  *    Websocket specific code lifted from Netty WebSocket Server example.
  * </p>
  */
-public class WebSocketServer extends AbstractProtocolServer {
+public class WebSocketServer extends AbstractProtocolServer<WebSocketServerConfiguration> {
 
    private static final Log logger = LogFactory.getLog(MethodHandles.lookup().lookupClass(), Log.class);
 
@@ -52,16 +59,16 @@ public class WebSocketServer extends AbstractProtocolServer {
       return null;
    }
 
-   public void startInternal(ProtocolServerConfiguration configuration, EmbeddedCacheManager cacheManager) {
+   public void startInternal(WebSocketServerConfiguration configuration, EmbeddedCacheManager cacheManager) {
       super.startInternal(configuration, cacheManager);
    }
 
    @Override
    public ChannelInitializer<Channel> getInitializer() {
-      return new WebSocketServerPipelineFactory(cacheManager(), this);
+      return new NettyInitializers(new WebSocketServerPipelineFactory(cacheManager, this));
    }
 
-   private static class WebSocketServerPipelineFactory extends ChannelInitializer<Channel> {
+   private static class WebSocketServerPipelineFactory implements NettyInitializer {
 
       private CacheContainer cacheContainer;
       private final CacheIgnoreAware cacheIgnoreAware;
@@ -82,9 +89,9 @@ public class WebSocketServer extends AbstractProtocolServer {
       }
 
       @Override
-      public void initChannel(Channel channel) throws Exception {
+      public void initializeChannel(Channel ch) throws Exception {
          // Create a default pipeline implementation.
-         ChannelPipeline pipeline = channel.pipeline();
+         ChannelPipeline pipeline = ch.pipeline();
 
          pipeline.addLast("decoder", new HttpRequestDecoder());
          pipeline.addLast("aggregator", new HttpObjectAggregator(65536));

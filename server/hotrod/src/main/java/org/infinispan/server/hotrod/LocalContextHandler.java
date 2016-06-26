@@ -10,7 +10,6 @@ import org.infinispan.distribution.DistributionManager;
 import org.infinispan.security.Security;
 import org.infinispan.server.core.transport.NettyTransport;
 import org.infinispan.server.hotrod.iteration.IterableIterationResult;
-import org.infinispan.server.hotrod.logging.JavaLog;
 import org.infinispan.server.hotrod.util.BulkUtil;
 import org.infinispan.tasks.TaskContext;
 import org.infinispan.tasks.TaskManager;
@@ -27,8 +26,8 @@ import java.util.Map;
 import static org.infinispan.server.hotrod.ResponseWriting.writeResponse;
 
 /**
- * Handler that performs actual cache operations.  Note this handler should be on a separate executor group than
- * the decoder.
+ * Handler that performs actual cache operations.  Note this handler should be on a separate executor group than the
+ * decoder.
  *
  * @author wburns
  * @since 8.3
@@ -44,7 +43,7 @@ public class LocalContextHandler extends ChannelInboundHandlerAdapter {
    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
       if (msg instanceof CacheDecodeContext) {
          CacheDecodeContext cdc = (CacheDecodeContext) msg;
-         Subject subject = ((CacheDecodeContext) msg).getSubject();
+         Subject subject = ((CacheDecodeContext) msg).subject;
          if (subject == null)
             realChannelRead(ctx, msg, cdc);
          else Security.doAs(subject, (PrivilegedExceptionAction<Void>) () -> {
@@ -57,8 +56,8 @@ public class LocalContextHandler extends ChannelInboundHandlerAdapter {
    }
 
    private void realChannelRead(ChannelHandlerContext ctx, Object msg, CacheDecodeContext cdc) throws Exception {
-      HotRodHeader h = cdc.header();
-      switch (h.op()) {
+      HotRodHeader h = cdc.header;
+      switch (h.op) {
          case ContainsKeyRequest:
             writeResponse(cdc, ctx.channel(), cdc.containsKey());
             break;
@@ -70,11 +69,11 @@ public class LocalContextHandler extends ChannelInboundHandlerAdapter {
             writeResponse(cdc, ctx.channel(), cdc.getKeyMetadata());
             break;
          case PingRequest:
-            writeResponse(cdc, ctx.channel(), new Response(h.version(), h.messageId(), h.cacheName(),
-                    h.clientIntel(), OperationResponse.PingResponse(), OperationStatus.Success(), h.topologyId()));
+            writeResponse(cdc, ctx.channel(), new Response(h.version, h.messageId, h.cacheName,
+                  h.clientIntel, OperationResponse.PingResponse, OperationStatus.Success, h.topologyId));
             break;
          case StatsRequest:
-            writeResponse(cdc, ctx.channel(), cdc.decoder().createStatsResponse(cdc, transport));
+            writeResponse(cdc, ctx.channel(), cdc.decoder.createStatsResponse(cdc, transport));
             break;
          default:
             super.channelRead(ctx, msg);
