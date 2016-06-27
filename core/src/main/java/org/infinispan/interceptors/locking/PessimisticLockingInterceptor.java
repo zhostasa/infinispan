@@ -146,6 +146,9 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
             }
          }
          return invokeNextInterceptor(ctx, command);
+      } catch (OutdatedTopologyException e) {
+         // The command will be retried, no need to release this or other locks
+         throw e;
       } catch (Throwable te) {
          throw cleanLocksAndRethrow(ctx, te);
       }
@@ -187,6 +190,9 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
 
          lockAllOrRegisterBackupLock(ctx, command.getKeys(), getLockTimeoutMillis(command));
          return Boolean.TRUE;
+      } catch (OutdatedTopologyException e) {
+         // The command will be retried, no need to release this or other locks
+         throw e;
       } catch (Throwable te) {
          releaseLocksOnFailureBeforePrepare(ctx);
          throw te;
