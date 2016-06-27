@@ -178,7 +178,17 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
 
    @Override
    public final Object visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
-      return invokeNextAndApplyChanges(ctx, command, command.getMetadata());
+      Object retVal = invokeNextAndApplyChanges(ctx, command, command.getMetadata());
+
+      // If we are committing a ClearCommand now then no keys should be written by state transfer from
+      // now on until current rebalance ends.
+      if (stateConsumer != null) {
+         stateConsumer.stopApplyingState();
+      }
+      if (xSiteStateConsumer != null) {
+         xSiteStateConsumer.endStateTransfer(null);
+      }
+      return retVal;
    }
 
    @Override
@@ -446,11 +456,6 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
    protected final void commitContextEntries(InvocationContext ctx, FlagAffectedCommand command, Metadata metadata) {
       final Flag stateTransferFlag = extractStateTransferFlag(ctx, command);
 
-      if (stateTransferFlag == null) {
-         //it is a normal operation
-         stopStateTransferIfNeeded(command);
-      }
-
       if (ctx instanceof SingleKeyNonTxInvocationContext) {
          SingleKeyNonTxInvocationContext singleKeyCtx = (SingleKeyNonTxInvocationContext) ctx;
          commitEntryIfNeeded(ctx, command,
@@ -477,19 +482,6 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
    protected void commitContextEntry(CacheEntry entry, InvocationContext ctx, FlagAffectedCommand command,
                                      Metadata metadata, Flag stateTransferFlag, boolean l1Invalidation) {
       cdl.commitEntry(entry, metadata, command, ctx, stateTransferFlag, l1Invalidation);
-   }
-
-   private void stopStateTransferIfNeeded(FlagAffectedCommand command) {
-      if (command instanceof ClearCommand) {
-         // If we are committing a ClearCommand now then no keys should be written by state transfer from
-         // now on until current rebalance ends.
-         if (stateConsumer != null) {
-            stateConsumer.stopApplyingState();
-         }
-         if (xSiteStateConsumer != null) {
-            xSiteStateConsumer.endStateTransfer(null);
-         }
-      }
    }
 
    private Object invokeNextAndApplyChanges(InvocationContext ctx, FlagAffectedCommand command, Metadata metadata) throws Throwable {
