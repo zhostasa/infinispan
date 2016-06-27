@@ -467,8 +467,7 @@ public class TxInterceptor<K, V> extends CommandInterceptor implements JmxStatis
       final GlobalTransaction globalTransaction = command.getGlobalTransaction();
 
       // command.getOrigin() and ctx.getOrigin() are not reliable for LockControlCommands started by
-      // ClusteredGetCommands, or for PrepareCommands started by MultipleRpcCommands (when the replication queue
-      // is enabled).
+      // ClusteredGetCommands
       final Address origin = globalTransaction.getAddress();
 
       //It is possible to receive a prepare or lock control command from a node that crashed. If that's the case rollback
