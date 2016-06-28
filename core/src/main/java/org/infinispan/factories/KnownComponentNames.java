@@ -20,7 +20,7 @@ public class KnownComponentNames {
    public static final String PERSISTENCE_EXECUTOR = "org.infinispan.executors.persistence";
    public static final String EXPIRATION_SCHEDULED_EXECUTOR = "org.infinispan.executors.expiration";
    /**
-    * @deprecated Since 9.0, no longer used.
+    * @deprecated Since 8.3, no longer used.
     */
    @Deprecated
    public static final String ASYNC_REPLICATION_QUEUE_EXECUTOR = "org.infinispan.executors.replicationQueue";

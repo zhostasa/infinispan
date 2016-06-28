@@ -13,7 +13,7 @@ import static org.infinispan.configuration.serializing.SerializeUtils.writeOptio
  * AbstractJdbcStoreConfigurationSerializer.
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public abstract class AbstractJdbcStoreConfigurationSerializer extends AbstractStoreSerializer {
    protected void writeJdbcStoreAttributes(XMLExtendedStreamWriter writer, AbstractJdbcStoreConfiguration configuration) throws XMLStreamException {

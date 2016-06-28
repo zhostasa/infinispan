@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * Logging filter that can be used to output requests in a similar fashion to HTTPD log output
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 @Provider
 public class RestAccessLoggingHandler implements ContainerResponseFilter, ContainerRequestFilter {

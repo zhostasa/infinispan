@@ -38,7 +38,7 @@ import static org.infinispan.test.TestingUtil.waitForRehashToComplete;
  * Tests concurrent startup of caches using ForkChannels.
  *
  * @author Dan Berindei
- * @since 9.0
+ * @since 8.3
  */
 @Test(testName = "statetransfer.ConcurrentStartTest", groups = "functional")
 @CleanupAfterMethod

@@ -26,7 +26,7 @@ import static org.infinispan.server.test.client.hotrod.security.HotRodAuthzOpera
  * Test for using SSL for client server communication encryption.
  *
  * @author vjuranek
- * @since 9.0
+ * @since 8.3
  */
 @RunWith(Arquillian.class)
 @Category({Security.class})

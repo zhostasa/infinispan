@@ -7,7 +7,7 @@ import java.util.Random;
 
 /**
  * @author Dan Berindei
- * @since 9.0
+ * @since 8.3
  */
 public class MurmurHash3StringCompatTest {
    private static final long NUM_KEYS = 100000;

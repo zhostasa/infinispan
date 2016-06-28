@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 public final class JPQLParser<TypeMetadata> {
 

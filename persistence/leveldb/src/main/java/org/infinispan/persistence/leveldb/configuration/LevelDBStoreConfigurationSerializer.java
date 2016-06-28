@@ -11,7 +11,7 @@ import org.infinispan.configuration.serializing.XMLExtendedStreamWriter;
  * LevelDBStoreConfigurationSerializer.
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class LevelDBStoreConfigurationSerializer extends AbstractStoreSerializer implements ConfigurationSerializer<LevelDBStoreConfiguration> {
 

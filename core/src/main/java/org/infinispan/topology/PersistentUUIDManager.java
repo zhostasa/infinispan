@@ -12,7 +12,7 @@ import java.util.function.UnaryOperator;
  * PersistentUUIDManager maintains a mapping of {@link PersistentUUID}s present in the cluster
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 @Scope(Scopes.GLOBAL)
 public interface PersistentUUIDManager {

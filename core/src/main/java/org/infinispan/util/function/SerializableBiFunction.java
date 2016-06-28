@@ -8,7 +8,7 @@ import java.util.function.BiFunction;
  * {@link Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableBiFunction<T, U, R> extends Serializable, BiFunction<T, U, R> {
 }

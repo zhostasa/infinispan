@@ -21,7 +21,7 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
  * JDBC cache store configuration parser.
  *
  * @author Galder Zamarreño
- * @since 9.0
+ * @since 8.3
  */
 @MetaInfServices
 @Namespaces({

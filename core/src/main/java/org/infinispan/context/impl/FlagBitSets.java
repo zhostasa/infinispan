@@ -7,7 +7,7 @@ import org.infinispan.context.Flag;
  * Pre-computed bitsets containing each flag.
  *
  * @author Dan Berindei
- * @since 9.0
+ * @since 8.3
  */
 public class FlagBitSets {
    public static final long ZERO_LOCK_ACQUISITION_TIMEOUT = EnumUtil.bitSetOf(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT);

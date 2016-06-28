@@ -16,7 +16,7 @@ import org.infinispan.query.remote.impl.logging.Log;
 
 /**
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 final class ProtobufFieldBridgeProvider implements LuceneQueryMaker.FieldBridgeProvider {
 

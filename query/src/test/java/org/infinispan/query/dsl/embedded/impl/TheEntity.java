@@ -8,7 +8,7 @@ import org.hibernate.search.annotations.Store;
 
 /**
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 @Indexed
 public class TheEntity {

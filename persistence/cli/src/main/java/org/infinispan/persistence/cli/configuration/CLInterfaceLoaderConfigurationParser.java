@@ -19,7 +19,7 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
  * XML parser for CLI cache loader configuration.
  *
  * @author Galder Zamarreño
- * @since 9.0
+ * @since 8.3
  */
 @MetaInfServices
 @Namespaces({

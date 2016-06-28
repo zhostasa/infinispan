@@ -16,7 +16,7 @@ import java.util.function.UnaryOperator;
  * Implementation of the {@link PersistentUUIDManager} interface
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class PersistentUUIDManagerImpl implements PersistentUUIDManager {
    private static final Log log = LogFactory.getLog(PersistentUUIDManagerImpl.class);

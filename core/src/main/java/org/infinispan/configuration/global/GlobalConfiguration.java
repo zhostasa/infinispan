@@ -149,7 +149,7 @@ public class GlobalConfiguration {
    }
 
    /**
-    * @deprecated Since 9.0, no longer used.
+    * @deprecated Since 8.3, no longer used.
     */
    @Deprecated
    public ThreadPoolConfiguration replicationQueueThreadPool() {

@@ -35,7 +35,7 @@ import static org.infinispan.server.test.client.hotrod.security.HotRodSaslAuthTe
  *    happens on the second server.
  *
  * @author vjuranek
- * @since 9.0
+ * @since 8.3
  */
 @RunWith(Arquillian.class)
 @Category({ Security.class })

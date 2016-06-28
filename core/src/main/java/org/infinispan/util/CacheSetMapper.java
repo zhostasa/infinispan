@@ -14,7 +14,7 @@ import java.util.function.Function;
  * request.  This is useful as a cache set is normally lazily evaluated to prevent having to pull all values into memory
  * which can be a lot faster when checking single values and can also prevent out of memory issues.
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class CacheSetMapper<E, R> extends SetMapper<E, R> implements CacheSet<R> {
    protected final CacheSet<E> realSet;

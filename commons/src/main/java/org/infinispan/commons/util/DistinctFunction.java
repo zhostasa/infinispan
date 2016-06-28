@@ -11,7 +11,7 @@ import java.util.function.Function;
  * If a <b>function</b> is implemented with this and it doesn't produce distinct values, the operation of the
  * consumer of this function may be undefined.
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface DistinctFunction<T, R> {
 }

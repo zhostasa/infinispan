@@ -15,7 +15,7 @@ import java.util.Set;
  * It will only be marshalled using protobuf before passing it to the remote client.
  *
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 public final class ContinuousQueryResultExternalizer extends AbstractExternalizer<ContinuousQueryResult> {
 

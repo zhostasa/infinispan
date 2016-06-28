@@ -11,7 +11,7 @@ import org.jboss.as.cli.CommandLineException;
  * Handles the disconnect
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class DisconnectCommandHandler extends NoArgumentsCliCommandHandler {
 

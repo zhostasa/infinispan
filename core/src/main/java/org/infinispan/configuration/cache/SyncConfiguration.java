@@ -11,13 +11,13 @@ import org.infinispan.commons.configuration.attributes.AttributeSet;
  * over the wire, it blocks until it receives an acknowledgment from the recipient. SyncConfig is
  * mutually exclusive with the AsyncConfig.
  *
- * @deprecated Since 9.0, the {@code replTimeout} attribute is now {@code ClusteringConfiguration.remoteTimeout}.
+ * @deprecated Since 8.3, the {@code replTimeout} attribute is now {@code ClusteringConfiguration.remoteTimeout}.
  */
 @Deprecated
 public class SyncConfiguration {
 
    /**
-    * @deprecated Since 9.0, replaced with {@link ClusteringConfiguration#REMOTE_TIMEOUT}
+    * @deprecated Since 8.3, replaced with {@link ClusteringConfiguration#REMOTE_TIMEOUT}
     */
    @Deprecated
    public static final AttributeDefinition<Long> REPL_TIMEOUT = AttributeDefinition.builder("replTimeout", TimeUnit.SECONDS.toMillis(15)).build();
@@ -38,7 +38,7 @@ public class SyncConfiguration {
     * This is the timeout used to wait for an acknowledgment when making a remote call, after which
     * the call is aborted and an exception is thrown.
     *
-    * @deprecated Since 9.0, please use {@link ClusteringConfiguration#replTimeout()} instead.
+    * @deprecated Since 8.3, please use {@link ClusteringConfiguration#replTimeout()} instead.
     */
    @Deprecated
    public long replTimeout() {
@@ -49,7 +49,7 @@ public class SyncConfiguration {
     * This is the timeout used to wait for an acknowledgment when making a remote call, after which
     * the call is aborted and an exception is thrown.
     *
-    * @deprecated Since 9.0, please use {@link ClusteringConfiguration#replTimeout(long)} instead.
+    * @deprecated Since 8.3, please use {@link ClusteringConfiguration#replTimeout(long)} instead.
     */
    @Deprecated
    public SyncConfiguration replTimeout(long l) {

@@ -8,7 +8,7 @@ import org.infinispan.notifications.Listenable;
  * RemoveListenerAction
  *
  * @author vjuranek
- * @since 9.0
+ * @since 8.3
  */
 public class RemoveListenerAction implements PrivilegedAction<Void> {
 

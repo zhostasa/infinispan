@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
  * {@link Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableBiConsumer<T, U> extends Serializable, BiConsumer<T, U> {
 }

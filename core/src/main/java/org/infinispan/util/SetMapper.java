@@ -17,7 +17,7 @@ import java.util.function.Function;
  * Some operations such as {@link Collection#contains(Object)} and {@link Collection#containsAll(Collection)} may be
  * more expensive then normal since they cannot utilize lookups into the original collection.
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class SetMapper<E, R> extends CollectionMapper<E, R> {
    public SetMapper(Set<E> realCollection, Function<? super E, ? extends R> mapper) {

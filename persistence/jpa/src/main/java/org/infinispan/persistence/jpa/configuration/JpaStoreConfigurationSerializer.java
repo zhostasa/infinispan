@@ -9,7 +9,7 @@ import javax.xml.stream.XMLStreamException;
 /**
  * JpaStoreConfigurationSerializer.
  *
- * @since 9.0
+ * @since 8.3
  * @author Tristan Tarrant
  */
 public class JpaStoreConfigurationSerializer extends AbstractStoreSerializer implements ConfigurationSerializer<JpaStoreConfiguration> {

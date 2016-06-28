@@ -31,7 +31,7 @@ import static org.testng.Assert.assertEquals;
  * Tests remote query using two caches and a shared index
  *
  * @author gustavonalle
- * @since 9.0
+ * @since 8.3
  */
 @Test(testName = "client.hotrod.query.TwoCachesSharedIndexTest", groups = "functional")
 public class TwoCachesSharedIndexTest extends MultiHotRodServersTest {

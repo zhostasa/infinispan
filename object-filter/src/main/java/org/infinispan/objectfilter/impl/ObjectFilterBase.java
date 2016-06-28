@@ -13,7 +13,7 @@ import java.util.Set;
 
 /**
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 abstract class ObjectFilterBase<TypeMetadata> implements ObjectFilter {
 

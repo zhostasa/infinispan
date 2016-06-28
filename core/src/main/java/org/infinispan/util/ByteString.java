@@ -12,7 +12,7 @@ import java.util.Arrays;
  * This avoids repeated invocation of the expensive {@link ObjectOutput#writeUTF(String)} on marshalling
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class ByteString {
    public static final Charset CHARSET = StandardCharsets.UTF_8;

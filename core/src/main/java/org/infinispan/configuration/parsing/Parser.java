@@ -81,7 +81,7 @@ import static org.infinispan.factories.KnownComponentNames.*;
  *
  * @author Tristan Tarrant
  * @author Galder Zamarreño
- * @since 9.0
+ * @since 8.3
  */
 @MetaInfServices
 @Namespaces({

@@ -12,7 +12,7 @@ import org.testng.annotations.Test
   * Tests HotRod server start with SSL enabled and keystore which has different keystore and certificate passwords.
   *
   * @author vjuranek
-  * @since 9.0
+  * @since 8.3
   */
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRodSslWithCertPasswdTest")
 class HotRodSslWithCertPasswdTest {

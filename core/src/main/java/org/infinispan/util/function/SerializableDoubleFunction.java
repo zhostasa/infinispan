@@ -8,7 +8,7 @@ import java.util.function.DoubleFunction;
  * {@link java.io.Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableDoubleFunction<R> extends Serializable, DoubleFunction<R> {
 }

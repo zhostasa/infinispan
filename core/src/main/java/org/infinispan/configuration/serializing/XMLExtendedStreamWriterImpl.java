@@ -12,7 +12,7 @@ import java.util.Iterator;
  * XMLExtendedStreamWriterImpl.
  *
  * @author David Lloyd
- * @since 9.0
+ * @since 8.3
  */
 public final class XMLExtendedStreamWriterImpl implements XMLExtendedStreamWriter, XMLStreamConstants {
    private static final String NO_NAMESPACE = new String();

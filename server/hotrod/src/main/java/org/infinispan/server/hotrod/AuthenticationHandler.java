@@ -34,7 +34,7 @@ import static org.infinispan.server.hotrod.ResponseWriting.writeResponse;
  * Handler that when added will make sure authentication is applied to requests.
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class AuthenticationHandler extends ChannelInboundHandlerAdapter {
    private final static JavaLog log = LogFactory.getLog(AuthenticationHandler.class, JavaLog.class);

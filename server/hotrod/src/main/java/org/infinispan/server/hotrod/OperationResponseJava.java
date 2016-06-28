@@ -4,7 +4,7 @@ package org.infinispan.server.hotrod;
  * Static helper method for bridging a {@link HotRodOperation} to a {@link OperationResponse} enumeration.
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 class OperationResponseJava {
    private OperationResponseJava() { }

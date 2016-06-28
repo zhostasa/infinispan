@@ -19,7 +19,7 @@ import javax.xml.stream.XMLStreamException;
 /**
  *
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
- * @since 9.0
+ * @since 8.3
  */
 @MetaInfServices
 @Namespaces({

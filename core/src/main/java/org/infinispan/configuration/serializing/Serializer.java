@@ -61,7 +61,7 @@ import static org.infinispan.configuration.serializing.SerializeUtils.writeTyped
  * Serializes an Infinispan configuration to an {@link XMLExtendedStreamWriter}
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class Serializer extends AbstractStoreSerializer implements ConfigurationSerializer<ConfigurationHolder> {
    private static final Log log = LogFactory.getLog(Serializer.class);

@@ -8,7 +8,7 @@ import java.util.function.LongBinaryOperator;
  * {@link Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableLongBinaryOperator extends Serializable, LongBinaryOperator {
 }

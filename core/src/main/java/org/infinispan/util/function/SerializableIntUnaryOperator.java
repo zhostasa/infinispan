@@ -8,7 +8,7 @@ import java.util.function.IntUnaryOperator;
  * {@link Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableIntUnaryOperator extends Serializable, IntUnaryOperator {
 }

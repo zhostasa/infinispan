@@ -12,7 +12,7 @@ import java.util.function.Function;
  * This spliterator will <b>always</b> throw an {@link IllegalStateException} upon invocation of
  * {@link Spliterator#getComparator()} since there is no trivial way of converting this with a mapper.
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class SpliteratorMapper<E, S> implements Spliterator<S> {
    private final Spliterator<E> spliterator;

@@ -17,7 +17,7 @@ import static org.infinispan.server.endpoint.subsystem.ModelNodeUtils.contains;
  * This handler inspects all endpoint resources to check if a one or more caches are being ignored.
  *
  * @author gustavonalle
- * @since 9.0
+ * @since 8.3
  */
 public class CacheIgnoreStatusHandler implements OperationStepHandler {
 

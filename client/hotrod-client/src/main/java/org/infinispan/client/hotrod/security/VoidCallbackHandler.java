@@ -10,7 +10,7 @@ import javax.security.auth.callback.CallbackHandler;
  * from external channel, like TLS certificate.
  *
  * @author vjuranek
- * @since 9.0
+ * @since 8.3
  */
 public class VoidCallbackHandler implements CallbackHandler {
     @Override

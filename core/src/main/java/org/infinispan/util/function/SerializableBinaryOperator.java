@@ -8,7 +8,7 @@ import java.util.function.BinaryOperator;
  * {@link Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableBinaryOperator<T> extends Serializable, BinaryOperator<T> {
 }

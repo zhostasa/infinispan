@@ -53,7 +53,7 @@ import static org.junit.Assert.assertNull;
 
 /**
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 @Test(groups = "functional", testName = "client.hotrod.event.EmbeddedCompatClientListenerWithDslFilterTest")
 public class EmbeddedCompatClientListenerWithDslFilterTest extends MultiHotRodServersTest {

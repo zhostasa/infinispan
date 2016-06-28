@@ -18,7 +18,7 @@ import java.util.function.Function;
  *
  * @param <E> Type of elements in collection before transformation
  * @param <R> Type of elements in collection after transformation
- * @since 9.0
+ * @since 8.3
  */
 public class CacheCollectionMapper<E, R> extends CollectionMapper<E, R> implements CacheCollection<R> {
    protected final CacheCollection<E> realCacheCollection;

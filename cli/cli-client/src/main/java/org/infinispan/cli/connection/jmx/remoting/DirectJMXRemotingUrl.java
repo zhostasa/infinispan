@@ -4,7 +4,7 @@ package org.infinispan.cli.connection.jmx.remoting;
  * DirectJMXRemotingUrl connects through plain (non-http-upgrade-enabled) ports
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 
 public class DirectJMXRemotingUrl extends JMXRemotingUrl {

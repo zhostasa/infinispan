@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
  * Tests script execution over HotRod client on secured cache.
  *
  * @author vjuranek
- * @since 9.0
+ * @since 8.3
  */
 @RunWith(Arquillian.class)
 @Category(Security.class)

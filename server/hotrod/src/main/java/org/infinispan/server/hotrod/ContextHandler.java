@@ -32,7 +32,7 @@ import static org.infinispan.server.hotrod.ResponseWriting.writeResponse;
  * the decoder.
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class ContextHandler extends SimpleChannelInboundHandler<CacheDecodeContext> {
    private final static JavaLog log = LogFactory.getLog(ContextHandler.class, JavaLog.class);

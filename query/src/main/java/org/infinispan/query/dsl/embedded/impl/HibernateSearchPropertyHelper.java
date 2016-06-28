@@ -39,7 +39,7 @@ import java.util.List;
  * with java-bean like reflection without relying on annotations.
  *
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 public final class HibernateSearchPropertyHelper extends ReflectionPropertyHelper {
 

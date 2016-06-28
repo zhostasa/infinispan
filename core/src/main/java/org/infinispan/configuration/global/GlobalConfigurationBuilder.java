@@ -123,7 +123,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
    }
 
    /**
-    * @deprecated Since 9.0, no longer used.
+    * @deprecated Since 8.3, no longer used.
     */
    @Deprecated
    @Override

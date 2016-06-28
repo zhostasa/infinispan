@@ -14,7 +14,7 @@ import org.infinispan.configuration.serializing.XMLExtendedStreamWriter;
  * RemoteStoreConfigurationSerializer.
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class RemoteStoreConfigurationSerializer extends AbstractStoreSerializer implements ConfigurationSerializer<RemoteStoreConfiguration> {
 

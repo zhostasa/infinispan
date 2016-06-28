@@ -5,7 +5,7 @@ import java.util.function.Function;
 /**
  * A spliterator that maps each value to the output of the Function that is also closeable.
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class CloseableSpliteratorMapper<E, S> extends SpliteratorMapper<E, S> implements CloseableSpliterator<S> {
    private final CloseableSpliterator<? extends E> spliterator;

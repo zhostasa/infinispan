@@ -12,7 +12,7 @@ import org.infinispan.server.hotrod.logging.{HotRodAccessLoggingHandler, JavaLog
   * HotRod specific channel initializer
   *
   * @author wburns
-  * @since 9.0
+  * @since 8.3
   */
 class HotRodChannelInitializer(val server: HotRodServer, transport: => NettyTransport,
                                val encoder: ChannelOutboundHandler, executor: ExecutorService)

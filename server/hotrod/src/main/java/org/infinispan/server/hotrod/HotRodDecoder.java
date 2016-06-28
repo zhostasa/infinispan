@@ -17,7 +17,7 @@ import java.util.function.Predicate;
  * Decoder that will decode hotrod messages and then send a {@link CacheDecodeContext} down the pipeline.
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class HotRodDecoder extends ByteToMessageDecoder {
    private final static JavaLog log = LogFactory.getLog(HotRodDecoder.class, JavaLog.class);

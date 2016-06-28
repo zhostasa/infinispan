@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
  * Test remote continuous query in compat mode.
  *
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 @Test(groups = "functional", testName = "client.hotrod.event.EmbeddedCompatContinuousQueryTest")
 public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {

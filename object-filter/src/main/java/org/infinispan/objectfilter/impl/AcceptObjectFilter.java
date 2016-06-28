@@ -10,7 +10,7 @@ import java.util.Map;
  * A filter that accepts all inputs of a given type. Does not support sorting and projections.
  *
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 final class AcceptObjectFilter<TypeMetadata, AttributeMetadata, AttributeId extends Comparable<AttributeId>>
       extends ObjectFilterBase<TypeMetadata> implements ObjectFilter {

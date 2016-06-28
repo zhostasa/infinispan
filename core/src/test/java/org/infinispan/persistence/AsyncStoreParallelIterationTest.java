@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 
 /**
  * @author Dan Berindei
- * @since 9.0
+ * @since 8.3
  */
 @Test(groups = "functional", testName = "persistence.AsyncStoreParallelIterationTest")
 @CleanupAfterMethod

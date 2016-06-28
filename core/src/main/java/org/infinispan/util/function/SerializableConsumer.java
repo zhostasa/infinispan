@@ -8,7 +8,7 @@ import java.util.function.Consumer;
  * {@link Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableConsumer<T> extends Serializable, Consumer<T> {
 }

@@ -96,7 +96,7 @@ public class ClusteringConfiguration {
     * Configure sync sub element. Once this method is invoked users cannot subsequently invoke
     * <code>async()</code> as two are mutually exclusive
     *
-    * @deprecated Since 9.0, the {@code replTimeout} attribute is now in {@link ClusteringConfiguration}.
+    * @deprecated Since 8.3, the {@code replTimeout} attribute is now in {@link ClusteringConfiguration}.
     */
    @Deprecated
    public SyncConfiguration sync() {

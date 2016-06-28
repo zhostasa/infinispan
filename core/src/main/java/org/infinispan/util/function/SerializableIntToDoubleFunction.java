@@ -8,7 +8,7 @@ import java.util.function.IntToDoubleFunction;
  * {@link Serializable}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface SerializableIntToDoubleFunction extends Serializable, IntToDoubleFunction {
 }

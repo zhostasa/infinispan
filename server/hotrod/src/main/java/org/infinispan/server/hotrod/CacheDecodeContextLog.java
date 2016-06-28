@@ -5,7 +5,7 @@ import org.infinispan.util.logging.LogFactory;
 
 /**
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class CacheDecodeContextLog {
    static final JavaLog log = LogFactory.getLog(CacheDecodeContext.class, JavaLog.class);

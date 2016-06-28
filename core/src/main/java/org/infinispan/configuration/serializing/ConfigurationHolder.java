@@ -9,7 +9,7 @@ import org.infinispan.configuration.global.GlobalConfiguration;
  * ConfigurationHolder.
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class ConfigurationHolder {
    final private GlobalConfiguration globalConfiguration;

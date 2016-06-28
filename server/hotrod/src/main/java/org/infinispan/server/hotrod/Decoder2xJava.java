@@ -9,7 +9,7 @@ import scala.Enumeration;
  * Companion class to Decoder2x
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class Decoder2xJava {
 

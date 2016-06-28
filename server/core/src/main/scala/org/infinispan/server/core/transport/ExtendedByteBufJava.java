@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf;
  *  Utilities to read from a {@link ByteBuf}
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class ExtendedByteBufJava {
 

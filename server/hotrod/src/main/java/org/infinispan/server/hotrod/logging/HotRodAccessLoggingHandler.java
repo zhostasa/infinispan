@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
  * Logging handler for hotrod to log what requests have come into the server
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class HotRodAccessLoggingHandler extends ChannelDuplexHandler {
    private static final JavaLog log = LogFactory.getLog(HotRodAccessLoggingHandler.class, JavaLog.class);

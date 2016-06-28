@@ -14,7 +14,7 @@ import org.infinispan.server.hotrod.OperationResponse;
  * Very simple handler that sole purpose is to put the decode context into the channel
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 @ChannelHandler.Sharable
 public class LoggingContextHandler extends ChannelDuplexHandler {

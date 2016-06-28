@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
  * applied in the test model (bank.proto).
  *
  * @author anistor@redhat.com
- * @since 9.0
+ * @since 8.3
  */
 @Test(groups = "functional", testName = "query.remote.impl.ProtobufIndexedFieldProviderTest")
 public class ProtobufIndexedFieldProviderTest extends SingleCacheManagerTest {

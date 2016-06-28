@@ -10,7 +10,7 @@ import org.jboss.aesh.console.command.CommandOperation;
  * CLIConsoleCallback
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 
 public class CLIConsoleCallback extends AeshConsoleCallback{

@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Matej Cimbora
  * @author anistor@gmail.com
- * @since 9.0
+ * @since 8.3
  */
 @Test(groups = "profiling", testName = "query.dsl.embedded.NamedParamsPerfTest")
 public class NamedParamsPerfTest extends AbstractQueryDslTest {

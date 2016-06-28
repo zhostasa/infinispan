@@ -4,7 +4,7 @@ package org.infinispan.server.hotrod;
  * Enumeration defining all of the possible hotrod operations
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public enum HotRodOperation {
    // Puts

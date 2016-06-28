@@ -29,7 +29,7 @@ import java.util.stream.DoubleStream;
  * {@link CacheStream} for additional details about various methods.
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public interface DoubleCacheStream extends DoubleStream {
    /**

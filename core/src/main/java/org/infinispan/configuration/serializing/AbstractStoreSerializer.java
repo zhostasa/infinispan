@@ -16,7 +16,7 @@ import static org.infinispan.configuration.serializing.SerializeUtils.writeTyped
  * AbstractStoreSerializer.
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public abstract class AbstractStoreSerializer {
    protected void writeCommonStoreSubAttributes(XMLExtendedStreamWriter writer, AbstractStoreConfiguration configuration) throws XMLStreamException {

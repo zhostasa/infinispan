@@ -12,7 +12,7 @@ import javax.xml.stream.XMLStreamException;
  * SoftIndexFileStoreSerializer.
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 public class SoftIndexFileStoreSerializer extends AbstractStoreSerializer implements ConfigurationSerializer<SoftIndexFileStoreConfiguration> {
 

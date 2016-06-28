@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * SerializedWith, specifies the {@link ConfigurationSerializer} to use to serialize the annotated class
  *
  * @author Tristan Tarrant
- * @since 9.0
+ * @since 8.3
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

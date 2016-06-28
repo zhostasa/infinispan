@@ -10,7 +10,7 @@ import org.infinispan.server.core.ProtocolServer
  * channel handler named <b>decoder</b>
  *
  * @author William Burns
- * @since 9.0
+ * @since 8.3
  */
 trait SingleByteFrameDecoderChannelInitializer extends ChannelInitializer[Channel] {
    abstract override def initChannel(ch: Channel): Unit = {

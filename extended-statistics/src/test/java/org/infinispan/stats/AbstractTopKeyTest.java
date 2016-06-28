@@ -16,7 +16,7 @@ import static org.infinispan.distribution.DistributionTestHelper.addressOf;
 
 /**
  * @author Pedro Ruivo
- * @since 9.0
+ * @since 8.3
  */
 public abstract class AbstractTopKeyTest extends MultipleCacheManagersTest {
 

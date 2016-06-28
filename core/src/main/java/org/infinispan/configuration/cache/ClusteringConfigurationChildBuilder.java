@@ -24,7 +24,7 @@ public interface ClusteringConfigurationChildBuilder extends ConfigurationChildB
     * sent over the wire, it blocks until it receives an acknowledgment from the recipient.
     * SyncConfig is mutually exclusive with the AsyncConfig.
     *
-    * @deprecated Since 9.0, the {@code replTimeout} attribute is now in {@link ClusteringConfigurationBuilder}.
+    * @deprecated Since 8.3, the {@code replTimeout} attribute is now in {@link ClusteringConfigurationBuilder}.
     */
    @Deprecated
    SyncConfigurationBuilder sync();

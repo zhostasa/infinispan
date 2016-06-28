@@ -11,7 +11,7 @@ import org.infinispan.server.core.logging.JavaLog;
  * Handler that will transform various exceptions into responses to send back to the client.
  *
  * @author wburns
- * @since 9.0
+ * @since 8.3
  */
 public class HotRodExceptionHandler extends ChannelInboundHandlerAdapter {
    private final static JavaLog log = LogFactory.getLog(HotRodExceptionHandler.class, JavaLog.class);
