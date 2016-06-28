@@ -19,8 +19,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * is {@link org.infinispan.container.entries.metadata.MetadataAware}
  *
  * @author Galder Zamarreño
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MetadataImmortalCacheEntry extends ImmortalCacheEntry implements MetadataAware {
 
    protected Metadata metadata;

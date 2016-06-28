@@ -21,8 +21,9 @@ import static org.infinispan.container.entries.DeltaAwareCacheEntry.Flags.*;
  * initiated, committed or rolled back.
  * 
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, StateChangingEntry {
    private static final Log log = LogFactory.getLog(DeltaAwareCacheEntry.class);
    private static final boolean trace = log.isTraceEnabled();

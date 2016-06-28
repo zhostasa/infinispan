@@ -18,6 +18,10 @@ import java.util.function.Function;
 
 import static org.infinispan.functional.impl.EntryViews.snapshot;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public final class ReadWriteKeyCommand<K, V, R> extends AbstractWriteKeyCommand<K> {
 
    public static final byte COMMAND_ID = 50;

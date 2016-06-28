@@ -8,6 +8,7 @@ import org.infinispan.util.ByteString;
  *
  * @author Pedro Ruivo
  * @since 7.0
+ * @private
  */
 public abstract class XSiteReplicateCommand extends BaseRpcCommand {
 

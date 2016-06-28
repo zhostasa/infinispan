@@ -23,7 +23,9 @@ public class CustomInterceptorsConfigurationBuilder extends AbstractConfiguratio
 
    /**
     * Adds a new custom interceptor definition, to be added to the cache when the cache is started.
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public InterceptorConfigurationBuilder addInterceptor() {
       InterceptorConfigurationBuilder builder = new InterceptorConfigurationBuilder(this);
       this.interceptorBuilders.add(builder);

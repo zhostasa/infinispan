@@ -10,8 +10,9 @@ import sun.misc.Unsafe;
  * Entry Size calculator that returns an approximation of how much memory a marshalled value contains for a key
  * and value.  Note that this also handles any types that MarshalledValue doesn't as well.
  * @author wburns
- * @since 8.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MarshalledValueEntrySizeCalculator extends PrimitiveEntrySizeCalculator {
    @Override
    protected long handleObject(Object object) {

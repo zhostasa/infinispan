@@ -30,8 +30,9 @@ import org.infinispan.util.logging.LogFactory;
  * <p/>
  *
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ClusteredGetCommand extends LocalFlagAffectedRpcCommand {
 
    public static final byte COMMAND_ID = 16;

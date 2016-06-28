@@ -5,6 +5,7 @@ package org.infinispan.remoting.inboundhandler;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public interface Reply {
 

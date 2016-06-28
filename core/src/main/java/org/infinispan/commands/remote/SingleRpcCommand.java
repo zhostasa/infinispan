@@ -12,6 +12,7 @@ import java.io.ObjectOutput;
  * Aggregates a single command for replication.
  *
  * @author Mircea.Markus@jboss.com
+ * @deprecated Since 8.3, with no replacement.
  */
 public class SingleRpcCommand extends BaseRpcInvokingCommand {
    public static final int COMMAND_ID = 1;

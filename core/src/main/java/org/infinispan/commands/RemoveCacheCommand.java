@@ -24,8 +24,9 @@ import static org.infinispan.factories.KnownComponentNames.CACHE_DEPENDENCY_GRAP
  * memory and any backing store.
  *
  * @author Galder Zamarreño
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class RemoveCacheCommand extends BaseRpcCommand {
 
    public static final byte COMMAND_ID = 18;

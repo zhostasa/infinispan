@@ -9,8 +9,9 @@ import java.lang.reflect.Array;
  * Entry Size calculator that returns an approximation of how much various primitives, primitive wrappers, Strings,
  * and arrays
  * @author wburns
- * @since 8.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class PrimitiveEntrySizeCalculator extends AbstractEntrySizeCalculatorHelper<Object, Object> {
    public long calculateSize(Object key, Object value) {
       return handleObject(key) + handleObject(value);

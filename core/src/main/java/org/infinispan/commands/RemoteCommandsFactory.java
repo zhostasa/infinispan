@@ -76,8 +76,9 @@ import java.util.Map;
  * @see CommandsFactory#initializeReplicableCommand(ReplicableCommand,boolean)
  * @author Manik Surtani
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @private
  */
+@Deprecated
 @Scope(Scopes.GLOBAL)
 public class RemoteCommandsFactory {
    EmbeddedCacheManager cacheManager;

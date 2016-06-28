@@ -8,8 +8,9 @@ import org.infinispan.commands.remote.CacheRpcCommand;
  * CancellableCommand is a command whose execution in remote VM can be canceled (if needed)
  * 
  * @author Vladimir Blagojevic
- * @since 5.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface CancellableCommand extends CacheRpcCommand {
 
    /**

@@ -10,8 +10,9 @@ import org.infinispan.util.TimeService;
 
 /**
  * @author Mircea Markus
- * @since 6.0
+ * @private
  */
+@Deprecated
 public class InitializationContextImpl implements InitializationContext {
 
    private final StoreConfiguration configuration;

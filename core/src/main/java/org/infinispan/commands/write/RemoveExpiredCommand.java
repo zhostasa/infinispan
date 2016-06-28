@@ -26,8 +26,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * Removes an entry that is expired from memory
  *
  * @author William Burns
- * @since 8.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class RemoveExpiredCommand extends RemoveCommand {
    public static final int COMMAND_ID = 58;
    private static final Log log = LogFactory.getLog(RemoveExpiredCommand.class);

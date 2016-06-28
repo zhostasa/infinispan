@@ -14,6 +14,7 @@ import org.infinispan.remoting.transport.Address;
  * @author Mircea Markus
  * @author Dan Berindei
  * @since 7.0
+ * @private
  */
 public abstract class AbstractInvocationContextFactory implements InvocationContextFactory {
 

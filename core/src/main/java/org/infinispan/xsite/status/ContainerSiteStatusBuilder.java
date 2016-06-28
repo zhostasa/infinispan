@@ -10,6 +10,7 @@ import java.util.List;
  *
  * @author Pedro Ruivo
  * @since 8.2
+ * @private
  */
 public class ContainerSiteStatusBuilder extends AbstractSiteStatusBuilder<String> {
 

@@ -26,6 +26,7 @@ import org.infinispan.util.logging.LogFactory;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public class TotalOrderTxPerCacheInboundInvocationHandler extends BasePerCacheInboundInvocationHandler {
 

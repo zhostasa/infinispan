@@ -19,8 +19,9 @@ import java.util.Set;
  * {@link org.infinispan.container.entries.metadata.MetadataMortalCacheEntry}
  *
  * @author Galder Zamarreño
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MetadataMortalCacheValue extends ImmortalCacheValue implements MetadataAware {
 
    Metadata metadata;

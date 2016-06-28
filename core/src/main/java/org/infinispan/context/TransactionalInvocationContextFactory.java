@@ -26,7 +26,9 @@ import javax.transaction.TransactionManager;
  *
  * @author Mircea.Markus@jboss.com
  * @since 4.0
+ * @private
  */
+@Deprecated
 public class TransactionalInvocationContextFactory extends AbstractInvocationContextFactory {
 
    private TransactionManager tm;

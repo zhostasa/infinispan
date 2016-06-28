@@ -23,8 +23,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Command to create/start a cache on a subset of Infinispan cluster nodes
  * @author Vladimir Blagojevic
- * @since 5.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CreateCacheCommand extends BaseRpcCommand {
 
    private static final Log log = LogFactory.getLog(CreateCacheCommand.class);

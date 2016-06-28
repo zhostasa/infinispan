@@ -16,13 +16,14 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import static org.infinispan.commons.util.Util.toStr;
 
 /**
-* A write synchronizer that allows for a single thread to run the L1 update while others can block until it is
-* completed.  Also allows for someone to attempt to cancel the write to the L1.  If they are unable to, they should
-* really wait until the L1 write has completed so they can guarantee their update will be ordered properly.
-*
-* @author wburns
-* @since 6.0
-*/
+ * A write synchronizer that allows for a single thread to run the L1 update while others can block until it is
+ * completed.  Also allows for someone to attempt to cancel the write to the L1.  If they are unable to, they should
+ * really wait until the L1 write has completed so they can guarantee their update will be ordered properly.
+ *
+ * @author wburns
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public class L1WriteSynchronizer {
    private static final Logger log = Logger.getLogger(L1WriteSynchronizer.class);
    private final L1WriteSync sync = new L1WriteSync();

@@ -8,8 +8,9 @@ import org.infinispan.factories.scopes.Scopes;
  * Listener that is notified when a remote value is looked up
  *
  * @author William Burns
- * @since 6.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface RemoteValueRetrievedListener {
    /**

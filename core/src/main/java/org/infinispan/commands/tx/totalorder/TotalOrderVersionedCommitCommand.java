@@ -11,8 +11,9 @@ import org.infinispan.util.logging.LogFactory;
  * Command corresponding to the 2nd phase of 2PC. Used in Total Order based protocol when versioned entries are needed
  *
  * @author Pedro Ruivo
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TotalOrderVersionedCommitCommand extends VersionedCommitCommand {
 
    public static final byte COMMAND_ID = 36;

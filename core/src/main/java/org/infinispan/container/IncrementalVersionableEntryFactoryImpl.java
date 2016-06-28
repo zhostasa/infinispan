@@ -16,8 +16,9 @@ import org.infinispan.container.entries.MVCCEntry;
  * optimistically transactional, repeatable read, write skew check enabled caches in replicated or distributed mode.
  *
  * @author Manik Surtani
- * @since 5.1
+ * @private
  */
+@Deprecated
 public class IncrementalVersionableEntryFactoryImpl extends EntryFactoryImpl {
 
    private VersionGenerator versionGenerator;

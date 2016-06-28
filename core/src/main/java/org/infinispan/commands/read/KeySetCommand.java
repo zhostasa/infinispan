@@ -30,8 +30,9 @@ import java.util.stream.StreamSupport;
  * @author Mircea.Markus@jboss.com
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
  * @author William Burns
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class KeySetCommand<K, V> extends AbstractLocalCommand implements VisitableCommand {
    private final Cache<K, V> cache;
 

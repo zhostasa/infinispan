@@ -16,8 +16,9 @@ import org.infinispan.interceptors.locking.ClusteringDependentLogic;
  *
  * @author Mircea Markus
  * @author Pedro Ruivo
- * @since 5.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class NonTransactionalBackupInterceptor extends BaseBackupInterceptor {
 
    private CommandsFactory commandsFactory;

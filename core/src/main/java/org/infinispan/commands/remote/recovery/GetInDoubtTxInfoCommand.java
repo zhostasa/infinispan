@@ -11,8 +11,9 @@ import java.io.ObjectOutput;
  * Command used by the recovery tooling for obtaining the list of in-doubt transactions from a node.
  *
  * @author Mircea Markus
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class GetInDoubtTxInfoCommand extends RecoveryCommand {
 
    public static final int COMMAND_ID = 23;

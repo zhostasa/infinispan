@@ -20,8 +20,9 @@ import java.util.Set;
  * {@link org.infinispan.container.entries.metadata.MetadataAware}
  *
  * @author Galder Zamarreño
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MetadataTransientCacheValue extends ImmortalCacheValue implements MetadataAware {
 
    Metadata metadata;

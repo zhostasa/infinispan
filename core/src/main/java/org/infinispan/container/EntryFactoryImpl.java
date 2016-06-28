@@ -29,8 +29,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * {@link EntryFactory} implementation to be used for optimistic locking scheme.
  *
  * @author Mircea Markus
- * @since 5.1
+ * @private
  */
+@Deprecated
 public class EntryFactoryImpl implements EntryFactory {
 
    private static final Log log = LogFactory.getLog(EntryFactoryImpl.class);

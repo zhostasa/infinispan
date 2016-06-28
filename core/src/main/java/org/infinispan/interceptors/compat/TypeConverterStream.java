@@ -15,7 +15,9 @@ import java.util.Spliterator;
  * Delegating stream that converts elements or CacheEntries.  Note this stream specifically doesn't specify generics as
  * it can have intermediate operations performed upon it that will change the type without changing the instance.  Also
  * depending on if CacheEntry values are returned we have to unbox those properly.
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TypeConverterStream extends AbstractDelegatingCacheStream {
    private final TypeConverter<Object, Object, Object, Object> converter;
    private final InternalEntryFactory entryFactory;

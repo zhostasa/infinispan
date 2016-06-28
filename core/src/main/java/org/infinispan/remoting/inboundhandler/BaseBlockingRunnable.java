@@ -12,6 +12,7 @@ import org.infinispan.util.concurrent.BlockingRunnable;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public abstract class BaseBlockingRunnable implements BlockingRunnable {
 

@@ -126,8 +126,9 @@ import static org.infinispan.xsite.statetransfer.XSiteStateTransferControlComman
  * @author Mircea.Markus@jboss.com
  * @author Galder Zamarreño
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CommandsFactoryImpl implements CommandsFactory {
 
    private static final Log log = LogFactory.getLog(CommandsFactoryImpl.class);

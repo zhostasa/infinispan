@@ -31,8 +31,7 @@ import java.util.concurrent.TimeUnit;
  * @author Galder Zamarreño
  * @author Tristan Tarrant
  *
- * @see org.infinispan.manager.CacheContainer
- * @see DefaultCacheManager
+ * @see BasicCacheContainer
  * @see <a href="http://www.jboss.org/infinispan/docs">Infinispan documentation</a>
  * @see <a href="http://www.jboss.org/community/wiki/5minutetutorialonInfinispan">5 Minute Usage Tutorial</a>
  *
@@ -57,7 +56,7 @@ public interface BasicCache<K, V> extends AsyncCache<K, V>, ConcurrentMap<K, V>,
     * {@inheritDoc}
     *
     * If the return value of this operation will be ignored by the application,
-    * the user is strongly encouraged to use the {@link org.infinispan.context.Flag#IGNORE_RETURN_VALUES}
+    * the user is strongly encouraged to use the {@code Flag.IGNORE_RETURN_VALUES}
     * flag when invoking this method in order to make it behave as efficiently
     * as possible (i.e. avoiding needless remote or network calls).
     */
@@ -193,7 +192,7 @@ public interface BasicCache<K, V> extends AsyncCache<K, V>, ConcurrentMap<K, V>,
     * {@inheritDoc}
     *
     * If the return value of this operation will be ignored by the application,
-    * the user is strongly encouraged to use the {@link org.infinispan.context.Flag#IGNORE_RETURN_VALUES}
+    * the user is strongly encouraged to use the {@code Flag.IGNORE_RETURN_VALUES}
     * flag when invoking this method in order to make it behave as efficiently
     * as possible (i.e. avoiding needless remote or network calls).
     */

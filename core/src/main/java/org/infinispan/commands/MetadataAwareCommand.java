@@ -6,8 +6,9 @@ import org.infinispan.metadata.Metadata;
  * A command that contains metadata information.
  *
  * @author Galder Zamarreño
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface MetadataAwareCommand {
 
    /**

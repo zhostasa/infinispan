@@ -12,6 +12,7 @@ import java.util.List;
  *
  * @author Pedro Ruivo
  * @since 8.2
+ * @private
  */
 public abstract class AbstractMixedSiteStatus<E> implements SiteStatus {
 

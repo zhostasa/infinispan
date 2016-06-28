@@ -26,8 +26,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * Removes an entry from memory.
  *
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class InvalidateCommand extends RemoveCommand {
    public static final int COMMAND_ID = 6;
    private static final Log log = LogFactory.getLog(InvalidateCommand.class);

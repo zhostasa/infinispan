@@ -11,6 +11,10 @@ import org.infinispan.metadata.Metadata;
 
 import java.util.Set;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, ParamsCommand {
 
    boolean isForwarded = false;

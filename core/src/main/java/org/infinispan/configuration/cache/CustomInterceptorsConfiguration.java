@@ -7,7 +7,9 @@ import java.util.List;
  * Configures custom interceptors to be added to the cache.
  *
  * @author pmuir
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CustomInterceptorsConfiguration {
 
    private List<InterceptorConfiguration> interceptors;

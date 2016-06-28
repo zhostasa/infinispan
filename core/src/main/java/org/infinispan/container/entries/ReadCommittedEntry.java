@@ -18,8 +18,9 @@ import static org.infinispan.container.entries.ReadCommittedEntry.Flags.*;
  * rolled back.
  *
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ReadCommittedEntry implements MVCCEntry {
    private static final Log log = LogFactory.getLog(ReadCommittedEntry.class);
    private static final boolean trace = log.isTraceEnabled();

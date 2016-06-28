@@ -17,6 +17,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public final class WriteOnlyManyCommand<K, V> extends AbstractWriteManyCommand<K, V> {
 
    public static final byte COMMAND_ID = 56;

@@ -14,8 +14,9 @@ import java.util.Set;
  * A mortal cache value, to correspond with {@link org.infinispan.container.entries.MortalCacheEntry}
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MortalCacheValue extends ImmortalCacheValue {
 
    protected long created;

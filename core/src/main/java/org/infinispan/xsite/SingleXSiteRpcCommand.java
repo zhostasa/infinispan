@@ -13,6 +13,7 @@ import java.io.ObjectOutput;
  *
  * @author Pedro Ruivo
  * @since 7.0
+ * @private
  */
 public class SingleXSiteRpcCommand extends XSiteReplicateCommand {
 

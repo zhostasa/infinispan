@@ -18,8 +18,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * A cache entry that is mortal.  I.e., has a lifespan.
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MortalCacheEntry extends AbstractInternalCacheEntry {
 
    protected Object value;

@@ -21,8 +21,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * A version of RepeatableReadEntry that can perform write-skew checks during prepare.
  *
  * @author Manik Surtani
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ClusteredRepeatableReadEntry extends RepeatableReadEntry implements Versioned {
 
    private static final Log log = LogFactory.getLog(ClusteredRepeatableReadEntry.class);

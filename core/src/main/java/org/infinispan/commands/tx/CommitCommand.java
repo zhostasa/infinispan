@@ -13,8 +13,9 @@ import org.infinispan.util.logging.LogFactory;
  * Command corresponding to the 2nd phase of 2PC.
  *
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CommitCommand extends AbstractTransactionBoundaryCommand {
    public static final byte COMMAND_ID = 14;
 

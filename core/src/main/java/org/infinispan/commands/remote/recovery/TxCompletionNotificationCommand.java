@@ -25,8 +25,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * Command for removing recovery related information from the cluster.
  *
  * @author Mircea.Markus@jboss.com
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TxCompletionNotificationCommand  extends RecoveryCommand implements TopologyAffectedCommand {
 
    private static Log log = LogFactory.getLog(TxCompletionNotificationCommand.class);

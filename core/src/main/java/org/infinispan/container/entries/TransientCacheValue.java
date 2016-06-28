@@ -14,8 +14,9 @@ import java.util.Set;
  * A transient cache value, to correspond with {@link org.infinispan.container.entries.TransientCacheEntry}
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TransientCacheValue extends ImmortalCacheValue {
    protected long maxIdle = -1;
    protected long lastUsed;

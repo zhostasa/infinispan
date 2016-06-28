@@ -11,11 +11,15 @@ import org.infinispan.interceptors.base.CommandInterceptor;
 
 /**
  * Describes a custom interceptor
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class InterceptorConfiguration extends AbstractTypedPropertiesConfiguration {
    /**
     * Positional placing of a new custom interceptor
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public static enum Position {
       /**
        * Specifies that the new interceptor is placed first in the chain.

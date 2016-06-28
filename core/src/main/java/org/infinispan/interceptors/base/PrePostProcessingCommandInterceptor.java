@@ -29,8 +29,9 @@ import org.infinispan.context.impl.TxInvocationContext;
  * <p/>
  *
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class PrePostProcessingCommandInterceptor extends CommandInterceptor {
    @Override
    public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {

@@ -19,8 +19,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * {@link org.infinispan.Cache#containsKey(Object)} operations
  *
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class GetKeyValueCommand extends AbstractDataCommand implements RemoteFetchingCommand {
 
    public static final byte COMMAND_ID = 4;

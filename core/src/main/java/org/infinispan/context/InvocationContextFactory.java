@@ -20,7 +20,9 @@ import javax.transaction.Transaction;
  * @author Mircea.Markus@jboss.com
  * @author Dan Berindei
  * @since 7.0
+ * @private
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface InvocationContextFactory {
    /**

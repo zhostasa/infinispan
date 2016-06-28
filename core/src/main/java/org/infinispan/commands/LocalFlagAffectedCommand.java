@@ -12,8 +12,9 @@ import java.util.Set;
  * certain commands remotely, check cache store etc.
  *
  * @author William Burns
- * @since 6.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface LocalFlagAffectedCommand {
    /**
     * @return The command flags - only valid to invoke after {@link #setFlags(java.util.Set)}. The set should

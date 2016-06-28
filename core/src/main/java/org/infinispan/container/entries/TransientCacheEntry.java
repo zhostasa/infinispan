@@ -19,8 +19,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * A cache entry that is transient, i.e., it can be considered expired after a period of not being used.
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TransientCacheEntry extends AbstractInternalCacheEntry {
 
    protected Object value;

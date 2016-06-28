@@ -22,8 +22,9 @@ import java.util.Set;
  * commands it's impossible to know what the previous value was, so the command is allowed to return {@code v}.
  *
  * @author Dan Berindei
- * @since 6.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public enum ValueMatcher {
    /**
     * Always match. Used when the command is not conditional or when the value was already checked

@@ -27,9 +27,9 @@ import org.infinispan.util.ByteString;
  *
  * @author Vladimir Blagojevic
  * @author Mircea Markus
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
-
+@Deprecated
 public class DistributedExecuteCommand<V> extends BaseRpcCommand implements VisitableCommand, CancellableCommand{
 
    public static final int COMMAND_ID = 19;

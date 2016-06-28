@@ -40,8 +40,9 @@ import static org.infinispan.commons.util.InfinispanCollections.forEach;
  *
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class PrepareCommand extends AbstractTransactionBoundaryCommand implements TransactionalRemoteLockCommand {
 
    private static final Log log = LogFactory.getLog(PrepareCommand.class);

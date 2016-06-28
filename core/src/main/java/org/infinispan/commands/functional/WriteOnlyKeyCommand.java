@@ -16,6 +16,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.function.Consumer;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public final class WriteOnlyKeyCommand<K, V> extends AbstractWriteKeyCommand<K> {
 
    public static final byte COMMAND_ID = 54;

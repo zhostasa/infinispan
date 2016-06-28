@@ -29,8 +29,9 @@ import static org.infinispan.commons.util.Util.toStr;
 
 /**
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteCommand, MetadataAwareCommand, RemoteLockCommand {
    public static final byte COMMAND_ID = 9;
 

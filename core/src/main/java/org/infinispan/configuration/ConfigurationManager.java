@@ -24,6 +24,7 @@ import static org.infinispan.commons.api.BasicCacheContainer.DEFAULT_CACHE_NAME;
  *
  * @author Pedro Ruivo
  * @since 8.1
+ * @private
  */
 public class ConfigurationManager {
 

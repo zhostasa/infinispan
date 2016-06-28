@@ -13,8 +13,9 @@ import static org.infinispan.container.entries.ReadCommittedEntry.Flags.SKIP_LOO
  * An extension of {@link ReadCommittedEntry} that provides Repeatable Read semantics
  *
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class RepeatableReadEntry extends ReadCommittedEntry {
    private static final Log log = LogFactory.getLog(RepeatableReadEntry.class);
    private static final boolean trace = log.isTraceEnabled();

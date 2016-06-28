@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public class ClusteredCacheBackupReceiver extends BaseBackupReceiver {
 

@@ -6,8 +6,9 @@ package org.infinispan.commands;
  *
  * @author Mircea.Markus@jboss.com
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface DataCommand extends VisitableCommand, TopologyAffectedCommand, LocalFlagAffectedCommand {
    Object getKey();
 }

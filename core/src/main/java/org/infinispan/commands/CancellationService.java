@@ -11,7 +11,9 @@ import org.infinispan.factories.scopes.Scopes;
  * 
  * @author Vladimir Blagojevic
  * @since 5.2
+ * @private
  */
+@Deprecated
 @Scope(Scopes.GLOBAL)
 public interface CancellationService {
 

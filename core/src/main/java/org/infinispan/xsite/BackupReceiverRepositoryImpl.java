@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author Mircea Markus
  * @since 5.2
+ * @private
  */
 @Listener
 public class BackupReceiverRepositoryImpl implements BackupReceiverRepository {

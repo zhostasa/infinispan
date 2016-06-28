@@ -16,8 +16,9 @@ import java.util.Set;
  * A byte buffer that exposes the internal byte array with minimal copying
  *
  * @author (various)
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ByteBufferImpl implements ByteBuffer {
    private final byte[] buf;
    private final int offset;

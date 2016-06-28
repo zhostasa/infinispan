@@ -12,8 +12,9 @@ import java.io.ObjectOutput;
  * Command used by the recovery tooling for forcing transaction completion .
  *
  * @author Mircea Markus
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CompleteTransactionCommand extends RecoveryCommand {
 
    public static final byte COMMAND_ID = 24;

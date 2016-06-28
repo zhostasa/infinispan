@@ -41,6 +41,7 @@ import static org.infinispan.factories.KnownComponentNames.REMOTE_COMMAND_EXECUT
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 @Scope(Scopes.GLOBAL)
 public class GlobalInboundInvocationHandler implements InboundInvocationHandler {

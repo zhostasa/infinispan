@@ -16,8 +16,9 @@ import java.util.Set;
  * @author Mircea.Markus@jboss.com
  * @author Vladimir Blagojevic
  * @author anistor@redhat.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface DistributionManager {
 

@@ -42,8 +42,9 @@ import java.util.Set;
  * @see VisitableCommand
  * @see Visitor
  * @see InterceptorChain
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public abstract class CommandInterceptor extends AbstractVisitor {
 

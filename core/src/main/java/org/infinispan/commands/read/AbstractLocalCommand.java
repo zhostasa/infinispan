@@ -15,8 +15,9 @@ import java.io.ObjectOutput;
  *
  * @author Manik Surtani
  * @author Mircea.Markus@jboss.com
- * @since 4.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class AbstractLocalCommand extends AbstractLocalFlagAffectedCommand implements LocalCommand {
 
    public byte getCommandId() {

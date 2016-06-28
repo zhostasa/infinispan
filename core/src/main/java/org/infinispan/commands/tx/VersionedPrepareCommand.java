@@ -17,8 +17,9 @@ import java.util.List;
  * and stored in a transaction context so that accurate write skew checks may be performed by the lock owner(s).
  *
  * @author Manik Surtani
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class VersionedPrepareCommand extends PrepareCommand {
    public static final byte COMMAND_ID = 26;
    private EntryVersionsMap versionsSeen = null;

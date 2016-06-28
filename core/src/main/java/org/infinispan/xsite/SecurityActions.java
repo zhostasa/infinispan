@@ -16,6 +16,7 @@ import org.infinispan.security.actions.GetCacheComponentRegistryAction;
  *
  * @author vjuranek
  * @since 9.0
+ * @private
  */
 final class SecurityActions {
    private static <T> T doPrivileged(PrivilegedAction<T> action) {

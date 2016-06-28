@@ -41,8 +41,8 @@ import java.util.concurrent.TimeUnit;
  */
 public interface AsyncCache<K, V> {
    /**
-    * Asynchronous version of {@link #put(Object, Object)}.  This method does not block on remote calls, even if your
-    * cache mode is synchronous.  Has no benefit over {@link #put(Object, Object)} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#put(Object, Object)}.  This method does not block on remote calls, even if your
+    * cache mode is synchronous.  Has no benefit over {@link BasicCache#put(Object, Object)} if used in LOCAL mode.
     * <p/>
     *
     * @param key   key to use
@@ -52,8 +52,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> putAsync(K key, V value);
 
    /**
-    * Asynchronous version of {@link #put(Object, Object, long, TimeUnit)} .  This method does not block on remote
-    * calls, even if your cache mode is synchronous.  Has no benefit over {@link #put(Object, Object, long, TimeUnit)}
+    * Asynchronous version of {@link BasicCache#put(Object, Object, long, TimeUnit)} .  This method does not block on remote
+    * calls, even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#put(Object, Object, long, TimeUnit)}
     * if used in LOCAL mode.
     *
     * @param key      key to use
@@ -65,8 +65,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> putAsync(K key, V value, long lifespan, TimeUnit unit);
 
    /**
-    * Asynchronous version of {@link #put(Object, Object, long, TimeUnit, long, TimeUnit)}.  This method does not block
-    * on remote calls, even if your cache mode is synchronous.  Has no benefit over {@link #put(Object, Object, long,
+    * Asynchronous version of {@link BasicCache#put(Object, Object, long, TimeUnit, long, TimeUnit)}.  This method does not block
+    * on remote calls, even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#put(Object, Object, long,
     * TimeUnit, long, TimeUnit)} if used in LOCAL mode.
     *
     * @param key          key to use
@@ -81,8 +81,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> putAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
 
    /**
-    * Asynchronous version of {@link #putAll(Map)}.  This method does not block on remote calls, even if your cache mode
-    * is synchronous.  Has no benefit over {@link #putAll(Map)} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#putAll(Map)}.  This method does not block on remote calls, even if your cache mode
+    * is synchronous.  Has no benefit over {@link BasicCache#putAll(Map)} if used in LOCAL mode.
     *
     * @param data to store
     * @return a future containing a void return type
@@ -90,8 +90,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data);
 
    /**
-    * Asynchronous version of {@link #putAll(Map, long, TimeUnit)}.  This method does not block on remote calls, even if
-    * your cache mode is synchronous.  Has no benefit over {@link #putAll(Map, long, TimeUnit)} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#putAll(Map, long, TimeUnit)}.  This method does not block on remote calls, even if
+    * your cache mode is synchronous.  Has no benefit over {@link BasicCache#putAll(Map, long, TimeUnit)} if used in LOCAL mode.
     *
     * @param data     to store
     * @param lifespan lifespan of entry
@@ -101,8 +101,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit unit);
 
    /**
-    * Asynchronous version of {@link #putAll(Map, long, TimeUnit, long, TimeUnit)}.  This method does not block on
-    * remote calls, even if your cache mode is synchronous.  Has no benefit over {@link #putAll(Map, long, TimeUnit,
+    * Asynchronous version of {@link BasicCache#putAll(Map, long, TimeUnit, long, TimeUnit)}.  This method does not block on
+    * remote calls, even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#putAll(Map, long, TimeUnit,
     * long, TimeUnit)} if used in LOCAL mode.
     *
     * @param data         to store
@@ -116,16 +116,16 @@ public interface AsyncCache<K, V> {
    CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
 
    /**
-    * Asynchronous version of {@link #clear()}.  This method does not block on remote calls, even if your cache mode is
-    * synchronous.  Has no benefit over {@link #clear()} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#clear()}.  This method does not block on remote calls, even if your cache mode is
+    * synchronous.  Has no benefit over {@link BasicCache#clear()} if used in LOCAL mode.
     *
     * @return a future containing a void return type
     */
    CompletableFuture<Void> clearAsync();
 
    /**
-    * Asynchronous version of {@link #putIfAbsent(Object, Object)}.  This method does not block on remote calls, even if
-    * your cache mode is synchronous.  Has no benefit over {@link #putIfAbsent(Object, Object)} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#putIfAbsent(Object, Object)}.  This method does not block on remote calls, even if
+    * your cache mode is synchronous.  Has no benefit over {@link BasicCache#putIfAbsent(Object, Object)} if used in LOCAL mode.
     * <p/>
     *
     * @param key   key to use
@@ -135,8 +135,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> putIfAbsentAsync(K key, V value);
 
    /**
-    * Asynchronous version of {@link #putIfAbsent(Object, Object, long, TimeUnit)} .  This method does not block on
-    * remote calls, even if your cache mode is synchronous.  Has no benefit over {@link #putIfAbsent(Object, Object,
+    * Asynchronous version of {@link BasicCache#putIfAbsent(Object, Object, long, TimeUnit)} .  This method does not block on
+    * remote calls, even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#putIfAbsent(Object, Object,
     * long, TimeUnit)} if used in LOCAL mode.
     *
     * @param key      key to use
@@ -148,9 +148,9 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> putIfAbsentAsync(K key, V value, long lifespan, TimeUnit unit);
 
    /**
-    * Asynchronous version of {@link #putIfAbsent(Object, Object, long, TimeUnit, long, TimeUnit)}.  This method does
+    * Asynchronous version of {@link BasicCache#putIfAbsent(Object, Object, long, TimeUnit, long, TimeUnit)}.  This method does
     * not block on remote calls, even if your cache mode is synchronous.  Has no benefit over {@link
-    * #putIfAbsent(Object, Object, long, TimeUnit, long, TimeUnit)} if used in LOCAL mode.
+    * BasicCache#putIfAbsent(Object, Object, long, TimeUnit, long, TimeUnit)} if used in LOCAL mode.
     *
     * @param key          key to use
     * @param value        value to store
@@ -164,8 +164,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> putIfAbsentAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
 
    /**
-    * Asynchronous version of {@link #remove(Object)}.  This method does not block on remote calls, even if your cache
-    * mode is synchronous.  Has no benefit over {@link #remove(Object)} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#remove(Object)}.  This method does not block on remote calls, even if your cache
+    * mode is synchronous.  Has no benefit over {@link BasicCache#remove(Object)} if used in LOCAL mode.
     *
     * @param key key to remove
     * @return a future containing the value removed
@@ -173,8 +173,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> removeAsync(Object key);
 
    /**
-    * Asynchronous version of {@link #remove(Object, Object)}.  This method does not block on remote calls, even if your
-    * cache mode is synchronous.  Has no benefit over {@link #remove(Object, Object)} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#remove(Object, Object)}.  This method does not block on remote calls, even if your
+    * cache mode is synchronous.  Has no benefit over {@link BasicCache#remove(Object, Object)} if used in LOCAL mode.
     *
     * @param key   key to remove
     * @param value value to match on
@@ -183,8 +183,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<Boolean> removeAsync(Object key, Object value);
 
    /**
-    * Asynchronous version of {@link #replace(Object, Object)}.  This method does not block on remote calls, even if
-    * your cache mode is synchronous.  Has no benefit over {@link #replace(Object, Object)} if used in LOCAL mode.
+    * Asynchronous version of {@link BasicCache#replace(Object, Object)}.  This method does not block on remote calls, even if
+    * your cache mode is synchronous.  Has no benefit over {@link BasicCache#replace(Object, Object)} if used in LOCAL mode.
     *
     * @param key   key to remove
     * @param value value to store
@@ -193,8 +193,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> replaceAsync(K key, V value);
 
    /**
-    * Asynchronous version of {@link #replace(Object, Object, long, TimeUnit)}.  This method does not block on remote
-    * calls, even if your cache mode is synchronous.  Has no benefit over {@link #replace(Object, Object, long,
+    * Asynchronous version of {@link BasicCache#replace(Object, Object, long, TimeUnit)}.  This method does not block on remote
+    * calls, even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#replace(Object, Object, long,
     * TimeUnit)} if used in LOCAL mode.
     *
     * @param key      key to remove
@@ -206,8 +206,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> replaceAsync(K key, V value, long lifespan, TimeUnit unit);
 
    /**
-    * Asynchronous version of {@link #replace(Object, Object, long, TimeUnit, long, TimeUnit)}.  This method does not
-    * block on remote calls, even if your cache mode is synchronous.  Has no benefit over {@link #replace(Object,
+    * Asynchronous version of {@link BasicCache#replace(Object, Object, long, TimeUnit, long, TimeUnit)}.  This method does not
+    * block on remote calls, even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#replace(Object,
     * Object, long, TimeUnit, long, TimeUnit)} if used in LOCAL mode.
     *
     * @param key          key to remove
@@ -222,8 +222,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<V> replaceAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
 
    /**
-    * Asynchronous version of {@link #replace(Object, Object, Object)}.  This method does not block on remote calls,
-    * even if your cache mode is synchronous.  Has no benefit over {@link #replace(Object, Object, Object)} if used in
+    * Asynchronous version of {@link BasicCache#replace(Object, Object, Object)}.  This method does not block on remote calls,
+    * even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#replace(Object, Object, Object)} if used in
     * LOCAL mode.
     *
     * @param key      key to remove
@@ -234,8 +234,8 @@ public interface AsyncCache<K, V> {
    CompletableFuture<Boolean> replaceAsync(K key, V oldValue, V newValue);
 
    /**
-    * Asynchronous version of {@link #replace(Object, Object, Object, long, TimeUnit)}.  This method does not block on
-    * remote calls, even if your cache mode is synchronous.  Has no benefit over {@link #replace(Object, Object, Object,
+    * Asynchronous version of {@link BasicCache#replace(Object, Object, Object, long, TimeUnit)}.  This method does not block on
+    * remote calls, even if your cache mode is synchronous.  Has no benefit over {@link BasicCache#replace(Object, Object, Object,
     * long, TimeUnit)} if used in LOCAL mode.
     *
     * @param key      key to remove
@@ -248,9 +248,9 @@ public interface AsyncCache<K, V> {
    CompletableFuture<Boolean> replaceAsync(K key, V oldValue, V newValue, long lifespan, TimeUnit unit);
 
    /**
-    * Asynchronous version of {@link #replace(Object, Object, Object, long, TimeUnit, long, TimeUnit)}.  This method
+    * Asynchronous version of {@link BasicCache#replace(Object, Object, Object, long, TimeUnit, long, TimeUnit)}.  This method
     * does not block on remote calls, even if your cache mode is synchronous.  Has no benefit over {@link
-    * #replace(Object, Object, Object, long, TimeUnit, long, TimeUnit)} if used in LOCAL mode.
+    * BasicCache#replace(Object, Object, Object, long, TimeUnit, long, TimeUnit)} if used in LOCAL mode.
     *
     * @param key          key to remove
     * @param oldValue     value to overwrite
@@ -265,7 +265,7 @@ public interface AsyncCache<K, V> {
    CompletableFuture<Boolean> replaceAsync(K key, V oldValue, V newValue, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
 
    /**
-    * Asynchronous version of {@link #get(Object)} that allows user code to
+    * Asynchronous version of {@link BasicCache#get(Object)} that allows user code to
     * retrieve the value associated with a key at a later stage, hence allowing
     * multiple parallel get requests to be sent. Normally, when this method
     * detects that the value is likely to be retrieved from from a remote
@@ -273,12 +273,12 @@ public interface AsyncCache<K, V> {
     * asynchronous get call to return immediately. If the call will definitely
     * resolve locally, for example when the cache is configured with LOCAL mode
     * and no stores are configured, the get asynchronous call will act
-    * sequentially and will have no different to {@link #get(Object)}.
+    * sequentially and will have no different to {@link BasicCache#get(Object)}.
     *
     * @param key key to retrieve
     * @return a future that can be used to retrieve value associated with the
     * key when this is available. The actual value returned by the future
-    * follows the same rules as {@link #get(Object)}
+    * follows the same rules as {@link BasicCache#get(Object)}
     */
    CompletableFuture<V> getAsync(K key);
 }

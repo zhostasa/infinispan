@@ -24,6 +24,10 @@ import java.util.function.BiFunction;
 import static org.infinispan.commons.util.Util.toStr;
 import static org.infinispan.functional.impl.EntryViews.snapshot;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public final class ReadWriteKeyValueCommand<K, V, R> extends AbstractWriteKeyCommand<K> {
    private static final Log log = LogFactory.getLog(ReadWriteKeyValueCommand.class);
 

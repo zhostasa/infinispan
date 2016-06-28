@@ -7,8 +7,9 @@ import org.infinispan.container.DataContainer;
  * An abstract internal cache entry that is typically stored in the data container
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class AbstractInternalCacheEntry implements InternalCacheEntry {
 
    protected Object key;

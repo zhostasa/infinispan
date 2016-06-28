@@ -16,8 +16,9 @@ import static java.lang.Math.min;
  * A transient, mortal cache value to correspond with {@link org.infinispan.container.entries.TransientMortalCacheEntry}
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TransientMortalCacheValue extends MortalCacheValue {
    protected long maxIdle = -1;
    protected long lastUsed;

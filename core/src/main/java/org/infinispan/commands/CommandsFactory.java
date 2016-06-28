@@ -86,8 +86,9 @@ import static org.infinispan.xsite.statetransfer.XSiteStateTransferControlComman
  * @author Manik Surtani
  * @author Mircea.Markus@jboss.com
  * @author Galder Zamarreño
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface CommandsFactory {
 

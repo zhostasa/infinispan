@@ -2,6 +2,10 @@ package org.infinispan.container.versioning;
 
 import java.util.HashMap;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public class EntryVersionsMap extends HashMap<Object, IncrementableEntryVersion> {
 
    public EntryVersionsMap(int size) {

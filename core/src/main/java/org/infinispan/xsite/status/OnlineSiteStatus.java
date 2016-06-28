@@ -7,6 +7,7 @@ package org.infinispan.xsite.status;
  *
  * @author Pedro Ruivo
  * @since 8.2
+ * @private
  */
 public class OnlineSiteStatus implements SiteStatus {
 

@@ -17,8 +17,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * It is used to lock the key for a specific command.
  *
  * @author Pedro Ruivo
- * @since 8.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CommandInvocationId {
 
    private static final AtomicLong nextId = new AtomicLong(0);

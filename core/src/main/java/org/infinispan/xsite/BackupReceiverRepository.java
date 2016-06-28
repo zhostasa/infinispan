@@ -8,6 +8,7 @@ import org.infinispan.factories.scopes.Scopes;
  *
  * @author Mircea Markus
  * @since 5.2
+ * @private
  */
 @Scope(Scopes.GLOBAL)
 public interface BackupReceiverRepository {

@@ -19,8 +19,9 @@ import java.util.Set;
  * a period of not being used, and {@link org.infinispan.container.entries.metadata.MetadataAware}
  *
  * @author Galder Zamarreño
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MetadataTransientCacheEntry extends AbstractInternalCacheEntry implements MetadataAware {
 
    protected Object value;

@@ -16,8 +16,9 @@ import java.util.List;
  * A transaction is in doubt if it is prepared and the node where it started has crashed.
  *
  * @author Mircea.Markus@jboss.com
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class GetInDoubtTransactionsCommand extends RecoveryCommand {
 
    private static final Log log = LogFactory.getLog(GetInDoubtTransactionsCommand.class);

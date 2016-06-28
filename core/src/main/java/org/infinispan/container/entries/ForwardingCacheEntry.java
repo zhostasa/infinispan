@@ -8,8 +8,9 @@ import org.infinispan.metadata.Metadata;
  * class is useful to extend when you want to only modify
  *
  * @author wburns
- * @since 7.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class ForwardingCacheEntry<K, V> implements CacheEntry<K, V> {
    protected abstract CacheEntry<K, V> delegate();
 

@@ -14,8 +14,9 @@ import java.io.ObjectOutput;
  * optimistically transactional caches making use of write skew checking when using {@link org.infinispan.util.concurrent.IsolationLevel#REPEATABLE_READ}.
  *
  * @author Manik Surtani
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class VersionedCommitCommand extends CommitCommand {
    public static final byte COMMAND_ID = 27;
    private EntryVersionsMap updatedVersions;

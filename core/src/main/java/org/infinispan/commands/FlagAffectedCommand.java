@@ -7,8 +7,9 @@ package org.infinispan.commands;
  * flags should still be evaluated in the InvocationContext.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface FlagAffectedCommand extends VisitableCommand, TopologyAffectedCommand, MetadataAwareCommand,
                                              LocalFlagAffectedCommand {
 }

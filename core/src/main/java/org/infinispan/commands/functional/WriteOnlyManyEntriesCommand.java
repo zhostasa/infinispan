@@ -14,6 +14,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public final class WriteOnlyManyEntriesCommand<K, V> extends AbstractWriteManyCommand<K, V> {
 
    public static final byte COMMAND_ID = 57;

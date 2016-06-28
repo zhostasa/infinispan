@@ -2,6 +2,9 @@ package org.infinispan.commands.read;
 
 import org.infinispan.container.entries.InternalCacheEntry;
 
+/**
+ * @deprecated Since 7.1
+ */
 @Deprecated//Should not be necessary soon according to ISPN-2177
 public interface RemoteFetchingCommand {
 

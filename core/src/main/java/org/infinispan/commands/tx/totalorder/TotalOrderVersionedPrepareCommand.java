@@ -13,8 +13,9 @@ import java.util.List;
  * versioned entries are needed.
  *
  * @author Pedro Ruivo
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TotalOrderVersionedPrepareCommand extends VersionedPrepareCommand implements TotalOrderPrepareCommand {
 
    public static final byte COMMAND_ID = 39;

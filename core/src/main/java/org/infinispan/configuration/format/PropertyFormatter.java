@@ -17,8 +17,9 @@ import org.infinispan.util.logging.LogFactory;
  * Extracts the configuration into flat key-value property structure by reflection.
  * 
  * @author Michal Linhard (mlinhard@redhat.com)
- * @since 6.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class PropertyFormatter {
 
    private static final Log log = LogFactory.getLog(PropertyFormatter.class);

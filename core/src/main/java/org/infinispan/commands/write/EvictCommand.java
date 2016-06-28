@@ -14,8 +14,9 @@ import java.util.Collections;
 
 /**
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class EvictCommand extends RemoveCommand implements LocalCommand {
 
    private static final Log log = LogFactory.getLog(EvictCommand.class);

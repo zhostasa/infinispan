@@ -16,8 +16,9 @@ import org.infinispan.util.logging.LogFactory;
  * Command to cancel commands executing in remote VM
  *
  * @author Vladimir Blagojevic
- * @since 5.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CancelCommand extends BaseRpcCommand {
 
    private static final Log log = LogFactory.getLog(CancelCommand.class);

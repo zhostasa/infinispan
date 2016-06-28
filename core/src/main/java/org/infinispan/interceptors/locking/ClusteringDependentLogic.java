@@ -53,8 +53,9 @@ import static org.infinispan.transaction.impl.WriteSkewHelper.performWriteSkewCh
  *
  * @author Mircea Markus
  * @author Pedro Ruivo
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface ClusteringDependentLogic {
 

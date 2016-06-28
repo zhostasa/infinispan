@@ -26,8 +26,9 @@ import static org.infinispan.commons.util.Util.toStr;
 /**
  * @author Mircea.Markus@jboss.com
  * @author <a href="mailto:galder.zamarreno@jboss.com">Galder Zamarreno</a>
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class RemoveCommand extends AbstractDataWriteCommand {
    private static final Log log = LogFactory.getLog(RemoveCommand.class);
    public static final byte COMMAND_ID = 10;

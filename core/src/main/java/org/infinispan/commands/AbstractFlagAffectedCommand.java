@@ -11,8 +11,9 @@ import java.util.Set;
  * Base class for those commands that can carry flags.
  *
  * @author Galder Zamarreño
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class AbstractFlagAffectedCommand extends AbstractLocalFlagAffectedCommand implements FlagAffectedCommand {
 
    private int topologyId = -1;

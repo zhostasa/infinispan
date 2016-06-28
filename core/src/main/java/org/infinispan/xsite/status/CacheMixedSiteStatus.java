@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @author Pedro Ruivo
  * @since 8.2
+ * @private
  */
 public class CacheMixedSiteStatus extends AbstractMixedSiteStatus<Address> {
    public CacheMixedSiteStatus(List<Address> onlineMembers, List<Address> offlineMembers) {

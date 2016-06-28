@@ -21,7 +21,9 @@ import javax.transaction.Transaction;
  *
  * @author Mircea Markus
  * @since 5.1
+ * @private
  */
+@Deprecated
 @SurvivesRestarts
 public class NonTransactionalInvocationContextFactory extends AbstractInvocationContextFactory {
 

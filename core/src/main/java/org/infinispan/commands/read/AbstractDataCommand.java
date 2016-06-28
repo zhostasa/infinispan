@@ -10,8 +10,9 @@ import static org.infinispan.commons.util.Util.toStr;
 /**
  * @author Mircea.Markus@jboss.com
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class AbstractDataCommand extends AbstractFlagAffectedCommand implements DataCommand {
    protected Object key;
 

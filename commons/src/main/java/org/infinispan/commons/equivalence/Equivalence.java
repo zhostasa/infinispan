@@ -23,7 +23,7 @@ public interface Equivalence<T> extends Serializable {
     *
     * As an example, implementors can provide an alternative implementation
     * for the hash code calculation for arrays. So, instead of relying on
-    * {@link Object#hashCode()}, call {@link java.util.Arrays.hashCode()}.
+    * {@link Object#hashCode()}, call {@link java.util.Arrays#hashCode()}.
     *
     * @param obj instance to calculate hash code for
     * @return a hash code value for the object passed as parameter
@@ -35,7 +35,7 @@ public interface Equivalence<T> extends Serializable {
     *
     * As an example, implementors can provide an alternative implementation
     * for the equals for arrays. So, instead of relying on
-    * {@link Object#equals(Object)}}, call {@link java.util.Arrays.equals())}.
+    * {@link Object#equals(Object)}}, call {@link java.util.Arrays#equals(byte[], byte[])}.
     *
     * @param obj to be compared with second parameter
     * @param otherObj to be compared with first parameter

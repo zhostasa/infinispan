@@ -15,8 +15,9 @@ import java.util.Set;
  * An immortal cache value, to correspond with {@link org.infinispan.container.entries.ImmortalCacheEntry}
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ImmortalCacheValue implements InternalCacheValue, Cloneable {
 
    public Object value;

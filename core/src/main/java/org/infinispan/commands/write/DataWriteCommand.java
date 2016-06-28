@@ -6,7 +6,8 @@ import org.infinispan.commands.DataCommand;
  * Mixes features from DataCommand and WriteCommand
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface DataWriteCommand extends WriteCommand, DataCommand {
 }

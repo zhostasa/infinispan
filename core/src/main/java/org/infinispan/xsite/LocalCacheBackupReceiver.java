@@ -17,6 +17,7 @@ import java.util.List;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public class LocalCacheBackupReceiver extends BaseBackupReceiver {
 

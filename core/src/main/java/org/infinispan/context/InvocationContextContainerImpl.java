@@ -10,7 +10,9 @@ import org.infinispan.factories.annotations.Stop;
  *
  * @author Dan Berindei
  * @since 7.0
+ * @private
  */
+@Deprecated
 public class InvocationContextContainerImpl implements InvocationContextContainer {
 
    // We need to keep the InvocationContext in a thread-local in order to support

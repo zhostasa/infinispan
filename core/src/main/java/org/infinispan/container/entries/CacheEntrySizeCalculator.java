@@ -16,8 +16,9 @@ import org.infinispan.metadata.Metadata;
  * @param <K> The type of the key
  * @param <V> The type of the value
  * @author William Burns
- * @since 8.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class CacheEntrySizeCalculator<K, V> extends AbstractEntrySizeCalculatorHelper<K, InternalCacheEntry<K, V>> {
    public CacheEntrySizeCalculator(EntrySizeCalculator<? super K, ? super V> calculator) {
       this.calculator = calculator;

@@ -5,8 +5,9 @@ package org.infinispan.container.entries;
  *
  * @author Manik Surtani
  * @author Sanne Grinovero
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ExpiryHelper {
 
    public static boolean isExpiredMortal(long lifespan, long created, long now) {

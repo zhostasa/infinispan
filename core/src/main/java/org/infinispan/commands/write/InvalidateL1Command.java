@@ -25,8 +25,9 @@ import org.infinispan.util.logging.LogFactory;
  *
  * @author Manik Surtani
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class InvalidateL1Command extends InvalidateCommand {
    public static final int COMMAND_ID = 7;
    private static final Log log = LogFactory.getLog(InvalidateL1Command.class);

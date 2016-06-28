@@ -14,8 +14,9 @@ import java.util.concurrent.Future;
  * later if needed.
  *
  * @author Pete Muir
- *
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface L1Manager {
 

@@ -12,8 +12,9 @@ import org.infinispan.factories.scopes.Scopes;
  * A factory for {@link InternalCacheEntry} and {@link InternalCacheValue} instances.
  *
  * @author Manik Surtani
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface InternalEntryFactory {
 

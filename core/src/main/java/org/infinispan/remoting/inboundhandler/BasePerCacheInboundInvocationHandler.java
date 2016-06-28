@@ -26,6 +26,7 @@ import static org.infinispan.factories.KnownComponentNames.REMOTE_COMMAND_EXECUT
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public abstract class BasePerCacheInboundInvocationHandler implements PerCacheInboundInvocationHandler {
    protected static final int NO_TOPOLOGY_COMMAND = Integer.MIN_VALUE;

@@ -21,8 +21,9 @@ import java.util.Collection;
 
 /**
  * @author Vladimir Blagojevic
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ApplyDeltaCommand extends AbstractDataWriteCommand {
 
    public static final int COMMAND_ID = 25;

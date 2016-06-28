@@ -35,7 +35,9 @@ public class InterceptorConfigurationBuilder extends AbstractCustomInterceptorsC
     * cache starts.
     *
     * @param after the class of the interceptor to look for
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public InterceptorConfigurationBuilder after(Class<? extends CommandInterceptor> after) {
       attributes.attribute(AFTER).set(after);
       return this;
@@ -47,7 +49,9 @@ public class InterceptorConfigurationBuilder extends AbstractCustomInterceptorsC
     * cache starts.
     *
     * @param before the class of the interceptor to look for
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public InterceptorConfigurationBuilder before(Class<? extends CommandInterceptor> before) {
       attributes.attribute(BEFORE).set(before);
       return this;
@@ -56,7 +60,9 @@ public class InterceptorConfigurationBuilder extends AbstractCustomInterceptorsC
    /**
     * Class of the new custom interceptor to add to the configuration.
     * @param interceptorClass an instance of {@link CommandInterceptor}
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public InterceptorConfigurationBuilder interceptorClass(Class<? extends CommandInterceptor> interceptorClass) {
       attributes.attribute(INTERCEPTOR_CLASS).set(interceptorClass);
       return this;
@@ -67,7 +73,9 @@ public class InterceptorConfigurationBuilder extends AbstractCustomInterceptorsC
     * Warning: if you use this configuration for multiple caches, the interceptor instance will
     * be shared, which will corrupt interceptor stack. Use {@link #interceptorClass} instead.
     * @param interceptor an instance of {@link CommandInterceptor}
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public InterceptorConfigurationBuilder interceptor(CommandInterceptor interceptor) {
       attributes.attribute(INTERCEPTOR).set(interceptor);
       return this;
@@ -79,7 +87,9 @@ public class InterceptorConfigurationBuilder extends AbstractCustomInterceptorsC
     * less than 0 or greater than the maximum number of interceptors in the chain.
     *
     * @param i positional index in the interceptor chain to place the new interceptor.
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public InterceptorConfigurationBuilder index(int i) {
       if (i < 0) throw new IllegalArgumentException("Index cannot be negative");
       attributes.attribute(INDEX).set(i);
@@ -90,7 +100,9 @@ public class InterceptorConfigurationBuilder extends AbstractCustomInterceptorsC
     * Specifies a position, denoted by the {@link Position} enumeration, where to place the new interceptor.
     *
     * @param p position to place the new interceptor
+    * @deprecated Since 8.3, will be removed.
     */
+   @Deprecated
    public InterceptorConfigurationBuilder position(Position p) {
       attributes.attribute(POSITION).set(p);
       return this;

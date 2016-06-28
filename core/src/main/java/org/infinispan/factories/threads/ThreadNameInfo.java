@@ -5,6 +5,8 @@ import java.util.regex.Matcher;
 
 /**
  * @author Galder Zamarreño
+ * 
+ * @private
  */
 public class ThreadNameInfo {
 

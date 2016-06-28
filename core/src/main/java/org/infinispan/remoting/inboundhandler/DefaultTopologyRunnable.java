@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Pedro Ruivo
  * @since 8.0
+ * @private
  */
 public class DefaultTopologyRunnable extends BaseBlockingRunnable {
 

@@ -7,8 +7,9 @@ import org.infinispan.context.Flag;
  * Base class for those local commands that can carry flags.
  *
  * @author William Burns
- * @since 6.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class AbstractLocalFlagAffectedCommand implements LocalFlagAffectedCommand {
 
    private long flags = 0;

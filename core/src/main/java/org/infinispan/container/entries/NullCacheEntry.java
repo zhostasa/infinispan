@@ -3,6 +3,10 @@ package org.infinispan.container.entries;
 import org.infinispan.container.DataContainer;
 import org.infinispan.metadata.Metadata;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public class NullCacheEntry<K, V> implements CacheEntry<K, V> {
 
    private static final NullCacheEntry INSTANCE = new NullCacheEntry();

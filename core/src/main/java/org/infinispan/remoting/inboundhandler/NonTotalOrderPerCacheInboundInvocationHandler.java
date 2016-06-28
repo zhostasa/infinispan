@@ -28,6 +28,7 @@ import java.util.Collection;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public class NonTotalOrderPerCacheInboundInvocationHandler extends BasePerCacheInboundInvocationHandler implements LockListener {
 

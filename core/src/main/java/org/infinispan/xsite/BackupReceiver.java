@@ -11,6 +11,7 @@ import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
  * @see ClusteredCacheBackupReceiver
  * @author Mircea Markus
  * @since 5.2
+ * @private
  */
 public interface BackupReceiver {
 

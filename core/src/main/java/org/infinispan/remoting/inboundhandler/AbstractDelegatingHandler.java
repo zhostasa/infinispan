@@ -8,6 +8,7 @@ import org.infinispan.commands.remote.CacheRpcCommand;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public abstract class AbstractDelegatingHandler implements PerCacheInboundInvocationHandler {
 

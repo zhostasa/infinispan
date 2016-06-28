@@ -29,6 +29,7 @@ import java.util.Collection;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public class NonTotalOrderTxPerCacheInboundInvocationHandler extends BasePerCacheInboundInvocationHandler {
 

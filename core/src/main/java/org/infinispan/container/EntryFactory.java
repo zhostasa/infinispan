@@ -17,8 +17,9 @@ import org.infinispan.context.InvocationContext;
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
  * @author Galder Zamarreño
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface EntryFactory {
    enum Wrap {
       /** Store values in the context without wrapping */

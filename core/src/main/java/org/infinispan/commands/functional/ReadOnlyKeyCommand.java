@@ -16,6 +16,10 @@ import java.util.function.Function;
 
 import static org.infinispan.functional.impl.EntryViews.snapshot;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public final class ReadOnlyKeyCommand<K, V, R> extends AbstractDataCommand implements LocalCommand {
 
    private Function<ReadEntryView<K, V>, R> f;

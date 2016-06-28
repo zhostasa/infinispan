@@ -17,6 +17,7 @@ import java.util.Map;
  * @see BackupResponse
  * @author Mircea Markus
  * @since 5.2
+ * @private
  */
 public interface BackupSender {
 

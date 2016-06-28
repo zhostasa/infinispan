@@ -29,7 +29,9 @@ import static org.infinispan.commons.util.Util.toStr;
  * Retrieves multiple entries at once.
  *
  * @author Radim Vansa &lt;rvansa@redhat.com&gt;
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 // TODO: revise the command hierarchy, e.g. this should not implement MetadataAwareCommand
 public class GetAllCommand extends AbstractFlagAffectedCommand {
    public static final byte COMMAND_ID = 44;

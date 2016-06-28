@@ -21,8 +21,9 @@ import static java.lang.Math.min;
  * that is {@link org.infinispan.container.entries.versioned.Versioned}
  *
  * @author Manik Surtani
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MetadataTransientMortalCacheEntry extends AbstractInternalCacheEntry implements MetadataAware {
 
    Object value;

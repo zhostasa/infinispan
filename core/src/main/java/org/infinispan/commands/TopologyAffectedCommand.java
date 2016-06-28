@@ -7,8 +7,9 @@ package org.infinispan.commands;
  * the current topology id of the sender so the receiver can detect and handle topology mismatches.
  *
  * @author anistor@redhat.com
- * @since 5.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface TopologyAffectedCommand extends ReplicableCommand {
 
    int getTopologyId();

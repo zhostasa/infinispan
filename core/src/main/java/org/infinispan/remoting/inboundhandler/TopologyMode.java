@@ -5,6 +5,7 @@ package org.infinispan.remoting.inboundhandler;
  *
  * @author Pedro Ruivo
  * @since 8.0
+ * @private
  */
 public enum TopologyMode {
    WAIT_TOPOLOGY,

@@ -13,8 +13,9 @@ import java.util.Set;
  * Stuff common to WriteCommands
  *
  * @author Manik Surtani
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class AbstractDataWriteCommand extends AbstractDataCommand implements DataWriteCommand, RemoteLockCommand {
 
    protected CommandInvocationId commandInvocationId;

@@ -35,8 +35,9 @@ import java.util.Map;
  *
  * @author Vladimir Blagojevic (<a href="mailto:vblagoje@redhat.com">vblagoje@redhat.com</a>)
  * @author Mircea.Markus@jboss.com
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class LockControlCommand extends AbstractTransactionBoundaryCommand implements FlagAffectedCommand, TransactionalRemoteLockCommand {
 
    private static final Log log = LogFactory.getLog(LockControlCommand.class);

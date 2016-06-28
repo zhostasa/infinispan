@@ -22,8 +22,9 @@ import java.util.Map;
  * {@link org.infinispan.commands.VisitableCommand} that fetches the keys belonging to a group.
  *
  * @author Pedro Ruivo
- * @since 7.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class GetKeysInGroupCommand extends AbstractFlagAffectedCommand implements VisitableCommand {
 
    public static final byte COMMAND_ID = 43;

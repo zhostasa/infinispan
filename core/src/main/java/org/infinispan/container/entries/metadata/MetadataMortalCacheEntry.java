@@ -18,8 +18,9 @@ import java.util.Set;
  * A cache entry that is mortal and is {@link MetadataAware}
  *
  * @author Galder Zamarreño
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class MetadataMortalCacheEntry extends AbstractInternalCacheEntry implements MetadataAware {
 
    protected Object value;

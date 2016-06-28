@@ -20,8 +20,9 @@ import org.infinispan.util.TimeService;
  * An implementation that generates non-versioned entries
  *
  * @author Manik Surtani
- * @since 5.1
+ * @private
  */
+@Deprecated
 public class InternalEntryFactoryImpl implements InternalEntryFactory {
 
    private TimeService timeService;

@@ -11,8 +11,10 @@ import org.infinispan.util.logging.LogFactory;
  * CancellationServiceImpl is a default implementation of {@link CancellationService}
  * 
  * @author Vladimir Blagojevic
- * @since 5.2 
+ * @since 5.2
+ * @private
  */
+@Deprecated
 public class CancellationServiceImpl implements CancellationService {
 
    private static final Log log = LogFactory.getLog(CancellationServiceImpl.class);

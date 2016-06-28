@@ -4,8 +4,9 @@ import org.infinispan.persistence.spi.AdvancedCacheLoader;
 
 /**
  * @author Mircea Markus
- * @since 6.0
+ * @private
  */
+@Deprecated
 public class TaskContextImpl implements AdvancedCacheLoader.TaskContext {
 
    private volatile boolean stopped;

@@ -8,8 +8,9 @@ import org.infinispan.transaction.impl.TotalOrderRemoteTransactionState;
  * Interface with the utilities methods that the prepare command must have when Total Order based protocol is used
  *
  * @author Pedro Ruivo
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public interface TotalOrderPrepareCommand extends TransactionBoundaryCommand {
 
    /**

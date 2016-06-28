@@ -14,6 +14,7 @@ import java.io.ObjectOutput;
  *
  * @author Mircea Markus
  * @since 5.2
+ * @private
  */
 public class XSiteAdminCommand extends BaseRpcCommand {
 

@@ -8,8 +8,9 @@ import org.infinispan.metadata.Metadata;
  * org.infinispan.commands.write.ClearCommand}.
  *
  * @author Pedro Ruivo
- * @since 7.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ClearCacheEntry<K, V> implements CacheEntry<K, V> {
 
    //singleton, we have no state

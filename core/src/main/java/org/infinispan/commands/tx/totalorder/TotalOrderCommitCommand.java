@@ -11,8 +11,9 @@ import org.infinispan.util.logging.LogFactory;
  * Commit Command used in the 2nd phase of 2PC. This command is used when non versioned entries are needed
  *
  * @author Pedro Ruivo
- * @since 5.3
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class TotalOrderCommitCommand extends CommitCommand {
 
    public static final byte COMMAND_ID = 35;

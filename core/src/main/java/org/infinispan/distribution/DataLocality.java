@@ -6,8 +6,9 @@ package org.infinispan.distribution;
  *
  * @author Manik Surtani
  * @author Mircea Markus
- * @since 4.2.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public enum DataLocality {
    LOCAL(true,false),
 

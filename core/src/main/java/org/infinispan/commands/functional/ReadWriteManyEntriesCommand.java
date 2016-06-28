@@ -23,6 +23,10 @@ import java.util.function.BiFunction;
 
 import static org.infinispan.functional.impl.EntryViews.snapshot;
 
+/**
+ * @deprecated Since 8.3, will be removed.
+ */
+@Deprecated
 public final class ReadWriteManyEntriesCommand<K, V, R> implements WriteCommand {
 
    public static final byte COMMAND_ID = 53;

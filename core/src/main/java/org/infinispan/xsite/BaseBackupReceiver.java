@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  * @author Mircea Markus
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public abstract class BaseBackupReceiver implements BackupReceiver {
 

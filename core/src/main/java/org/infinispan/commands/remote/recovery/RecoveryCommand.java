@@ -8,8 +8,9 @@ import org.infinispan.util.ByteString;
  * Base class for recovery-related rpc-commands.
  *
  * @author Mircea.Markus@jboss.com
- * @since 5.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public abstract class RecoveryCommand extends BaseRpcCommand {
 
    protected RecoveryManager recoveryManager;

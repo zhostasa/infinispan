@@ -19,8 +19,9 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * and {@link #stop()} as defined in this class.
  *
  * @author Manik Surtani
- * @since 5.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class BaseCustomInterceptor extends CommandInterceptor {
    protected Cache<?, ?> cache;
    protected EmbeddedCacheManager embeddedCacheManager;

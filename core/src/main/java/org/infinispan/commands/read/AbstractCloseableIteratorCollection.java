@@ -20,7 +20,7 @@ import java.util.Spliterator;
  * {@link java.lang.UnsupportedOperationException}.
  *
  * @author wburns
- * @since 7.0
+ * @private
  */
 public abstract class AbstractCloseableIteratorCollection<O, K, V> extends AbstractCollection<O> implements CloseableIteratorCollection<O> {
    protected final Cache<K, V> cache;

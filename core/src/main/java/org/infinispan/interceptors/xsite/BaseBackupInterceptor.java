@@ -17,8 +17,9 @@ import org.infinispan.xsite.BackupSender;
 
 /**
  * @author Mircea Markus
- * @since 5.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class BaseBackupInterceptor extends CommandInterceptor {
 
    protected BackupSender backupSender;

@@ -18,8 +18,9 @@ import org.infinispan.context.InvocationContext;
  * This functionality was originally incorporated into GetKeyValueCommand.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2014 Red Hat Inc.
- * @since 7.1
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public final class GetCacheEntryCommand extends AbstractDataCommand implements RemoteFetchingCommand {
 
    public static final byte COMMAND_ID = 45;

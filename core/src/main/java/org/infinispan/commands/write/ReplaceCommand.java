@@ -22,8 +22,9 @@ import static org.infinispan.commons.util.Util.toStr;
 /**
  * @author Mircea.Markus@jboss.com
  * @author Galder Zamarreño
- * @since 4.0
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class ReplaceCommand extends AbstractDataWriteCommand implements MetadataAwareCommand {
    public static final byte COMMAND_ID = 11;
 

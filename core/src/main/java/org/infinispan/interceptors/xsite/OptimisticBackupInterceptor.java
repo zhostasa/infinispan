@@ -11,8 +11,9 @@ import org.infinispan.remoting.transport.BackupResponse;
  * Handles x-site data backups for optimistic transactional caches.
  *
  * @author Mircea Markus
- * @since 5.2
+ * @deprecated Since 8.3, will be removed.
  */
+@Deprecated
 public class OptimisticBackupInterceptor extends BaseBackupInterceptor {
 
    @Override

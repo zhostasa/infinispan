@@ -10,6 +10,7 @@ import org.infinispan.xsite.XSiteReplicateCommand;
  *
  * @author Pedro Ruivo
  * @since 7.1
+ * @private
  */
 public interface InboundInvocationHandler {
 
