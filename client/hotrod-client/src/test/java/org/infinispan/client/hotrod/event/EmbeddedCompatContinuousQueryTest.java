@@ -25,7 +25,9 @@ import org.infinispan.query.remote.ProtobufMetadataManager;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 import org.infinispan.query.remote.impl.filter.JPAContinuousQueryProtobufCacheEventFilterConverterFactory;
 import org.infinispan.test.TestingUtil;
+import org.infinispan.util.ControlledTimeService;
 import org.infinispan.util.KeyValuePair;
+import org.infinispan.util.TimeService;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -61,6 +63,8 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
 
    private RemoteCache<String, User> remoteCache;
 
+   private ControlledTimeService timeService = new ControlledTimeService(0);
+
    @Override
    protected void createCacheManagers() throws Throwable {
       ConfigurationBuilder cfgBuilder = getConfigurationBuilder();
@@ -71,7 +75,10 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
       // Register the filter/converter factory. This should normally be discovered by the server via class path instead
       // of being added manually here, but this is ok in a test.
       JPAContinuousQueryProtobufCacheEventFilterConverterFactory factory = new JPAContinuousQueryProtobufCacheEventFilterConverterFactory();
-      server(0).addCacheEventFilterConverterFactory(JPAContinuousQueryProtobufCacheEventFilterConverterFactory.FACTORY_NAME, factory);
+      for (int i = 0; i < NUM_NODES; i++) {
+         server(i).addCacheEventFilterConverterFactory(JPAContinuousQueryProtobufCacheEventFilterConverterFactory.FACTORY_NAME, factory);
+         TestingUtil.replaceComponent(server(i).getCacheManager(), TimeService.class, timeService, true);
+      }
 
       remoteCache = client(0).getCache();
 
@@ -217,7 +224,7 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
       expectElementsInQueue(joined, 2);
       expectElementsInQueue(left, 0);
 
-      TestingUtil.sleepThread(60);
+      timeService.advance(6);
       assertNull(remoteCache.get("expiredUser1"));
       assertNull(remoteCache.get("expiredUser2"));
 
@@ -319,7 +326,7 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
       expectElementsInQueue(joined, 2);
       expectElementsInQueue(left, 0);
 
-      TestingUtil.sleepThread(60);
+      timeService.advance(6);
       assertNull(remoteCache.get("expiredUser1"));
       assertNull(remoteCache.get("expiredUser2"));
 

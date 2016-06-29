@@ -69,7 +69,9 @@ public class RemoteListenerWithDslFilterTest extends MultiHotRodServersTest {
       // Register the filter/converter factory. This should normally be discovered by the server via class path instead
       // of being added manually here, but this is ok in a test.
       JPACacheEventFilterConverterFactory factory = new JPACacheEventFilterConverterFactory();
-      server(0).addCacheEventFilterConverterFactory(JPACacheEventFilterConverterFactory.FACTORY_NAME, factory);
+      for (int i = 0; i < NUM_NODES; i++) {
+         server(i).addCacheEventFilterConverterFactory(JPACacheEventFilterConverterFactory.FACTORY_NAME, factory);
+      }
 
       remoteCache = client(0).getCache();
 
