@@ -27,6 +27,7 @@ import org.infinispan.util.logging.LogFactory;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR;
 
@@ -199,7 +200,11 @@ public class StateProviderImpl implements StateProvider {
                   "topology (%d). Waiting for topology %d to be installed locally.", isReqForTransactions ? "Transactions" : "Segments", destination,
                   requestTopologyId, currentTopologyId, requestTopologyId);
          }
-         stateTransferLock.waitForTopology(requestTopologyId, timeout, TimeUnit.MILLISECONDS);
+         try {
+            stateTransferLock.waitForTopology(requestTopologyId, timeout, TimeUnit.MILLISECONDS);
+         } catch (TimeoutException e) {
+            throw log.failedWaitingForTopology(requestTopologyId);
+         }
          cacheTopology = stateConsumer.getCacheTopology();
       }
       return cacheTopology;
