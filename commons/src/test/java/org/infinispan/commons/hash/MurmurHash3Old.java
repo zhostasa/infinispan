@@ -17,7 +17,6 @@ import net.jcip.annotations.ThreadSafe;
  * @author Patrick McFarland
  * @see <a href="http://sites.google.com/site/murmurhash/">MurmurHash website</a>
  * @see <a href="http://en.wikipedia.org/wiki/MurmurHash">MurmurHash entry on Wikipedia</a>
- * @since 5.0
  */
 @ThreadSafe
 @Immutable
