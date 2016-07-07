@@ -43,6 +43,7 @@ public class StoreConfigurationValidationTest {
       ConfigurationBuilder builder = TestCacheManagerFactory.getDefaultCacheConfiguration(false);
       builder.persistence()
             .addStore(DummyInMemoryStoreConfigurationBuilder.class)
+            .transactional(true)
             .validate();
    }
 
@@ -53,6 +54,7 @@ public class StoreConfigurationValidationTest {
       builder.persistence()
             .passivation(true)
             .addStore(DummyInMemoryStoreConfigurationBuilder.class)
+            .transactional(true)
             .validate();
    }
 
@@ -81,7 +83,7 @@ public class StoreConfigurationValidationTest {
    static class NonSharedDummyStoreConfiguration extends DummyInMemoryStoreConfiguration {
 
       public static AttributeSet attributeDefinitionSet() {
-         return new AttributeSet(NonSharedDummyInMemoryStore.class, DummyInMemoryStoreConfiguration.attributeDefinitionSet());
+         return new AttributeSet(NonSharedDummyStoreConfiguration.class, DummyInMemoryStoreConfiguration.attributeDefinitionSet());
       }
 
       NonSharedDummyStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore) {

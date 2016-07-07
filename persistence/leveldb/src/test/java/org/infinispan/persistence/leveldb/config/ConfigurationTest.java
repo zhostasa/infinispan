@@ -1,6 +1,7 @@
 package org.infinispan.persistence.leveldb.config;
 
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.IOException;
@@ -72,7 +73,19 @@ public class ConfigurationTest extends AbstractInfinispanTest {
                  LevelDBStoreConfiguration.ImplementationType.AUTO.toString().toLowerCase() + ".xml");
 
          Cache<String, String> cache = cacheManager.getCache("testCache");
+         Configuration cacheConfig = cache.getCacheConfiguration();
 
+         // check generic store attributes
+         StoreConfiguration cacheLoaderConfig = cacheConfig.persistence().stores().get(0);
+         assertFalse(cacheLoaderConfig.shared());
+         assertTrue(cacheLoaderConfig.preload());
+         assertTrue(cacheLoaderConfig instanceof LevelDBStoreConfiguration);
+
+         // check LevelDB store attributes
+         LevelDBStoreConfiguration leveldbConfig = (LevelDBStoreConfiguration) cacheLoaderConfig;
+         assertEquals("/tmp/leveldb/52/data", leveldbConfig.location());
+         assertEquals("/tmp/leveldb/52/expired", leveldbConfig.expiredLocation());
+         assertEquals(LevelDBStoreConfiguration.ImplementationType.AUTO, leveldbConfig.implementationType());
          cache.put("hello", "there 52 xml");
          cache.stop();
          cacheManager.stop();

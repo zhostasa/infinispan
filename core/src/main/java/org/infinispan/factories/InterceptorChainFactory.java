@@ -13,6 +13,7 @@ import org.infinispan.configuration.cache.CustomInterceptorsConfiguration;
 import org.infinispan.configuration.cache.InterceptorConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.factories.annotations.DefaultFactoryFor;
+import org.infinispan.interceptors.ActivationInterceptor;
 import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.InterceptorChain;
@@ -42,6 +43,7 @@ import org.infinispan.interceptors.impl.IsMarshallableInterceptor;
 import org.infinispan.interceptors.impl.MarshalledValueInterceptor;
 import org.infinispan.interceptors.impl.NotificationInterceptor;
 import org.infinispan.interceptors.impl.PassivationWriterInterceptor;
+import org.infinispan.interceptors.impl.TransactionalStoreInterceptor;
 import org.infinispan.interceptors.impl.TxInterceptor;
 import org.infinispan.interceptors.impl.VersionedEntryWrappingInterceptor;
 import org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor;
@@ -251,6 +253,10 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
          if (configuration.persistence().passivation()) {
             interceptorChain.appendInterceptor(createInterceptor(new PassivationWriterInterceptor(), PassivationWriterInterceptor.class), false);
          } else {
+            boolean transactionalStore = configuration.persistence().stores().stream().anyMatch(StoreConfiguration::transactional);
+            if (transactionalStore && transactionMode.isTransactional())
+               interceptorChain.appendInterceptor(createInterceptor(new TransactionalStoreInterceptor(), TransactionalStoreInterceptor.class), false);
+
             switch (cacheMode) {
                case DIST_SYNC:
                case DIST_ASYNC:

@@ -1,5 +1,10 @@
 package org.infinispan.persistence.jdbc.mixed;
 
+import javax.transaction.Transaction;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import org.infinispan.commons.configuration.ConfiguredBy;
@@ -18,6 +23,8 @@ import org.infinispan.persistence.jdbc.stringbased.JdbcStringBasedStore;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.PersistenceException;
+import org.infinispan.persistence.spi.TransactionalCacheWriter;
+import org.infinispan.persistence.support.BatchModification;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -46,7 +53,7 @@ import org.infinispan.util.logging.LogFactory;
  * @see org.infinispan.persistence.jdbc.stringbased.JdbcStringBasedStore
  */
 @ConfiguredBy(JdbcMixedStoreConfiguration.class)
-public class JdbcMixedStore implements AdvancedLoadWriteStore {
+public class JdbcMixedStore<K,V> implements AdvancedLoadWriteStore<K,V>, TransactionalCacheWriter<K,V> {
 
    private static final Log log = LogFactory.getLog(JdbcMixedStore.class);
 
@@ -54,6 +61,7 @@ public class JdbcMixedStore implements AdvancedLoadWriteStore {
 
    private JdbcBinaryStore binaryStore = new JdbcBinaryStore();
    private JdbcStringBasedStore stringStore = new JdbcStringBasedStore();
+   private Map<Transaction, TxStatus> transactionStatus = new ConcurrentHashMap<>();
    private ConnectionFactory sharedConnectionFactory;
 
    @Override
@@ -69,7 +77,7 @@ public class JdbcMixedStore implements AdvancedLoadWriteStore {
       sharedConnectionFactory = ConnectionFactory.getConnectionFactory(factoryConfig.connectionFactoryClass().getName(),
             configuration.getClass().getClassLoader());
       sharedConnectionFactory.start(factoryConfig, configuration.getClass().getClassLoader());
-      binaryStore.doConnectionFactoryInitialization(sharedConnectionFactory);
+      binaryStore.initializeConnectionFactory(sharedConnectionFactory);
       binaryStore.start();
       stringStore.initializeConnectionFactory(sharedConnectionFactory);
       stringStore.start();
@@ -145,6 +153,69 @@ public class JdbcMixedStore implements AdvancedLoadWriteStore {
       stringStore.clear();
    }
 
+   @Override
+   public void prepareWithModifications(Transaction transaction, BatchModification batchModification) throws PersistenceException {
+      List<MarshalledEntry> stringEntries = new ArrayList<>();
+      List<MarshalledEntry> binaryEntries = new ArrayList<>();
+      for (MarshalledEntry entry : batchModification.getMarshalledEntries()) {
+         if (stringStore.supportsKey(entry.getKey().getClass()))
+            stringEntries.add(entry);
+         else
+            binaryEntries.add(entry);
+      }
+
+      List<Object> stringKeysToDelete = new ArrayList<>();
+      List<Object> binaryKeysToDelete = new ArrayList<>();
+      for (Object key : batchModification.getKeysToRemove()) {
+         if (stringStore.supportsKey(key.getClass()))
+            stringKeysToDelete.add(key);
+         else
+            binaryKeysToDelete.add(key);
+      }
+
+      TxStatus txStatus = new TxStatus();
+      if (!(stringEntries.isEmpty() && stringKeysToDelete.isEmpty())) {
+         stringStore.prepareWithModifications(transaction, batchModification);
+         txStatus.registeredWithStringStore = true;
+      }
+
+      if (!(binaryEntries.isEmpty() && binaryKeysToDelete.isEmpty())) {
+         binaryStore.prepareWithModifications(transaction, batchModification);
+         txStatus.registeredWithBinaryStore = true;
+      }
+
+      if (txStatus.registeredWithBinaryStore || txStatus.registeredWithStringStore)
+         transactionStatus.put(transaction, txStatus);
+   }
+
+   @Override
+   public void commit(Transaction transaction) {
+      TxStatus txStatus = transactionStatus.get(transaction);
+      if (txStatus == null)
+         return;
+
+      if (txStatus.registeredWithBinaryStore)
+         binaryStore.commit(transaction);
+
+      if (txStatus.registeredWithStringStore)
+         stringStore.commit(transaction);
+      transactionStatus.remove(transaction);
+   }
+
+   @Override
+   public void rollback(Transaction transaction) {
+      TxStatus txStatus = transactionStatus.get(transaction);
+      if (txStatus == null)
+         return;
+
+      if (txStatus.registeredWithBinaryStore)
+         binaryStore.rollback(transaction);
+
+      if (txStatus.registeredWithStringStore)
+         stringStore.rollback(transaction);
+      transactionStatus.remove(transaction);
+   }
+
    public ConnectionFactory getConnectionFactory() {
       return sharedConnectionFactory;
    }
@@ -184,5 +255,10 @@ public class JdbcMixedStore implements AdvancedLoadWriteStore {
 
    public JdbcMixedStoreConfiguration getConfiguration() {
       return configuration;
+   }
+
+   private class TxStatus {
+      boolean registeredWithStringStore = false;
+      boolean registeredWithBinaryStore = false;
    }
 }

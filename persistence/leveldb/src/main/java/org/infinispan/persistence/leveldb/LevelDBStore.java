@@ -18,6 +18,7 @@ import org.fusesource.leveldbjni.JniDBFactory;
 import org.fusesource.leveldbjni.internal.JniDB;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.ConfiguredBy;
+import org.infinispan.commons.persistence.Store;
 import org.infinispan.commons.util.Util;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.filter.KeyFilter;
@@ -39,6 +40,7 @@ import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.ReadOptions;
 
+@Store
 @ConfiguredBy(LevelDBStoreConfiguration.class)
 public class LevelDBStore implements AdvancedLoadWriteStore {
     private static final Log log = LogFactory.getLog(LevelDBStore.class, Log.class);

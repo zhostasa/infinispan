@@ -1,5 +1,6 @@
 package org.infinispan.persistence.manager;
 
+import javax.transaction.Transaction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -10,6 +11,8 @@ import org.infinispan.factories.annotations.SurvivesRestarts;
 import org.infinispan.filter.KeyFilter;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
+import org.infinispan.persistence.spi.PersistenceException;
+import org.infinispan.persistence.support.BatchModification;
 
 /**
  * @author Radim Vansa &lt;rvansa@redhat.com&gt;
@@ -77,11 +80,11 @@ public class PersistenceManagerStub implements PersistenceManager {
    }
 
    @Override
-   public void writeToAllStores(MarshalledEntry marshalledEntry, AccessMode modes) {
+   public void writeToAllNonTxStores(MarshalledEntry marshalledEntry, AccessMode modes) {
    }
 
    @Override
-   public void writeToAllStores(MarshalledEntry marshalledEntry, AccessMode modes, long flags) {
+   public void writeToAllNonTxStores(MarshalledEntry marshalledEntry, AccessMode modes, long flags) {
    }
 
    @Override
@@ -96,5 +99,17 @@ public class PersistenceManagerStub implements PersistenceManager {
 
    @Override
    public void setClearOnStop(boolean clearOnStop) {
+   }
+
+   @Override
+   public void prepareAllTxStores(Transaction transaction, BatchModification batchModification, AccessMode accessMode) throws PersistenceException {
+   }
+
+   @Override
+   public void commitAllTxStores(Transaction transaction, AccessMode accessMode) {
+   }
+
+   @Override
+   public void rollbackAllTxStores(Transaction transaction, AccessMode accessMode) {
    }
 }

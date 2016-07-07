@@ -16,7 +16,7 @@ public class DummyInMemoryStoreConfiguration extends AbstractStoreConfiguration 
    static final AttributeDefinition<String> STORE_NAME = AttributeDefinition.builder("storeName", null, String.class).immutable().build();
    static final AttributeDefinition<Object> FAIL_KEY = AttributeDefinition.builder("failKey", null, Object.class).immutable().build();
    public static AttributeSet attributeDefinitionSet() {
-      return new AttributeSet(DummyInMemoryStore.class, AbstractStoreConfiguration.attributeDefinitionSet(), DEBUG, SLOW, STORE_NAME, FAIL_KEY);
+      return new AttributeSet(DummyInMemoryStoreConfiguration.class, AbstractStoreConfiguration.attributeDefinitionSet(), DEBUG, SLOW, STORE_NAME, FAIL_KEY);
    }
 
    public DummyInMemoryStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore) {

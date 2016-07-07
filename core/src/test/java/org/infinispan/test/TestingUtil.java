@@ -1354,6 +1354,12 @@ public class TestingUtil {
       return (T) persistenceManager.getAllWriters().get(0);
    }
 
+   @SuppressWarnings("unchecked")
+   public static <T extends CacheWriter<K, V>, K, V> T getFirstTxWriter(Cache<K, V> cache) {
+      PersistenceManagerImpl persistenceManager = (PersistenceManagerImpl) extractComponent(cache, PersistenceManager.class);
+      return (T) persistenceManager.getAllTxWriters().get(0);
+   }
+
    public static StreamingMarshaller marshaller(Cache cache) {
       return cache.getAdvancedCache().getComponentRegistry().getCacheMarshaller();
    }
@@ -1403,7 +1409,7 @@ public class TestingUtil {
       AdvancedCache<K, V> advCache = cache.getAdvancedCache();
       PersistenceManager pm = advCache.getComponentRegistry().getComponent(PersistenceManager.class);
       StreamingMarshaller marshaller = extractGlobalMarshaller(advCache.getCacheManager());
-      pm.writeToAllStores(new MarshalledEntryImpl<>(key, value, null, marshaller), BOTH);
+      pm.writeToAllNonTxStores(new MarshalledEntryImpl<>(key, value, null, marshaller), BOTH);
    }
 
    public static <K, V> boolean deleteFromAllStores(K key, Cache<K, V> cache) {

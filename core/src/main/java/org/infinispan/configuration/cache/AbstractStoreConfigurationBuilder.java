@@ -6,12 +6,14 @@ import static org.infinispan.configuration.cache.AbstractStoreConfiguration.PREL
 import static org.infinispan.configuration.cache.AbstractStoreConfiguration.PROPERTIES;
 import static org.infinispan.configuration.cache.AbstractStoreConfiguration.PURGE_ON_STARTUP;
 import static org.infinispan.configuration.cache.AbstractStoreConfiguration.SHARED;
+import static org.infinispan.configuration.cache.AbstractStoreConfiguration.TRANSACTIONAL;
 
 import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.Builder;
+import org.infinispan.commons.configuration.ConfigurationFor;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.commons.persistence.Store;
 import org.infinispan.commons.util.ReflectionUtil;
@@ -169,25 +171,35 @@ public abstract class AbstractStoreConfigurationBuilder<T extends StoreConfigura
       return self();
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public S transactional(boolean b) {
+      attributes.attribute(TRANSACTIONAL).set(b);
+      return self();
+   }
+
    @Override
    public void validate() {
+      validate(false);
+   }
+
+   protected void validate(boolean skipClassChecks) {
+      if (!skipClassChecks)
+         validateStoreWithAnnotations();
+      validateStoreAttributes();
+   }
+
+   private void validateStoreAttributes() {
       async.validate();
       singletonStore.validate();
       boolean shared = attributes.attribute(SHARED).get();
       boolean fetchPersistentState = attributes.attribute(FETCH_PERSISTENT_STATE).get();
       boolean purgeOnStartup = attributes.attribute(PURGE_ON_STARTUP).get();
       boolean preload = attributes.attribute(PRELOAD).get();
+      boolean transactional = attributes.attribute(TRANSACTIONAL).get();
       ConfigurationBuilder builder = getBuilder();
-
-      Class storeClazz = attributes.getKlass();
-      if (storeClazz != null && storeClazz.isAnnotationPresent(Store.class)) {
-         Store storeProps = (Store) storeClazz.getAnnotation(Store.class);
-         if (!storeProps.shared() && shared) {
-            throw log.nonSharedStoreConfiguredAsShared(attributes.getName());
-         }
-      } else {
-         log.warnStoreAnnotationMissing(attributes.getName());
-      }
 
       if (!shared && !fetchPersistentState && !purgeOnStartup
             && builder.clustering().cacheMode().isClustered())
@@ -201,6 +213,29 @@ public abstract class AbstractStoreConfigurationBuilder<T extends StoreConfigura
       if (shared && !preload && builder.indexing().enabled()
             && builder.indexing().indexLocalOnly())
          log.localIndexingWithSharedCacheLoaderRequiresPreload();
+
+      if (transactional && !builder.transaction().transactionMode().isTransactional())
+         throw log.transactionalStoreInNonTransactionalCache();
+
+      if (transactional && builder.persistence().passivation())
+         throw log.transactionalStoreInPassivatedCache();
+   }
+
+   private void validateStoreWithAnnotations() {
+      Class configKlass = attributes.getKlass();
+      if (configKlass != null && configKlass.isAnnotationPresent(ConfigurationFor.class)) {
+         Class storeKlass = ((ConfigurationFor) configKlass.getAnnotation(ConfigurationFor.class)).value();
+         if (storeKlass.isAnnotationPresent(Store.class)) {
+            Store storeProps = (Store) storeKlass.getAnnotation(Store.class);
+            if (!storeProps.shared() && shared) {
+               throw log.nonSharedStoreConfiguredAsShared(storeKlass.getSimpleName());
+            }
+         } else {
+            log.warnStoreAnnotationMissing(storeKlass.getSimpleName());
+         }
+      } else {
+         log.warnConfigurationForAnnotationMissing(attributes.getName());
+      }
    }
 
    @Override

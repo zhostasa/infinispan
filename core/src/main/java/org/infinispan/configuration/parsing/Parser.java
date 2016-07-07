@@ -2167,6 +2167,10 @@ public class Parser implements ConfigurationParser {
             storeBuilder.singleton().enabled(Boolean.parseBoolean(value));
             break;
          }
+         case TRANSACTIONAL: {
+            storeBuilder.transactional(Boolean.parseBoolean(value));
+            break;
+         }
          default: {
             throw ParseUtils.unexpectedAttribute(reader, index);
          }
@@ -2246,6 +2250,7 @@ public class Parser implements ConfigurationParser {
       Boolean preload = null;
       Boolean shared = null;
       Boolean singleton = null;
+      Boolean transactional = null;
       CacheLoader store = null;
 
       for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -2274,6 +2279,9 @@ public class Parser implements ConfigurationParser {
             case SINGLETON:
                singleton = Boolean.parseBoolean(value);
                break;
+            case TRANSACTIONAL:
+               transactional = Boolean.parseBoolean(value);
+               break;
             default:
                throw ParseUtils.unexpectedAttribute(reader, i);
          }
@@ -2294,6 +2302,8 @@ public class Parser implements ConfigurationParser {
                sfs.shared(shared);
             if (singleton != null)
                sfs.singleton().enabled(singleton);
+            if (transactional != null)
+               sfs.transactional(transactional);
             parseStoreElements(reader, sfs);
          } else if (store instanceof ClusterLoader) {
             ClusterLoaderConfigurationBuilder cscb = builder.persistence().addClusterLoader();
@@ -2328,6 +2338,8 @@ public class Parser implements ConfigurationParser {
                configBuilder.preload(preload);
             if (shared != null)
                configBuilder.shared(shared);
+            if (transactional != null)
+               configBuilder.transactional(transactional);
 
             parseStoreElements(reader, configBuilder);
          }

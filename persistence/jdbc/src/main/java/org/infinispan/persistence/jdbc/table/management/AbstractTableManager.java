@@ -5,7 +5,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.infinispan.persistence.jdbc.JdbcUtil;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
@@ -192,6 +194,26 @@ public abstract class AbstractTableManager implements TableManager {
                                       config.idColumnName(), config.dataColumnName(), getTableName(), config.idColumnName());
       }
       return selectRowSql;
+   }
+
+   protected String getSelectMultipleRowSql(int numberOfParams, String selectCriteria) {
+      if (numberOfParams < 1)
+         return null;
+
+      if (numberOfParams == 1)
+         return getSelectRowSql();
+
+      StringBuilder sb = new StringBuilder(getSelectRowSql());
+      for (int i = 0; i < numberOfParams - 1; i++) {
+         sb.append(" OR ");
+         sb.append(selectCriteria);
+      }
+      return sb.toString();
+   }
+
+   @Override
+   public String getSelectMultipleRowSql(int numberOfParams) {
+      return getSelectMultipleRowSql(numberOfParams, config.idColumnName() + " = ?");
    }
 
    @Override
