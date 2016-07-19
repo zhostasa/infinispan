@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:infinispan:server:endpoint:8.0">
+<subsystem xmlns="urn:infinispan:server:endpoint:8.1">
    <hotrod-connector name="hotrod1" socket-binding="hotrod" ignored-caches="cache1" cache-container="default" idle-timeout="100" tcp-nodelay="true" worker-threads="5" receive-buffer-size="10000" send-buffer-size="10000">
       <topology-state-transfer external-host="localhost" external-port="1234" lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000" />
    </hotrod-connector>
@@ -18,6 +18,19 @@
         </sasl>
       </authentication>
    </hotrod-connector>
+    <hotrod-connector name="hotrod5" socket-binding="hotrod" cache-container="default">
+        <encryption security-realm="other">
+            <sni host-name="sni" security-realm="other" />
+            <sni host-name="sni2" security-realm="other2" />
+            <sni host-name="sni3" />
+        </encryption>
+    </hotrod-connector>
    <memcached-connector cache="memcachedCache" socket-binding="memcached" cache-container="default" idle-timeout="100" tcp-nodelay="true" worker-threads="5" receive-buffer-size="10000" send-buffer-size="10000" />
-   <rest-connector socket-binding="rest" cache-container="default" context-path="/" security-domain="other" auth-method="BASIC" security-mode="READ_WRITE" extended-headers="ON_DEMAND" />
+    <rest-connector socket-binding="rest" cache-container="default" context-path="/" extended-headers="ON_DEMAND">
+        <encryption security-realm="other">
+            <sni host-name="sni" security-realm="other" />
+            <sni host-name="sni2" security-realm="other2" />
+            <sni host-name="sni3" />
+        </encryption>
+    </rest-connector>
 </subsystem>

@@ -18,17 +18,6 @@
  */
 package org.infinispan.server.endpoint.subsystem;
 
-import static org.infinispan.server.endpoint.EndpointLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.infinispan.server.endpoint.Constants;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -38,14 +27,28 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.infinispan.server.endpoint.EndpointLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 /**
  * The parser for the data grid endpoint subsystem configuration.
  *
  * @author Tristan Tarrant
  *
  */
-class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
-   public static final XMLElementReader<List<ModelNode>> INSTANCE = new EndpointSubsystemReader_8_0();
+class EndpointSubsystemReader implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+   private final Namespace namespace;
+
+   EndpointSubsystemReader(Namespace namespace) {
+      this.namespace = namespace;
+   }
 
    @Override
    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations)
@@ -71,10 +74,6 @@ class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReade
             parseRestConnector(reader, subsystemAddress, operations);
             break;
          }
-        //  case WEBSOCKET_CONNECTOR: {
-        //     parseWebSocketConnector(reader, subsystemAddress, operations);
-        //     break;
-        //  }
          default: {
             throw ParseUtils.unexpectedElement(reader);
          }
@@ -167,7 +166,11 @@ class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReade
          String value, Attribute attribute) throws XMLStreamException {
       switch (attribute) {
       case IGNORED_CACHES: {
-         reader.getListAttributeValue(i).forEach(a -> connector.get(ModelKeys.IGNORED_CACHES).add(a));
+         if (namespace.since(Namespace.INFINISPAN_ENDPOINT_8_0)) {
+            reader.getListAttributeValue(i).forEach(a -> connector.get(ModelKeys.IGNORED_CACHES).add(a));
+         } else {
+            throw ParseUtils.unexpectedAttribute(reader, i);
+         }
          break;
       }
       case CACHE_CONTAINER: {
@@ -259,7 +262,11 @@ class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReade
             break;
          }
          case IGNORED_CACHES: {
-            reader.getListAttributeValue(i).forEach(a -> connector.get(ModelKeys.IGNORED_CACHES).add(a));
+            if (namespace.since(Namespace.INFINISPAN_ENDPOINT_8_0)) {
+               reader.getListAttributeValue(i).forEach(a -> connector.get(ModelKeys.IGNORED_CACHES).add(a));
+            } else {
+               throw ParseUtils.unexpectedAttribute(reader, i);
+            }
             break;
          }
          default: {
@@ -286,34 +293,6 @@ class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReade
          }
       }
    }
-
-   // private void parseWebSocketConnector(XMLExtendedStreamReader reader, PathAddress subsystemAddress,
-   //       List<ModelNode> operations) throws XMLStreamException {
-   //
-   //    ModelNode connector = Util.getEmptyOperation(ADD, null);
-   //    String name = ModelKeys.WEBSOCKET_CONNECTOR;
-   //    final Set<Attribute> required = EnumSet.of(Attribute.SOCKET_BINDING);
-   //
-   //    for (int i = 0; i < reader.getAttributeCount(); i++) {
-   //       ParseUtils.requireNoNamespaceAttribute(reader, i);
-   //       String value = reader.getAttributeValue(i);
-   //       Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-   //       required.remove(attribute);
-   //       name = parseConnectorAttributes(reader, connector, name, i, value, attribute);
-   //    }
-   //
-   //    if (!required.isEmpty()) {
-   //       throw ParseUtils.missingRequired(reader, required);
-   //    }
-   //
-   //    PathAddress connectorAddress = subsystemAddress.append(PathElement.pathElement(ModelKeys.WEBSOCKET_CONNECTOR,
-   //          name));
-   //    connector.get(OP_ADDR).set(connectorAddress.toModelNode());
-   //
-   //    ParseUtils.requireNoContent(reader);
-   //
-   //    operations.add(connector);
-   // }
 
    private void parseTopologyStateTransfer(XMLExtendedStreamReader reader, ModelNode connector,
          List<ModelNode> operations) throws XMLStreamException {
@@ -581,8 +560,10 @@ class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReade
          final Element element = Element.forName(reader.getLocalName());
          switch (element) {
             case SNI: {
-               parseSni(reader, security, operations);
-               break;
+               if (namespace.since(Namespace.INFINISPAN_ENDPOINT_8_1)) {
+                  parseSni(reader, security, operations);
+                  break;
+               }
             }
             default: {
                throw ParseUtils.unexpectedElement(reader);
