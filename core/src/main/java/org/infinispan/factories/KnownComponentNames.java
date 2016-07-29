@@ -2,7 +2,6 @@ package org.infinispan.factories;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +25,6 @@ public class KnownComponentNames {
    public static final String ASYNC_REPLICATION_QUEUE_EXECUTOR = "org.infinispan.executors.replicationQueue";
    public static final String MODULE_COMMAND_INITIALIZERS ="org.infinispan.modules.command.initializers";
    public static final String MODULE_COMMAND_FACTORIES ="org.infinispan.modules.command.factories";
-   public static final String GLOBAL_MARSHALLER = "org.infinispan.marshaller.global";
-   public static final String CACHE_MARSHALLER = "org.infinispan.marshaller.cache";
    public static final String CLASS_LOADER = "java.lang.ClassLoader";
    public static final String TOTAL_ORDER_EXECUTOR = "org.infinispan.executors.totalOrderExecutor";
    public static final String STATE_TRANSFER_EXECUTOR = "org.infinispan.executors.stateTransferExecutor";
@@ -40,12 +37,10 @@ public class KnownComponentNames {
    public static final Collection<String> ALL_KNOWN_COMPONENT_NAMES = Arrays.asList(
       ASYNC_TRANSPORT_EXECUTOR, ASYNC_NOTIFICATION_EXECUTOR, PERSISTENCE_EXECUTOR, ASYNC_OPERATIONS_EXECUTOR,
       EXPIRATION_SCHEDULED_EXECUTOR,
-      MODULE_COMMAND_INITIALIZERS, MODULE_COMMAND_FACTORIES, GLOBAL_MARSHALLER, CACHE_MARSHALLER, CLASS_LOADER,
+      MODULE_COMMAND_INITIALIZERS, MODULE_COMMAND_FACTORIES, CLASS_LOADER,
       REMOTE_COMMAND_EXECUTOR, TOTAL_ORDER_EXECUTOR, STATE_TRANSFER_EXECUTOR, TRANSACTION_VERSION_GENERATOR,
       TIMEOUT_SCHEDULE_EXECUTOR
    );
-
-   public static final Collection<String> PER_CACHE_COMPONENT_NAMES = Collections.singletonList(CACHE_MARSHALLER);
 
    private static final Map<String, Integer> DEFAULT_THREAD_COUNT = new HashMap<>(4);
    private static final Map<String, Integer> DEFAULT_QUEUE_SIZE = new HashMap<>(4);

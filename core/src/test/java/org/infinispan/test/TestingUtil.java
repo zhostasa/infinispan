@@ -853,16 +853,9 @@ public class TestingUtil {
       return extractComponentRegistry(cache).getComponent(LockManager.class);
    }
 
-   public static AbstractDelegatingMarshaller extractCacheMarshaller(Cache cache) {
-      ComponentRegistry cr = extractField(cache, "componentRegistry");
-      StreamingMarshaller marshaller = cr.getComponent(StreamingMarshaller.class, KnownComponentNames.CACHE_MARSHALLER);
-      return (AbstractDelegatingMarshaller) marshaller;
-   }
-
    public static AbstractDelegatingMarshaller extractGlobalMarshaller(EmbeddedCacheManager cm) {
       GlobalComponentRegistry gcr = extractField(cm, "globalComponentRegistry");
-      return (AbstractDelegatingMarshaller)
-            gcr.getComponent(StreamingMarshaller.class, KnownComponentNames.GLOBAL_MARSHALLER);
+      return (AbstractDelegatingMarshaller) gcr.getComponent(StreamingMarshaller.class);
    }
 
    public static ExternalizerTable extractExtTable(CacheContainer cacheContainer) {
@@ -1456,7 +1449,7 @@ public class TestingUtil {
    public static <K, V> void writeToAllStores(K key, V value, Cache<K, V> cache) {
       AdvancedCache<K, V> advCache = cache.getAdvancedCache();
       PersistenceManager pm = advCache.getComponentRegistry().getComponent(PersistenceManager.class);
-      StreamingMarshaller marshaller = advCache.getComponentRegistry().getCacheMarshaller();
+      StreamingMarshaller marshaller = extractGlobalMarshaller(advCache.getCacheManager());
       pm.writeToAllStores(new MarshalledEntryImpl(key, value, null, marshaller), BOTH);
    }
 

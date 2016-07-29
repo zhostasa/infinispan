@@ -1,7 +1,5 @@
 package org.infinispan.interceptors.impl;
 
-import static org.infinispan.factories.KnownComponentNames.CACHE_MARSHALLER;
-
 import java.util.Map;
 
 import org.infinispan.commands.FlagAffectedCommand;
@@ -35,7 +33,7 @@ public class IsMarshallableInterceptor extends DDAsyncInterceptor {
    private StreamingMarshaller marshaller;
 
    @Inject
-   protected void injectMarshaller(@ComponentName(CACHE_MARSHALLER) StreamingMarshaller marshaller) {
+   protected void injectMarshaller(StreamingMarshaller marshaller) {
       this.marshaller = marshaller;
    }
 

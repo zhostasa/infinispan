@@ -1,7 +1,5 @@
 package org.infinispan.remoting.transport.jgroups;
 
-import static org.infinispan.factories.KnownComponentNames.GLOBAL_MARSHALLER;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -171,7 +169,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
     * @param gcr           the global component registry
     */
    @Inject
-   public void initialize(@ComponentName(GLOBAL_MARSHALLER) StreamingMarshaller marshaller,
+   public void initialize(StreamingMarshaller marshaller,
                           CacheManagerNotifier notifier, GlobalComponentRegistry gcr,
                           TimeService timeService, InboundInvocationHandler globalHandler,
                           @ComponentName(KnownComponentNames.TIMEOUT_SCHEDULE_EXECUTOR) ScheduledExecutorService timeoutExecutor,

@@ -1,6 +1,5 @@
 package org.infinispan.context;
 
-import org.infinispan.factories.annotations.SurvivesRestarts;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 
@@ -13,7 +12,7 @@ import org.infinispan.factories.scopes.Scopes;
  * @deprecated Since 9.0, this interface is going to be moved to an internal package.
  */
 @Deprecated
-@Scope(Scopes.NAMED_CACHE)
+@Scope(Scopes.GLOBAL)
 public interface InvocationContextContainer {
    /**
     * Returns the {@link InvocationContext} that is currently associated with the calling thread. Important:
