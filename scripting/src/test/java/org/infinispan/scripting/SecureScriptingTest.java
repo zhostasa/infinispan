@@ -39,6 +39,7 @@ public class SecureScriptingTest extends AbstractScriptingTest {
       ConfigurationBuilder config = TestCacheManagerFactory.getDefaultCacheConfiguration(true);
       AuthorizationConfigurationBuilder authConfig = config.security().authorization().enable();
 
+
       globalRoles
          .role("achilles")
             .permission(AuthorizationPermission.READ)
