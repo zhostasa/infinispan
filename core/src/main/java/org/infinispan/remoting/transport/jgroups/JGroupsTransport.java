@@ -21,6 +21,7 @@ import org.infinispan.remoting.RpcException;
 import org.infinispan.remoting.inboundhandler.DeliverOrder;
 import org.infinispan.remoting.inboundhandler.InboundInvocationHandler;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
+import org.infinispan.remoting.responses.ExceptionResponse;
 import org.infinispan.remoting.responses.Response;
 import org.infinispan.remoting.rpc.ResponseFilter;
 import org.infinispan.remoting.rpc.ResponseMode;
@@ -51,7 +52,6 @@ import org.jgroups.protocols.tom.TOA;
 import org.jgroups.stack.AddressGenerator;
 import org.jgroups.util.Buffer;
 import org.jgroups.util.Rsp;
-import org.jgroups.util.RspList;
 import org.jgroups.util.TopologyUUID;
 
 import javax.management.MBeanServer;
@@ -577,7 +577,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       List<Address> localMembers = this.members;
       int membersSize = localMembers.size();
       boolean broadcast = membersSize > 2 && (jgAddressList == null || recipients.size() == membersSize);
-      CompletableFuture<RspList<Response>> rspListFuture = null;
+      CompletableFuture<Responses> rspListFuture = null;
       SingleResponseFuture singleResponseFuture = null;
       org.jgroups.Address singleJGAddress = null;
 
@@ -645,7 +645,14 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
                   new HashMap<>(CollectionFactory.computeCapacity(rsps.size()));
             boolean hasResponses = false;
             boolean hasValidResponses = false;
-            for (Rsp<Response> rsp : rsps.values()) {
+            if (rsps.isTimedOut()) {
+               throw addSuppressedExceptions(new TimeoutException("Replication timeout"), rsps);
+            }
+            for (Rsp<Response> rsp : rsps) {
+               if (rsp == null) {
+                  // This happens with WAIT_FOR_VALID_RESPONSE
+                  continue;
+               }
                hasResponses |= rsp.wasReceived();
                Address sender = fromJGroupsAddress(rsp.getSender());
                Response response = checkRsp(rsp, sender, ignoreTimeout(responseFilter), ignoreLeavers);
@@ -679,6 +686,26 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       } else {
          throw new IllegalStateException("Should have one remote invocation future");
       }
+   }
+
+   public TimeoutException addSuppressedExceptions(TimeoutException timeoutException, Responses rsps) {
+      for (Rsp<Response> rsp : rsps) {
+         Throwable exception;
+         if (rsp == null) {
+            // no need to add suppression
+         } else if (rsp.wasSuspected()) {
+            timeoutException.addSuppressed(new RpcException(rsp.getSender() + " was suspected"));
+         } else if (rsp.wasUnreachable()) {
+            timeoutException.addSuppressed(new RpcException(rsp.getSender() + " was unreachable"));
+         } else if ((exception = rsp.getException()) != null) {
+            timeoutException.addSuppressed(exception);
+         } else if (rsp.getValue() instanceof ExceptionResponse) {
+            timeoutException.addSuppressed(((ExceptionResponse) rsp.getValue()).getException());
+         } else {
+            timeoutException.addSuppressed(new RpcException("Not accepted: " + rsp.getValue()));
+         }
+      }
+      return timeoutException;
    }
 
    private boolean ignoreTimeout(ResponseFilter responseFilter) {
