@@ -14,8 +14,6 @@ import org.infinispan.remoting.transport.Address;
  */
 public abstract class AbstractInvocationContext implements InvocationContext {
    private final Address origin;
-   // Class loader associated with this invocation which supports AdvancedCache.with() functionality
-   private ClassLoader classLoader;
 
    protected AbstractInvocationContext(Address origin) {
       this.origin = origin;
@@ -38,12 +36,12 @@ public abstract class AbstractInvocationContext implements InvocationContext {
 
    @Override
    public final ClassLoader getClassLoader() {
-      return classLoader;
+      return null;
    }
 
    @Override
    public final void setClassLoader(final ClassLoader classLoader) {
-      this.classLoader = classLoader;
+      // No-op
    }
 
    @Override

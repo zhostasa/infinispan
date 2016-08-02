@@ -47,7 +47,6 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
 
    private ComponentRegistry componentRegistry;
    private TransactionTable txTable;
-   private InvocationContextContainer invocationContextContainer;
 
    private static final Log log = LogFactory.getLog(InvocationContextInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
@@ -57,7 +56,6 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
       @Override
       public BasicInvocationStage apply(BasicInvocationStage stage, InvocationContext rCtx, VisitableCommand rCommand,
                                         Object rv, Throwable t) throws Throwable {
-         invocationContextContainer.clearThreadLocal(rCtx);
          if (t == null)
             return stage;
 
@@ -82,10 +80,9 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
    }
 
    @Inject
-   public void init(ComponentRegistry componentRegistry, TransactionTable txTable, InvocationContextContainer invocationContextContainer) {
+   public void init(ComponentRegistry componentRegistry, TransactionTable txTable) {
       this.componentRegistry = componentRegistry;
       this.txTable = txTable;
-      this.invocationContextContainer = invocationContextContainer;
    }
 
    @Override
@@ -107,7 +104,6 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
          }
       }
 
-      invocationContextContainer.setThreadLocal(ctx);
       InvocationStage stage = invokeNext(ctx, command);
       return stage.compose(composeHandler);
    }

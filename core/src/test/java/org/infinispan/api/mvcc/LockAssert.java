@@ -1,8 +1,6 @@
 package org.infinispan.api.mvcc;
 
 import org.infinispan.Cache;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.context.InvocationContextContainer;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.util.concurrent.locks.impl.LockContainer;
 import org.infinispan.util.concurrent.locks.LockManager;
