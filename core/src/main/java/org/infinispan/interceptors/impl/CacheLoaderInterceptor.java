@@ -90,7 +90,6 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
 
    protected PersistenceManager persistenceManager;
    protected CacheNotifier notifier;
-   protected volatile boolean enabled = true;
    protected EntryFactory entryFactory;
    private TimeService timeService;
    private InternalEntryFactory iceFactory;
@@ -152,10 +151,8 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
    @Override
    public CompletableFuture<Void> visitGetAllCommand(InvocationContext ctx, GetAllCommand command)
          throws Throwable {
-      if (enabled) {
-         for (Object key : command.getKeys()) {
-            loadIfNeeded(ctx, key, command);
-         }
+      for (Object key : command.getKeys()) {
+         loadIfNeeded(ctx, key, command);
       }
       return ctx.continueInvocation();
    }
@@ -163,12 +160,10 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
    @Override
    public CompletableFuture<Void> visitInvalidateCommand(InvocationContext ctx, InvalidateCommand command)
          throws Throwable {
-      if (enabled) {
-         Object[] keys;
-         if ((keys = command.getKeys()) != null && keys.length > 0) {
-            for (Object key : command.getKeys()) {
-               loadIfNeeded(ctx, key, command);
-            }
+      Object[] keys;
+      if ((keys = command.getKeys()) != null && keys.length > 0) {
+         for (Object key : command.getKeys()) {
+            loadIfNeeded(ctx, key, command);
          }
       }
       return ctx.continueInvocation();
@@ -188,21 +183,17 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
 
    private <T extends FlagAffectedCommand> CompletableFuture<Void> visitManyDataCommand(InvocationContext ctx, T command, Set<?> keys)
          throws Throwable {
-      if (enabled) {
-         for (Object key : keys) {
-            loadIfNeeded(ctx, key, command);
-         }
+      for (Object key : keys) {
+         loadIfNeeded(ctx, key, command);
       }
       return ctx.continueInvocation();
    }
 
    private CompletableFuture<Void> visitDataCommand(InvocationContext ctx, AbstractDataCommand command)
          throws Throwable {
-      if (enabled) {
-         Object key;
-         if ((key = command.getKey()) != null) {
-            loadIfNeeded(ctx, key, command);
-         }
+      Object key;
+      if ((key = command.getKey()) != null) {
+         loadIfNeeded(ctx, key, command);
       }
       return ctx.continueInvocation();
    }
@@ -211,7 +202,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
    public CompletableFuture<Void> visitGetKeysInGroupCommand(final InvocationContext ctx,
          GetKeysInGroupCommand command) throws Throwable {
       final String groupName = command.getGroupName();
-      if (!command.isGroupOwner() || !enabled || hasSkipLoadFlag(command)) {
+      if (!command.isGroupOwner() || hasSkipLoadFlag(command)) {
          return ctx.continueInvocation();
       }
 
@@ -235,7 +226,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
    public CompletableFuture<Void> visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command)
          throws Throwable {
       return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null || !enabled || hasSkipLoadFlag(command)) {
+         if (throwable != null || hasSkipLoadFlag(command)) {
             // Continue with the existing throwable/return value
             return null;
          }
@@ -271,7 +262,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
    public CompletableFuture<Void> visitKeySetCommand(InvocationContext ctx, KeySetCommand command)
          throws Throwable {
       return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null || !enabled || hasSkipLoadFlag(command)) {
+         if (throwable != null || hasSkipLoadFlag(command)) {
             // Continue with the existing throwable/return value
             return null;
          }
@@ -312,7 +303,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
 
    @Override
    public CompletableFuture<Void> visitReadWriteManyEntriesCommand(InvocationContext ctx, ReadWriteManyEntriesCommand command) throws Throwable {
-      return visitManyDataCommand(ctx, command, command.getKeys());
+      return visitManyDataCommand(ctx, command, command.getAffectedKeys());
    }
 
    protected final boolean isConditional(WriteCommand cmd) {
@@ -474,7 +465,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
     * This method returns a collection of cache loader types (fully qualified class names) that are configured and enabled.
     */
    public Collection<String> getStores() {
-      if (enabled && cacheConfiguration.persistence().usingStores()) {
+      if (cacheConfiguration.persistence().usingStores()) {
          return persistenceManager.getStoresAsString();
       } else {
          return Collections.emptySet();
@@ -495,11 +486,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
     * @param storeType fully qualified class name of the cache loader type to disable
     */
    public void disableStore(@Parameter(name = "storeType", description = "Fully qualified class name of a store implementation") String storeType) {
-      if (enabled) persistenceManager.disableStore(storeType);
-   }
-
-   public void disableInterceptor() {
-      enabled = false;
+      persistenceManager.disableStore(storeType);
    }
 
    private class WrappedEntrySet extends AbstractDelegatingEntryCacheSet<K, V> {

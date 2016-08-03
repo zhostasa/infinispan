@@ -274,14 +274,12 @@ public class PersistenceManagerImpl implements PersistenceManager {
             if (loaderInterceptor == null) {
                log.persistenceWithoutCacheLoaderInterceptor();
             } else {
-               ((CacheLoaderInterceptor) loaderInterceptor).disableInterceptor();
                chain.removeInterceptor(loaderInterceptor.getClass());
             }
             AsyncInterceptor writerInterceptor = chain.findInterceptorExtending(CacheWriterInterceptor.class);
             if (writerInterceptor == null) {
                log.persistenceWithoutCacheWriteInterceptor();
             } else {
-               ((CacheWriterInterceptor) writerInterceptor).disableInterceptor();
                chain.removeInterceptor(writerInterceptor.getClass());
             }
             enabled = false;
