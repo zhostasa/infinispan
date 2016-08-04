@@ -6,6 +6,7 @@ import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
 import org.infinispan.container.entries.InternalCacheValue;
+import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.persistence.spi.LocalOnlyCacheLoader;
 import org.infinispan.persistence.spi.PersistenceException;
@@ -60,8 +61,8 @@ public class ClusterLoader implements CacheLoader, LocalOnlyCacheLoader {
       if (!isCacheReady()) return null;
 
       ClusteredGetCommand clusteredGetCommand = new ClusteredGetCommand(
-            key, cacheName, EnumUtil.EMPTY_BIT_SET, false, null,
-            cache.getCacheConfiguration().dataContainer().keyEquivalence());
+            key, cacheName, EnumUtil.bitSetOf(Flag.SKIP_OWNERSHIP_CHECK),
+         cache.getCacheConfiguration().dataContainer().keyEquivalence());
 
       Collection<Response> responses = doRemoteCall(clusteredGetCommand);
       if (responses.isEmpty()) return null;
