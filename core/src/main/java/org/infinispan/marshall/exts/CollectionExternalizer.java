@@ -3,6 +3,7 @@ package org.infinispan.marshall.exts;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.util.Util;
+import org.infinispan.distribution.util.ReadOnlySegmentAwareCollection;
 import org.infinispan.marshall.core.Ids;
 import org.jboss.marshalling.util.IdentityIntMap;
 
@@ -30,6 +31,7 @@ public class CollectionExternalizer implements AdvancedExternalizer<Collection> 
    private static final int SINGLETON_SET = 6;
    private static final int SYNCHRONIZED_SET = 7;
    private static final int ARRAY_DEQUE = 8;
+   private static final int READ_ONLY_SEGMENT_AWARE_COLLECTION = 9;
 
    private final IdentityIntMap<Class<?>> numbers = new IdentityIntMap<>(16);
 
@@ -46,6 +48,7 @@ public class CollectionExternalizer implements AdvancedExternalizer<Collection> 
       numbers.put(getPrivateSingletonSetClass(), SINGLETON_SET);
       numbers.put(getPrivateSynchronizedSetClass(), SYNCHRONIZED_SET);
       numbers.put(getPrivateUnmodifiableSetClass(), HASH_SET);
+      numbers.put(ReadOnlySegmentAwareCollection.class, READ_ONLY_SEGMENT_AWARE_COLLECTION);
    }
 
    @Override
@@ -58,6 +61,7 @@ public class CollectionExternalizer implements AdvancedExternalizer<Collection> 
          case HASH_SET:
          case SYNCHRONIZED_SET:
          case ARRAY_DEQUE:
+         case READ_ONLY_SEGMENT_AWARE_COLLECTION:
             MarshallUtil.marshallCollection(collection, output);
             break;
          case SINGLETON_LIST:
@@ -96,6 +100,8 @@ public class CollectionExternalizer implements AdvancedExternalizer<Collection> 
                   MarshallUtil.unmarshallCollection(input, s -> new HashSet<>()));
          case ARRAY_DEQUE:
             return MarshallUtil.unmarshallCollection(input, ArrayDeque::new);
+         case READ_ONLY_SEGMENT_AWARE_COLLECTION:
+            return MarshallUtil.unmarshallCollection(input, ArrayList::new);
          default:
             throw new IllegalStateException("Unknown Set type: " + magicNumber);
       }
@@ -116,7 +122,7 @@ public class CollectionExternalizer implements AdvancedExternalizer<Collection> 
             HashSet.class, TreeSet.class,
             getPrivateSingletonSetClass(),
             getPrivateSynchronizedSetClass(), getPrivateUnmodifiableSetClass(),
-            ArrayDeque.class);
+            ArrayDeque.class, ReadOnlySegmentAwareCollection.class);
    }
 
    private static Class<Collection> getPrivateArrayListClass() {
