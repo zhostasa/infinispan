@@ -1,5 +1,19 @@
 package org.infinispan.server.test.client.rest;
 
+import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -16,21 +30,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
-import static org.junit.Assert.assertEquals;
+import org.apache.log4j.Logger;
+import org.junit.Assert;
 
 
 /**
@@ -41,11 +42,14 @@ import static org.junit.Assert.assertEquals;
  */
 public class RESTHelper {
 
+    private static final Logger logger = Logger.getLogger(RESTHelper.class);
+
     public static final String KEY_A = "a";
     public static final String KEY_B = "b";
     public static final String KEY_C = "c";
 
     private static final String DATE_PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final String TEST_CACHE_NANE = "testCache";
 
     private static int port = 8080;
     private static List<Server> servers = new ArrayList<Server>();
@@ -258,7 +262,7 @@ public class RESTHelper {
         HttpResponse resp = client.execute(post);
         EntityUtils.consume(resp.getEntity());
         int statusCode = resp.getStatusLine().getStatusCode();
-        assertEquals("URI=" + uri, expectedCode, statusCode);
+        assertEquals(expectedCode, statusCode);
         return resp;
     }
 
@@ -307,11 +311,11 @@ public class RESTHelper {
     }
 
     public static URI fullPathKey(int server, String key) {
-        return fullPathKey(server, "___defaultcache", key, 0);
+        return fullPathKey(server, TEST_CACHE_NANE, key, 0);
     }
 
     public static URI fullPathKey(int server, String key, int portOffset) {
-        return fullPathKey(server, "___defaultcache", key, portOffset);
+        return fullPathKey(server, TEST_CACHE_NANE, key, portOffset);
     }
 
     public static URI fullPathKey(String key) {
@@ -330,6 +334,35 @@ public class RESTHelper {
         return servers;
     }
 
+    private static void printOutDebuggingInformation() throws Exception {
+        logger.error("Testsuite is about to fail, printing out debugging information");
+        logger.error("Servers: " + servers);
+        logger.error("Port: " + port);
+        for(int i = 0; i < servers.size(); ++i) {
+            logger.error("Server: " + i + " Key: " + KEY_A + " Value: " + get(fullPathKey(i, KEY_A)));
+            logger.error("Server: " + i + " Key: " + KEY_B + " Value: " + get(fullPathKey(i, KEY_C)));
+            logger.error("Server: " + i + " Key: " + KEY_C + " Value: " + get(fullPathKey(i, KEY_C)));
+        }
+    }
+
+    private static void assertEquals(int a, int b) throws Exception {
+        try {
+            Assert.assertEquals(a, b);
+        } catch (Exception e) {
+            printOutDebuggingInformation();
+            throw e;
+        }
+    }
+
+    private static void assertEquals(String a, String b) throws Exception {
+        try {
+            Assert.assertEquals(a, b);
+        } catch (Exception e) {
+            printOutDebuggingInformation();
+            throw e;
+        }
+    }
+
     public static class Server {
         private String hostname;
         private String restServerPath;
@@ -345,6 +378,14 @@ public class RESTHelper {
 
         public String getRestServerPath() {
             return restServerPath;
+        }
+
+        @Override
+        public String toString() {
+            return "Server{" +
+                    "hostname='" + hostname + '\'' +
+                    ", restServerPath='" + restServerPath + '\'' +
+                    '}';
         }
     }
 }
