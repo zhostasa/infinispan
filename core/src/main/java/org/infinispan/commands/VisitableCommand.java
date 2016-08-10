@@ -50,14 +50,45 @@ public interface VisitableCommand extends ReplicableCommand {
 
    /**
     * @return {@code true} if the command needs to read the previous values of the keys it acts on.
+    * @deprecated since 8.4
     */
-   boolean readsExistingValues();
+   @Deprecated
+   default boolean readsExistingValues() {
+      return loadType() != LoadType.DONT_LOAD;
+   }
 
    /**
     * @return {@code true} if the command needs to read the previous values even on the backup owners.
     *   In transactional caches, this refers to all the owners except the originator.
+    * @deprecated since 8.4
     */
+   @Deprecated
    default boolean alwaysReadsExistingValues() {
-      return false;
+      return loadType() == LoadType.OWNER;
+   }
+
+   /**
+    * @return Nodes on which the command needs to read the previous values of the keys it acts on.
+    * @throws UnsupportedOperationException if the distinction does not make any sense.
+    */
+   LoadType loadType();
+
+   enum LoadType {
+      /**
+       * Never load previous value.
+       */
+      DONT_LOAD,
+      /**
+       * In non-transactional cache, load previous value only on the primary owner.
+       * In transactional cache, the value is fetched to originator. Primary then does not have to
+       * load the value but for write-skew check.
+       */
+      PRIMARY,
+      /**
+       * In non-transactional cache, load previous value on both primary and backups.
+       * In transactional cache, the value is both fetched to originator and all owners have to load
+       * it because it is needed to produce the new value.
+       */
+      OWNER
    }
 }

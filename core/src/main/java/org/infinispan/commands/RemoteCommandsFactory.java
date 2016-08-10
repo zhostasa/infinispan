@@ -1,6 +1,8 @@
 package org.infinispan.commands;
 
 import org.infinispan.commands.control.LockControlCommand;
+import org.infinispan.commands.functional.ReadOnlyKeyCommand;
+import org.infinispan.commands.functional.ReadOnlyManyCommand;
 import org.infinispan.commands.functional.ReadWriteKeyCommand;
 import org.infinispan.commands.functional.ReadWriteKeyValueCommand;
 import org.infinispan.commands.functional.ReadWriteManyCommand;
@@ -180,6 +182,12 @@ public class RemoteCommandsFactory {
                break;
             case ReplicableCommandManagerFunction.COMMAND_ID:
                command = new ReplicableCommandManagerFunction();
+               break;
+            case ReadOnlyKeyCommand.COMMAND_ID:
+               command = new ReadOnlyKeyCommand();
+               break;
+            case ReadOnlyManyCommand.COMMAND_ID:
+               command = new ReadOnlyManyCommand<>();
                break;
             default:
                throw new CacheException("Unknown command id " + id + "!");

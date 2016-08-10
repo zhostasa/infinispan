@@ -58,13 +58,11 @@ public class AsyncInterceptorChainImpl implements AsyncInterceptorChain {
 
    static {
       Map<Class<? extends CommandInterceptor>, Class<? extends AsyncInterceptor>> map = new HashMap<>();
-      map.put(org.infinispan.interceptors.ActivationInterceptor.class, ActivationInterceptor.class);
       map.put(org.infinispan.interceptors.BatchingInterceptor.class, BatchingInterceptor.class);
       map.put(org.infinispan.interceptors.CacheLoaderInterceptor.class, CacheLoaderInterceptor.class);
       map.put(org.infinispan.interceptors.CacheMgmtInterceptor.class, CacheMgmtInterceptor.class);
       map.put(org.infinispan.interceptors.CacheWriterInterceptor.class, CacheWriterInterceptor.class);
       map.put(org.infinispan.interceptors.CallInterceptor.class, CallInterceptor.class);
-      map.put(org.infinispan.interceptors.ClusteredActivationInterceptor.class, ClusteredActivationInterceptor.class);
       map.put(org.infinispan.interceptors.ClusteredCacheLoaderInterceptor.class,
             ClusteredCacheLoaderInterceptor.class);
       map.put(org.infinispan.interceptors.ClusteringInterceptor.class, ClusteringInterceptor.class);

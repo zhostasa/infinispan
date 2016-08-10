@@ -36,6 +36,9 @@ public class MarshallableFunctionExternalizers {
    private static final int RETURN_READ_WRITE_FIND = 12 | VALUE_MATCH_ALWAYS;
    private static final int RETURN_READ_WRITE_GET = 13 | VALUE_MATCH_ALWAYS;
    private static final int RETURN_READ_WRITE_VIEW = 14 | VALUE_MATCH_ALWAYS;
+   private static final int RETURN_READ_ONLY_FIND_OR_NULL = 15 | VALUE_MATCH_ALWAYS;
+   private static final int RETURN_READ_ONLY_FIND_IS_PRESENT = 16 | VALUE_MATCH_ALWAYS;
+   private static final int IDENTITY = 17 | VALUE_MATCH_ALWAYS;
 
    public static final class ConstantLambdaExternalizer implements LambdaExternalizer<Object> {
       private final IdentityIntMap<Class<?>> numbers = new IdentityIntMap<>(16);
@@ -55,6 +58,9 @@ public class MarshallableFunctionExternalizers {
          numbers.put(returnReadWriteFind().getClass(), RETURN_READ_WRITE_FIND);
          numbers.put(returnReadWriteGet().getClass(), RETURN_READ_WRITE_GET);
          numbers.put(returnReadWriteView().getClass(), RETURN_READ_WRITE_VIEW);
+         numbers.put(returnReadOnlyFindOrNull().getClass(), RETURN_READ_ONLY_FIND_OR_NULL);
+         numbers.put(returnReadOnlyFindIsPresent().getClass(), RETURN_READ_ONLY_FIND_IS_PRESENT);
+         numbers.put(identity().getClass(), IDENTITY);
       }
 
       @Override
@@ -84,7 +90,10 @@ public class MarshallableFunctionExternalizers {
             removeConsumer().getClass(),
             returnReadWriteFind().getClass(),
             returnReadWriteGet().getClass(),
-            returnReadWriteView().getClass()
+            returnReadWriteView().getClass(),
+            returnReadOnlyFindOrNull().getClass(),
+            returnReadOnlyFindIsPresent().getClass(),
+            identity().getClass()
          );
       }
 
@@ -115,6 +124,9 @@ public class MarshallableFunctionExternalizers {
             case RETURN_READ_WRITE_FIND: return returnReadWriteFind();
             case RETURN_READ_WRITE_GET: return returnReadWriteGet();
             case RETURN_READ_WRITE_VIEW: return returnReadWriteView();
+            case RETURN_READ_ONLY_FIND_OR_NULL: return returnReadOnlyFindOrNull();
+            case RETURN_READ_ONLY_FIND_IS_PRESENT: return returnReadOnlyFindIsPresent();
+            case IDENTITY: return identity();
             default:
                throw new IllegalStateException("Unknown lambda ID: " + id);
          }

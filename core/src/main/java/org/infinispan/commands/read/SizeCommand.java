@@ -35,8 +35,8 @@ public class SizeCommand extends AbstractLocalCommand implements VisitableComman
    }
 
    @Override
-   public boolean readsExistingValues() {
-      return false;
+   public LoadType loadType() {
+      throw new UnsupportedOperationException();
    }
 
    @Override

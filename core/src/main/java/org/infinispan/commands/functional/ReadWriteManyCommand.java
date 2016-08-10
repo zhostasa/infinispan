@@ -22,6 +22,8 @@ import static org.infinispan.functional.impl.EntryViews.snapshot;
 /**
  * @deprecated Since 8.3, will be removed.
  */
+// TODO: the command does not carry previous values to backup, so it can cause
+// the values on primary and backup owners to diverge in case of topology change
 @Deprecated
 public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyCommand {
 
@@ -32,7 +34,6 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
 
    private int topologyId = -1;
    boolean isForwarded = false;
-   private List<R> remoteReturns = new ArrayList<>();
 
    public ReadWriteManyCommand(Collection<? extends K> keys, Function<ReadWriteEntryView<K, V>, R> f, Params params) {
       this.keys = keys;
@@ -51,6 +52,11 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
 
    public void setKeys(Collection<? extends K> keys) {
       this.keys = keys;
+   }
+
+   public final ReadWriteManyCommand<K, V, R> withKeys(Collection<? extends K> keys) {
+      setKeys(keys);
+      return this;
    }
 
    @Override
@@ -92,10 +98,6 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
       return true;
    }
 
-   public void addAllRemoteReturns(List<R> returns) {
-      remoteReturns.addAll(returns);
-   }
-
    @Override
    public int getTopologyId() {
       return topologyId;
@@ -117,7 +119,7 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
       // EntryWrappingInterceptor expects any changes to be done eagerly,
       // otherwise they're not applied. So, apply the function eagerly and
       // return a lazy stream of the void returns.
-      List<R> returns = new ArrayList<>(remoteReturns);
+      List<R> returns = new ArrayList<>(keys.size());
       keys.forEach(k -> {
          CacheEntry<K, V> entry = ctx.lookupEntry(k);
 
@@ -161,12 +163,17 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
    }
 
    @Override
-   public boolean readsExistingValues() {
-      return true;
+   public LoadType loadType() {
+      return LoadType.OWNER;
    }
 
    @Override
-   public boolean alwaysReadsExistingValues() {
-      return false;
+   public String toString() {
+      final StringBuilder sb = new StringBuilder("ReadWriteManyCommand{");
+      sb.append("keys=").append(keys);
+      sb.append(", f=").append(f);
+      sb.append(", isForwarded=").append(isForwarded);
+      sb.append('}');
+      return sb.toString();
    }
 }

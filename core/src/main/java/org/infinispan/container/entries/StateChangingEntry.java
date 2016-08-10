@@ -9,8 +9,12 @@ package org.infinispan.container.entries;
 @Deprecated
 public interface StateChangingEntry {
 
-   byte getStateFlags();
+   @Deprecated
+   default byte getStateFlags() {
+      return 0;
+   }
 
-   void copyStateFlagsFrom(StateChangingEntry other);
+   @Deprecated
+   default void copyStateFlagsFrom(StateChangingEntry other) {}
 
 }

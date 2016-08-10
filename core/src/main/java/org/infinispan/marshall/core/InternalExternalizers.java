@@ -152,6 +152,8 @@ final class InternalExternalizers {
       addInternalExternalizer(new DldGlobalTransaction.Externalizer(), exts);
       addInternalExternalizer(new DoubleSummaryStatisticsExternalizer(), exts);
       addInternalExternalizer(new EmbeddedMetadata.Externalizer(), exts);
+      addInternalExternalizer(new EntryViews.NoValueReadOnlyViewExternalizer(), exts);
+      addInternalExternalizer(new EntryViews.ReadOnlySnapshotViewExternalizer(), exts);
       addInternalExternalizer(new EntryViews.ReadWriteSnapshotViewExternalizer(), exts);
       addInternalExternalizer(new EnumSetExternalizer(), exts);
       addInternalExternalizer(new EquivalenceExternalizer(), exts);

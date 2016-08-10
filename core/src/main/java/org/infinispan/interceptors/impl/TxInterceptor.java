@@ -399,7 +399,7 @@ public class TxInterceptor<K, V> extends DDAsyncInterceptor implements JmxStatis
                txCtx.getTransaction().setRollbackOnly();
             }
          }
-         if (shouldEnlist(rCtx) && writeCommand.isSuccessful()) {
+         if (t == null && shouldEnlist(rCtx) && writeCommand.isSuccessful()) {
             TxInvocationContext<LocalTransaction> txContext = (TxInvocationContext<LocalTransaction>) rCtx;
             txContext.getCacheTransaction().addModification(writeCommand);
          }

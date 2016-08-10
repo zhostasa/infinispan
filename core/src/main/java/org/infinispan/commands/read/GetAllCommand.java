@@ -5,10 +5,8 @@ import org.infinispan.commands.Visitor;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -40,11 +38,6 @@ public class GetAllCommand extends AbstractTopologyAffectedCommand {
 
    private Collection<?> keys;
    private boolean returnEntries;
-   private ConsistentHash ch;
-
-   // TODO: remotely fetched are because of compatibility - can't we just always return InternalCacheEntry and have
-   //       the unboxing executed as the topmost interceptor?
-   private Map<Object, InternalCacheEntry> remotelyFetched;
 
    private /* transient */ InternalEntryFactory entryFactory;
 
@@ -76,8 +69,8 @@ public class GetAllCommand extends AbstractTopologyAffectedCommand {
    }
 
    @Override
-   public boolean readsExistingValues() {
-      return true;
+   public LoadType loadType() {
+      return LoadType.PRIMARY;
    }
 
    @Override
@@ -86,10 +79,7 @@ public class GetAllCommand extends AbstractTopologyAffectedCommand {
       for (Object key : keys) {
          CacheEntry entry = ctx.lookupEntry(key);
          if (entry == null) {
-            if (trace) {
-               log.tracef("Entry for key %s not found", toStr(key));
-            }
-            continue;
+            throw new IllegalStateException("Entry for key " + toStr(key) + " not found");
          }
          if (entry.isNull()) {
             if (trace) {
@@ -179,22 +169,6 @@ public class GetAllCommand extends AbstractTopologyAffectedCommand {
 
    public void setKeys(Collection<?> keys) {
       this.keys = keys;
-   }
-
-   public Map<Object, InternalCacheEntry> getRemotelyFetched() {
-      return remotelyFetched;
-   }
-
-   public void setRemotelyFetched(Map<Object, InternalCacheEntry> remotelyFetched) {
-      this.remotelyFetched = remotelyFetched;
-   }
-
-   public void setConsistentHash(ConsistentHash ch) {
-      this.ch = ch;
-   }
-
-   public ConsistentHash getConsistentHash() {
-      return ch;
    }
 
    @Override

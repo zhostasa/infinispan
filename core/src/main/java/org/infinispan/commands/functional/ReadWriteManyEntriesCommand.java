@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.BiFunction;
 
 import static org.infinispan.functional.impl.EntryViews.snapshot;
@@ -23,6 +22,8 @@ import static org.infinispan.functional.impl.EntryViews.snapshot;
 /**
  * @deprecated Since 8.3, will be removed.
  */
+// TODO: the command does not carry previous values to backup, so it can cause
+// the values on primary and backup owners to diverge in case of topology change
 @Deprecated
 public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteManyCommand {
 
@@ -33,7 +34,6 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
 
    private int topologyId = -1;
    boolean isForwarded = false;
-   private List<R> remoteReturns = new ArrayList<>();
 
    public ReadWriteManyEntriesCommand(Map<? extends K, ? extends V> entries, BiFunction<V, ReadWriteEntryView<K, V>, R> f, Params params) {
       this.entries = entries;
@@ -56,6 +56,11 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
 
    public void setEntries(Map<? extends K, ? extends V> entries) {
       this.entries = entries;
+   }
+
+   public final ReadWriteManyEntriesCommand<K, V, R> withEntries(Map<? extends K, ? extends V> entries) {
+      setEntries(entries);
+      return this;
    }
 
    @Override
@@ -102,10 +107,6 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
       this.topologyId = topologyId;
    }
 
-   public void addAllRemoteReturns(List<R> returns) {
-      remoteReturns.addAll(returns);
-   }
-
    @Override
    public boolean shouldInvoke(InvocationContext ctx) {
       return true;
@@ -122,15 +123,15 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
       // EntryWrappingInterceptor expects any changes to be done eagerly,
       // otherwise they're not applied. So, apply the function eagerly and
       // return a lazy stream of the void returns.
-      List<R> returns = new ArrayList<>(remoteReturns);
+      List<R> returns = new ArrayList<>(entries.size());
       entries.forEach((k, v) -> {
          CacheEntry<K, V> entry = ctx.lookupEntry(k);
 
-         // Could be that the key is not local, 'null' is how this is signalled
-         if (entry != null) {
-            R r = f.apply(v, EntryViews.readWrite(entry));
-            returns.add(snapshot(r));
+         if (entry == null) {
+            throw new IllegalStateException();
          }
+         R r = f.apply(v, EntryViews.readWrite(entry));
+         returns.add(snapshot(r));
       });
       return returns;
    }
@@ -165,12 +166,17 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
       return false;  // TODO: Customise this generated block
    }
 
-   public boolean readsExistingValues() {
-      return true;
+   public LoadType loadType() {
+      return LoadType.OWNER;
    }
 
    @Override
-   public boolean alwaysReadsExistingValues() {
-      return false;
+   public String toString() {
+      final StringBuilder sb = new StringBuilder("ReadWriteManyEntriesCommand{");
+      sb.append("entries=").append(entries);
+      sb.append(", f=").append(f.getClass().getName());
+      sb.append(", isForwarded=").append(isForwarded);
+      sb.append('}');
+      return sb.toString();
    }
 }

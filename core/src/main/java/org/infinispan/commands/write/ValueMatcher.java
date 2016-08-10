@@ -2,13 +2,6 @@ package org.infinispan.commands.write;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.equivalence.Equivalence;
-import org.infinispan.container.entries.MVCCEntry;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A policy for determining if a write command should be executed based on the current value in the cache.
@@ -30,7 +23,7 @@ public enum ValueMatcher {
     */
    MATCH_ALWAYS() {
       @Override
-      public boolean matches(MVCCEntry existingEntry, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
+      public boolean matches(Object existingValue, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
          return true;
       }
 
@@ -51,8 +44,8 @@ public enum ValueMatcher {
     */
    MATCH_EXPECTED() {
       @Override
-      public boolean matches(MVCCEntry existingEntry, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
-         return equal(extractValue(existingEntry), expectedValue, valueEquivalence);
+      public boolean matches(Object existingValue, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
+         return equal(existingValue, expectedValue, valueEquivalence);
       }
 
       @Override
@@ -71,9 +64,9 @@ public enum ValueMatcher {
     */
    MATCH_EXPECTED_OR_NEW() {
       @Override
-      public boolean matches(MVCCEntry existingEntry, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
-         return equal(extractValue(existingEntry), expectedValue, valueEquivalence) ||
-               equal(extractValue(existingEntry), newValue, valueEquivalence);
+      public boolean matches(Object existingValue, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
+         return equal(existingValue, expectedValue, valueEquivalence) ||
+               equal(existingValue, newValue, valueEquivalence);
       }
 
       @Override
@@ -89,8 +82,8 @@ public enum ValueMatcher {
 
    MATCH_EXPECTED_OR_NULL() {
       @Override
-      public boolean matches(MVCCEntry existingEntry, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
-         return newValue == null || equal(extractValue(existingEntry), expectedValue, valueEquivalence);
+      public boolean matches(Object existingValue, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
+         return newValue == null || equal(existingValue, expectedValue, valueEquivalence);
       }
 
       @Override
@@ -108,8 +101,8 @@ public enum ValueMatcher {
     */
    MATCH_NON_NULL() {
       @Override
-      public boolean matches(MVCCEntry existingEntry, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
-         return extractValue(existingEntry) != null;
+      public boolean matches(Object existingValue, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
+         return existingValue != null;
       }
 
       @Override
@@ -128,7 +121,7 @@ public enum ValueMatcher {
     */
    MATCH_NEVER() {
       @Override
-      public boolean matches(MVCCEntry existingEntry, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
+      public boolean matches(Object existingValue, Object expectedValue, Object newValue, Equivalence valueEquivalence) {
          return false;
       }
 
@@ -143,17 +136,12 @@ public enum ValueMatcher {
       }
    },;
 
-   public abstract boolean matches(MVCCEntry existingEntry, Object expectedValue, Object newValue,
-                          Equivalence valueEquivalence);
+   public abstract boolean matches(Object existingValue, Object expectedValue, Object newValue,
+                                   Equivalence valueEquivalence);
 
    public abstract boolean nonExistentEntryCanMatch();
 
    public abstract ValueMatcher matcherForRetry();
-
-   protected Object extractValue(MVCCEntry mvccEntry) {
-      // isRemoved() == true doesn't seem to imply isNull() == true, so we check it explicitly
-      return (mvccEntry == null || mvccEntry.isRemoved()) ? null : mvccEntry.getValue();
-   }
 
    protected boolean equal(Object a, Object b, Equivalence valueEquivalence) {
       // Compare by identity first to catch the case where both are null

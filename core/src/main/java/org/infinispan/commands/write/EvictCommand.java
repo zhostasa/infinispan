@@ -45,8 +45,8 @@ public class EvictCommand extends RemoveCommand implements LocalCommand {
    }
 
    @Override
-   public void notify(InvocationContext ctx, Object value, Metadata previousMetadata, 
-         boolean isPre) {
+   public void notify(InvocationContext ctx, Object value, Metadata previousMetadata,
+                      boolean isPre) {
       // Eviction has no notion of pre/post event since 4.2.0.ALPHA4.
       // EvictionManagerImpl.onEntryEviction() triggers both pre and post events
       // with non-null values, so we should do the same here as an ugly workaround.
@@ -63,7 +63,7 @@ public class EvictCommand extends RemoveCommand implements LocalCommand {
    public byte getCommandId() {
       return -1; // these are not meant for replication!
    }
-   
+
    @Override
    public String toString() {
       return new StringBuilder()
@@ -76,8 +76,8 @@ public class EvictCommand extends RemoveCommand implements LocalCommand {
    }
 
    @Override
-   public boolean readsExistingValues() {
-      return false;
+   public LoadType loadType() {
+      return LoadType.DONT_LOAD;
    }
 
 }

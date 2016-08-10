@@ -21,6 +21,8 @@ import static org.infinispan.functional.impl.EntryViews.snapshot;
 /**
  * @deprecated Since 8.3, will be removed.
  */
+// TODO: the command does not carry previous values to backup, so it can cause
+// the values on primary and backup owners to diverge in case of topology change
 @Deprecated
 public final class ReadWriteKeyCommand<K, V, R> extends AbstractWriteKeyCommand<K> {
 
@@ -96,12 +98,7 @@ public final class ReadWriteKeyCommand<K, V, R> extends AbstractWriteKeyCommand<
    }
 
    @Override
-   public boolean readsExistingValues() {
-      return true;
-   }
-
-   @Override
-   public boolean alwaysReadsExistingValues() {
-      return false;
+   public LoadType loadType() {
+      return LoadType.OWNER;
    }
 }

@@ -27,11 +27,6 @@ public abstract class AbstractInternalCacheEntry implements InternalCacheEntry {
    }
 
    @Override
-   public final void rollback() {
-      // no-op
-   }
-
-   @Override
    public void setChanged(boolean changed) {
       // no-op
    }
@@ -93,7 +88,7 @@ public abstract class AbstractInternalCacheEntry implements InternalCacheEntry {
 
    @Override
    public final boolean isValid() {
-      return false;
+      return true;
    }
 
    @Override
@@ -103,12 +98,7 @@ public abstract class AbstractInternalCacheEntry implements InternalCacheEntry {
 
    @Override
    public boolean skipLookup() {
-      return false;
-   }
-
-   @Override
-   public boolean undelete(boolean doUndelete) {
-      return false;
+      return true;
    }
 
    @Override

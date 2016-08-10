@@ -1,5 +1,6 @@
 package org.infinispan.remoting.inboundhandler.action;
 
+import org.infinispan.distribution.Ownership;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
 import org.infinispan.util.concurrent.locks.LockUtil;
 
@@ -58,7 +59,7 @@ public abstract class BaseLockingAction implements Action {
 
    private void filterByPrimaryOwner(Collection<?> keys, Collection<Object> toAdd) {
       keys.forEach(key -> {
-         if (LockUtil.getLockOwnership(key, clusteringDependentLogic) == LockUtil.LockOwnership.PRIMARY) {
+         if (LockUtil.getLockOwnership(key, clusteringDependentLogic) == Ownership.PRIMARY) {
             toAdd.add(key);
          }
       });

@@ -3,7 +3,6 @@ package org.infinispan.commands.read;
 import org.infinispan.commands.AbstractFlagAffectedCommand;
 import org.infinispan.commands.LocalCommand;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.IOException;

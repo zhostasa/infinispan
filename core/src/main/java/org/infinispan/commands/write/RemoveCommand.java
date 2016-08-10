@@ -5,17 +5,16 @@ import static org.infinispan.commons.util.Util.toStr;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Objects;
 
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.MVCCEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
@@ -45,7 +44,8 @@ public class RemoveCommand extends AbstractDataWriteCommand {
     */
    protected Object value;
 
-   public RemoveCommand(Object key, Object value, CacheNotifier notifier, long flagsBitSet, Equivalence valueEquivalence, CommandInvocationId commandInvocationId) {
+   public RemoveCommand(Object key, Object value, CacheNotifier notifier, long flagsBitSet, Equivalence valueEquivalence,
+                        CommandInvocationId commandInvocationId) {
       super(key, flagsBitSet, commandInvocationId);
       this.value = value;
       //noinspection unchecked
@@ -76,13 +76,17 @@ public class RemoveCommand extends AbstractDataWriteCommand {
          return null;
       }
       MVCCEntry e = (MVCCEntry) ctx.lookupEntry(key);
-      if (e == null || e.isNull() || e.isRemoved()) {
+      Object prevValue = e.getValue();
+      if (prevValue == null) {
          nonExistent = true;
-         if (valueMatcher.matches(e, value, null, valueEquivalence)) {
-            if (e != null) {
-               e.setChanged(true);
-               e.setRemoved(true);
+         if (valueMatcher.matches(null, value, null, valueEquivalence)) {
+            e.setChanged(true);
+            e.setRemoved(true);
+            e.setCreated(false);
+            if (this instanceof EvictCommand) {
+               e.setEvicted(true);
             }
+            e.setValue(null);
             return isConditional() ? true : null;
          } else {
             log.trace("Nothing to remove since the entry doesn't exist in the context or it is null");
@@ -91,7 +95,7 @@ public class RemoveCommand extends AbstractDataWriteCommand {
          }
       }
 
-      if (!valueMatcher.matches(e, value, null, valueEquivalence)) {
+      if (!valueMatcher.matches(prevValue, value, null, valueEquivalence)) {
          successful = false;
          return false;
       }
@@ -100,7 +104,7 @@ public class RemoveCommand extends AbstractDataWriteCommand {
          e.setEvicted(true);
       }
 
-      return performRemove(e, ctx);
+      return performRemove(e, prevValue, ctx);
    }
 
    public void notify(InvocationContext ctx, Object removedValue, Metadata removedMetadata, boolean isPre) {
@@ -118,10 +122,9 @@ public class RemoveCommand extends AbstractDataWriteCommand {
          return false;
       }
 
-   RemoveCommand that = (RemoveCommand) o;
+      RemoveCommand that = (RemoveCommand) o;
 
-      return value != null ? value.equals(that.value) : that.value == null;
-
+      return Objects.equals(value, that.value);
    }
 
    @Override
@@ -200,8 +203,8 @@ public class RemoveCommand extends AbstractDataWriteCommand {
    }
 
    @Override
-   public boolean readsExistingValues() {
-      return value != null || !hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES);
+   public LoadType loadType() {
+      return isConditional() || !hasFlag(Flag.IGNORE_RETURN_VALUES) ? LoadType.PRIMARY : LoadType.DONT_LOAD;
    }
 
    public Object getValue() {
@@ -235,16 +238,16 @@ public class RemoveCommand extends AbstractDataWriteCommand {
       }
    }
 
-   protected Object performRemove(CacheEntry e, InvocationContext ctx) {
-      final Object removedValue = e.getValue();
-      notify(ctx, removedValue, e.getMetadata(), true);
+   protected Object performRemove(MVCCEntry e, Object prevValue, InvocationContext ctx) {
+      notify(ctx, prevValue, e.getMetadata(), true);
 
       e.setRemoved(true);
       e.setValid(false);
       e.setChanged(true);
+      e.setValue(null);
 
       if (valueMatcher != ValueMatcher.MATCH_EXPECTED_OR_NEW) {
-         return isConditional() ? true : removedValue;
+         return isConditional() ? true : prevValue;
       } else {
          // Return the expected value when retrying
          return isConditional() ? true : value;

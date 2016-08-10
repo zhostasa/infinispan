@@ -1,12 +1,15 @@
 package org.infinispan.partitionhandling;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.PartitionStatusChanged;
 import org.infinispan.notifications.cachelistener.event.PartitionStatusChangedEvent;
 import org.infinispan.statetransfer.StateTransferManager;
+import org.infinispan.test.Exceptions;
 import org.infinispan.test.concurrent.StateSequencer;
+import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.Test;
@@ -98,12 +101,7 @@ public class DelayedAvailabilityUpdateTest extends BasePartitionHandlingTest {
 
    private void assertPartiallyAvailable(PartitionDescriptor p0, Object k3Existing, Object value) {
       assertEquals(value, cache(p0.node(0)).get(k3Existing));
-      try {
-         cache(p0.node(1)).get(k3Existing);
-         fail("Should have failed, cache " + cache(p0.node(1)) + " is in degraded mode");
-      } catch (AvailabilityException e) {
-         // Expected
-      }
+      Exceptions.expectException(AvailabilityException.class, () -> cache(p0.node(1)).get(k3Existing));
    }
 
    @Listener

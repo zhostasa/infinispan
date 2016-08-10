@@ -7,14 +7,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.remote.GetKeysInGroupCommand;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.group.GroupManager;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.ComponentName;
@@ -108,7 +106,7 @@ public abstract class BaseStateTransferInterceptor extends DDAsyncInterceptor {
          int newTopologyId = Math.max(currentTopologyId(), commandTopologyId + 1);
          cmd.setTopologyId(newTopologyId);
          CompletableFuture<Void> transactionDataFuture = stateTransferLock.transactionDataFuture(newTopologyId);
-         return retryWhenDone(transactionDataFuture, newTopologyId, ctx, command, null).compose(this::handleLocalGetKeysInGroupReturn);
+         return retryWhenDone(transactionDataFuture, newTopologyId, ctx, command).compose(this::handleLocalGetKeysInGroupReturn);
       } else {
          return stage;
       }
@@ -138,12 +136,12 @@ public abstract class BaseStateTransferInterceptor extends DDAsyncInterceptor {
    }
 
    protected <T extends VisitableCommand> InvocationStage retryWhenDone(
-         CompletableFuture<Void> future, int topologyId, InvocationContext ctx, T command, Consumer<ConsistentHash> consistentHashConsumer) throws Throwable {
+         CompletableFuture<Void> future, int topologyId, InvocationContext ctx, T command) throws Throwable {
       if (future.isDone()) {
          getLog().tracef("Retrying command %s for topology %d", command, topologyId);
          return invokeNext(ctx, command);
       } else {
-         CancellableRetry<T> cancellableRetry = new CancellableRetry<>(command, topologyId, stateTransferManager, consistentHashConsumer);
+         CancellableRetry<T> cancellableRetry = new CancellableRetry<>(command, topologyId, stateTransferManager);
          // We have to use handleAsync and rethrow the exception in the handler, rather than
          // thenComposeAsync(), because if `future` completes with an exception we want to continue in remoteExecutor
          CompletableFuture<Void> retryFuture = future.handleAsync(cancellableRetry, remoteExecutor);
@@ -169,7 +167,6 @@ public abstract class BaseStateTransferInterceptor extends DDAsyncInterceptor {
 
       private final T command;
       private final int topologyId;
-      private final Consumer<ConsistentHash> consistentHashConsumer;
       private final StateTransferManager stateTransferManager;
       private volatile Throwable cancelled = null;
       // retryFuture is not volatile because it is used only in the timeout handler = run()
@@ -178,10 +175,9 @@ public abstract class BaseStateTransferInterceptor extends DDAsyncInterceptor {
       // ScheduledFuture does not have any dummy implementations, so we'll use plain Object as the field
       private volatile Object timeoutFuture;
 
-      public CancellableRetry(T command, int topologyId, StateTransferManager stateTransferManager, Consumer<ConsistentHash> consistentHashConsumer) {
+      public CancellableRetry(T command, int topologyId, StateTransferManager stateTransferManager) {
          this.command = command;
          this.topologyId = topologyId;
-         this.consistentHashConsumer = consistentHashConsumer;
          this.stateTransferManager = stateTransferManager;
       }
 
@@ -202,9 +198,6 @@ public abstract class BaseStateTransferInterceptor extends DDAsyncInterceptor {
             throw CompletableFutures.asCompletionException(cancelled);
          }
          log.tracef("Retrying command %s for topology %d", command, topologyId);
-         if (consistentHashConsumer != null) {
-            consistentHashConsumer.accept(stateTransferManager.getCacheTopology().getReadConsistentHash());
-         }
          return null;
       }
 

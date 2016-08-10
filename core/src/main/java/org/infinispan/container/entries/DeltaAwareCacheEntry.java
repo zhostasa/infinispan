@@ -6,8 +6,11 @@ import org.infinispan.atomic.DeltaAware;
 import org.infinispan.atomic.impl.AtomicHashMap;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.DataContainer;
-import org.infinispan.container.InternalEntryFactory;
+import org.infinispan.context.InvocationContext;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.persistence.PersistenceUtil;
+import org.infinispan.persistence.manager.PersistenceManager;
+import org.infinispan.util.TimeService;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -19,47 +22,43 @@ import static org.infinispan.container.entries.DeltaAwareCacheEntry.Flags.*;
 /**
  * A wrapper around a cached entry that encapsulates DeltaAware and Delta semantics when writes are
  * initiated, committed or rolled back.
- * 
+ *
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, StateChangingEntry {
+public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, MVCCEntry<K, DeltaAware> {
    private static final Log log = LogFactory.getLog(DeltaAwareCacheEntry.class);
    private static final boolean trace = log.isTraceEnabled();
 
+   // TODO: this is hack!
+   private InvocationContext ctx;
+   private PersistenceManager persistenceManager;
+   private TimeService timeService;
+
    protected K key;
    protected CacheEntry<K, DeltaAware> wrappedEntry;
-   protected DeltaAware value, oldValue;
+   protected DeltaAware value;
+   protected DeltaAware initialValue;
    protected final List<Delta> deltas;
    protected byte flags = 0;
 
-   // add Map representing uncommitted changes
    protected AtomicHashMap<K, ?> uncommittedChanges;
 
-   public DeltaAwareCacheEntry(K key, DeltaAware value, CacheEntry<K, DeltaAware> wrappedEntry) {
+   public DeltaAwareCacheEntry(K key, DeltaAware value, CacheEntry<K, DeltaAware> wrappedEntry,
+                               InvocationContext ctx, PersistenceManager persistenceManager, TimeService timeService) {
       setValid(true);
       this.key = key;
       this.value = value;
+      this.initialValue = value;
       this.wrappedEntry = wrappedEntry;
+      this.ctx = ctx;
+      this.persistenceManager = persistenceManager;
+      this.timeService = timeService;
       if (value instanceof AtomicHashMap) {
          this.uncommittedChanges = ((AtomicHashMap) value).copy();
       }
       this.deltas = new LinkedList<Delta>();
-   }
-
-   @Override
-   public byte getStateFlags() {
-      if (wrappedEntry instanceof StateChangingEntry) {
-         return ((StateChangingEntry)wrappedEntry).getStateFlags();
-      }
-
-      return flags;
-   }
-
-   @Override
-   public void copyStateFlagsFrom(StateChangingEntry other) {
-      this.flags = other.getStateFlags();
    }
 
    public void appendDelta(Delta d) {
@@ -80,7 +79,8 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
       REMOVED(1 << 2),
       VALID(1 << 3),
       EVICTED(1 << 4),
-      SKIP_LOOKUP(1 << 6);
+      SKIP_LOOKUP(1 << 6),
+      EXPIRED(1 << 7);
 
       final byte mask;
 
@@ -91,7 +91,7 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
 
    /**
     * Tests whether a flag is set.
-    * 
+    *
     * @param flag
     *           flag to test
     * @return true if set, false otherwise.
@@ -102,7 +102,7 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
 
    /**
     * Utility method that sets the value of the given flag to true.
-    * 
+    *
     * @param flag
     *           flag to set
     */
@@ -112,7 +112,7 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
 
    /**
     * Utility method that sets the value of the flag to false.
-    * 
+    *
     * @param flag
     *           flag to unset
     */
@@ -142,16 +142,26 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
 
    @Override
    public final DeltaAware getValue() {
-      return value;
+      // TODO: it's not possible to return the actually modified (but uncommitted) value
+      // when this is not a copyable entry
+      return uncommittedChanges;
    }
 
    @Override
    public final DeltaAware setValue(DeltaAware value) {
-      DeltaAware oldValue = this.value;
-      this.value = (DeltaAware) value;
+      DeltaAware oldValue = getValue();
+      this.value = value;
+      // TODO: it is not possible to remove the special handling for AtomicHashmaps without copy() in normal deltas
+      DeltaAware newValueCopy;
       if (value instanceof AtomicHashMap) {
-         this.uncommittedChanges = (AtomicHashMap<K, ?>) value;
+         newValueCopy = this.uncommittedChanges = ((AtomicHashMap<K, ?>) value).copy();
+      } else {
+         this.uncommittedChanges = null;
+         newValueCopy = value;
       }
+      this.deltas.clear();
+      // add a delta setting the value without caring about previous one
+      this.deltas.add(d -> newValueCopy);
       return oldValue;
    }
 
@@ -164,9 +174,7 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
    public final void commit(final DataContainer<K, DeltaAware> container, final Metadata metadata) {
       //If possible, we now ensure copy-on-write semantics. This way, it can ensure the correct transaction isolation.
       //note: we want to merge/copy to/from the data container value.
-      container.compute(key, new DataContainer.ComputeAction<K, DeltaAware>() {
-         @Override
-         public InternalCacheEntry<K, DeltaAware> compute(K key, InternalCacheEntry<K, DeltaAware> oldEntry, InternalEntryFactory factory) {
+      PersistenceUtil.loadAndComputeInDataContainer(container, persistenceManager, key, ctx, timeService, (key, oldEntry, factory) -> {
             InternalCacheEntry<K, DeltaAware> newEntry = oldEntry;
             DeltaAware containerValue = oldEntry == null ? null : (DeltaAware) oldEntry.getValue();
             if (containerValue != null && containerValue != value) {
@@ -188,7 +196,7 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
                      value = ((CopyableDeltaAware) value).copy();
                   }
                   for (Delta delta : deltas) {
-                     delta.merge(value);
+                     value = delta.merge(value);
                   }
                   if (makeCopy) {
                      //create or update existing entry.
@@ -199,10 +207,8 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
                   value.commit();
                }
             }
-            reset();
             return newEntry;
-         }
-      });
+         });
    }
 
    private Metadata extractMetadata(CacheEntry<K, DeltaAware> entry, Metadata provided) {
@@ -214,8 +220,8 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
       return entry == null ? null : entry.getMetadata();
    }
 
-   private void reset() {
-      oldValue = null;
+   @Override
+   public void resetCurrentValue() {
       deltas.clear();
       flags = 0;
       if (uncommittedChanges != null) {
@@ -225,11 +231,8 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
    }
 
    @Override
-   public final void rollback() {
-      if (isChanged()) {
-         value = oldValue;
-         reset();
-      }
+   public void updatePreviousValue() {
+      // noop
    }
 
    @Override
@@ -240,6 +243,16 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
    @Override
    public final void setChanged(boolean changed) {
       setFlag(changed, CHANGED);
+   }
+
+   @Override
+   public void setExpired(boolean expired) {
+      setFlag(expired, EXPIRED);
+   }
+
+   @Override
+   public boolean isExpired() {
+      return isFlagSet(EXPIRED);
    }
 
    @Override
@@ -326,18 +339,6 @@ public class DeltaAwareCacheEntry<K> implements CacheEntry<K, DeltaAware>, State
                + ", value=" + value + ", oldValue=" + uncommittedChanges + ", isCreated="
                + isCreated() + ", isChanged=" + isChanged() + ", isRemoved=" + isRemoved()
                + ", isValid=" + isValid() + '}';
-   }
-
-   @Override
-   public boolean undelete(boolean doUndelete) {
-      if (isRemoved() && doUndelete) {
-         if (trace)
-            log.trace("Entry is deleted in current scope.  Un-deleting.");
-         setRemoved(false);
-         setValid(true);
-         return true;
-      }
-      return false;
    }
 
    @Override

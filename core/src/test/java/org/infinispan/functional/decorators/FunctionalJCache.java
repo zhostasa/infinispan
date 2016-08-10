@@ -81,18 +81,18 @@ public final class FunctionalJCache<K, V> implements Cache<K, V>, FunctionalList
 
    @Override
    public V get(K key) {
-      return await(readOnly.eval(key, ro -> ro.find().orElse(null)));
+      return await(readOnly.eval(key, returnReadOnlyFindOrNull()));
    }
 
    @Override
    public Map<K, V> getAll(Set<? extends K> keys) {
-      Traversable<ReadEntryView<K, V>> t = readOnly.evalMany(keys, ro -> ro);
-      return t.collect(HashMap::new, (m, ro) -> ro.find().map(v -> m.put(ro.key(), v)), HashMap::putAll);
+      Traversable<ReadEntryView<K, V>> t = readOnly.evalMany(keys, identity());
+      return t.collect(HashMap::new, (m, ro) -> ro.find().ifPresent(v -> m.put(ro.key(), v)), HashMap::putAll);
    }
 
    @Override
    public boolean containsKey(K key) {
-      return await(readOnly.eval(key, e -> e.find().isPresent()));
+      return await(readOnly.eval(key, returnReadOnlyFindIsPresent()));
    }
 
    @Override

@@ -1,8 +1,6 @@
 package org.infinispan.interceptors;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -17,8 +15,9 @@ import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
 import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.Inject;
@@ -144,9 +143,8 @@ public class TriangleAckInterceptor extends DDAsyncInterceptor {
                   OutdatedTopologyException.getCachedInstance());
             throw OutdatedTopologyException.getCachedInstance();
          }
-         KeyOwnership keyOwnership = KeyOwnership
-               .ownership(cacheTopology.getWriteConsistentHash().locateOwners(command.getKey()), localAddress);
-         switch (keyOwnership) {
+         DistributionInfo distributionInfo = new DistributionInfo(command.getKey(), cacheTopology.getWriteConsistentHash(), localAddress);
+         switch (distributionInfo.ownership()) {
             case BACKUP:
                return invokeNext(ctx, command).compose(this::onRemoteBackupOwner);
             case PRIMARY:
@@ -257,7 +255,7 @@ public class TriangleAckInterceptor extends DDAsyncInterceptor {
       PrimaryMultiKeyAckCommand ack = commandsFactory.buildPrimaryMultiKeyAckCommand(
             command.getCommandInvocationId(),
             command.getTopologyId());
-      if (command.hasFlag(Flag.IGNORE_RETURN_VALUES)) {
+      if (command.hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES)) {
          ack.initWithoutReturnValue();
       } else {
          ack.initWithReturnValue(returnValue);
@@ -275,25 +273,6 @@ public class TriangleAckInterceptor extends DDAsyncInterceptor {
       } else {
          rpcManager
                .sendTo(origin, commandsFactory.buildExceptionAckCommand(id, throwable, topologyId), DeliverOrder.NONE);
-      }
-   }
-
-   public enum KeyOwnership {
-      PRIMARY,
-      BACKUP,
-      NONE;
-
-      public static KeyOwnership ownership(List<Address> owners, Address localNode) {
-         Iterator<Address> iterator = owners.iterator();
-         if (localNode.equals(iterator.next())) {
-            return PRIMARY;
-         }
-         while (iterator.hasNext()) {
-            if (localNode.equals(iterator.next())) {
-               return BACKUP;
-            }
-         }
-         return NONE;
       }
    }
 }

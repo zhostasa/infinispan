@@ -484,7 +484,12 @@ public class CommandAckCollector {
          if (this.topologyId != topologyId) {
             return;
          }
-         this.returnValue.putAll(returnValue);
+         if (returnValue != null) {
+            if (this.returnValue == null) {
+               this.returnValue = new HashMap<>(returnValue.size());
+            }
+            this.returnValue.putAll(returnValue);
+         }
          if (primary.remove(from)) {
             checkCompleted();
          }

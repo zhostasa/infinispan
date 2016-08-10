@@ -124,13 +124,8 @@ public class ApplyDeltaCommand extends AbstractDataWriteCommand {
    }
 
    @Override
-   public boolean readsExistingValues() {
-      return true;
-   }
-
-   @Override
-   public boolean alwaysReadsExistingValues() {
-      return true;
+   public LoadType loadType() {
+      return LoadType.OWNER;
    }
 
    @Override
