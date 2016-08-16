@@ -2,7 +2,7 @@ package org.infinispan.query.continuous;
 
 import static org.infinispan.query.dsl.Expression.max;
 import static org.infinispan.query.dsl.Expression.param;
-import static org.junit.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -202,6 +202,8 @@ public class ContinuousQueryTest extends SingleCacheManagerTest {
       assertEquals(2, joined.size());
       assertEquals(0, updated.size());
       assertEquals(0, left.size());
+
+      cq.removeContinuousQueryListener(listener);
    }
 
    public void testTwoSimilarCQ() {
