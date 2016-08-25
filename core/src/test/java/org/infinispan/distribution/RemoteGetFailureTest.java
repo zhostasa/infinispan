@@ -42,11 +42,10 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.test.Exceptions;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
-import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.util.ByteString;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.jgroups.Address;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.View;
 import org.jgroups.protocols.pbcast.GMS;
 import org.testng.annotations.AfterClass;
@@ -257,7 +256,7 @@ public abstract class RemoteGetFailureTest extends MultipleCacheManagersTest {
 
    private void installNewView(Cache installing, Cache... cachesInView) {
       JGroupsTransport transport = (JGroupsTransport) installing.getCacheManager().getTransport();
-      Channel channel = transport.getChannel();
+      JChannel channel = transport.getChannel();
 
       Address[] members = Stream.of(cachesInView).map(c -> ((JGroupsTransport) c.getCacheManager().getTransport()).getChannel().getAddress()).toArray(Address[]::new);
       View view = View.create(members[0], transport.getViewId() + 1, members);

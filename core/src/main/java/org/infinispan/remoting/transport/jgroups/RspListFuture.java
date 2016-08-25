@@ -1,35 +1,27 @@
 package org.infinispan.remoting.transport.jgroups;
 
-import org.infinispan.remoting.responses.Response;
-import org.jgroups.blocks.GroupRequest;
-import org.jgroups.util.FutureListener;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.BiConsumer;
+
+import org.infinispan.remoting.responses.Response;
+import org.infinispan.util.concurrent.TimeoutException;
+import org.jgroups.blocks.GroupRequest;
+import org.jgroups.util.RspList;
 
 /**
  * @author Dan Berindei
  * @since 8.0
  */
-public class RspListFuture extends CompletableFuture<Responses> implements FutureListener<Responses>,
-      Callable<Void> {
+public class RspListFuture extends CompletableFuture<Responses>
+      implements Callable<Void>, BiConsumer<RspList<Response>, Throwable> {
    private final GroupRequest<Response> request;
    private volatile Future<?> timeoutFuture = null;
 
    RspListFuture(GroupRequest<Response> request) {
       this.request = request;
-      if (request != null) {
-         request.setListener(this);
-      }
-   }
-
-   @Override
-   public void futureDone(Future<Responses> future) {
-      complete(new Responses(request.getResults()));
-      if (timeoutFuture != null) {
-         timeoutFuture.cancel(false);
-      }
+      request.whenComplete(this);
    }
 
    public void setTimeoutFuture(Future<?> timeoutFuture) {
@@ -42,10 +34,21 @@ public class RspListFuture extends CompletableFuture<Responses> implements Futur
    @Override
    public Void call() throws Exception {
       // The request timed out
-      Responses responses = new Responses(request.getResults());
-      responses.setTimedOut();
-      complete(responses);
+      completeExceptionally(new TimeoutException("Timed out waiting for responses"));
       request.cancel(true);
       return null;
+   }
+
+   @Override
+   public void accept(RspList<Response> rsps, Throwable throwable) {
+      // The response is done
+      if (throwable == null) {
+         complete(new Responses(rsps));
+      } else {
+         completeExceptionally(throwable);
+      }
+      if (timeoutFuture != null) {
+         timeoutFuture.cancel(false);
+      }
    }
 }

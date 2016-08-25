@@ -1,19 +1,28 @@
 package org.infinispan.remoting.transport.jgroups;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicReferenceArray;
+
+import org.infinispan.commons.util.SimpleImmutableEntry;
 import org.infinispan.remoting.responses.Response;
 import org.jgroups.Address;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicReferenceArray;
+import net.jcip.annotations.ThreadSafe;
 
-public class Responses implements Iterable<Rsp<Response>> {
+/**
+ * Pre-allocated holder for multiple responses. Until the response is received,
+ * or node is marked as suspected/unreachable the value is <code>null</code>.
+ *
+ * This class is safe against concurrent access by multiple threads.
+ */
+@ThreadSafe
+public class Responses implements Iterable<Map.Entry<Address, Rsp<Response>>> {
    public static final Responses EMPTY = new Responses(Collections.emptyList());
    private final Address[] addresses;
    private final AtomicReferenceArray<Rsp<Response>> responses;
@@ -28,7 +37,7 @@ public class Responses implements Iterable<Rsp<Response>> {
    public static Responses suspected(Collection<Address> dests) {
       Responses responses = new Responses(dests);
       for (int i = 0; i < responses.addresses.length; ++i) {
-         Rsp<Response> rsp = new Rsp<>(responses.addresses[i]);
+         Rsp<Response> rsp = new Rsp<>();
          rsp.setSuspected();
          responses.responses.set(i, rsp);
       }
@@ -40,15 +49,18 @@ public class Responses implements Iterable<Rsp<Response>> {
       this.addresses = new Address[size];
       this.responses = new AtomicReferenceArray<>(size);
       int i = 0;
-      for (Rsp<Response> rsp : results) {
-         addresses[i] = rsp.getSender();
-         responses.set(i, rsp);
+      for (Map.Entry<Address, Rsp<Response>> e : results.entrySet()) {
+         addresses[i] = e.getKey();
+         Rsp<Response> rsp = e.getValue();
+         // keep non-received response as null
+         if (rsp.wasReceived() || rsp.wasSuspected() || rsp.wasUnreachable()) {
+            responses.set(i, rsp);
+         }
          ++i;
       }
    }
 
-   public void addResponse(Rsp rsp) {
-      Address sender = rsp.getSender();
+   public void addResponse(Address sender, Rsp rsp) {
       for (int i = 0; i < addresses.length; ++i) {
          if (addresses[i].equals(sender)) {
             if (!responses.compareAndSet(i, null, rsp)) {
@@ -70,8 +82,8 @@ public class Responses implements Iterable<Rsp<Response>> {
    }
 
    @Override
-   public Iterator<Rsp<Response>> iterator() {
-      return new Iterator<Rsp<Response>>() {
+   public Iterator<Map.Entry<Address, Rsp<Response>>> iterator() {
+      return new Iterator<Map.Entry<Address, Rsp<Response>>>() {
          int i = 0;
 
          @Override
@@ -80,9 +92,10 @@ public class Responses implements Iterable<Rsp<Response>> {
          }
 
          @Override
-         public Rsp<Response> next() {
+         public Map.Entry<Address, Rsp<Response>> next() {
             if (hasNext()) {
-               return responses.get(i++);
+               int index = this.i++;
+               return new SimpleImmutableEntry<Address, Rsp<Response>>(addresses[index], responses.get(index));
             } else {
                throw new NoSuchElementException();
             }
