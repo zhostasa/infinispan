@@ -1,5 +1,13 @@
 package org.infinispan.client.hotrod.configuration;
 
+import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
@@ -7,13 +15,6 @@ import org.infinispan.client.hotrod.impl.transport.tcp.FailoverRequestBalancingS
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.TypedProperties;
-
-import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Configuration.
@@ -35,7 +36,7 @@ public class Configuration {
    private final int keySizeEstimate;
    private final Class<? extends Marshaller> marshallerClass;
    private final Marshaller marshaller;
-   private final String protocolVersion;
+   private final ProtocolVersion protocolVersion;
    private final List<ServerConfiguration> servers;
    private final int socketTimeout;
    private final SecurityConfiguration security;
@@ -49,7 +50,7 @@ public class Configuration {
 
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends FailoverRequestBalancingStrategy> balancingStrategyClass, FailoverRequestBalancingStrategy balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Class<? extends Marshaller> marshallerClass,
-         String protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SecurityConfiguration security, boolean tcpNoDelay, boolean tcpKeepAlive,
+         ProtocolVersion protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SecurityConfiguration security, boolean tcpNoDelay, boolean tcpKeepAlive,
          Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries, NearCacheConfiguration nearCache,
          List<ClusterConfiguration> clusters) {
       this.asyncExecutorFactory = asyncExecutorFactory;
@@ -78,7 +79,7 @@ public class Configuration {
 
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends FailoverRequestBalancingStrategy> balancingStrategyClass, FailoverRequestBalancingStrategy balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Marshaller marshaller,
-         String protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SecurityConfiguration security, boolean tcpNoDelay, boolean tcpKeepAlive,
+         ProtocolVersion protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SecurityConfiguration security, boolean tcpNoDelay, boolean tcpKeepAlive,
          Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries, NearCacheConfiguration nearCache,
          List<ClusterConfiguration> clusters) {
       this.asyncExecutorFactory = asyncExecutorFactory;
@@ -157,7 +158,15 @@ public class Configuration {
       return nearCache;
    }
 
+   /**
+    * @deprecated Use {@link Configuration#version()} instead.
+    */
+   @Deprecated
    public String protocolVersion() {
+      return protocolVersion.toString();
+   }
+
+   public ProtocolVersion version() {
       return protocolVersion;
    }
 
@@ -230,7 +239,7 @@ public class Configuration {
       properties.setProperty(ConfigurationProperties.FORCE_RETURN_VALUES, Boolean.toString(forceReturnValues()));
       properties.setProperty(ConfigurationProperties.KEY_SIZE_ESTIMATE, Integer.toString(keySizeEstimate()));
       properties.setProperty(ConfigurationProperties.MARSHALLER, marshallerClass().getName());
-      properties.setProperty(ConfigurationProperties.PROTOCOL_VERSION, protocolVersion());
+      properties.setProperty(ConfigurationProperties.PROTOCOL_VERSION, version().toString());
       properties.setProperty(ConfigurationProperties.SO_TIMEOUT, Integer.toString(socketTimeout()));
       properties.setProperty(ConfigurationProperties.TCP_NO_DELAY, Boolean.toString(tcpNoDelay()));
       properties.setProperty(ConfigurationProperties.TCP_KEEP_ALIVE, Boolean.toString(tcpKeepAlive()));

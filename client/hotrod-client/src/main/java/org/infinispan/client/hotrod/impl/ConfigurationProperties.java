@@ -4,16 +4,17 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
+import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.RoundRobinBalancingStrategy;
 import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
-
-import java.util.Objects;
-import java.util.Properties;
-import java.util.regex.Pattern;
 
 /**
  * Encapsulate all config properties here
@@ -66,17 +67,6 @@ public class ConfigurationProperties {
    public static final int DEFAULT_SO_TIMEOUT = 60000;
    public static final int DEFAULT_CONNECT_TIMEOUT = 60000;
    public static final int DEFAULT_MAX_RETRIES = 10;
-   public static final String PROTOCOL_VERSION_25 = "2.5";
-   public static final String PROTOCOL_VERSION_24 = "2.4";
-   public static final String PROTOCOL_VERSION_23 = "2.3";
-   public static final String PROTOCOL_VERSION_22 = "2.2";
-   public static final String PROTOCOL_VERSION_21 = "2.1";
-   public static final String PROTOCOL_VERSION_20 = "2.0";
-   public static final String PROTOCOL_VERSION_13 = "1.3";
-   public static final String PROTOCOL_VERSION_12 = "1.2";
-   public static final String PROTOCOL_VERSION_11 = "1.1";
-   public static final String PROTOCOL_VERSION_10 = "1.0";
-   public static final String DEFAULT_PROTOCOL_VERSION = PROTOCOL_VERSION_25;
 
    private final TypedProperties props;
 
@@ -163,7 +153,7 @@ public class ConfigurationProperties {
    }
 
    public String getProtocolVersion() {
-      return props.getProperty(PROTOCOL_VERSION, DEFAULT_PROTOCOL_VERSION);
+      return props.getProperty(PROTOCOL_VERSION, ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString());
    }
 
    public int getConnectTimeout() {
@@ -198,7 +188,7 @@ public class ConfigurationProperties {
     * Is version previous to, and not including, 1.2?
     */
    public static boolean isVersionPre12(Configuration cfg) {
-      String version = cfg.protocolVersion();
+      String version = cfg.version().toString();
       return Objects.equals(version, "1.0") || Objects.equals(version, "1.1");
    }
 
