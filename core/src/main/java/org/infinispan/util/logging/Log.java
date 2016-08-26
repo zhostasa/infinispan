@@ -1475,4 +1475,8 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "The eviction element has been deprecated. Please use the memory element instead", id = 429)
    void evictionDeprecated();
+
+   @LogMessage(level = ERROR)
+   @Message(value = "Error while handling view %s", id = 430)
+   void viewHandlingError(int viewId, @Cause Throwable t);
 }
