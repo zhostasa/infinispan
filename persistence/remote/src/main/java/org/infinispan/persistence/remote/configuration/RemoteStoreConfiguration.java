@@ -150,4 +150,3 @@ public class RemoteStoreConfiguration extends AbstractStoreConfiguration {
       return valueSizeEstimate.get();
    }
 }
-

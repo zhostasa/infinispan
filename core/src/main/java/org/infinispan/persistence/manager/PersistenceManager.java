@@ -110,5 +110,3 @@ public interface PersistenceManager extends Lifecycle {
    void setClearOnStop(boolean clearOnStop);
 
 }
-
-

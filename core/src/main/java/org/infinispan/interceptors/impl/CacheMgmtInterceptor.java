@@ -463,4 +463,3 @@ public class CacheMgmtInterceptor extends JmxStatsCommandInterceptor {
       private long slack1, slack2, slack3, slack4, slack5, slack6, slack7, slack8;
    }
 }
-

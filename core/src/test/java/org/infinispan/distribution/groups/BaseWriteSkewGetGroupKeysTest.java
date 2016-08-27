@@ -169,4 +169,3 @@ public abstract class BaseWriteSkewGetGroupKeysTest extends BaseTransactionalGet
 
    protected abstract TransactionProtocol getTransactionProtocol();
 }
-

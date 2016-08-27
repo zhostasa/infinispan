@@ -90,4 +90,3 @@ public interface DistributionManager {
     */
    boolean isJoinComplete();
 }
-

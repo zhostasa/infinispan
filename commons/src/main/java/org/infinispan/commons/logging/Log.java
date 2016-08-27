@@ -104,4 +104,3 @@ public interface Log extends BasicLogger {
    UnsupportedOperationException cannotResizeUnboundedContainer();
 
 }
-

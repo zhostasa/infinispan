@@ -168,4 +168,3 @@ public class AtomicObjectFactoryTest extends MultipleCacheManagersTest {
 
 
 }
-

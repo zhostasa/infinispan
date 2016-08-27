@@ -154,4 +154,3 @@ public abstract class BaseTransactionalGetGroupKeysTest extends BaseGetGroupKeys
 
    protected abstract TransactionProtocol getTransactionProtocol();
 }
-

@@ -284,4 +284,3 @@ public abstract class BaseStreamIteratorTest extends BaseSetupStreamIteratorTest
       assertEquals(0, cache.size());
    }
 }
-
