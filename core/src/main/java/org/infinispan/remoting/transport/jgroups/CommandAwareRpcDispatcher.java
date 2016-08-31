@@ -232,6 +232,8 @@ public class CommandAwareRpcDispatcher extends MessageDispatcher {
                ByteBuffer bytes = ispnMarshaller.objectToBuffer(t);
                rsp_buf = new Buffer(bytes.getBuf(), bytes.getOffset(), bytes.getLength());
                is_exception = true;
+            } catch (IllegalLifecycleStateException tt) {
+               return;
             } catch (Throwable tt) {
                log.errorMarshallingObject(tt, retVal);
                return;
