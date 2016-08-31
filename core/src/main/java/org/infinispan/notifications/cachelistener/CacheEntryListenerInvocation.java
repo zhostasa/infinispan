@@ -18,9 +18,9 @@ import org.infinispan.notifications.impl.ListenerInvocation;
  * @since 7.0
  */
 public interface CacheEntryListenerInvocation<K, V> extends ListenerInvocation<Event<K, V>> {
-   void invoke(CacheEntryEvent<K, V> event, boolean isLocalNodePrimaryOwner);
+   void invoke(EventWrapper<K, V, CacheEntryEvent<K, V>> event, boolean isLocalNodePrimaryOwner);
 
-   void invokeNoChecks(CacheEntryEvent<K, V> event, boolean skipQueue, boolean skipConverter);
+   void invokeNoChecks(EventWrapper<K, V, CacheEntryEvent<K, V>> wrappedEvent, boolean skipQueue, boolean skipConverter);
 
    boolean isClustered();
 

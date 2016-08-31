@@ -113,7 +113,7 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
 
    @Override
    public void putForExternalRead(K key, V value, Metadata metadata) {
-      cacheImplementation.putForExternalRead(key, value, flags);
+      cacheImplementation.putForExternalRead(key, value, metadata, flags);
    }
 
    @Override

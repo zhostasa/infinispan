@@ -39,6 +39,7 @@ import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.interceptors.DDAsyncInterceptor;
 import org.infinispan.marshall.core.MarshalledValue;
+import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.query.Transformer;
 import org.infinispan.query.impl.DefaultSearchWorkCreator;
 import org.infinispan.query.logging.Log;
@@ -247,7 +248,9 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    private Object extractValue(Object wrappedValue) {
       if (wrappedValue instanceof MarshalledValue)
          return ((MarshalledValue) wrappedValue).get();
-      else
+      else if (wrappedValue instanceof WrappedByteArray) {
+         return ((WrappedByteArray) wrappedValue).getBytes();
+      }
          return wrappedValue;
    }
 
@@ -264,7 +267,7 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    }
 
    private String keyToString(Object key) {
-      return keyTransformationHandler.keyToString(key);
+      return keyTransformationHandler.keyToString(extractValue(key));
    }
 
    public KeyTransformationHandler getKeyTransformationHandler() {

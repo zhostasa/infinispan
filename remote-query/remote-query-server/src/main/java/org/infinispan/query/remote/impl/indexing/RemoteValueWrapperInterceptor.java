@@ -1,7 +1,9 @@
 package org.infinispan.query.remote.impl.indexing;
 
-import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commands.FlagAffectedCommand;
+import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.util.EnumUtil;
+import org.infinispan.compat.PassThroughTypeConverter;
 import org.infinispan.compat.TypeConverter;
 import org.infinispan.context.Flag;
 import org.infinispan.context.impl.FlagBitSets;
@@ -30,43 +32,8 @@ public final class RemoteValueWrapperInterceptor<K, V> extends BaseTypeConverter
       cacheNotifier.setTypeConverter(protobufTypeConverter);
    }
 
-   protected TypeConverter<Object, Object, Object, Object> determineTypeConverter(long flagsBitSet) {
-      return EnumUtil.containsAny(flagsBitSet, FlagBitSets.OPERATION_HOTROD) ? protobufTypeConverter : passThroughTypeConverter;
-   }
-
-   /**
-    * A no-op converter.
-    */
-   private static class PassThroughTypeConverter implements TypeConverter<Object, Object, Object, Object> {
-
-      @Override
-      public Object boxKey(Object key) {
-         return key;
-      }
-
-      @Override
-      public Object boxValue(Object value) {
-         return value;
-      }
-
-      @Override
-      public Object unboxKey(Object target) {
-         return target;
-      }
-
-      @Override
-      public Object unboxValue(Object target) {
-         return target;
-      }
-
-      @Override
-      public boolean supportsInvocation(Flag flag) {
-         return false;
-      }
-
-      @Override
-      public void setMarshaller(Marshaller marshaller) {
-      }
+   protected TypeConverter<Object, Object, Object, Object> determineTypeConverter(FlagAffectedCommand command) {
+      return EnumUtil.containsAny(command.getFlagsBitSet(), FlagBitSets.OPERATION_HOTROD) ? protobufTypeConverter : passThroughTypeConverter;
    }
 
    /**
@@ -76,8 +43,8 @@ public final class RemoteValueWrapperInterceptor<K, V> extends BaseTypeConverter
 
       @Override
       public Object boxValue(Object value) {
-         if (value instanceof byte[]) {
-            return new ProtobufValueWrapper((byte[]) value);
+         if (value instanceof WrappedByteArray) {
+            return new ProtobufValueWrapper(((WrappedByteArray) value).getBytes());
          }
          return value;
       }
@@ -85,7 +52,8 @@ public final class RemoteValueWrapperInterceptor<K, V> extends BaseTypeConverter
       @Override
       public Object unboxValue(Object target) {
          if (target instanceof ProtobufValueWrapper) {
-            return ((ProtobufValueWrapper) target).getBinary();
+            byte[] bytes = ((ProtobufValueWrapper) target).getBinary();
+            return new WrappedByteArray(bytes);
          }
          return target;
       }

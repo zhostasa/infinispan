@@ -114,7 +114,13 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
    @Override
    public MarshalledEntry load(Object key) throws PersistenceException {
       if (configuration.rawValues()) {
-         MetadataValue<?> value = remoteCache.getWithMetadata(key);
+         Object unwrappedKey;
+         if (key instanceof WrappedByteArray) {
+            unwrappedKey = ((WrappedByteArray) key).getBytes();
+         } else {
+            unwrappedKey = key;
+         }
+         MetadataValue<?> value = remoteCache.getWithMetadata(unwrappedKey);
          if (value != null) {
             Metadata metadata = new EmbeddedMetadata.Builder()
                   .version(new NumericVersion(value.getVersion()))
@@ -122,12 +128,19 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
                   .maxIdle(value.getMaxIdle(), TimeUnit.SECONDS).build();
             long created = value.getCreated();
             long lastUsed = value.getLastUsed();
-            return ctx.getMarshalledEntryFactory().newMarshalledEntry(key, value.getValue(),
+            Object realValue = value.getValue();
+            if (realValue instanceof byte[]) {
+               realValue = new WrappedByteArray((byte[]) realValue);
+            }
+            return ctx.getMarshalledEntryFactory().newMarshalledEntry(key, realValue,
                                     new InternalMetadataImpl(metadata, created, lastUsed));
          } else {
             return null;
          }
       } else {
+         if (key instanceof WrappedByteArray) {
+            key = ((WrappedByteArray) key).getBytes();
+         }
          return (MarshalledEntry) remoteCache.get(key);
       }
    }
@@ -141,6 +154,9 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
    public void process(KeyFilter filter, CacheLoaderTask task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
       TaskContextImpl taskContext = new TaskContextImpl();
       for (Object key : remoteCache.keySet()) {
+         if (key instanceof byte[]) {
+            key = new WrappedByteArray((byte[]) key);
+         }
          if (taskContext.isStopped())
             break;
          if (filter == null || filter.accept(key)) {
@@ -208,6 +224,9 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
 
    @Override
    public boolean delete(Object key) throws PersistenceException {
+      if (key instanceof WrappedByteArray) {
+         key = ((WrappedByteArray) key).getBytes();
+      }
       // Less than ideal, but RemoteCache, since it extends Cache, can only
       // know whether the operation succeeded based on whether the previous
       // value is null or not.

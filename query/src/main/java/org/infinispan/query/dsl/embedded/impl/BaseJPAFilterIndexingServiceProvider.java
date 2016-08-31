@@ -15,6 +15,7 @@ import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.CacheEntryListenerInvocation;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
 import org.infinispan.notifications.cachelistener.CacheNotifierImpl;
+import org.infinispan.notifications.cachelistener.EventWrapper;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
@@ -252,7 +253,7 @@ public abstract class BaseJPAFilterIndexingServiceProvider implements FilterInde
                   conversionDone = true;
                }
 
-               invocation.invokeNoChecks(event, false, filterAndConvert);
+               invocation.invokeNoChecks(new EventWrapper<>(event.getKey(), event), false, filterAndConvert);
             }
          }
       }
@@ -292,12 +293,12 @@ public abstract class BaseJPAFilterIndexingServiceProvider implements FilterInde
       }
 
       @Override
-      public void invoke(CacheEntryEvent<K, V> event, boolean isLocalNodePrimaryOwner) {
-         matchEvent(event, matcher);
+      public void invoke(EventWrapper<K, V, CacheEntryEvent<K, V>> event, boolean isLocalNodePrimaryOwner) {
+         matchEvent(event.getEvent(), matcher);
       }
 
       @Override
-      public void invokeNoChecks(CacheEntryEvent<K, V> event, boolean skipQueue, boolean skipConverter) {
+      public void invokeNoChecks(EventWrapper<K, V, CacheEntryEvent<K, V>> event, boolean skipQueue, boolean skipConverter) {
       }
 
       @Override
