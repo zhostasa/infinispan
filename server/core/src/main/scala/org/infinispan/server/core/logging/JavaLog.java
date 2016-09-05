@@ -120,4 +120,7 @@ public interface JavaLog extends org.infinispan.util.logging.Log {
    @LogMessage(level = WARN)
    @Message(value = "Native Epoll transport not available, using NIO instead: %s", id = 5028)
    void epollNotAvailable(String message);
+   
+   @Message(value = "SSL Enabled but no SNI domain configured", id = 5029)
+   CacheConfigurationException noSniDomainConfigured();
 }
