@@ -1,6 +1,39 @@
 package org.infinispan.client.hotrod.configuration;
 
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.ASYNC_EXECUTOR_FACTORY;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.AUTH_CALLBACK_HANDLER;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.AUTH_CLIENT_SUBJECT;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.AUTH_SERVER_NAME;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.CONNECT_TIMEOUT;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.HASH_FUNCTION_PREFIX;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.KEY_SIZE_ESTIMATE;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.KEY_STORE_CERTIFICATE_PASSWORD;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.KEY_STORE_FILE_NAME;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.KEY_STORE_PASSWORD;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.MAX_RETRIES;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.REQUEST_BALANCING_STRATEGY;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.SASL_MECHANISM;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.SASL_PROPERTIES_PREFIX;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.SERVER_LIST;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.SNI_HOST_NAME;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.SO_TIMEOUT;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.SSL_CONTEXT;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.TCP_KEEP_ALIVE;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.TCP_NO_DELAY;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.TRANSPORT_FACTORY;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.TRUST_STORE_FILE_NAME;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.TRUST_STORE_PASSWORD;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.USE_AUTH;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.USE_SSL;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.VALUE_SIZE_ESTIMATE;
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.function.Function;
 
 import javax.net.ssl.SSLContext;
 import javax.security.auth.Subject;
@@ -15,15 +48,6 @@ import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.transport.tcp.SaslTransportObjectFactory;
 import org.infinispan.commons.CacheConfigurationException;
 import org.testng.annotations.Test;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.function.Function;
-
-import static org.infinispan.client.hotrod.impl.ConfigurationProperties.*;
-import static org.testng.AssertJUnit.assertTrue;
 
 @Test(testName = "client.hotrod.configuration.ConfigurationTest", groups = "functional" )
 public class ConfigurationTest {
@@ -56,6 +80,7 @@ public class ConfigurationTest {
       OPTIONS.put(MAX_RETRIES, Configuration::maxRetries);
       OPTIONS.put(USE_SSL, c -> c.security().ssl().enabled());
       OPTIONS.put(KEY_STORE_FILE_NAME, c -> c.security().ssl().keyStoreFileName());
+      OPTIONS.put(SNI_HOST_NAME, c -> c.security().ssl().sniHostName());
       OPTIONS.put(KEY_STORE_PASSWORD, c -> new String(c.security().ssl().keyStorePassword()));
       OPTIONS.put(KEY_STORE_CERTIFICATE_PASSWORD, c -> new String(c.security().ssl().keyStoreCertificatePassword()));
       OPTIONS.put(TRUST_STORE_FILE_NAME, c -> c.security().ssl().trustStoreFileName());
@@ -221,6 +246,23 @@ public class ConfigurationTest {
       validateSSLContextConfiguration(newConfiguration);
    }
 
+   public void testSni() {
+      ConfigurationBuilder builder = new ConfigurationBuilder();
+      builder.security()
+              .ssl()
+              .enable()
+              .sslContext(getSSLContext())
+              .sniHostName("sni");
+
+      Configuration configuration = builder.build();
+      validateSniContextConfiguration(configuration);
+
+      ConfigurationBuilder newBuilder = new ConfigurationBuilder();
+      newBuilder.read(configuration);
+      Configuration newConfiguration = newBuilder.build();
+      validateSniContextConfiguration(newConfiguration);
+   }
+
    public void testWithPropertiesSSLContext() {
       ConfigurationBuilder builder = new ConfigurationBuilder();
       Properties p = new Properties();
@@ -232,6 +274,19 @@ public class ConfigurationTest {
       newBuilder.read(configuration);
       Configuration newConfiguration = newBuilder.build();
       validateSSLContextConfiguration(newConfiguration);
+   }
+
+   public void testWithPropertiesSni() {
+      ConfigurationBuilder builder = new ConfigurationBuilder();
+      Properties p = new Properties();
+      p.put(SNI_HOST_NAME, "sni");
+      Configuration configuration = builder.withProperties(p).build();
+      validateSniContextConfiguration(configuration);
+
+      ConfigurationBuilder newBuilder = new ConfigurationBuilder();
+      newBuilder.read(configuration);
+      Configuration newConfiguration = newBuilder.build();
+      validateSniContextConfiguration(newConfiguration);
    }
 
    public void testWithPropertiesAuthCallbackHandlerFQN() {
@@ -377,6 +432,10 @@ public class ConfigurationTest {
 
    private void validateSSLContextConfiguration(Configuration configuration) {
       assertEqualsConfig(getSSLContext(), SSL_CONTEXT, configuration);
+   }
+
+   private void validateSniContextConfiguration(Configuration configuration) {
+      assertEqualsConfig("sni", SNI_HOST_NAME, configuration);
    }
 
    private SSLContext getSSLContext() {
