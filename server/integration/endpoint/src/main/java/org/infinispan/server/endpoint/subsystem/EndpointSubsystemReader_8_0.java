@@ -18,6 +18,17 @@
  */
 package org.infinispan.server.endpoint.subsystem;
 
+import static org.infinispan.server.endpoint.EndpointLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.infinispan.server.endpoint.Constants;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -26,17 +37,6 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.infinispan.server.endpoint.EndpointLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * The parser for the data grid endpoint subsystem configuration.
@@ -560,9 +560,42 @@ class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReade
             throw ParseUtils.unexpectedAttribute(reader, i);
          }
          }
-
       }
-      ParseUtils.requireNoContent(reader);
       operations.add(security);
+
+      //Since nextTag() moves the pointer, we need to make sure we won't move too far
+      boolean skipTagCheckAtTheEnd = reader.hasNext();
+
+      while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+         final Element element = Element.forName(reader.getLocalName());
+         switch (element) {
+            case SNI: {
+               parseSni(reader, security, operations);
+               break;
+            }
+            default: {
+               throw ParseUtils.unexpectedElement(reader);
+            }
+         }
+      }
+
+      if(!skipTagCheckAtTheEnd)
+         ParseUtils.requireNoContent(reader);
+   }
+
+   private void parseSni(final XMLExtendedStreamReader reader, final ModelNode encryption, final List<ModelNode> operations) throws XMLStreamException {
+      ParseUtils.requireAttributes(reader, Attribute.HOST_NAME.getLocalName(), Attribute.SECURITY_REALM.getLocalName());
+      String hostName = reader.getAttributeValue(null, Attribute.HOST_NAME.getLocalName());
+
+      PathAddress sniOpAddress = PathAddress.pathAddress(encryption.get(OP_ADDR)).append(ModelKeys.SNI, hostName);
+      ModelNode sniOp = Util.createAddOperation(sniOpAddress);
+
+      SniResource.HOST_NAME.parseAndSetParameter(hostName, sniOp, reader);
+
+      String securityRealm = reader.getAttributeValue(null, Attribute.SECURITY_REALM.getLocalName());
+      SniResource.SECURITY_REALM.parseAndSetParameter(securityRealm, sniOp, reader);
+
+      ParseUtils.requireNoContent(reader);
+      operations.add(sniOp);
    }
 }
