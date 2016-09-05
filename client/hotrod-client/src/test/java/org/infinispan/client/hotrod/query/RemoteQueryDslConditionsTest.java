@@ -168,7 +168,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select("date")
             .having("date").between(makeDate("2013-01-01"), makeDate("2013-01-31"))
-            .toBuilder().build();
+            .build();
 
       List<Object[]> list = q.list();
       assertEquals(4, list.size());
@@ -236,7 +236,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       QueryFactory qf = getQueryFactory();
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select("date")
-            .having("date").between(makeDate("2013-02-15"), makeDate("2013-03-15")).toBuilder()
+            .having("date").between(makeDate("2013-02-15"), makeDate("2013-03-15"))
             .groupBy("date")
             .build();
 
@@ -255,7 +255,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       QueryFactory qf = getQueryFactory();
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select(count("date"), min("date"))
-            .having("description").eq("Hotel").toBuilder()
+            .having("description").eq("Hotel")
             .groupBy("id")
             .build();
 
@@ -275,7 +275,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       QueryFactory qf = getQueryFactory();
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select(min("date"), count("date"))
-            .having("description").eq("Hotel").toBuilder()
+            .having("description").eq("Hotel")
             .groupBy("id")
             .build();
 
@@ -297,7 +297,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select("id", "date", "date")
             .having("description").eq("Hotel")
-            .toBuilder().build();
+            .build();
       List<Object[]> list = q.list();
 
       assertEquals(1, list.size());
@@ -330,7 +330,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       QueryFactory qf = getQueryFactory();
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select(avg("amount"), sum("amount"), count("date"), min("date"), max("accountId"))
-            .having("isDebit").eq(param("param")).toBuilder()
+            .having("isDebit").eq(param("param"))
             .orderBy(avg("amount"), SortOrder.DESC).orderBy(count("date"), SortOrder.DESC)
             .orderBy(max("amount"), SortOrder.ASC)
             .build();
@@ -357,7 +357,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       QueryFactory qf = getQueryFactory();
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select("date")
-            .having("date").between(makeDate("2013-02-15"), makeDate("2013-03-15")).toBuilder()
+            .having("date").between(makeDate("2013-02-15"), makeDate("2013-03-15"))
             .groupBy("date")
             .build();
       List<Object[]> list = q.list();
@@ -377,7 +377,7 @@ public class RemoteQueryDslConditionsTest extends QueryDslConditionsTest {
       QueryFactory qf = getQueryFactory();
       Query q = qf.from(getModelFactory().getTransactionImplClass())
             .select(count("date"), min("date"))
-            .having("description").eq("Hotel").toBuilder()
+            .having("description").eq("Hotel")
             .groupBy("id")
             .build();
       List<Object[]> list = q.list();

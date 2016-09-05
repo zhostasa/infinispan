@@ -170,7 +170,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       // get account back from remote cache via query and check its attributes
       QueryFactory qf = Search.getQueryFactory(remoteCache);
       Query query = qf.from(AccountPB.class)
-            .having("description").like("%test%").toBuilder()
+            .having("description").like("%test%")
             .build();
       List<Account> list = query.list();
 
@@ -189,7 +189,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       // get account back from remote cache via query and check its attributes
       QueryFactory qf = Search.getQueryFactory(remoteCache);
       Query query = qf.from(AccountPB.class)
-            .having("description").like("%test%").toBuilder()
+            .having("description").like("%test%")
             .build();
       List<Account> list = query.list();
 
@@ -209,7 +209,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       // get user back from remote cache via query and check its attributes
       QueryFactory qf = Search.getQueryFactory(remoteCache);
       Query query = qf.from(UserPB.class)
-            .having("notes").like("%567%").toBuilder()
+            .having("notes").like("%567%")
             .build();
       List<User> list = query.list();
 
@@ -227,7 +227,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       // get user back from remote cache via query and check its attributes
       QueryFactory qf = Search.getQueryFactory(remoteCache);
       Query query = qf.from("sample_bank_account.NotIndexed")
-            .having("notIndexedField").like("%123%").toBuilder()
+            .having("notIndexedField").like("%123%")
             .build();
       List<NotIndexed> list = query.list();
 
@@ -251,7 +251,6 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
             .having("notes").like("%567%")
             .and()
             .having("surname").eq("test surname")
-            .toBuilder()
             .build();
       List<User> list = query.list();
 
@@ -275,7 +274,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       QueryFactory qf = Search.getQueryFactory(remoteCache);
       Query query = qf.from(AccountPB.class)
             .select("description", "id")
-            .having("description").like("%test%").toBuilder()
+            .having("description").like("%test%")
             .build();
       List<Object[]> list = query.list();
 
@@ -313,7 +312,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       // get user back from remote cache via query and check its attributes
       QueryFactory qf = org.infinispan.query.Search.getQueryFactory(cache);
       Query query = qf.from(UserHS.class)
-            .having("notes").like("%567%").toBuilder()
+            .having("notes").like("%567%")
             .build();
       List<User> list = query.list();
 
@@ -331,7 +330,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       // get user back from remote cache via query and check its attributes
       QueryFactory qf = org.infinispan.query.Search.getQueryFactory(cache);
       Query query = qf.from(NotIndexed.class)
-            .having("notIndexedField").like("%123%").toBuilder()
+            .having("notIndexedField").like("%123%")
             .build();
       List<NotIndexed> list = query.list();
 
@@ -355,7 +354,6 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
             .having("notes").like("%567%")
             .and()
             .having("surname").eq("test surname")
-            .toBuilder()
             .build();
       List<User> list = query.list();
 
@@ -425,7 +423,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
 
       Query q = qf.from(UserPB.class)
             .having("name").eq("")
-            .toBuilder().build();
+            .build();
 
       List<User> list = q.list();
       assertTrue(list.isEmpty());
@@ -442,7 +440,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
 
       Query q = qf.from(AccountPB.class)
             .having("description").eq("John Doe's first bank account")
-            .toBuilder().build();
+            .build();
 
       List<Account> list = q.list();
       assertEquals(1, list.size());
@@ -461,7 +459,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
 
       Query q = qf.from(UserHS.class)
             .having("name").eq("")
-            .toBuilder().build();
+            .build();
 
       List<User> list = q.list();
       assertTrue(list.isEmpty());
@@ -478,7 +476,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
 
       Query q = qf.from(AccountHS.class)
             .having("description").eq("John Doe's first bank account")
-            .toBuilder().build();
+            .build();
 
       List<Account> list = q.list();
       assertEquals(1, list.size());
@@ -501,7 +499,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       Query q = qf.from(TransactionHS.class)
             .select("id", "isDebit", "isDebit")
             .having("description").eq("Hotel")
-            .toBuilder().build();
+            .build();
       List<Object[]> list = q.list();
 
       assertEquals(1, list.size());
@@ -527,7 +525,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       Query q = qf.from(TransactionPB.class)
             .select("id", "isDebit", "isDebit")
             .having("description").eq("Hotel")
-            .toBuilder().build();
+            .build();
       List<Object[]> list = q.list();
 
       assertEquals(1, list.size());

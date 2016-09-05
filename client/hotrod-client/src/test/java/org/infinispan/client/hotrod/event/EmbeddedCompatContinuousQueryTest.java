@@ -122,7 +122,7 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
       Query query = Search.getQueryFactory(remoteCache).from(UserPB.class)
             .select(max("age"))
             .having("age").gte(20)
-            .toBuilder().build();
+            .build();
 
       ContinuousQuery<String, User> continuousQuery = Search.getContinuousQuery(remoteCache);
 
@@ -167,7 +167,7 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
 
       Query query = qf.from(UserPB.class)
             .having("age").lte(param("ageParam"))
-            .toBuilder().build()
+            .build()
             .setParameter("ageParam", 32);
 
       final BlockingQueue<KeyValuePair<String, User>> joined = new LinkedBlockingQueue<>();
@@ -269,7 +269,7 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
       Query query = qf.from(UserPB.class)
             .select("age")
             .having("age").lte(param("ageParam"))
-            .toBuilder().build()
+            .build()
             .setParameter("ageParam", 32);
 
       final BlockingQueue<KeyValuePair<String, Object[]>> joined = new LinkedBlockingQueue<>();
@@ -371,7 +371,7 @@ public class EmbeddedCompatContinuousQueryTest extends MultiHotRodServersTest {
       Query query = qf.from(UserPB.class)
             .select("age")
             .having("age").lte(param("ageParam"))
-            .toBuilder().build()
+            .build()
             .setParameter("ageParam", 32);
 
       final BlockingQueue<KeyValuePair<String, Object[]>> joined = new LinkedBlockingQueue<>();
