@@ -584,7 +584,7 @@ class EndpointSubsystemReader_8_0 implements XMLStreamConstants, XMLElementReade
    }
 
    private void parseSni(final XMLExtendedStreamReader reader, final ModelNode encryption, final List<ModelNode> operations) throws XMLStreamException {
-      ParseUtils.requireAttributes(reader, Attribute.HOST_NAME.getLocalName(), Attribute.SECURITY_REALM.getLocalName());
+      ParseUtils.requireAttributes(reader, Attribute.HOST_NAME.getLocalName());
       String hostName = reader.getAttributeValue(null, Attribute.HOST_NAME.getLocalName());
 
       PathAddress sniOpAddress = PathAddress.pathAddress(encryption.get(OP_ADDR)).append(ModelKeys.SNI, hostName);
