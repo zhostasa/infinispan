@@ -17,20 +17,12 @@ import static org.testng.AssertJUnit.assertTrue;
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
  */
 public class LockAssert {
-   public static void assertLocked(Object key, LockManager lockManager, InvocationContextContainer icc) {
+   public static void assertLocked(Object key, LockManager lockManager) {
       assertTrue("" + key + " not locked!", lockManager.isLocked(key));
-      InvocationContext context = icc.getInvocationContext(true);
-      if (context != null) {
-         assertTrue("" + key + " lock not recorded!", context.hasLockedKey(key));
-      }
    }
 
-   public static void assertNotLocked(Object key, InvocationContextContainer icc) {
-      // can't rely on the negative test since other entries may share the same lock with lock striping.
-      InvocationContext context = icc.getInvocationContext(true);
-      if (context != null) {
-         assertFalse("" + key + " lock recorded!", context.hasLockedKey(key));
-      }
+   public static void assertNotLocked(Object key, LockManager lockManager) {
+      assertFalse("" + key + " not locked!", lockManager.isLocked(key));
    }
 
    public static void assertNoLocks(LockManager lockManager) {
