@@ -1,5 +1,29 @@
 package org.infinispan.remoting.transport.jgroups;
 
+import static org.infinispan.factories.KnownComponentNames.GLOBAL_MARSHALLER;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
@@ -54,27 +78,6 @@ import org.jgroups.util.Buffer;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.TopologyUUID;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static org.infinispan.factories.KnownComponentNames.GLOBAL_MARSHALLER;
-
 /**
  * An encapsulation of a JGroups transport. JGroups transports can be configured using a variety of
  * methods, usually by passing in one of the following properties:
@@ -111,7 +114,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    protected GlobalComponentRegistry gcr;
    protected TimeService timeService;
    protected InboundInvocationHandler globalHandler;
-   private ScheduledExecutorService timeoutExecutor;
+   protected ScheduledExecutorService timeoutExecutor;
+   protected Executor remoteExecutor;
 
    private boolean globalStatsEnabled;
    private MBeanServer mbeanServer;
@@ -172,13 +176,15 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    public void initialize(@ComponentName(GLOBAL_MARSHALLER) StreamingMarshaller marshaller,
                           CacheManagerNotifier notifier, GlobalComponentRegistry gcr,
                           TimeService timeService, InboundInvocationHandler globalHandler,
-                          @ComponentName(KnownComponentNames.TIMEOUT_SCHEDULE_EXECUTOR) ScheduledExecutorService timeoutExecutor) {
+                          @ComponentName(KnownComponentNames.TIMEOUT_SCHEDULE_EXECUTOR) ScheduledExecutorService timeoutExecutor,
+                          @ComponentName(KnownComponentNames.REMOTE_COMMAND_EXECUTOR) ExecutorService remoteExecutor) {
       this.marshaller = marshaller;
       this.notifier = notifier;
       this.gcr = gcr;
       this.timeService = timeService;
       this.globalHandler = globalHandler;
       this.timeoutExecutor = timeoutExecutor;
+      this.remoteExecutor = remoteExecutor;
    }
 
    @Override
@@ -366,7 +372,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    }
 
    protected void initRPCDispatcher() {
-      dispatcher = new CommandAwareRpcDispatcher(channel, this, globalHandler, timeoutExecutor, timeService);
+      dispatcher = new CommandAwareRpcDispatcher(channel, this, globalHandler, timeoutExecutor, timeService,
+            remoteExecutor);
       MarshallerAdapter adapter = new MarshallerAdapter(marshaller);
       dispatcher.setRequestMarshaller(adapter);
       dispatcher.setResponseMarshaller(adapter);
