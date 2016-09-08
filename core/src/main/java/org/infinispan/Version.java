@@ -35,7 +35,7 @@ public class Version {
       String parts[] = getParts(Injected.getVersion());
       versionId = readVersionBytes(parts[0], parts[1], parts[2], parts[3]);
       versionShort = getVersionShort(Injected.getVersion());
-      moduleSlot = String.format("%s-7.0", MODULE_PREFIX);
+      moduleSlot = String.format("%s-7.1", MODULE_PREFIX);
       marshallVersion = Short.valueOf(parts[0] + parts[1]);
       majorMinor = String.format("%s.%s", parts[0], parts[1]);
       major = parts[0];
