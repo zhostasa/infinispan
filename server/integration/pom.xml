@@ -58,33 +58,33 @@
          <properties>
             <skipTests>true</skipTests>
          </properties>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-assembly-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>assemble</id>
-                        <phase>package</phase>
-                        <goals>
-                           <goal>single</goal>
-                        </goals>
-                     </execution>
-                  </executions>
-                  <configuration>
-                     <descriptors>
-                        <descriptor>${project.basedir}/src/main/assemblies/bin.xml</descriptor>
-                        <descriptor>${project.basedir}/src/main/assemblies/source.xml</descriptor>
-                     </descriptors>
-                     <finalName>${product.name}-${product.version}</finalName>
-                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
-                     <workDirectory>${project.build.directory}/assembly/work</workDirectory>
-                     <attach>true</attach>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
       </profile>
    </profiles>
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>assemble</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <descriptors>
+                  <descriptor>${project.basedir}/src/main/assemblies/bin.xml</descriptor>
+                  <descriptor>${project.basedir}/src/main/assemblies/source.xml</descriptor>
+               </descriptors>
+               <finalName>${product.name}-${product.version}</finalName>
+               <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+               <workDirectory>${project.build.directory}/assembly/work</workDirectory>
+               <attach>true</attach>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
 </project>
