@@ -1,6 +1,11 @@
 package org.infinispan.configuration.cache;
 
-import static org.infinispan.configuration.cache.AbstractStoreConfiguration.*;
+import static org.infinispan.configuration.cache.AbstractStoreConfiguration.FETCH_PERSISTENT_STATE;
+import static org.infinispan.configuration.cache.AbstractStoreConfiguration.IGNORE_MODIFICATIONS;
+import static org.infinispan.configuration.cache.AbstractStoreConfiguration.PRELOAD;
+import static org.infinispan.configuration.cache.AbstractStoreConfiguration.PROPERTIES;
+import static org.infinispan.configuration.cache.AbstractStoreConfiguration.PURGE_ON_STARTUP;
+import static org.infinispan.configuration.cache.AbstractStoreConfiguration.SHARED;
 
 import java.lang.reflect.Method;
 import java.util.Properties;
@@ -175,6 +180,11 @@ public abstract class AbstractStoreConfigurationBuilder<T extends StoreConfigura
       if (!shared && !fetchPersistentState && !purgeOnStartup
             && builder.clustering().cacheMode().isClustered())
          log.staleEntriesWithoutFetchPersistentStateOrPurgeOnStartup();
+
+      if (fetchPersistentState && attributes.attribute(FETCH_PERSISTENT_STATE).isModified() &&
+            clustering().cacheMode().isInvalidation()) {
+         throw log.attributeNotAllowedInInvalidationMode(FETCH_PERSISTENT_STATE.name());
+      }
 
       if (shared && !preload && builder.indexing().enabled()
             && builder.indexing().indexLocalOnly())

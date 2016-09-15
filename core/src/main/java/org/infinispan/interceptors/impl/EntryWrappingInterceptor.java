@@ -1,5 +1,14 @@
 package org.infinispan.interceptors.impl;
 
+import static org.infinispan.commons.util.Util.toStr;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+
 import org.infinispan.commands.AbstractVisitor;
 import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.DataCommand;
@@ -60,15 +69,6 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.infinispan.xsite.statetransfer.XSiteStateConsumer;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
-import static org.infinispan.commons.util.Util.toStr;
-
 /**
  * Interceptor in charge with wrapping entries and add them in caller's context.
  *
@@ -84,6 +84,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    private CommandsFactory commandFactory;
    private boolean isUsingLockDelegation;
    private boolean isInvalidation;
+   private boolean isSync;
    private StateConsumer stateConsumer;       // optional
    private StateTransferLock stateTransferLock;
    private XSiteStateConsumer xSiteStateConsumer;
@@ -164,6 +165,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             (cacheConfiguration.clustering().cacheMode().isDistributed() ||
                    cacheConfiguration.clustering().cacheMode().isReplicated());
       isInvalidation = cacheConfiguration.clustering().cacheMode().isInvalidation();
+      isSync = cacheConfiguration.clustering().cacheMode().isSynchronous();
    }
 
    @Override
@@ -572,17 +574,16 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       stateTransferLock.acquireSharedTopologyLock();
       try {
          // We only retry non-tx write commands
-         if (command instanceof WriteCommand) {
+         if (!isInvalidation && command instanceof WriteCommand) {
             WriteCommand writeCommand = (WriteCommand) command;
             // Can't perform the check during preload or if the cache isn't clustered
-            boolean isSync = (cacheConfiguration.clustering().cacheMode().isSynchronous() &&
-                  !command.hasFlag(Flag.FORCE_ASYNCHRONOUS)) || command.hasFlag(Flag.FORCE_SYNCHRONOUS);
-            if (writeCommand.isSuccessful() && stateConsumer != null &&
-                  stateConsumer.getCacheTopology() != null) {
+            boolean syncRpc = isSync && !command.hasFlag(Flag.FORCE_ASYNCHRONOUS) ||
+                  command.hasFlag(Flag.FORCE_SYNCHRONOUS);
+            if (writeCommand.isSuccessful() && stateConsumer != null && stateConsumer.getCacheTopology() != null) {
                int commandTopologyId = command.getTopologyId();
                int currentTopologyId = stateConsumer.getCacheTopology().getTopologyId();
                // TotalOrderStateTransferInterceptor doesn't set the topology id for PFERs.
-               if (isSync && currentTopologyId != commandTopologyId && commandTopologyId != -1) {
+               if (syncRpc && currentTopologyId != commandTopologyId && commandTopologyId != -1) {
                   // If we were the originator of a data command which we didn't own the key at the time means it
                   // was already committed, so there is no need to throw the OutdatedTopologyException
                   // This will happen if we submit a command to the primary owner and it responds and then a topology
