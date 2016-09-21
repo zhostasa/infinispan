@@ -241,4 +241,7 @@ public interface Log extends BasicLogger {
    @Message(value = "Tracking key %s belonging to segment %d, already tracked? = %b", id = 4064)
    void trackingSegmentKey(String key, int segment, boolean isTracked);
 
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to convert property [%s] to an enum! Using default value of %d", id = 4066)
+   void unableToConvertStringPropertyToEnum(String value, String defaultValue);
 }

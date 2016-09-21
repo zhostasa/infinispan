@@ -136,9 +136,9 @@ public class TcpTransportFactory implements TransportFactory {
          }
          TransportObjectFactory connectionFactory;
          if (configuration.security().authentication().enabled()) {
-            connectionFactory = new SaslTransportObjectFactory(codec, this, defaultCacheTopologyId, configuration.security().authentication());
+            connectionFactory = new SaslTransportObjectFactory(codec, this, defaultCacheTopologyId, configuration);
          } else {
-            connectionFactory = new TransportObjectFactory(codec, this, defaultCacheTopologyId);
+            connectionFactory = new TransportObjectFactory(codec, this, defaultCacheTopologyId, configuration);
          }
          PropsKeyedObjectPoolFactory<SocketAddress, TcpTransport> poolFactory =
                new PropsKeyedObjectPoolFactory<SocketAddress, TcpTransport>(
