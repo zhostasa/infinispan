@@ -1,5 +1,23 @@
 package org.infinispan.query.affinity;
 
+import static java.util.stream.IntStream.rangeClosed;
+import static org.infinispan.hibernate.search.spi.InfinispanIntegration.DEFAULT_INDEXESDATA_CACHENAME;
+import static org.infinispan.hibernate.search.spi.InfinispanIntegration.DEFAULT_INDEXESMETADATA_CACHENAME;
+import static org.infinispan.hibernate.search.spi.InfinispanIntegration.DEFAULT_LOCKING_CACHENAME;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -19,22 +37,6 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import static java.util.stream.IntStream.rangeClosed;
-import static org.infinispan.hibernate.search.spi.InfinispanIntegration.*;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Test index affinity for the ShardIndexManager
@@ -88,7 +90,7 @@ public class AffinityTest extends MultipleCacheManagersTest {
 
       assertEquals(pickCache(cacheList).size(), numThreads * ENTRIES);
       cacheList.forEach(c -> {
-         CacheQuery q = Search.getSearchManager(c).getQuery(new MatchAllDocsQuery(), Entity.class);
+         CacheQuery<Entity> q = Search.getSearchManager(c).getQuery(new MatchAllDocsQuery(), Entity.class);
          eventually(() -> q.list().size() == numThreads * ENTRIES);
       });
 
@@ -119,7 +121,7 @@ public class AffinityTest extends MultipleCacheManagersTest {
       populate(ENTRIES / 2 + 1, ENTRIES, currentCaches);
       checkAffinity();
 
-      CacheQuery q = Search.getSearchManager(pickCache(currentCaches)).getQuery(new MatchAllDocsQuery(), Entity.class);
+      CacheQuery<Entity> q = Search.getSearchManager(pickCache(currentCaches)).getQuery(new MatchAllDocsQuery(), Entity.class);
       assertEquals(ENTRIES, pickCache(currentCaches).size());
       assertEquals(ENTRIES, q.list().size());
 

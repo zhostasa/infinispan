@@ -1,5 +1,12 @@
 package org.infinispan.query.persistence;
 
+import static org.infinispan.test.TestingUtil.withCacheManager;
+import static org.testng.Assert.assertEquals;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.List;
+
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -23,13 +30,6 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.io.File;
-import java.io.Serializable;
-import java.util.List;
-
-import static org.infinispan.test.TestingUtil.withCacheManager;
-import static org.testng.Assert.assertEquals;
 
 /**
  * Tests persistent index state us in synch with the values stored in a CacheLoader
@@ -106,9 +106,9 @@ public class InconsistentIndexesAfterRestartTest extends AbstractInfinispanTest 
 
     private List searchByName(String name, Cache c) {
         SearchManager sm = Search.getSearchManager(c);
-        CacheQuery q = sm.getQuery(SEntity.searchByName(name), SEntity.class);
+        CacheQuery<?> q = sm.getQuery(SEntity.searchByName(name), SEntity.class);
         int resultSize = q.getResultSize();
-        List l = q.list();
+        List<?> l = q.list();
         assert l.size() == resultSize;
         return q.list();
     }

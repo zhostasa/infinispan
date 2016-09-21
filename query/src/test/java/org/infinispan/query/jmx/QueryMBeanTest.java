@@ -1,5 +1,18 @@
 package org.infinispan.query.jmx;
 
+import static org.infinispan.query.helper.TestQueryHelperFactory.createQueryParser;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.util.List;
+import java.util.Set;
+
+import javax.management.Attribute;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.infinispan.Cache;
@@ -17,19 +30,6 @@ import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
-
-import javax.management.Attribute;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import java.util.List;
-import java.util.Set;
-
-import static org.infinispan.query.helper.TestQueryHelperFactory.createQueryParser;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * // TODO: Document this
@@ -111,8 +111,8 @@ public class QueryMBeanTest extends SingleCacheManagerTest {
 
          QueryParser queryParser = createQueryParser("blurb");
          Query luceneQuery = queryParser.parse("value");
-         CacheQuery cacheQuery = searchManager.getQuery(luceneQuery);
-         List<Object> found = cacheQuery.list(); //Executing first query
+         CacheQuery<?> cacheQuery = searchManager.getQuery(luceneQuery);
+         List<?> found = cacheQuery.list(); //Executing first query
 
          assertEquals(1L, server.getAttribute(name, "SearchQueryExecutionCount"));
 

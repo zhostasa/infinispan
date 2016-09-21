@@ -1,5 +1,17 @@
 package org.infinispan.client.hotrod.stress;
 
+import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemoteCacheManager;
+import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
+import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNull;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -25,18 +37,6 @@ import org.infinispan.test.MultipleCacheManagersTest;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemoteCacheManager;
-import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
-import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * Perf test for remote query. This test runs in compat mode so we can also run queries with lucene directly and compare
@@ -174,10 +174,10 @@ public class RemoteQueryDslPerfTest extends MultipleCacheManagersTest {
       final int loops = 100000;
       final long startTs = System.nanoTime();
       for (int i = 0; i < loops; i++) {
-         CacheQuery cacheQuery = searchManager.getQuery(query);
-         List<Object> list = cacheQuery.list();
+         CacheQuery<User> cacheQuery = searchManager.getQuery(query);
+         List<User> list = cacheQuery.list();
          assertEquals(1, list.size());
-         assertEquals("John1", ((User) list.get(0)).getName());
+         assertEquals("John1", list.get(0).getName());
       }
       final long duration = (System.nanoTime() - startTs) / loops;
 

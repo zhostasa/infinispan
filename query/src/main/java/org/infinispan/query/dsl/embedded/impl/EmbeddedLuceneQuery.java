@@ -1,13 +1,13 @@
 package org.infinispan.query.dsl.embedded.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.infinispan.objectfilter.impl.hql.FilterParsingResult;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.impl.BaseQuery;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -16,19 +16,19 @@ import java.util.Map;
  * @author anistor@redhat.com
  * @since 6.0
  */
-final class EmbeddedLuceneQuery extends BaseQuery {
+final class EmbeddedLuceneQuery<TypeMetadata> extends BaseQuery {
 
    private final QueryEngine queryEngine;
 
    private final ResultProcessor resultProcessor;
 
-   private final FilterParsingResult<?> parsingResult;
+   private final FilterParsingResult<TypeMetadata> parsingResult;
 
    /**
     * An Infinispan Cache query that wraps an actual Lucene query object. This is built lazily when the query is
     * executed first.
     */
-   private CacheQuery cacheQuery;
+   private CacheQuery<Object> cacheQuery;
 
    /**
     * The cached results, lazily evaluated.
@@ -36,7 +36,7 @@ final class EmbeddedLuceneQuery extends BaseQuery {
    private List<Object> results;
 
    EmbeddedLuceneQuery(QueryEngine queryEngine, QueryFactory queryFactory,
-                       Map<String, Object> namedParameters, FilterParsingResult<?> parsingResult,
+                       Map<String, Object> namedParameters, FilterParsingResult<TypeMetadata> parsingResult,
                        String[] projection, ResultProcessor resultProcessor,
                        long startOffset, int maxResults) {
       super(queryFactory, parsingResult.getQueryString(), namedParameters, projection, startOffset, maxResults);
@@ -54,7 +54,7 @@ final class EmbeddedLuceneQuery extends BaseQuery {
       cacheQuery = null;
    }
 
-   private CacheQuery createCacheQuery() {
+   private CacheQuery<Object> createCacheQuery() {
       // query is created first time only
       if (cacheQuery == null) {
          cacheQuery = queryEngine.buildLuceneQuery(parsingResult, namedParameters, startOffset, maxResults);

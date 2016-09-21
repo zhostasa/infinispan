@@ -1,5 +1,11 @@
 package org.infinispan.query.dsl.embedded.impl;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.hibernate.search.spi.SearchIntegrator;
 import org.infinispan.AdvancedCache;
 import org.infinispan.objectfilter.ObjectFilter;
@@ -41,12 +47,6 @@ import org.infinispan.security.AuthorizationManager;
 import org.infinispan.security.AuthorizationPermission;
 import org.infinispan.util.KeyValuePair;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author anistor@redhat.com
@@ -391,6 +391,7 @@ public class QueryEngine {
                int idx = columns.size();
                c = new RowPropertyHelper.ColumnMetadata(idx, "C" + idx, propertyType);
                columns.put(p, c);
+               return new PropertyValueExpr(c.getColumnName(), aggregationExpr.isRepeated(), propertyType);
             }
             return new PropertyValueExpr(c.getColumnName(), aggregationExpr.isRepeated(), aggregationExpr.getPrimitiveType());
          }
@@ -604,22 +605,22 @@ public class QueryEngine {
                      };
                      PropertyPath[] deduplicatedProjection = projectionsMap.keySet().toArray(new PropertyPath[projectionsMap.size()]);
                      FilterParsingResult<?> fpr = makeFilterParsingResult(parsingResult, normalizedWhereClause, deduplicatedProjection, projectedTypes, sortFields);
-                     return new EmbeddedLuceneQuery(this, queryFactory, namedParameters, fpr, parsingResult.getProjections(), makeResultProcessor(rowProcessor), startOffset, maxResults);
+                     return new EmbeddedLuceneQuery<>(this, queryFactory, namedParameters, fpr, parsingResult.getProjections(), makeResultProcessor(rowProcessor), startOffset, maxResults);
                   } else {
                      rowProcessor = makeProjectionProcessor(parsingResult.getProjectedTypes());
                   }
                }
-               return new EmbeddedLuceneQuery(this, queryFactory, namedParameters, parsingResult, parsingResult.getProjections(), makeResultProcessor(rowProcessor), startOffset, maxResults);
+               return new EmbeddedLuceneQuery<>(this, queryFactory, namedParameters, parsingResult, parsingResult.getProjections(), makeResultProcessor(rowProcessor), startOffset, maxResults);
             } else {
                FilterParsingResult<?> fpr = makeFilterParsingResult(parsingResult, normalizedWhereClause, null, null, sortFields);
-               Query indexQuery = new EmbeddedLuceneQuery(this, queryFactory, namedParameters, fpr, null, makeResultProcessor(null), startOffset, maxResults);
+               Query indexQuery = new EmbeddedLuceneQuery<>(this, queryFactory, namedParameters, fpr, null, makeResultProcessor(null), startOffset, maxResults);
                String projectionQueryStr = JPATreePrinter.printTree(parsingResult.getTargetEntityName(), parsingResult.getProjectedPaths(), null, null);
                return new HybridQuery(queryFactory, cache, projectionQueryStr, null, getObjectFilter(matcher, projectionQueryStr, null, null), -1, -1, indexQuery);
             }
          } else {
             // projections may be stored but some sort fields are not so we need to query the index and then execute in-memory sorting and projecting in a second phase
             FilterParsingResult<?> fpr = makeFilterParsingResult(parsingResult, normalizedWhereClause, null, null, null);
-            Query indexQuery = new EmbeddedLuceneQuery(this, queryFactory, namedParameters, fpr, null, makeResultProcessor(null), -1, -1);
+            Query indexQuery = new EmbeddedLuceneQuery<>(this, queryFactory, namedParameters, fpr, null, makeResultProcessor(null), -1, -1);
             String projectionQueryStr = JPATreePrinter.printTree(parsingResult.getTargetEntityName(), parsingResult.getProjectedPaths(), null, sortFields);
             return new HybridQuery(queryFactory, cache, projectionQueryStr, null, getObjectFilter(matcher, projectionQueryStr, null, null), startOffset, maxResults, indexQuery);
          }
@@ -632,7 +633,7 @@ public class QueryEngine {
 
       // some fields are indexed, run a hybrid query
       FilterParsingResult<?> fpr = makeFilterParsingResult(parsingResult, expansion, null, null, null);
-      Query expandedQuery = new EmbeddedLuceneQuery(this, queryFactory, namedParameters, fpr, null, makeResultProcessor(null), -1, -1);
+      Query expandedQuery = new EmbeddedLuceneQuery<>(this, queryFactory, namedParameters, fpr, null, makeResultProcessor(null), -1, -1);
       return new HybridQuery(queryFactory, cache, queryString, namedParameters, getObjectFilter(matcher, queryString, namedParameters, null), startOffset, maxResults, expandedQuery);
    }
 
@@ -643,7 +644,7 @@ public class QueryEngine {
    private FilterParsingResult<?> makeFilterParsingResult(FilterParsingResult<?> parsingResult, BooleanExpr normalizedWhereClause,
                                                           PropertyPath[] projection, Class<?>[] projectedTypes, SortField[] sortFields) {
       String queryString = JPATreePrinter.printTree(parsingResult.getTargetEntityName(), projection, normalizedWhereClause, sortFields);
-      return new FilterParsingResult(queryString, parsingResult.getParameterNames(),
+      return new FilterParsingResult<>(queryString, parsingResult.getParameterNames(),
             normalizedWhereClause, null,
             parsingResult.getTargetEntityName(), parsingResult.getTargetEntityMetadata(),
             projection, projectedTypes, null, sortFields);
@@ -710,7 +711,7 @@ public class QueryEngine {
    /**
     * Build a Lucene index query.
     */
-   protected CacheQuery buildLuceneQuery(FilterParsingResult<?> filterParsingResult, Map<String, Object> namedParameters, long startOffset, int maxResults) {
+   protected <E> CacheQuery<E> buildLuceneQuery(FilterParsingResult<?> filterParsingResult, Map<String, Object> namedParameters, long startOffset, int maxResults) {
       if (log.isDebugEnabled()) {
          log.debugf("Building Lucene query for : %s", filterParsingResult.getQueryString());
       }
@@ -728,7 +729,7 @@ public class QueryEngine {
          log.debugf("The resulting Lucene query is : %s", luceneQuery.toString());
       }
 
-      CacheQuery cacheQuery = getSearchManager().getQuery(luceneQuery, getTargetedClass(filterParsingResult));
+      CacheQuery<?> cacheQuery = getSearchManager().getQuery(luceneQuery, getTargetedClass(filterParsingResult));
 
       if (luceneParsingResult.getSort() != null) {
          cacheQuery = cacheQuery.sort(luceneParsingResult.getSort());
@@ -743,7 +744,7 @@ public class QueryEngine {
          cacheQuery = cacheQuery.maxResults(maxResults);
       }
 
-      return cacheQuery;
+      return (CacheQuery<E>) cacheQuery;
    }
 
    protected org.apache.lucene.search.Query makeTypeQuery(org.apache.lucene.search.Query query, String targetEntityName) {

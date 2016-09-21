@@ -1,5 +1,17 @@
 package org.infinispan.query.dsl.embedded.impl;
 
+import static org.testng.AssertJUnit.assertEquals;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.TimeZone;
+
 import org.hibernate.hql.ParsingException;
 import org.hibernate.search.exception.SearchException;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -22,18 +34,6 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.transaction.TransactionMode;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.TimeZone;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author anistor@redhat.com
@@ -330,15 +330,15 @@ public class QueryEngineTest extends MultipleCacheManagersTest {
 
    public void testBuildLuceneQuery() {
       FilterParsingResult<?> parsingResult = qe.matcher.getParser().parse("select name from org.infinispan.query.dsl.embedded.testdomain.hsearch.UserHS", qe.matcher.getPropertyHelper());
-      CacheQuery q = qe.buildLuceneQuery(parsingResult, null, -1, -1);
-      List<Object> list = q.list();
+      CacheQuery<UserHS> q = qe.buildLuceneQuery(parsingResult, null, -1, -1);
+      List<?> list = q.list();
       assertEquals(3, list.size());
    }
 
    @Test(expectedExceptions = SearchException.class, expectedExceptionsMessageRegExp = "Unable to find field notes in org.infinispan.query.dsl.embedded.testdomain.hsearch.UserHS")
    public void testBuildLuceneQueryOnNonIndexedField() {
       FilterParsingResult<?> parsingResult = qe.matcher.getParser().parse("select notes from org.infinispan.query.dsl.embedded.testdomain.hsearch.UserHS where notes like 'TBD%'", qe.matcher.getPropertyHelper());
-      CacheQuery q = qe.buildLuceneQuery(parsingResult, null, -1, -1);
+      CacheQuery<?> q = qe.buildLuceneQuery(parsingResult, null, -1, -1);
    }
 
    public void testGlobalCount() {

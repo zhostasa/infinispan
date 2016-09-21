@@ -1,5 +1,7 @@
 package org.infinispan.query.distributed;
 
+import static org.testng.AssertJUnit.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +19,6 @@ import org.infinispan.query.queries.faceting.Car;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
-
-import static org.testng.AssertJUnit.assertEquals;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
@@ -92,7 +92,7 @@ public class DistributedMassIndexingTest extends MultipleCacheManagersTest {
       SearchManager searchManager = Search.getSearchManager(cache);
       QueryBuilder carQueryBuilder = searchManager.buildQueryBuilderForClass(Car.class).get();
       Query fullTextQuery = carQueryBuilder.keyword().onField("make").matching(carMake).createQuery();
-      CacheQuery cacheQuery = searchManager.getQuery(fullTextQuery, Car.class);
+      CacheQuery<Car> cacheQuery = searchManager.getQuery(fullTextQuery, Car.class);
       assertEquals(expectedCount, cacheQuery.getResultSize());
    }
 }

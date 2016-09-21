@@ -2,6 +2,9 @@ package org.infinispan.query.helper;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -24,9 +27,6 @@ import org.infinispan.query.test.Person;
 import org.infinispan.test.AbstractCacheTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Creates a test query helper
  *
@@ -46,12 +46,11 @@ public class TestQueryHelperFactory {
       return Version.LATEST; //Change as needed
    }
 
-   public static CacheQuery createCacheQuery(Cache m_cache, String fieldName, String searchString) throws ParseException {
+   public static <E> CacheQuery<E> createCacheQuery(Cache m_cache, String fieldName, String searchString) throws ParseException {
       QueryParser qp = createQueryParser(fieldName);
       Query parsedQuery = qp.parse(searchString);
       SearchManager queryFactory = Search.getSearchManager(m_cache);
-      CacheQuery cacheQuery = queryFactory.getQuery(parsedQuery);
-      return cacheQuery;
+      return queryFactory.getQuery(parsedQuery);
    }
 
    public static SearchIntegrator extractSearchFactory(Cache cache) {

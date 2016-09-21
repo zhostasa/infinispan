@@ -1,5 +1,19 @@
 package org.infinispan.client.hotrod.marshall;
 
+import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemoteCacheManager;
+import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
+import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
+
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -8,6 +22,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.query.testdomain.protobuf.AccountPB;
 import org.infinispan.client.hotrod.query.testdomain.protobuf.TransactionPB;
 import org.infinispan.client.hotrod.query.testdomain.protobuf.UserPB;
+import org.infinispan.client.hotrod.query.testdomain.protobuf.marshallers.GenderMarshaller;
 import org.infinispan.client.hotrod.query.testdomain.protobuf.marshallers.MarshallerRegistration;
 import org.infinispan.client.hotrod.query.testdomain.protobuf.marshallers.NotIndexedMarshaller;
 import org.infinispan.client.hotrod.test.HotRodClientTestingUtil;
@@ -39,20 +54,6 @@ import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
-
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-
-import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemoteCacheManager;
-import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
-import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests compatibility between remote query and embedded mode.
@@ -108,6 +109,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
 
       protobufMetadataManager.registerMarshaller(new EmbeddedAccountMarshaller());
       protobufMetadataManager.registerMarshaller(new EmbeddedUserMarshaller());
+      protobufMetadataManager.registerMarshaller(new GenderMarshaller());
       protobufMetadataManager.registerMarshaller(new EmbeddedTransactionMarshaller());
       protobufMetadataManager.registerMarshaller(new NotIndexedMarshaller());
 
@@ -203,6 +205,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       user.setId(1);
       user.setName("test name");
       user.setSurname("test surname");
+      user.setGender(User.Gender.MALE);
       user.setNotes("1234567890");
       cache.put(1, user);
 
@@ -242,6 +245,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       user.setId(1);
       user.setName("test name");
       user.setSurname("test surname");
+      user.setGender(User.Gender.MALE);
       user.setNotes("1234567890");
       cache.put(1, user);
 
@@ -293,12 +297,12 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       org.apache.lucene.search.Query query = searchManager
             .buildQueryBuilderForClass(AccountHS.class).get()
             .keyword().wildcard().onField("description").matching("*test*").createQuery();
-      CacheQuery cacheQuery = searchManager.getQuery(query);
-      List<Object> list = cacheQuery.list();
+      CacheQuery<Account> cacheQuery = searchManager.getQuery(query);
+      List<Account> list = cacheQuery.list();
 
       assertNotNull(list);
       assertEquals(1, list.size());
-      assertAccount((Account) list.get(0), AccountHS.class);
+      assertAccount(list.get(0), AccountHS.class);
    }
 
    public void testEmbeddedQueryForEmbeddedEntryOnNonIndexedField() throws Exception {
@@ -306,6 +310,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       user.setId(1);
       user.setName("test name");
       user.setSurname("test surname");
+      user.setGender(User.Gender.MALE);
       user.setNotes("1234567890");
       cache.put(1, user);
 
@@ -345,6 +350,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       user.setId(1);
       user.setName("test name");
       user.setSurname("test surname");
+      user.setGender(User.Gender.MALE);
       user.setNotes("1234567890");
       cache.put(1, user);
 
@@ -416,6 +422,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       user.setId(1);
       user.setName("test name");
       user.setSurname("test surname");
+      user.setGender(User.Gender.MALE);
       user.setNotes("1234567890");
       cache.put(1, user);
 
@@ -452,6 +459,7 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       user.setId(1);
       user.setName("test name");
       user.setSurname("test surname");
+      user.setGender(User.Gender.MALE);
       user.setNotes("1234567890");
       cache.put(1, user);
 
