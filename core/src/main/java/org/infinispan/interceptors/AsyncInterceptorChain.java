@@ -1,11 +1,11 @@
 package org.infinispan.interceptors;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commons.util.Experimental;
 import org.infinispan.context.InvocationContext;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Interceptor chain using {@link AsyncInterceptor}s.
@@ -82,10 +82,8 @@ public interface AsyncInterceptorChain {
    /**
     * Walks the command through the interceptor chain. The received ctx is being passed in.
     *
-    * <p>Note: Reusing the context for multiple invocations is allowed. However, the two invocations
-    * must not overlap, so calling {@code invoke(ctx, command)} from an interceptor is not allowed.
-    * If an interceptor needs to invoke a new command through the entire chain, it must first
-    * copy the invocation context with {@link InvocationContext#clone()}.</p>
+    * <p>Note: Reusing the context for multiple invocations is allowed, however most context implementations are not
+    * thread-safe.</p>
     */
    Object invoke(InvocationContext ctx, VisitableCommand command);
 

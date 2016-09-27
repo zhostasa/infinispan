@@ -1,5 +1,13 @@
 package org.infinispan.tx.totalorder;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.transaction.RollbackException;
+
 import org.infinispan.Cache;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.configuration.cache.CacheMode;
@@ -9,20 +17,13 @@ import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.BaseCustomAsyncInterceptor;
+import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.transaction.TransactionProtocol;
 import org.infinispan.transaction.totalorder.TotalOrderManager;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.testng.annotations.Test;
-
-import javax.transaction.RollbackException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
 
 /**
  * Tests if the locks are cleanup after a TimeoutException
@@ -37,9 +38,9 @@ public class CleanupAfterFailTest extends MultipleCacheManagersTest {
       final CountDownLatch block = new CountDownLatch(1);
       final BaseCustomAsyncInterceptor interceptor = new BaseCustomAsyncInterceptor() {
          @Override
-         public CompletableFuture<Void> visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command) throws Throwable {
+         public BasicInvocationStage visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command) throws Throwable {
             block.await();
-            return ctx.continueInvocation();
+            return invokeNext(ctx, command);
          }
       };
       final AsyncInterceptorChain chain = TestingUtil.extractComponent(cache(1), AsyncInterceptorChain.class);
@@ -65,12 +66,12 @@ public class CleanupAfterFailTest extends MultipleCacheManagersTest {
       final CountDownLatch block = new CountDownLatch(1);
       final BaseCustomAsyncInterceptor interceptor = new BaseCustomAsyncInterceptor() {
          @Override
-         public CompletableFuture<Void> visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command)
+         public BasicInvocationStage visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command)
                throws Throwable {
             if (!ctx.isOriginLocal()) {
                block.await();
             }
-            return ctx.continueInvocation();
+            return invokeNext(ctx, command);
          }
       };
       final AsyncInterceptorChain chain = TestingUtil.extractComponent(cache(0), AsyncInterceptorChain.class);

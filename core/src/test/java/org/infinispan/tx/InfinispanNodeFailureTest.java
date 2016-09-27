@@ -1,12 +1,21 @@
 package org.infinispan.tx;
 
+import static org.infinispan.test.TestingUtil.waitForRehashToComplete;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.commands.control.LockControlCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.MagicKey;
-import org.infinispan.interceptors.base.CommandInterceptor;
+import org.infinispan.interceptors.BasicInvocationStage;
+import org.infinispan.interceptors.DDAsyncInterceptor;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.transaction.LockingMode;
@@ -14,15 +23,6 @@ import org.infinispan.transaction.lookup.DummyTransactionManagerLookup;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jgroups.View;
 import org.testng.annotations.Test;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import static org.infinispan.test.TestingUtil.waitForRehashToComplete;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * This test reproduces following scenario in Infinispan:
@@ -76,20 +76,18 @@ public class InfinispanNodeFailureTest extends MultipleCacheManagersTest {
       final CountDownLatch beforeKill = new CountDownLatch(1);
       final CountDownLatch afterKill = new CountDownLatch(1);
 
-      advancedCache(1, TEST_CACHE).addInterceptor(new CommandInterceptor() {
+      advancedCache(1, TEST_CACHE).getAsyncInterceptorChain().addInterceptor(new DDAsyncInterceptor() {
          @Override
-         public Object visitLockControlCommand(TxInvocationContext ctx, LockControlCommand command) throws Throwable {
-            try {
-
-               return super.visitLockControlCommand(ctx, command);
-            } finally {
-               if (putKey.equals(command.getSingleKey())) {
+         public BasicInvocationStage visitLockControlCommand(TxInvocationContext ctx, LockControlCommand command) throws Throwable {
+            return invokeNext(ctx, command).handle((rCtx, rCommand, rv, t) -> {
+               LockControlCommand cmd = (LockControlCommand) rCommand;
+               if (putKey.equals(cmd.getSingleKey())) {
                   // notify main thread it can start killing third node
                   beforeKill.countDown();
                   // wait for completion and proceed
                   afterKill.await(10, TimeUnit.SECONDS);
                }
-            }
+            });
          }
       }, 1);
 
@@ -133,7 +131,7 @@ public class InfinispanNodeFailureTest extends MultipleCacheManagersTest {
 
       // check that second node state is inconsistent, second result should be FALSE in read committed pessimistic cache
       // uncomment when this bug is fixed
-      assertEquals(Boolean.FALSE, secondResult);
+      assertEquals(false, secondResult);
    }
 
    @Override

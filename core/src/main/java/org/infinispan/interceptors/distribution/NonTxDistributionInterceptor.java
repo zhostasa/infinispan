@@ -1,5 +1,19 @@
 package org.infinispan.interceptors.distribution;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.infinispan.commands.functional.ReadOnlyKeyCommand;
 import org.infinispan.commands.functional.ReadOnlyManyCommand;
 import org.infinispan.commands.functional.ReadWriteKeyCommand;
@@ -28,6 +42,7 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.util.ReadOnlySegmentAwareMap;
 import org.infinispan.distribution.util.ReadOnlySegmentAwareSet;
+import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.remoting.RemoteException;
 import org.infinispan.remoting.responses.Response;
 import org.infinispan.remoting.responses.SuccessfulResponse;
@@ -37,20 +52,6 @@ import org.infinispan.statetransfer.OutdatedTopologyException;
 import org.infinispan.util.concurrent.CompletableFutures;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Non-transactional interceptor used by distributed caches that support concurrent writes.
@@ -75,21 +76,21 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    private static final boolean trace = log.isTraceEnabled();
 
    @Override
-   public CompletableFuture<Void> visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command)
-         throws Throwable {
+   public BasicInvocationStage visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command) throws
+         Throwable {
       return visitGetCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitGetCacheEntryCommand(InvocationContext ctx,
-         GetCacheEntryCommand command) throws Throwable {
+   public BasicInvocationStage visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command)
+         throws Throwable {
       return visitGetCommand(ctx, command);
    }
 
-   private <T extends AbstractDataCommand & RemoteFetchingCommand> CompletableFuture<Void> visitGetCommand(
+   private <T extends AbstractDataCommand & RemoteFetchingCommand> BasicInvocationStage visitGetCommand(
          InvocationContext ctx, T command) throws Throwable {
       if (!ctx.isOriginLocal())
-         return ctx.continueInvocation();
+         return invokeNext(ctx, command);
 
       Object key = command.getKey();
       CacheEntry entry = ctx.lookupEntry(key);
@@ -97,16 +98,14 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          if (readNeedsRemoteValue(ctx, command)) {
             if (trace)
                log.tracef("Doing a remote get for key %s", key);
-            CompletableFuture<InternalCacheEntry> remoteFuture =
-                  retrieveFromProperSource(key, command, false);
-            return remoteFuture.thenCompose(remoteEntry -> {
+            CompletableFuture<InternalCacheEntry> remoteFuture = retrieveFromProperSource(key, ctx, command, false);
+            return invokeNextAsync(ctx, command, remoteFuture.thenAccept(remoteEntry -> {
                command.setRemotelyFetchedValue(remoteEntry);
                handleRemoteEntry(ctx, key, remoteEntry);
-               return ctx.continueInvocation();
-            });
+            }));
          }
       }
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    private void handleRemoteEntry(InvocationContext ctx, Object key, InternalCacheEntry remoteEntry) {
@@ -116,14 +115,13 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    @Override
-   public CompletableFuture<Void> visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command)
-         throws Throwable {
+   public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws
+         Throwable {
       return handleNonTxWriteCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitPutMapCommand(InvocationContext ctx, PutMapCommand command)
-         throws Throwable {
+   public BasicInvocationStage visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
       Map<Object, Object> originalMap = command.getMap();
       ConsistentHash ch = dm.getConsistentHash();
       Address localAddress = rpcManager.getAddress();
@@ -215,35 +213,33 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          }
       }
 
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitRemoveCommand(InvocationContext ctx, RemoveCommand command)
+   public BasicInvocationStage visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
+      return handleNonTxWriteCommand(ctx, command);
+   }
+
+   @Override
+   public BasicInvocationStage visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
+      return handleNonTxWriteCommand(ctx, command);
+   }
+
+   @Override
+   public BasicInvocationStage visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command)
          throws Throwable {
       return handleNonTxWriteCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReplaceCommand(InvocationContext ctx, ReplaceCommand command)
+   public BasicInvocationStage visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command)
          throws Throwable {
       return handleNonTxWriteCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteKeyValueCommand(InvocationContext ctx,
-         ReadWriteKeyValueCommand command) throws Throwable {
-      return handleNonTxWriteCommand(ctx, command);
-   }
-
-   @Override
-   public CompletableFuture<Void> visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command)
-         throws Throwable {
-      return handleNonTxWriteCommand(ctx, command);
-   }
-
-   @Override
-   public CompletableFuture<Void> visitReadOnlyKeyCommand(InvocationContext ctx, ReadOnlyKeyCommand command)
+   public BasicInvocationStage visitReadOnlyKeyCommand(InvocationContext ctx, ReadOnlyKeyCommand command)
          throws Throwable {
       if (ctx.isOriginLocal()) {
          Object key = command.getKey();
@@ -255,16 +251,16 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
             if (readNeedsRemoteValue(ctx, command)) {
                if (trace)
                   log.tracef("Doing a remote get for key %s", key);
-               remoteFuture = retrieveFromProperSource(key, command, false);
+               remoteFuture = retrieveFromProperSource(key, ctx, command, false);
             } else {
                remoteFuture = CompletableFutures.completedNull();
             }
-            return remoteFuture.thenCompose(remoteEntry -> {
+            return returnWithAsync(remoteFuture.thenApply(remoteEntry -> {
                // TODO Do we need to do something else instead of setRemotelyFetchedValue?
                // command.setRemotelyFetchedValue(remoteEntry);
                if (remoteEntry != null) {
                   entryFactory.wrapExternalEntry(ctx, key, remoteEntry, EntryFactory.Wrap.STORE, false);
-                  return ctx.shortCircuit(command.perform(remoteEntry));
+                  return command.perform(remoteEntry);
                } else {
                   // Then search for the entry in the local data container, in case we became an owner after
                   // EntryWrappingInterceptor and the local node is now the only owner.
@@ -273,23 +269,24 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
                   if (localEntry != null) {
                      entryFactory.wrapExternalEntry(ctx, key, localEntry, EntryFactory.Wrap.STORE, false);
                   }
-                  return ctx.shortCircuit(command.perform(localEntry));
+                  return command.perform(localEntry);
                }
-            });
+            }));
          }
       }
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadOnlyManyCommand(InvocationContext ctx, ReadOnlyManyCommand command)
+   public BasicInvocationStage visitReadOnlyManyCommand(InvocationContext ctx, ReadOnlyManyCommand command)
          throws Throwable {
       return super.visitReadOnlyManyCommand(ctx, command);    // TODO: Customise this generated block
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyManyEntriesCommand(InvocationContext ctx,
-         WriteOnlyManyEntriesCommand command) throws Throwable {
+   public BasicInvocationStage visitWriteOnlyManyEntriesCommand(InvocationContext ctx,
+                                                                WriteOnlyManyEntriesCommand command)
+         throws Throwable {
       // TODO: Refactor this and visitPutMapCommand...
       // TODO: Could PutMap be reimplemented based on WriteOnlyManyEntriesCommand?
       Map<Object, Object> originalMap = command.getEntries();
@@ -383,12 +380,12 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          }
       }
 
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyManyCommand(InvocationContext ctx,
-         WriteOnlyManyCommand command) throws Throwable {
+   public BasicInvocationStage visitWriteOnlyManyCommand(InvocationContext ctx, WriteOnlyManyCommand command)
+         throws Throwable {
       // TODO: Refactor this, visitWriteOnlyManyCommand and visitPutMapCommand...
       Set<Object> originalMap = command.getKeys();
       ConsistentHash ch = dm.getConsistentHash();
@@ -479,12 +476,12 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          }
       }
 
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteManyCommand(InvocationContext ctx,
-         ReadWriteManyCommand command) throws Throwable {
+   public BasicInvocationStage visitReadWriteManyCommand(InvocationContext ctx, ReadWriteManyCommand command)
+         throws Throwable {
       // TODO: Refactor to avoid code duplication
       Set<Object> originalMap = command.getKeys();
       ConsistentHash ch = dm.getConsistentHash();
@@ -586,12 +583,13 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          }
       }
 
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteManyEntriesCommand(InvocationContext ctx,
-         ReadWriteManyEntriesCommand command) throws Throwable {
+   public BasicInvocationStage visitReadWriteManyEntriesCommand(InvocationContext ctx,
+                                                                ReadWriteManyEntriesCommand command)
+         throws Throwable {
       // TODO: Refactor to avoid code duplication
       Map<Object, Object> originalMap = command.getEntries();
       ConsistentHash ch = dm.getConsistentHash();
@@ -695,25 +693,27 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          }
       }
 
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyKeyValueCommand(InvocationContext ctx, WriteOnlyKeyValueCommand command) throws Throwable {
+   public BasicInvocationStage visitWriteOnlyKeyValueCommand(InvocationContext ctx, WriteOnlyKeyValueCommand command)
+         throws Throwable {
       return handleNonTxWriteCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyKeyCommand(InvocationContext ctx, WriteOnlyKeyCommand command) throws Throwable {
+   public BasicInvocationStage visitWriteOnlyKeyCommand(InvocationContext ctx, WriteOnlyKeyCommand command)
+         throws Throwable {
       return handleNonTxWriteCommand(ctx, command);
    }
 
    @Override
-   protected CompletableFuture<Void> remoteGetBeforeWrite(InvocationContext ctx, WriteCommand command,
-         Object key) throws Throwable {
+   protected CompletableFuture<?> remoteGetBeforeWrite(InvocationContext ctx, WriteCommand command, Object key)
+         throws Throwable {
       CacheEntry entry = ctx.lookupEntry(key);
       if (!valueIsMissing(entry)) {
-         return ctx.continueInvocation();
+         return null;
       }
       CompletableFuture<InternalCacheEntry> remoteFuture;
       if (writeNeedsRemoteValue(ctx, command, key)) {
@@ -724,13 +724,12 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
             throw new OutdatedTopologyException("Cache topology changed while the command was executing: expected " +
                     cmdTopology + ", got " + currentTopologyId);
          }
-         remoteFuture = retrieveFromProperSource(key, command, false);
-         return remoteFuture.thenCompose(remoteEntry -> {
+         remoteFuture = retrieveFromProperSource(key, ctx, command, false);
+         return remoteFuture.thenAccept(remoteEntry -> {
             handleRemoteEntry(ctx, key, remoteEntry);
-            return ctx.continueInvocation();
          });
       }
-      return ctx.continueInvocation();
+      return null;
    }
 
    @Override

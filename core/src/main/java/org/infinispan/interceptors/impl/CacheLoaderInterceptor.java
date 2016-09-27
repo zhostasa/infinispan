@@ -1,5 +1,18 @@
 package org.infinispan.interceptors.impl;
 
+import static org.infinispan.factories.KnownComponentNames.PERSISTENCE_EXECUTOR;
+import static org.infinispan.persistence.PersistenceUtil.convert;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+
 import org.infinispan.Cache;
 import org.infinispan.CacheSet;
 import org.infinispan.cache.impl.Caches;
@@ -44,6 +57,7 @@ import org.infinispan.factories.annotations.Start;
 import org.infinispan.filter.CollectionKeyFilter;
 import org.infinispan.filter.CompositeKeyFilter;
 import org.infinispan.filter.KeyFilter;
+import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.jmx.annotations.DisplayType;
 import org.infinispan.jmx.annotations.MBean;
 import org.infinispan.jmx.annotations.ManagedAttribute;
@@ -65,20 +79,6 @@ import org.infinispan.util.TimeService;
 import org.infinispan.util.function.CloseableSupplier;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-
-import static org.infinispan.factories.KnownComponentNames.PERSISTENCE_EXECUTOR;
-import static org.infinispan.persistence.PersistenceUtil.convert;
 
 /**
  * @since 9.0
@@ -124,41 +124,41 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
    }
 
    @Override
-   public CompletableFuture<Void> visitApplyDeltaCommand(InvocationContext ctx, ApplyDeltaCommand command)
+   public BasicInvocationStage visitApplyDeltaCommand(InvocationContext ctx, ApplyDeltaCommand command)
          throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command)
+   public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command)
          throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command)
+   public BasicInvocationStage visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command)
          throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitGetCacheEntryCommand(InvocationContext ctx,
+   public BasicInvocationStage visitGetCacheEntryCommand(InvocationContext ctx,
          GetCacheEntryCommand command) throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
 
    @Override
-   public CompletableFuture<Void> visitGetAllCommand(InvocationContext ctx, GetAllCommand command)
+   public BasicInvocationStage visitGetAllCommand(InvocationContext ctx, GetAllCommand command)
          throws Throwable {
       for (Object key : command.getKeys()) {
          loadIfNeeded(ctx, key, command);
       }
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitInvalidateCommand(InvocationContext ctx, InvalidateCommand command)
+   public BasicInvocationStage visitInvalidateCommand(InvocationContext ctx, InvalidateCommand command)
          throws Throwable {
       Object[] keys;
       if ((keys = command.getKeys()) != null && keys.length > 0) {
@@ -166,44 +166,44 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
             loadIfNeeded(ctx, key, command);
          }
       }
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitRemoveCommand(InvocationContext ctx, RemoveCommand command)
+   public BasicInvocationStage visitRemoveCommand(InvocationContext ctx, RemoveCommand command)
          throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReplaceCommand(InvocationContext ctx, ReplaceCommand command)
+   public BasicInvocationStage visitReplaceCommand(InvocationContext ctx, ReplaceCommand command)
          throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
-   private <T extends FlagAffectedCommand> CompletableFuture<Void> visitManyDataCommand(InvocationContext ctx, T command, Set<?> keys)
+   private <T extends FlagAffectedCommand> BasicInvocationStage visitManyDataCommand(InvocationContext ctx, T command, Collection<?> keys)
          throws Throwable {
       for (Object key : keys) {
          loadIfNeeded(ctx, key, command);
       }
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
-   private CompletableFuture<Void> visitDataCommand(InvocationContext ctx, AbstractDataCommand command)
+   private BasicInvocationStage visitDataCommand(InvocationContext ctx, AbstractDataCommand command)
          throws Throwable {
       Object key;
       if ((key = command.getKey()) != null) {
          loadIfNeeded(ctx, key, command);
       }
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitGetKeysInGroupCommand(final InvocationContext ctx,
+   public BasicInvocationStage visitGetKeysInGroupCommand(final InvocationContext ctx,
          GetKeysInGroupCommand command) throws Throwable {
       final String groupName = command.getGroupName();
       if (!command.isGroupOwner() || hasSkipLoadFlag(command)) {
-         return ctx.continueInvocation();
+         return invokeNext(ctx, command);
       }
 
       final KeyFilter<Object> keyFilter = new CompositeKeyFilter<>(new GroupFilter<>(groupName, groupManager),
@@ -219,20 +219,19 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
             }
          }
       }, true, true);
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command)
+   public BasicInvocationStage visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command)
          throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null || hasSkipLoadFlag(command)) {
+      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
+         if (hasSkipLoadFlag(command)) {
             // Continue with the existing throwable/return value
-            return null;
+            return rv;
          }
          CacheSet<CacheEntry<K, V>> entrySet = (CacheSet<CacheEntry<K, V>>) rv;
-         CacheSet<CacheEntry<K, V>> wrappedEntrySet = new WrappedEntrySet(command, entrySet);
-         return CompletableFuture.completedFuture(wrappedEntrySet);
+         return new WrappedEntrySet(command, entrySet);
       });
    }
 
@@ -259,50 +258,49 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
    }
 
    @Override
-   public CompletableFuture<Void> visitKeySetCommand(InvocationContext ctx, KeySetCommand command)
+   public BasicInvocationStage visitKeySetCommand(InvocationContext ctx, KeySetCommand command)
          throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null || hasSkipLoadFlag(command)) {
+      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
+         if (hasSkipLoadFlag(command)) {
             // Continue with the existing throwable/return value
-            return null;
+            return rv;
          }
 
          CacheSet<K> keySet = (CacheSet<K>) rv;
-         CacheSet<K> wrappedKeySet = new WrappedKeySet(command, keySet);
-         return CompletableFuture.completedFuture(wrappedKeySet);
+         return new WrappedKeySet(command, keySet);
       });
    }
 
    @Override
-   public CompletableFuture<Void> visitReadOnlyKeyCommand(InvocationContext ctx, ReadOnlyKeyCommand command) throws Throwable {
+   public BasicInvocationStage visitReadOnlyKeyCommand(InvocationContext ctx, ReadOnlyKeyCommand command) throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadOnlyManyCommand(InvocationContext ctx, ReadOnlyManyCommand command)
+   public BasicInvocationStage visitReadOnlyManyCommand(InvocationContext ctx, ReadOnlyManyCommand command)
          throws Throwable {
       return visitManyDataCommand(ctx, command, command.getKeys());
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command)
+   public BasicInvocationStage visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command)
          throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command)
+   public BasicInvocationStage visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command)
          throws Throwable {
       return visitDataCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteManyCommand(InvocationContext ctx, ReadWriteManyCommand command) throws Throwable {
+   public BasicInvocationStage visitReadWriteManyCommand(InvocationContext ctx, ReadWriteManyCommand command) throws Throwable {
       return visitManyDataCommand(ctx, command, command.getKeys());
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteManyEntriesCommand(InvocationContext ctx, ReadWriteManyEntriesCommand command) throws Throwable {
+   public BasicInvocationStage visitReadWriteManyEntriesCommand(InvocationContext ctx, ReadWriteManyEntriesCommand command) throws Throwable {
       return visitManyDataCommand(ctx, command, command.getAffectedKeys());
    }
 

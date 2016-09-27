@@ -11,7 +11,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +26,7 @@ import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.DDAsyncInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.RemoteException;
@@ -54,27 +54,25 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = "functional")
-@CleanupAfterMethod
-public class RemoteGetFailureTest extends MultipleCacheManagersTest {
+public abstract class RemoteGetFailureTest extends MultipleCacheManagersTest {
+   public static class RemoteGetFailureStaggeredTest extends RemoteGetFailureTest {
+      public RemoteGetFailureStaggeredTest() {
+         super(true);
+      }
+   }
+
+   public static class RemoteGetFailureNonStaggeredTest extends RemoteGetFailureTest {
+      public RemoteGetFailureNonStaggeredTest() {
+         super(false);
+      }
+   }
+
    private boolean staggered;
    private Object key;
 
-   @Override
-   public Object[] factory() {
-      return new Object[] {
-         new RemoteGetFailureTest().staggered(true),
-         new RemoteGetFailureTest().staggered(false)
-      };
-   }
-
-   @Override
-   protected String parameters() {
-      return "[staggered=" + staggered + "]";
-   }
-
-   protected RemoteGetFailureTest staggered(boolean staggered) {
+   protected RemoteGetFailureTest(boolean staggered) {
+      this.cleanup = CleanupPhase.AFTER_METHOD;
       this.staggered = staggered;
-      return this;
    }
 
 
@@ -87,7 +85,7 @@ public class RemoteGetFailureTest extends MultipleCacheManagersTest {
       builder.clustering().remoteTimeout(5, TimeUnit.SECONDS);
       createCluster(builder, 3);
       waitForClusterToForm();
-      key = getKeyForCache(cache(1), cache(2));
+      key = new MagicKey(cache(1), cache(2));
    }
 
    private static void setStaggered(boolean staggered) {
@@ -268,7 +266,7 @@ public class RemoteGetFailureTest extends MultipleCacheManagersTest {
 
    private static class FailingInterceptor extends DDAsyncInterceptor {
       @Override
-      public CompletableFuture<Void> visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
+      public BasicInvocationStage visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
          throw new CacheException("Injected");
       }
    }
@@ -283,7 +281,7 @@ public class RemoteGetFailureTest extends MultipleCacheManagersTest {
       }
 
       @Override
-      public CompletableFuture<Void> visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
+      public BasicInvocationStage visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
          if (arrival != null) arrival.countDown();
          // the timeout has to be longer than remoteTimeout!
          release.await(30, TimeUnit.SECONDS);

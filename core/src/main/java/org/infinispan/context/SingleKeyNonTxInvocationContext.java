@@ -1,13 +1,12 @@
 package org.infinispan.context;
 
-import org.infinispan.commons.equivalence.Equivalence;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.interceptors.impl.BaseAsyncInvocationContext;
-import org.infinispan.remoting.transport.Address;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
+import org.infinispan.commons.equivalence.Equivalence;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.remoting.transport.Address;
 
 /**
  * @author Mircea Markus
@@ -16,7 +15,7 @@ import java.util.Set;
  * @deprecated Since 8.3, this class is going to be moved to an internal package.
  */
 @Deprecated
-public final class SingleKeyNonTxInvocationContext extends BaseAsyncInvocationContext implements InvocationContext {
+public final class SingleKeyNonTxInvocationContext implements InvocationContext {
 
    /**
     * It is possible for the key to only be wrapped but not locked, e.g. when a get takes place.
@@ -60,6 +59,15 @@ public final class SingleKeyNonTxInvocationContext extends BaseAsyncInvocationCo
    @Override
    public void setLockOwner(Object lockOwner) {
       this.lockOwner = lockOwner;
+   }
+
+   @Override
+   public InvocationContext clone() {
+      try {
+         return (InvocationContext) super.clone();
+      } catch (CloneNotSupportedException e) {
+         throw new IllegalStateException("Impossible!", e);
+      }
    }
 
    @Override

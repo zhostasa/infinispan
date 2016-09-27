@@ -1,8 +1,24 @@
 package org.infinispan.interceptors.impl;
 
+import static org.infinispan.factories.KnownComponentNames.CACHE_MARSHALLER;
+import static org.infinispan.persistence.PersistenceUtil.internalMetadata;
+import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.BOTH;
+import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.PRIVATE;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.infinispan.atomic.impl.AtomicHashMap;
 import org.infinispan.commands.AbstractVisitor;
 import org.infinispan.commands.FlagAffectedCommand;
+import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.functional.ParamsCommand;
 import org.infinispan.commands.functional.ReadWriteKeyCommand;
 import org.infinispan.commands.functional.ReadWriteKeyValueCommand;
@@ -39,6 +55,7 @@ import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
+import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.jmx.annotations.MBean;
 import org.infinispan.jmx.annotations.ManagedAttribute;
 import org.infinispan.jmx.annotations.ManagedOperation;
@@ -50,21 +67,6 @@ import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.infinispan.factories.KnownComponentNames.CACHE_MARSHALLER;
-import static org.infinispan.persistence.PersistenceUtil.internalMetadata;
-import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.BOTH;
-import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.PRIVATE;
 
 /**
  * Writes modifications back to the store on the way out: stores modifications back through the CacheLoader, either
@@ -109,17 +111,17 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
    }
 
    @Override
-   public CompletableFuture<Void> visitCommitCommand(TxInvocationContext ctx, CommitCommand command) throws Throwable {
+   public BasicInvocationStage visitCommitCommand(TxInvocationContext ctx, CommitCommand command) throws Throwable {
       commitCommand(ctx);
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command) throws Throwable {
+   public BasicInvocationStage visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command) throws Throwable {
       if (command.isOnePhaseCommit()) {
          commitCommand(ctx);
       }
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    protected void commitCommand(TxInvocationContext ctx) throws Throwable {
@@ -157,82 +159,65 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
    }
 
    @Override
-   public CompletableFuture<Void> visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null)
-            throw throwable;
-
+   public BasicInvocationStage visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
+      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          RemoveCommand removeCommand = (RemoveCommand) rCommand;
-         if (!isStoreEnabled(removeCommand) || rCtx.isInTxScope() || !removeCommand.isSuccessful())
-            return null;
-         if (!isProperWriter(rCtx, removeCommand, removeCommand.getKey()))
-            return null;
+         if (!isStoreEnabled(removeCommand) || rCtx.isInTxScope() || !removeCommand.isSuccessful()) return;
+         if (!isProperWriter(rCtx, removeCommand, removeCommand.getKey())) return;
 
          Object key = removeCommand.getKey();
          boolean resp = persistenceManager.deleteFromAllStores(key, BOTH);
          if (trace)
             getLog().tracef("Removed entry under key %s and got response %s from CacheStore", key, resp);
-         return null;
       });
    }
 
    @Override
-   public CompletableFuture<Void> visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
+   public BasicInvocationStage visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
       if (isStoreEnabled(command) && !ctx.isInTxScope())
          persistenceManager.clearAllStores(ctx.isOriginLocal() ? BOTH : PRIVATE);
 
-      return ctx.continueInvocation();
+      return invokeNext(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null)
-            throw throwable;
-
+   public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
+      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          PutKeyValueCommand putKeyValueCommand = (PutKeyValueCommand) rCommand;
          if (!isStoreEnabled(putKeyValueCommand) || rCtx.isInTxScope() || !putKeyValueCommand.isSuccessful())
-            return null;
+            return;
          if (!isProperWriter(rCtx, putKeyValueCommand, putKeyValueCommand.getKey()))
-            return null;
+            return;
 
          Object key = putKeyValueCommand.getKey();
          storeEntry(rCtx, key, putKeyValueCommand);
          if (getStatisticsEnabled())
             cacheStores.incrementAndGet();
-         return null;
       });
    }
 
    @Override
-   public CompletableFuture<Void> visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null)
-            throw throwable;
-
+   public BasicInvocationStage visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
+      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          ReplaceCommand replaceCommand = (ReplaceCommand) rCommand;
          if (!isStoreEnabled(replaceCommand) || rCtx.isInTxScope() || !replaceCommand.isSuccessful())
-            return null;
+            return;
          if (!isProperWriter(rCtx, replaceCommand, replaceCommand.getKey()))
-            return null;
+            return;
 
          Object key = replaceCommand.getKey();
          storeEntry(rCtx, key, replaceCommand);
          if (getStatisticsEnabled())
             cacheStores.incrementAndGet();
-         return null;
       });
    }
 
    @Override
-   public CompletableFuture<Void> visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null)
-            throw throwable;
-
+   public BasicInvocationStage visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
+      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          PutMapCommand putMapCommand = (PutMapCommand) rCommand;
          if (!isStoreEnabled(putMapCommand) || rCtx.isInTxScope())
-            return null;
+            return;
 
          Map<Object, Object> map = putMapCommand.getMap();
          for (Object key : map.keySet()) {
@@ -242,42 +227,42 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
          }
          if (getStatisticsEnabled())
             cacheStores.getAndAdd(map.size());
-         return null;
       });
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command) throws Throwable {
-      return visitWriteCommand(ctx);
+   public BasicInvocationStage visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command)
+         throws Throwable {
+      return visitWriteCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command) throws Throwable {
-      return visitWriteCommand(ctx);
+   public BasicInvocationStage visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command)
+         throws Throwable {
+      return visitWriteCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyKeyCommand(InvocationContext ctx, WriteOnlyKeyCommand command) throws Throwable {
-      return visitWriteCommand(ctx);
+   public BasicInvocationStage visitWriteOnlyKeyCommand(InvocationContext ctx, WriteOnlyKeyCommand command)
+         throws Throwable {
+      return visitWriteCommand(ctx, command);
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyKeyValueCommand(InvocationContext ctx, WriteOnlyKeyValueCommand command) throws Throwable {
-      return visitWriteCommand(ctx);
+   public BasicInvocationStage visitWriteOnlyKeyValueCommand(InvocationContext ctx, WriteOnlyKeyValueCommand command)
+         throws Throwable {
+      return visitWriteCommand(ctx, command);
    }
 
 
-   private <T extends DataWriteCommand & ParamsCommand> CompletableFuture<Void> visitWriteCommand(
-         InvocationContext ctx) throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null)
-            throw throwable;
-
+   private <T extends DataWriteCommand & ParamsCommand> BasicInvocationStage visitWriteCommand(InvocationContext ctx,
+         VisitableCommand command) throws Throwable {
+      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          T dataWriteCommand = (T) rCommand;
          if (!isStoreEnabled(dataWriteCommand) || rCtx.isInTxScope() || !dataWriteCommand.isSuccessful())
-            return null;
+            return;
          if (!isProperWriter(rCtx, dataWriteCommand, dataWriteCommand.getKey()))
-            return null;
+            return;
 
          Param<PersistenceMode> persistMode = dataWriteCommand.getParams().get(PersistenceMode.ID);
          switch (persistMode.get()) {
@@ -299,40 +284,39 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
             case SKIP:
                log.trace("Skipping cache store since persistence mode parameter is SKIP");
          }
-         return null;
       });
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyManyCommand(InvocationContext ctx, WriteOnlyManyCommand command) throws Throwable {
-      return visitWriteManyCommand(ctx, command.getKeys());
+   public BasicInvocationStage visitWriteOnlyManyCommand(InvocationContext ctx, WriteOnlyManyCommand command)
+         throws Throwable {
+      return visitWriteManyCommand(ctx, command, command.getKeys());
    }
 
    @Override
-   public CompletableFuture<Void> visitWriteOnlyManyEntriesCommand(InvocationContext ctx, WriteOnlyManyEntriesCommand command) throws Throwable {
-      return visitWriteManyCommand(ctx, command.getEntries().keySet());
+   public BasicInvocationStage visitWriteOnlyManyEntriesCommand(InvocationContext ctx, WriteOnlyManyEntriesCommand command)
+         throws Throwable {
+      return visitWriteManyCommand(ctx, command, command.getEntries().keySet());
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteManyCommand(InvocationContext ctx, ReadWriteManyCommand command) throws Throwable {
-      return visitWriteManyCommand(ctx, command.getKeys());
+   public BasicInvocationStage visitReadWriteManyCommand(InvocationContext ctx, ReadWriteManyCommand command)
+         throws Throwable {
+      return visitWriteManyCommand(ctx, command, command.getKeys());
    }
 
    @Override
-   public CompletableFuture<Void> visitReadWriteManyEntriesCommand(InvocationContext ctx,
-         ReadWriteManyEntriesCommand command) throws Throwable {
-      return visitWriteManyCommand(ctx, command.getEntries().keySet());
+   public BasicInvocationStage visitReadWriteManyEntriesCommand(InvocationContext ctx, ReadWriteManyEntriesCommand command)
+         throws Throwable {
+      return visitWriteManyCommand(ctx, command, command.getEntries().keySet());
    }
 
-   private <T extends WriteCommand & ParamsCommand> CompletableFuture<Void> visitWriteManyCommand(
-         InvocationContext ctx, Set<?> keys) throws Throwable {
-      return ctx.onReturn((rCtx, rCommand, rv, throwable) -> {
-         if (throwable != null)
-            throw throwable;
-
+   private <T extends WriteCommand & ParamsCommand> BasicInvocationStage visitWriteManyCommand(InvocationContext ctx,
+         VisitableCommand command, Collection<?> keys) throws Throwable {
+      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          T manyEntriesCommand = (T) rCommand;
          if (!isStoreEnabled(manyEntriesCommand) || rCtx.isInTxScope())
-            return null;
+            return;
 
          Param<PersistenceMode> persistMode = manyEntriesCommand.getParams().get(PersistenceMode.ID);
          switch (persistMode.get()) {
@@ -359,7 +343,6 @@ public class CacheWriterInterceptor extends JmxStatsCommandInterceptor {
             case SKIP:
                log.trace("Skipping cache store since persistence mode parameter is SKIP");
          }
-         return null;
       });
    }
 

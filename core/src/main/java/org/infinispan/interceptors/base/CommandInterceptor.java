@@ -1,5 +1,8 @@
 package org.infinispan.interceptors.base;
 
+import java.util.List;
+import java.util.Set;
+
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.CacheImpl;
 import org.infinispan.commands.AbstractVisitor;
@@ -15,13 +18,11 @@ import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
+import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.InterceptorChain;
+import org.infinispan.interceptors.impl.ReturnValueStage;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * This is the base class for all interceptors to extend, and implements the {@link Visitor} interface allowing it to
@@ -56,7 +57,8 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Asyn
    protected Configuration cacheConfiguration;
 
    private static final Log log = LogFactory.getLog(CommandInterceptor.class);
-   
+   private AsyncInterceptor nextInterceptor;
+
    protected Log getLog() {
       return log;
    }
@@ -102,6 +104,11 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Asyn
    public final void setNext(CommandInterceptor ignored) {
    }
 
+   @Override
+   public final void setNextInterceptor(AsyncInterceptor interceptorStage) {
+      this.nextInterceptor = interceptorStage;
+   }
+
    /**
     * Invokes the next interceptor in the chain.  This is how interceptor implementations should pass a call up the
     * chain to the next interceptor.
@@ -112,7 +119,8 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Asyn
     * @throws Throwable in the event of problems
     */
    public final Object invokeNextInterceptor(InvocationContext ctx, VisitableCommand command) throws Throwable {
-      return ctx.forkInvocationSync(command);
+      BasicInvocationStage stage = nextInterceptor.visitCommand(ctx, command);
+      return stage.get();
    }
 
    /**
@@ -151,10 +159,9 @@ public abstract class CommandInterceptor extends AbstractVisitor implements Asyn
    }
 
    @Override
-   public CompletableFuture<Void> visitCommand(InvocationContext ctx, VisitableCommand command)
+   public BasicInvocationStage visitCommand(InvocationContext ctx, VisitableCommand command)
          throws Throwable {
-      // Any exceptions will be propagated to the caller
       Object returnValue = command.acceptVisitor(ctx, this);
-      return ctx.shortCircuit(returnValue);
+      return new ReturnValueStage(ctx, command, returnValue);
    }
 }

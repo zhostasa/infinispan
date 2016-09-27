@@ -1,5 +1,14 @@
 package org.infinispan.interceptors.impl;
 
+import static org.infinispan.commons.util.Util.toStr;
+
+import java.util.Collection;
+import java.util.Collections;
+
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 import org.infinispan.InvalidCacheUsageException;
 import org.infinispan.commands.FlagAffectedCommand;
@@ -17,6 +26,9 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.interceptors.BaseAsyncInterceptor;
+import org.infinispan.interceptors.BasicInvocationStage;
+import org.infinispan.interceptors.InvocationComposeHandler;
+import org.infinispan.interceptors.InvocationStage;
 import org.infinispan.interceptors.totalorder.RetryPrepareException;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
@@ -26,16 +38,6 @@ import org.infinispan.transaction.impl.AbstractCacheTransaction;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
-
-import static org.infinispan.commons.util.Util.toStr;
 
 /**
  * @author Mircea.Markus@jboss.com
@@ -53,26 +55,21 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
    private static final boolean trace = log.isTraceEnabled();
    private volatile boolean shuttingDown = false;
 
-   private final ReturnHandler defaultReturnHandler = new ReturnHandler() {
+   private final InvocationComposeHandler composeHandler = new InvocationComposeHandler() {
       @Override
-      public CompletableFuture<Object> handle(InvocationContext rCtx, VisitableCommand rCommand, Object rv,
-            Throwable throwable) throws Throwable {
+      public BasicInvocationStage apply(BasicInvocationStage stage, InvocationContext rCtx, VisitableCommand rCommand,
+                                        Object rv, Throwable t) throws Throwable {
          invocationContextContainer.clearThreadLocal(rCtx);
-         if (throwable == null)
-            return null;
+         if (t == null)
+            return stage;
 
-         if (throwable instanceof InvalidCacheUsageException) {
-            throw throwable;
+         if (t instanceof InvalidCacheUsageException || t instanceof InterruptedException) {
+            throw t;
          } else {
-            rethrowException(rCtx, rCommand, throwable);
+            rethrowException(rCtx, rCommand, t);
          }
-         if (rCommand instanceof LockControlCommand) {
-            // Return null to return the same value without allocating a CompletableFuture
-            return rv != null ? null : CompletableFuture.completedFuture(Boolean.FALSE);
-         } else {
-            // To ignore the exception, we need to return a CompletableFuture
-            return CompletableFuture.completedFuture(rv);
-         }
+         // Ignore the exception
+         return returnWith(rCommand instanceof LockControlCommand ? Boolean.FALSE : null);
       }
    };
 
@@ -95,7 +92,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
    }
 
    @Override
-   public CompletableFuture<Void> visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
+   public BasicInvocationStage visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
       if (trace)
          log.tracef("Invoked with command %s and InvocationContext [%s]", command, ctx);
       if (ctx == null)
@@ -104,7 +101,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
       ComponentStatus status = componentRegistry.getStatus();
       if (command.ignoreCommandOnStatus(status)) {
          log.debugf("Status: %s : Ignoring %s command", status, command);
-            return ctx.shortCircuit(null);
+         return returnWith(null);
       } else {
          if (status.isTerminated()) {
             throw log.cacheIsTerminated(getCacheNamePrefix());
@@ -114,11 +111,11 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
       }
 
       invocationContextContainer.setThreadLocal(ctx);
-      return ctx.onReturn(defaultReturnHandler);
+      InvocationStage stage = invokeNext(ctx, command);
+      return stage.compose(composeHandler);
    }
 
-   private void rethrowException(InvocationContext ctx, VisitableCommand command, Throwable th)
-         throws Throwable {
+   private void rethrowException(InvocationContext ctx, VisitableCommand command, Throwable th) throws Throwable {
       // Only check for fail silently if there's a failure :)
       boolean suppressExceptions = (command instanceof FlagAffectedCommand)
             && ((FlagAffectedCommand) command).hasFlag(Flag.FAIL_SILENTLY);

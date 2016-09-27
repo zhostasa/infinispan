@@ -1,5 +1,17 @@
 package org.infinispan.interceptors.impl;
 
+import static org.infinispan.commons.util.Immutables.immutableListAdd;
+import static org.infinispan.commons.util.Immutables.immutableListRemove;
+import static org.infinispan.commons.util.Immutables.immutableListReplace;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
@@ -12,23 +24,12 @@ import org.infinispan.factories.annotations.Stop;
 import org.infinispan.factories.components.ComponentMetadataRepo;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
-import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
+import org.infinispan.interceptors.BasicInvocationStage;
+import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static org.infinispan.commons.util.Immutables.immutableListAdd;
-import static org.infinispan.commons.util.Immutables.immutableListRemove;
-import static org.infinispan.commons.util.Immutables.immutableListReplace;
 
 /**
  * Knows how to build and manage a chain of interceptors. Also in charge with invoking methods on the chain.
@@ -52,7 +53,7 @@ public class AsyncInterceptorChainImpl implements AsyncInterceptorChain {
 
    // Modifications are guarded with "lock", but reads do not need synchronization
    private volatile List<AsyncInterceptor> interceptors = EMPTY_INTERCEPTORS_LIST;
-   private volatile InterceptorListNode firstInterceptor = null;
+   private volatile AsyncInterceptor firstInterceptor = null;
 
    static {
       Map<Class<? extends CommandInterceptor>, Class<? extends AsyncInterceptor>> map = new HashMap<>();
@@ -263,13 +264,21 @@ public class AsyncInterceptorChainImpl implements AsyncInterceptorChain {
 
    @Override
    public CompletableFuture<Object> invokeAsync(InvocationContext ctx, VisitableCommand command) {
-      return ((BaseAsyncInvocationContext) ctx).invoke(command, firstInterceptor);
+      try {
+         BasicInvocationStage stage = firstInterceptor.visitCommand(ctx, command);
+         return stage.toCompletableFuture();
+      } catch (Throwable t) {
+         CompletableFuture<Object> cf = new CompletableFuture<>();
+         cf.completeExceptionally(t);
+         return cf;
+      }
    }
 
    @Override
    public Object invoke(InvocationContext ctx, VisitableCommand command) {
       try {
-         return ((BaseAsyncInvocationContext) ctx).invokeSync(command, firstInterceptor);
+         BasicInvocationStage stage = firstInterceptor.visitCommand(ctx, command);
+         return stage.get();
       } catch (InterruptedException e) {
          Thread.currentThread().interrupt();
          throw new CacheException(e);
@@ -354,11 +363,14 @@ public class AsyncInterceptorChainImpl implements AsyncInterceptorChain {
    }
 
    private void rebuildInterceptors() {
-      InterceptorListNode node = null;
       ListIterator<AsyncInterceptor> it = interceptors.listIterator(interceptors.size());
+      // The CallInterceptor
+      AsyncInterceptor nextInterceptor = it.previous();
       while (it.hasPrevious()) {
-         node = new InterceptorListNode(it.previous(), node);
+         AsyncInterceptor interceptor = it.previous();
+         interceptor.setNextInterceptor(nextInterceptor);
+         nextInterceptor = interceptor;
       }
-      this.firstInterceptor = node;
+      this.firstInterceptor = nextInterceptor;
    }
 }
