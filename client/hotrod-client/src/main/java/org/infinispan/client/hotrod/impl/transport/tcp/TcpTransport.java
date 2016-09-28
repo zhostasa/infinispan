@@ -35,7 +35,7 @@ import static org.infinispan.commons.io.UnsignedNumeric.*;
  * @since 4.1
  */
 public class TcpTransport extends AbstractTransport {
-   private static final int SOCKET_STREAM_BUFFER = 8 * 1024;
+   public static final int SOCKET_STREAM_BUFFER = 8 * 1024;
 
    //needed for debugging
    private static AtomicLong ID_COUNTER = new AtomicLong(0);
@@ -167,6 +167,20 @@ public class TcpTransport extends AbstractTransport {
    }
 
    @Override
+   protected void writeBytes(byte[] toAppend, int offset, int count) {
+      try {
+         socketOutputStream.write(toAppend, offset, count);
+         if (trace) {
+            log.tracef("Wrote %d bytes", Integer.toString(toAppend.length));
+         }
+      } catch (IOException e) {
+         invalid = true;
+         throw new TransportException(
+               "Problems writing data to stream", e, serverAddress);
+      }
+   }
+
+   @Override
    public void writeByte(short toWrite) {
       try {
          socketOutputStream.write(toWrite);
@@ -218,8 +232,7 @@ public class TcpTransport extends AbstractTransport {
    }
 
    @Override
-   public byte[] readByteArray(final int size) {
-      byte[] result = new byte[size];
+   public void readByteArray(byte[] result, int size) {
       boolean done = false;
       int offset = 0;
       do {
@@ -249,6 +262,12 @@ public class TcpTransport extends AbstractTransport {
       if (trace) {
          log.tracef("Successfully read array with size: %d", (Integer) size);
       }
+   }
+
+   @Override
+   public byte[] readByteArray(final int size) {
+      byte[] result = new byte[size];
+      readByteArray(result, size);
       return result;
    }
 

@@ -3,6 +3,8 @@ package org.infinispan.client.hotrod.impl;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +23,7 @@ import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
+import org.infinispan.client.hotrod.StreamingRemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.client.hotrod.event.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
@@ -35,6 +38,7 @@ import org.infinispan.client.hotrod.impl.operations.ContainsKeyOperation;
 import org.infinispan.client.hotrod.impl.operations.ExecuteOperation;
 import org.infinispan.client.hotrod.impl.operations.GetAllParallelOperation;
 import org.infinispan.client.hotrod.impl.operations.GetOperation;
+import org.infinispan.client.hotrod.impl.operations.GetStreamOperation;
 import org.infinispan.client.hotrod.impl.operations.GetWithMetadataOperation;
 import org.infinispan.client.hotrod.impl.operations.GetWithVersionOperation;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
@@ -42,6 +46,7 @@ import org.infinispan.client.hotrod.impl.operations.PingOperation;
 import org.infinispan.client.hotrod.impl.operations.PutAllParallelOperation;
 import org.infinispan.client.hotrod.impl.operations.PutIfAbsentOperation;
 import org.infinispan.client.hotrod.impl.operations.PutOperation;
+import org.infinispan.client.hotrod.impl.operations.PutStreamOperation;
 import org.infinispan.client.hotrod.impl.operations.RemoveClientListenerOperation;
 import org.infinispan.client.hotrod.impl.operations.RemoveIfUnmodifiedOperation;
 import org.infinispan.client.hotrod.impl.operations.RemoveOperation;
@@ -267,7 +272,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
       return op.execute();
    }
 
-   private K compatKeyIfNeeded(Object key) {
+   K compatKeyIfNeeded(Object key) {
       return hasCompatibility ? (K) key : null;
    }
 
@@ -489,7 +494,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
       return operationsFactory.newFaultTolerantPingOperation().execute();
    }
 
-   private byte[] obj2bytes(Object o, boolean isKey) {
+   byte[] obj2bytes(Object o, boolean isKey) {
       try {
          return marshaller.objectToByteBuffer(o, isKey ? estimateKeySize : estimateValueSize);
       } catch (IOException ioe) {
@@ -543,6 +548,12 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    @Override
    public CacheTopologyInfo getCacheTopologyInfo() {
       return operationsFactory.getCacheTopologyInfo();
+   }
+
+   @Override
+   public StreamingRemoteCache<K> streaming() {
+      assertRemoteCacheManagerIsStarted();
+      return new StreamingRemoteCacheImpl(this);
    }
 
    public PingOperation.PingResult resolveCompatibility() {

@@ -63,6 +63,11 @@ public interface ConfigurationChildBuilder {
    ConfigurationBuilder classLoader(ClassLoader classLoader);
 
    /**
+    * Specifies the level of "intelligence" the client should have
+    */
+   ConfigurationBuilder clientIntelligence(ClientIntelligence clientIntelligence);
+
+   /**
     * Configures the connection pool
     */
    ConnectionPoolConfigurationBuilder connectionPool();
