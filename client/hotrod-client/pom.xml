@@ -117,6 +117,30 @@
          <artifactId>jboss-sasl</artifactId>
          <scope>test</scope>
       </dependency>
+
+      <dependency>
+         <groupId>org.testng</groupId>
+         <artifactId>testng</artifactId>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-all</artifactId>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.byteman</groupId>
+         <artifactId>byteman</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.byteman</groupId>
+         <artifactId>byteman-bmunit</artifactId>
+         <scope>test</scope>
+      </dependency>
+
    </dependencies>
 
    <build>
