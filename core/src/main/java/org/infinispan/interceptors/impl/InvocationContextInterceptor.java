@@ -46,7 +46,6 @@ import org.infinispan.util.logging.LogFactory;
  */
 public class InvocationContextInterceptor extends BaseAsyncInterceptor {
 
-   private TransactionManager tm;
    private ComponentRegistry componentRegistry;
    private TransactionTable txTable;
    private InvocationContextContainer invocationContextContainer;
@@ -84,8 +83,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
    }
 
    @Inject
-   public void init(TransactionManager tm, ComponentRegistry componentRegistry, TransactionTable txTable, InvocationContextContainer invocationContextContainer) {
-      this.tm = tm;
+   public void init(ComponentRegistry componentRegistry, TransactionTable txTable, InvocationContextContainer invocationContextContainer) {
       this.componentRegistry = componentRegistry;
       this.txTable = txTable;
       this.invocationContextContainer = invocationContextContainer;
@@ -178,7 +176,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
 
    private Object markTxForRollbackAndRethrow(InvocationContext ctx, Throwable te) throws Throwable {
       if (ctx.isOriginLocal() && ctx.isInTxScope()) {
-         Transaction transaction = tm.getTransaction();
+         Transaction transaction = ((TxInvocationContext) ctx).getTransaction();
          if (transaction != null && isValidRunningTx(transaction)) {
             transaction.setRollbackOnly();
          }
@@ -201,7 +199,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
          return false;
 
       if (ctx.isOriginLocal())
-         return txTable.containsLocalTx(tm.getTransaction());
+         return txTable.containsLocalTx(((TxInvocationContext) ctx).getGlobalTransaction());
       else
          return txTable.containRemoteTx(((TxInvocationContext) ctx).getGlobalTransaction());
    }
