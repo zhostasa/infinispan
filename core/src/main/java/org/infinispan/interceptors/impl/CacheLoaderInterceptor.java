@@ -295,7 +295,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
 
    @Override
    public BasicInvocationStage visitReadWriteManyCommand(InvocationContext ctx, ReadWriteManyCommand command) throws Throwable {
-      return visitManyDataCommand(ctx, command, command.getKeys());
+      return visitManyDataCommand(ctx, command, command.getAffectedKeys());
    }
 
    @Override

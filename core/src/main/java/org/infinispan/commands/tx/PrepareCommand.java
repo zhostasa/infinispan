@@ -121,7 +121,7 @@ public class PrepareCommand extends AbstractTransactionBoundaryCommand implement
    }
 
    @Override
-   public Collection<Object> getKeysToLock() {
+   public Collection<?> getKeysToLock() {
       if (modifications == null || modifications.length == 0) {
          return Collections.emptyList();
       }
@@ -227,7 +227,7 @@ public class PrepareCommand extends AbstractTransactionBoundaryCommand implement
       return modifications != null && modifications.length > 0;
    }
 
-   public Set<Object> getAffectedKeys() {
+   public Collection<?> getAffectedKeys() {
       if (modifications == null || modifications.length == 0)
          return Collections.emptySet();
 

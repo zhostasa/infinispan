@@ -12,8 +12,8 @@ import org.infinispan.notifications.cachelistener.CacheNotifier;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
 /**
  * @author Mircea.Markus@jboss.com
@@ -103,7 +103,7 @@ public class ClearCommand extends AbstractTopologyAffectedCommand implements Wri
    }
 
    @Override
-   public Set<Object> getAffectedKeys() {
+   public Collection<?> getAffectedKeys() {
       return Collections.emptySet();
    }
 

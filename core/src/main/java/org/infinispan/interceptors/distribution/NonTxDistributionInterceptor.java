@@ -382,7 +382,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    public BasicInvocationStage visitWriteOnlyManyCommand(InvocationContext ctx, WriteOnlyManyCommand command)
          throws Throwable {
       // TODO: Refactor this, visitWriteOnlyManyCommand and visitPutMapCommand...
-      Collection<Object> originalMap = command.getKeys();
+      Collection<?> originalMap = command.getAffectedKeys();
       ConsistentHash ch = dm.getConsistentHash();
       Address localAddress = rpcManager.getAddress();
       if (ctx.isOriginLocal()) {
@@ -396,7 +396,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
             }
             Set<Integer> segments = ch.getPrimarySegmentsForOwner(member);
             if (!segments.isEmpty()) {
-               Collection<Object> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(originalMap, ch, segments);
+               Collection<?> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(originalMap, ch, segments);
                if (!segmentKeysSet.isEmpty()) {
                   WriteOnlyManyCommand copy = new WriteOnlyManyCommand(command);
                   copy.setKeys(segmentKeysSet);
@@ -447,7 +447,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
 
             for (Entry<Address, Set<Integer>> entry : backupOwnerSegments.entrySet()) {
                Set<Integer> segments = entry.getValue();
-               Collection<Object> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(originalMap, ch, segments);
+               Collection<?> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(originalMap, ch, segments);
                if (!segmentKeysSet.isEmpty()) {
                   WriteOnlyManyCommand copy = new WriteOnlyManyCommand(command);
                   copy.setKeys(segmentKeysSet);
@@ -478,7 +478,6 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    public BasicInvocationStage visitReadWriteManyCommand(InvocationContext ctx, ReadWriteManyCommand command)
          throws Throwable {
       // TODO: Refactor to avoid code duplication
-      Collection<Object> originalKeys = command.getKeys();
       ConsistentHash ch = dm.getConsistentHash();
       Address localAddress = rpcManager.getAddress();
       if (ctx.isOriginLocal()) {
@@ -492,7 +491,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
             }
             Set<Integer> segments = ch.getPrimarySegmentsForOwner(member);
             if (!segments.isEmpty()) {
-               Collection<Object> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(originalKeys, ch, segments);
+               Collection<Object> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(command.getAffectedKeys(), ch, segments);
                if (!segmentKeysSet.isEmpty()) {
                   ReadWriteManyCommand copy = new ReadWriteManyCommand(command);
                   copy.setKeys(segmentKeysSet);
@@ -554,7 +553,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
 
             for (Entry<Address, Set<Integer>> entry : backupOwnerSegments.entrySet()) {
                Set<Integer> segments = entry.getValue();
-               Collection<Object> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(originalKeys, ch, segments);
+               Collection<?> segmentKeysSet = new ReadOnlySegmentAwareCollection<>(command.getAffectedKeys(), ch, segments);
                if (!segmentKeysSet.isEmpty()) {
                   ReadWriteManyCommand copy = new ReadWriteManyCommand(command);
                   copy.setKeys(segmentKeysSet);

@@ -4,7 +4,7 @@ import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * A command that modifies the cache in some way
@@ -47,7 +47,7 @@ public interface WriteCommand extends VisitableCommand, FlagAffectedCommand, Top
     * @return a collection of keys affected by this write command.  Some commands - such as ClearCommand - may return
     * an empty collection for this method.
     */
-   Set<Object> getAffectedKeys();
+   Collection<?> getAffectedKeys();
 
    /**
     * Used for conditional commands, to update the status of the command on the originator

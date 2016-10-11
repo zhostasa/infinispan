@@ -14,9 +14,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -37,16 +35,12 @@ public final class WriteOnlyManyCommand<K, V> extends AbstractWriteManyCommand<K
    }
 
    public WriteOnlyManyCommand(WriteOnlyManyCommand<K, V> command) {
-      this.keys = command.getKeys();
+      this.keys = command.keys;
       this.f = command.f;
       this.params = command.params;
    }
 
    public WriteOnlyManyCommand() {
-   }
-
-   public Collection<? extends K> getKeys() {
-      return keys;
    }
 
    public void setKeys(Collection<? extends K> keys) {
@@ -111,8 +105,8 @@ public final class WriteOnlyManyCommand<K, V> extends AbstractWriteManyCommand<K
    }
 
    @Override
-   public Set<Object> getAffectedKeys() {
-      return null;  // TODO: Customise this generated block
+   public Collection<?> getAffectedKeys() {
+      return keys;
    }
 
    @Override
