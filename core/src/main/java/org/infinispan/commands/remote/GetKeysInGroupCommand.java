@@ -1,6 +1,6 @@
 package org.infinispan.commands.remote;
 
-import org.infinispan.commands.AbstractFlagAffectedCommand;
+import org.infinispan.commands.AbstractTopologyAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.Visitor;
 import org.infinispan.container.entries.CacheEntry;
@@ -25,7 +25,7 @@ import java.util.Map;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public class GetKeysInGroupCommand extends AbstractFlagAffectedCommand implements VisitableCommand {
+public class GetKeysInGroupCommand extends AbstractTopologyAffectedCommand implements VisitableCommand {
 
    public static final byte COMMAND_ID = 43;
 

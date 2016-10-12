@@ -1,6 +1,6 @@
 package org.infinispan.commands.read;
 
-import org.infinispan.commands.AbstractFlagAffectedCommand;
+import org.infinispan.commands.AbstractTopologyAffectedCommand;
 import org.infinispan.commands.DataCommand;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -13,7 +13,7 @@ import static org.infinispan.commons.util.Util.toStr;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public abstract class AbstractDataCommand extends AbstractFlagAffectedCommand implements DataCommand {
+public abstract class AbstractDataCommand extends AbstractTopologyAffectedCommand implements DataCommand {
    protected Object key;
 
    @Override
@@ -61,12 +61,12 @@ public abstract class AbstractDataCommand extends AbstractFlagAffectedCommand im
          return false;
       return true;
    }
-   
+
    @Override
    public int hashCode() {
       return (key != null ? key.hashCode() : 0);
    }
-   
+
    @Override
    public String toString() {
       return new StringBuilder(getClass().getSimpleName())

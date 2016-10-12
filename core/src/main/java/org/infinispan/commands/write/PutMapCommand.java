@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.infinispan.commands.AbstractFlagAffectedCommand;
+import org.infinispan.commands.AbstractTopologyAffectedCommand;
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.MetadataAwareCommand;
 import org.infinispan.commands.Visitor;
@@ -32,7 +32,7 @@ import org.infinispan.util.concurrent.locks.RemoteLockCommand;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteCommand, MetadataAwareCommand, RemoteLockCommand {
+public class PutMapCommand extends AbstractTopologyAffectedCommand implements WriteCommand, MetadataAwareCommand, RemoteLockCommand {
    public static final byte COMMAND_ID = 9;
 
    private Map<Object, Object> map;

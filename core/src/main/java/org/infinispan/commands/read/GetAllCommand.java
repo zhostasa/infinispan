@@ -1,6 +1,6 @@
 package org.infinispan.commands.read;
 
-import org.infinispan.commands.AbstractFlagAffectedCommand;
+import org.infinispan.commands.AbstractTopologyAffectedCommand;
 import org.infinispan.commands.Visitor;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.InternalEntryFactory;
@@ -33,7 +33,7 @@ import static org.infinispan.commons.util.Util.toStr;
  */
 @Deprecated
 // TODO: revise the command hierarchy, e.g. this should not implement MetadataAwareCommand
-public class GetAllCommand extends AbstractFlagAffectedCommand {
+public class GetAllCommand extends AbstractTopologyAffectedCommand {
    public static final byte COMMAND_ID = 44;
    private static final Log log = LogFactory.getLog(GetAllCommand.class);
    private static final boolean trace = log.isTraceEnabled();

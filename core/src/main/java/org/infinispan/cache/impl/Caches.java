@@ -1,7 +1,7 @@
 package org.infinispan.cache.impl;
 
 import org.infinispan.Cache;
-import org.infinispan.commands.LocalFlagAffectedCommand;
+import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.context.Flag;
 
 import java.util.Set;
@@ -16,7 +16,7 @@ public class Caches {
    private Caches() {
    }
 
-   public static <K, V> Cache<K, V> getCacheWithFlags(Cache<K, V> cache, LocalFlagAffectedCommand command) {
+   public static <K, V> Cache<K, V> getCacheWithFlags(Cache<K, V> cache, FlagAffectedCommand command) {
       Set<Flag> flags = command.getFlags();
       if (flags != null && !flags.isEmpty()) {
          return cache.getAdvancedCache().withFlags(flags.toArray(new Flag[flags.size()]));

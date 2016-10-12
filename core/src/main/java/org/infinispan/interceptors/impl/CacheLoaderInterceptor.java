@@ -17,7 +17,6 @@ import org.infinispan.Cache;
 import org.infinispan.CacheSet;
 import org.infinispan.cache.impl.Caches;
 import org.infinispan.commands.FlagAffectedCommand;
-import org.infinispan.commands.LocalFlagAffectedCommand;
 import org.infinispan.commands.functional.ReadOnlyKeyCommand;
 import org.infinispan.commands.functional.ReadOnlyManyCommand;
 import org.infinispan.commands.functional.ReadWriteKeyCommand;
@@ -181,7 +180,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
       return visitDataCommand(ctx, command);
    }
 
-   private <T extends FlagAffectedCommand> BasicInvocationStage visitManyDataCommand(InvocationContext ctx, T command, Collection<?> keys)
+   private BasicInvocationStage visitManyDataCommand(InvocationContext ctx, FlagAffectedCommand command, Collection<?> keys)
          throws Throwable {
       for (Object key : keys) {
          loadIfNeeded(ctx, key, command);
@@ -308,7 +307,7 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
       return cmd.isConditional();
    }
 
-   protected final boolean hasSkipLoadFlag(LocalFlagAffectedCommand cmd) {
+   protected final boolean hasSkipLoadFlag(FlagAffectedCommand cmd) {
       return cmd.hasAnyFlag(FlagBitSets.SKIP_CACHE_LOAD);
    }
 

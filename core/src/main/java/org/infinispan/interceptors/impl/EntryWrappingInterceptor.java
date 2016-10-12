@@ -250,7 +250,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             entryFactory.wrapEntryForWriting(ctx, key, EntryFactory.Wrap.WRAP_NON_NULL, false, true);
          }
       }
-      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, null);
+      return setSkipRemoteGetsAndInvokeNextForWriteCommand(ctx, command);
    }
 
    @Override
@@ -267,7 +267,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
 
          if (!rCtx.isInTxScope()) {
             ClearCommand clearCommand = (ClearCommand) rCommand;
-            applyChanges(rCtx, clearCommand, clearCommand.getMetadata());
+            applyChanges(rCtx, clearCommand, null);
          }
 
          if (trace)
@@ -284,7 +284,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
          entryFactory.wrapEntryForWriting(ctx, key, EntryFactory.Wrap.WRAP_NON_NULL, false, true);
          if (trace) log.tracef("Entry to be removed: %s", toStr(key));
       }
-      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, null);
+      return setSkipRemoteGetsAndInvokeNextForWriteCommand(ctx, command);
    }
 
    @Override
@@ -446,21 +446,21 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    public BasicInvocationStage visitWriteOnlyKeyCommand(InvocationContext ctx, WriteOnlyKeyCommand command)
          throws Throwable {
       wrapEntryForPutIfNeeded(ctx, command);
-      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, command.getMetadata());
+      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, null);
    }
 
    @Override
    public BasicInvocationStage visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command)
          throws Throwable {
       wrapEntryForPutIfNeeded(ctx, command);
-      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, command.getMetadata());
+      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, null);
    }
 
    @Override
    public BasicInvocationStage visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command)
          throws Throwable {
       wrapEntryForPutIfNeeded(ctx, command);
-      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, command.getMetadata());
+      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, null);
    }
 
    @Override
@@ -491,7 +491,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    public BasicInvocationStage visitWriteOnlyKeyValueCommand(InvocationContext ctx, WriteOnlyKeyValueCommand command)
          throws Throwable {
       wrapEntryForPutIfNeeded(ctx, command);
-      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, command.getMetadata());
+      return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, null);
    }
 
    @Override
@@ -602,11 +602,12 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    /**
     * Locks the value for the keys accessed by the command to avoid being override from a remote get.
     */
-   private BasicInvocationStage setSkipRemoteGetsAndInvokeNextForWriteCommand(InvocationContext ctx, WriteCommand command) {
+   private BasicInvocationStage setSkipRemoteGetsAndInvokeNextForWriteCommand(InvocationContext ctx,
+                                                                              WriteCommand command) throws Throwable {
       return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          WriteCommand writeCommand = (WriteCommand) rCommand;
          if (!rCtx.isInTxScope()) {
-            applyChanges(rCtx, writeCommand, writeCommand.getMetadata());
+            applyChanges(rCtx, writeCommand, null);
          }
 
          if (trace)

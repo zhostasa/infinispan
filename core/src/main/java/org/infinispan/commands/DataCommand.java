@@ -9,6 +9,6 @@ package org.infinispan.commands;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public interface DataCommand extends VisitableCommand, TopologyAffectedCommand, LocalFlagAffectedCommand {
+public interface DataCommand extends VisitableCommand, TopologyAffectedCommand, FlagAffectedCommand {
    Object getKey();
 }

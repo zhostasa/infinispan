@@ -31,7 +31,7 @@ import org.infinispan.util.logging.LogFactory;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public class ClusteredGetCommand extends LocalFlagAffectedRpcCommand {
+public class ClusteredGetCommand extends BaseClusteredReadCommand {
 
    public static final byte COMMAND_ID = 16;
    private static final Log log = LogFactory.getLog(ClusteredGetCommand.class);

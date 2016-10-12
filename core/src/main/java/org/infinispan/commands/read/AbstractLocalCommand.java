@@ -1,6 +1,6 @@
 package org.infinispan.commands.read;
 
-import org.infinispan.commands.AbstractLocalFlagAffectedCommand;
+import org.infinispan.commands.AbstractFlagAffectedCommand;
 import org.infinispan.commands.LocalCommand;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
@@ -18,7 +18,7 @@ import java.io.ObjectOutput;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public abstract class AbstractLocalCommand extends AbstractLocalFlagAffectedCommand implements LocalCommand {
+public abstract class AbstractLocalCommand extends AbstractFlagAffectedCommand implements LocalCommand {
 
    public byte getCommandId() {
       return 0;  // no-op
@@ -47,9 +47,4 @@ public abstract class AbstractLocalCommand extends AbstractLocalFlagAffectedComm
    public boolean canBlock() {
       return false;
    }
-
-   protected static boolean noTxModifications(InvocationContext ctx) {
-      return !ctx.isInTxScope() || !((TxInvocationContext)ctx).hasModifications();
-   }
-
 }

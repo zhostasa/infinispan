@@ -1,21 +1,21 @@
 package org.infinispan.commands.functional;
 
+import org.infinispan.commands.AbstractTopologyAffectedCommand;
 import org.infinispan.commands.LocalCommand;
 import org.infinispan.commands.Visitor;
-import org.infinispan.commands.read.AbstractDataCommand;
 import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.functional.impl.EntryViews;
+import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import static org.infinispan.functional.impl.EntryViews.snapshot;
@@ -24,8 +24,8 @@ import static org.infinispan.functional.impl.EntryViews.snapshot;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public final class ReadOnlyManyCommand<K, V, R> extends AbstractDataCommand implements LocalCommand {
-
+public final class ReadOnlyManyCommand<K, V, R> extends AbstractTopologyAffectedCommand
+      implements LocalCommand {
    private Collection<? extends K> keys;
    private Function<ReadEntryView<K, V>, R> f;
 
@@ -49,6 +49,16 @@ public final class ReadOnlyManyCommand<K, V, R> extends AbstractDataCommand impl
    @Override
    public byte getCommandId() {
       return -1;
+   }
+
+   @Override
+   public boolean isReturnValueExpected() {
+      return false;  // TODO: Customise this generated block
+   }
+
+   @Override
+   public boolean canBlock() {
+      return false;  // TODO: Customise this generated block
    }
 
    @Override
@@ -96,13 +106,18 @@ public final class ReadOnlyManyCommand<K, V, R> extends AbstractDataCommand impl
    }
 
    @Override
-   public boolean readsExistingValues() {
+   public boolean shouldInvoke(InvocationContext ctx) {
       return true;
    }
 
    @Override
-   public boolean alwaysReadsExistingValues() {
+   public boolean ignoreCommandOnStatus(ComponentStatus status) {
       return false;
+   }
+
+   @Override
+   public boolean readsExistingValues() {
+      return true;
    }
 
    @Override
