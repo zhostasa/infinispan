@@ -1,7 +1,6 @@
 package org.infinispan.spring.provider;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.springframework.cache.Cache;
 import org.springframework.util.Assert;
 
 import java.util.Collection;
@@ -34,8 +33,8 @@ public class SpringRemoteCacheManager implements org.springframework.cache.Cache
     * @see org.springframework.cache.CacheManager#getCache(java.lang.String)
     */
    @Override
-   public Cache getCache(final String name) {
-      return new SpringRemoteCache(this.nativeCacheManager.getCache(name));
+   public SpringCache getCache(final String name) {
+      return new SpringCache(this.nativeCacheManager.getCache(name));
    }
 
    /**

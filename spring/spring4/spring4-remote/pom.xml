@@ -12,7 +12,7 @@
     <artifactId>infinispan-spring4-remote</artifactId>
     <packaging>bundle</packaging>
 
-    <name>Infinispan Spring 4 Integration</name>
+    <name>Infinispan Spring 4 Remote support</name>
 
     <properties>
         <infinispan.test.parallel.threads>1</infinispan.test.parallel.threads>
@@ -22,6 +22,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -40,6 +46,12 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-spring4-common</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
@@ -48,6 +60,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-client-hotrod</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query-dsl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -64,6 +81,11 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
