@@ -669,7 +669,7 @@ public class DistributedCacheStream<R> extends AbstractCacheStream<R, Stream<R>,
       }
       KeyTrackingConsumer<Object, R> results = new KeyTrackingConsumer<>(segmentInfoCH,
               iteratorOperation.wrapConsumer(consumer), iteratorOperation.getFunction(),
-              listenerNotifier, keyEquivalence);
+              listenerNotifier);
       Thread thread = Thread.currentThread();
       executor.execute(() -> {
          try {

@@ -10,9 +10,9 @@
                         acquire-timeout="20000"
                         concurrency-level="500"
                         striping="false" />
-                    <eviction 
-                        strategy="LRU" 
-                        size="2"/>
+                    <memory>
+                        <object size="2"/>
+                    </memory>
                     <remote-store 
                         cache="default"
                         socket-timeout="60000"
@@ -33,9 +33,9 @@
                             acquire-timeout="20000"
                             concurrency-level="500"
                             striping="false" />
-                    <eviction
-                            strategy="LRU"
-                            size="2"/>
+                    <memory>
+                        <object size="2"/>
+                    </memory>
                     <remote-store
                             cache="default"
                             read-only="true"

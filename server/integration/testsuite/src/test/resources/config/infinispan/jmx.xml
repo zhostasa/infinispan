@@ -18,7 +18,9 @@
                     timeout="600000"/>
         </distributed-cache>
         <distributed-cache name="memcachedCache">
-            <eviction strategy="LRU" size="1" type="COUNT"/>
+          <memory>
+            <object size="1"/>
+          </memory>
             <file-store passivation="true" path="dc" purge="true" shared="false"/>
         </distributed-cache>
     </cache-container>

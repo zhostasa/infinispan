@@ -13,5 +13,5 @@ import java.util.function.Function;
  * @author wburns
  * @since 8.3
  */
-public interface DistinctFunction<T, R> {
+public interface InjectiveFunction<T, R> {
 }

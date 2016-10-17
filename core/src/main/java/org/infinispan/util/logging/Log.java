@@ -1461,6 +1461,9 @@ public interface Log extends BasicLogger {
    @Message(value = "Received new x-site view: %s", id = 425)
    void receivedXSiteClusterView(Set<String> view);
 
+   @LogMessage(level = WARN)
+   @Message(value = "The eviction element has been deprecated. Please use the memory element instead", id = 428)
+   void evictionDeprecated();
 
    @Message(value = "%s cannot be shared", id = 426)
    CacheConfigurationException nonSharedStoreConfiguredAsShared(String storeType);

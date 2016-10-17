@@ -120,9 +120,9 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
    private static void configurationCheck80(EmbeddedCacheManager cm) {
       configurationCheck70(cm);
       Configuration c = cm.getDefaultCacheConfiguration();
-      assertFalse(c.eviction().type() == EvictionType.MEMORY);
+      assertFalse(c.memory().evictionType() == EvictionType.MEMORY);
       c = cm.getCacheConfiguration("invalid");
-      assertTrue(c.eviction().type() == EvictionType.MEMORY);
+      assertTrue(c.memory().evictionType() == EvictionType.MEMORY);
 
       DefaultThreadFactory threadFactory;
       BlockingThreadPoolExecutorFactory threadPool;
@@ -262,8 +262,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(LockingMode.OPTIMISTIC, c.transaction().lockingMode());
       assertTrue(c.transaction().transactionManagerLookup() instanceof JBossStandaloneJTAManagerLookup);
       assertEquals(60000, c.transaction().cacheStopTimeout());
-      assertEquals(20000, c.eviction().maxEntries());
-      assertEquals(EvictionStrategy.LIRS, c.eviction().strategy());
+      assertEquals(20000, c.memory().size());
       assertEquals(10000, c.expiration().wakeUpInterval());
       assertEquals(10, c.expiration().lifespan());
       assertEquals(10, c.expiration().maxIdle());
@@ -294,8 +293,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
       assertEquals(LockingMode.OPTIMISTIC, c.transaction().lockingMode());
       assertEquals(60500, c.transaction().cacheStopTimeout());
-      assertEquals(20500, c.eviction().size());
-      assertEquals(EvictionStrategy.LRU, c.eviction().strategy());
+      assertEquals(20500, c.memory().size());
       assertEquals(10500, c.expiration().wakeUpInterval());
       assertEquals(11, c.expiration().lifespan());
       assertEquals(11, c.expiration().maxIdle());
@@ -316,8 +314,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncRollbackPhase()); // Batching, non XA - side effect of cache manager creation
       assertEquals(LockingMode.PESSIMISTIC, c.transaction().lockingMode());
       assertEquals(61000, c.transaction().cacheStopTimeout());
-      assertEquals(21000, c.eviction().maxEntries());
-      assertEquals(EvictionStrategy.FIFO, c.eviction().strategy());
+      assertEquals(21000, c.memory().size());
       assertEquals(11000, c.expiration().wakeUpInterval());
       assertEquals(12, c.expiration().lifespan());
       assertEquals(12, c.expiration().maxIdle());
@@ -350,8 +347,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncRollbackPhase()); // Full XA
       assertEquals(LockingMode.OPTIMISTIC, c.transaction().lockingMode());
       assertEquals(61500, c.transaction().cacheStopTimeout());
-      assertEquals(21500, c.eviction().maxEntries());
-      assertEquals(EvictionStrategy.UNORDERED, c.eviction().strategy());
+      assertEquals(21500, c.memory().size());
       assertEquals(11500, c.expiration().wakeUpInterval());
       assertEquals(13, c.expiration().lifespan());
       assertEquals(13, c.expiration().maxIdle());
@@ -390,7 +386,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
       assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
       fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
       assertTrue(fileStore.preload());
       assertFalse(fileStore.purgeOnStartup());
@@ -403,7 +399,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
       assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
       DummyInMemoryStoreConfiguration dummyStore = getStoreConfiguration(c, DummyInMemoryStoreConfiguration.class);
       assertFalse(dummyStore.preload());
       assertFalse(dummyStore.purgeOnStartup());
@@ -416,7 +412,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
       assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
       assertEquals(LockingMode.PESSIMISTIC, c.transaction().lockingMode());
 
       c = cm.getCacheConfiguration("capedwarf-default");
@@ -427,7 +423,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
       assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
       fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
       assertTrue(fileStore.preload());
       assertFalse(fileStore.purgeOnStartup());
@@ -441,7 +437,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
       assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
       assertEquals(LockingMode.PESSIMISTIC, c.transaction().lockingMode());
       fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
       assertTrue(fileStore.preload());
@@ -454,8 +450,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertFalse(c.transaction().recovery().enabled()); // Non XA
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
-      assertEquals(EvictionStrategy.LIRS, c.eviction().strategy());
-      assertEquals(10000, c.eviction().maxEntries());
+      assertEquals(10000, c.memory().size());
       fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
       assertTrue(fileStore.preload());
       assertFalse(fileStore.purgeOnStartup());
@@ -469,8 +464,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertFalse(c.transaction().recovery().enabled()); // Non XA
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
-      assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
       fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
       assertTrue(fileStore.preload());
       assertFalse(fileStore.purgeOnStartup());
@@ -483,8 +477,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertFalse(c.transaction().recovery().enabled()); // Non XA
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
-      assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
       fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
       assertTrue(fileStore.preload());
       assertFalse(fileStore.purgeOnStartup());
@@ -497,8 +490,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       assertFalse(c.transaction().recovery().enabled()); // Non XA
       assertTrue(c.transaction().syncCommitPhase()); // Non XA - default configuration value
       assertTrue(c.transaction().syncRollbackPhase()); // Non XA - side effect of cache manager creation
-      assertEquals(EvictionStrategy.NONE, c.eviction().strategy());
-      assertEquals(-1, c.eviction().maxEntries());
+      assertEquals(-1, c.memory().size());
 
       c = cm.getCacheConfiguration("custom-interceptors");
       List<InterceptorConfiguration> interceptors = c.customInterceptors().interceptors();

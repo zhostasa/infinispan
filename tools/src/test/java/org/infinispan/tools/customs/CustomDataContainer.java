@@ -74,10 +74,6 @@ public class CustomDataContainer implements DataContainer {
     }
 
     @Override
-    public void purgeExpired() {
-    }
-
-    @Override
     public void evict(Object key) {
     }
 

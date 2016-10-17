@@ -19,6 +19,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.InterceptorConfiguration;
+import org.infinispan.container.StorageType;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.SingleKeyNonTxInvocationContext;
@@ -79,22 +80,21 @@ public class XMLConfigurationOverridingTest extends AbstractInfinispanTest imple
       withCacheManager(new CacheManagerCallable(TestCacheManagerFactory.fromXml("configs/named-cache-override-test.xml")) {
          @Override
          public void call() {
-            Assert.assertEquals(EvictionStrategy.LRU, cm.getCacheConfiguration(localCacheWithEviction).eviction().strategy());
-            Assert.assertEquals(10, cm.getCacheConfiguration(localCacheWithEviction).eviction().maxEntries());
+            assertEquals(10, cm.getCacheConfiguration(localCacheWithEviction).memory().size());
 
-            Configuration newConfig = new ConfigurationBuilder().eviction().strategy(EvictionStrategy.LIRS)
-                  .maxEntries(20).build();
+            Configuration newConfig = new ConfigurationBuilder().memory().size(20).build();
 
             cm.defineConfiguration(localCacheWithEviction, newConfig);
 
-            Assert.assertEquals(EvictionStrategy.LIRS, cm.getCacheConfiguration(localCacheWithEviction).eviction().strategy());
-            Assert.assertEquals(20, cm.getCacheConfiguration(localCacheWithEviction).eviction().maxEntries());
+            assertEquals(20, cm.getCacheConfiguration(localCacheWithEviction).memory().size());
 
             for(int i = 0; i < 30; i++) {
                cm.getCache(localCacheWithEviction).put("test" + i, "value" + i);
             }
 
-            Assert.assertTrue(cm.getCache(localCacheWithEviction).size() <= 20 && cm.getCache(localCacheWithEviction).size() > 10);
+            int size = cm.getCache(localCacheWithEviction).size();
+
+            assertTrue("Size was: " + size, size <= 20 && size > 10);
          }
       });
    }
@@ -303,8 +303,9 @@ public class XMLConfigurationOverridingTest extends AbstractInfinispanTest imple
             cm.defineConfiguration(simpleCacheName, conf);
 
             cnf = cm.getCacheConfiguration(simpleCacheName);
-            Assert.assertTrue(cnf.storeAsBinary().enabled());
-            Assert.assertTrue(cnf.storeAsBinary().storeValuesAsBinary());
+            assertTrue(cnf.storeAsBinary().enabled());
+            assertEquals(StorageType.BINARY, cnf.memory().storageType());
+            assertTrue(cnf.storeAsBinary().storeValuesAsBinary());
 
             List<NonIndexedClass> instances = new ArrayList<NonIndexedClass>();
             for (int i = 0; i < 10; i++) {
@@ -490,6 +491,13 @@ public class XMLConfigurationOverridingTest extends AbstractInfinispanTest imple
       @Override
       public int hashCode() {
          return description.hashCode();
+      }
+
+      @Override
+      public String toString() {
+         return "NonIndexedClass{" +
+               "description='" + description + '\'' +
+               '}';
       }
    }
 

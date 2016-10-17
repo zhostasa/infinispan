@@ -38,7 +38,6 @@
             <state-transfer enabled="true" timeout="480000" await-initial-transfer="true"/>
             <indexing index="NONE"/>
             <locking striping="false" acquire-timeout="10000" concurrency-level="500" write-skew="false"/>
-            <eviction max-entries="-1" strategy="NONE"/>
             <expiration max-idle="-1"/>
         </replicated-cache>
 
@@ -50,7 +49,6 @@
             <state-transfer enabled="true" timeout="480000" await-initial-transfer="true"/>
             <indexing index="NONE"/>
             <locking striping="false" acquire-timeout="10000" concurrency-level="500" write-skew="false"/>
-            <eviction max-entries="-1" strategy="NONE"/>
             <expiration max-idle="-1"/>
         </distributed-cache>
 
@@ -62,7 +60,6 @@
             <state-transfer enabled="true" timeout="480000" await-initial-transfer="true"/>
             <indexing index="NONE"/>
             <locking striping="false" acquire-timeout="10000" concurrency-level="500" write-skew="false"/>
-            <eviction max-entries="-1" strategy="NONE"/>
             <expiration max-idle="-1"/>
         </replicated-cache>
     </cache-container>

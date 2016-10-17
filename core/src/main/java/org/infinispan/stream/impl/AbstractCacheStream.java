@@ -67,7 +67,6 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, S2 exte
    protected final Executor executor;
    protected final ComponentRegistry registry;
    protected final PartitionHandlingManager partition;
-   protected final Equivalence keyEquivalence;
 
    protected Runnable closeRunnable = null;
 
@@ -105,7 +104,6 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, S2 exte
       this.executor = executor;
       this.registry = registry;
       this.partition = registry.getComponent(PartitionHandlingManager.class);
-      keyEquivalence = registry.getComponent(Configuration.class).dataContainer().keyEquivalence();
       intermediateOperations = new ArrayDeque<>();
    }
 
@@ -120,7 +118,6 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, S2 exte
       this.executor = other.executor;
       this.registry = other.registry;
       this.partition = other.partition;
-      this.keyEquivalence = other.keyEquivalence;
 
       this.closeRunnable = other.closeRunnable;
 
@@ -368,7 +365,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, S2 exte
 
       ConsistentHash segmentInfoCH = dm.getReadConsistentHash();
       KeyTrackingConsumer<Object, Object> results = new KeyTrackingConsumer<>(segmentInfoCH, (c) -> {},
-              c -> c, null, keyEquivalence);
+              c -> c, null);
       Set<Integer> segmentsToProcess = segmentsToFilter == null ?
               new ReplicatedConsistentHash.RangeSet(segmentInfoCH.getNumSegments()) : segmentsToFilter;
       do {
@@ -492,7 +489,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, S2 exte
       final DistributedCacheStream.SegmentListenerNotifier listenerNotifier;
 
       KeyTrackingConsumer(ConsistentHash ch, Consumer<V> consumer, Function<CacheEntry<K, Object>, V> valueFunction,
-              DistributedCacheStream.SegmentListenerNotifier completedSegments, Equivalence<? super K> keyEquivalence) {
+              DistributedCacheStream.SegmentListenerNotifier completedSegments) {
          this.ch = ch;
          this.consumer = consumer;
          this.valueFunction = valueFunction;
@@ -502,7 +499,7 @@ public abstract class AbstractCacheStream<T, S extends BaseStream<T, S>, S2 exte
          this.referenceArray = new AtomicReferenceArray<>(ch.getNumSegments());
          for (int i = 0; i < referenceArray.length(); ++i) {
             // We only allow 1 request per id
-            referenceArray.set(i, new EquivalentHashSet<>(keyEquivalence));
+            referenceArray.set(i, new HashSet<K>());
          }
       }
 

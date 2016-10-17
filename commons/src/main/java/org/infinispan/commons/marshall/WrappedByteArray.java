@@ -98,5 +98,4 @@ public class WrappedByteArray implements WrappedBytes {
          return new WrappedByteArray(bytes);
       }
    }
-
 }
