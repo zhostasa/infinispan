@@ -32,7 +32,7 @@
       <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
       <version.net.jcip.annotations>1.0.0.redhat-8</version.net.jcip.annotations>
       <version.org.jboss.jandex>2.0.2.Final-redhat-1</version.org.jboss.jandex>
-      <version.jbossjts>5.2.16.Final-redhat-1</version.jbossjts>
+      <version.jbossjts>5.2.17.Final-redhat-1</version.jbossjts>
       <version.org.jboss.modules>1.5.1.Final-redhat-1</version.org.jboss.modules>
       <version.junit>4.11</version.junit>
       <version.org.infinispan>${project.version}</version.org.infinispan>
@@ -41,8 +41,8 @@
       <version.org.slf4j>1.7.2</version.org.slf4j>
       <version.org.apache.logging.log4j>2.3</version.org.apache.logging.log4j>
 
-      <version.org.wildfly>7.0.0.GA-redhat-2</version.org.wildfly>
-      <version.org.wildfly.core>2.1.2.Final-redhat-1</version.org.wildfly.core>
+      <version.org.wildfly>7.0.3.GA-redhat-2</version.org.wildfly>
+      <version.org.wildfly.core>2.1.9.Final-redhat-1</version.org.wildfly.core>
       <version.org.wildfly.arquillian>1.1.0.Beta1</version.org.wildfly.arquillian>
       <version.org.wildfly.build-tools>1.1.6.Final</version.org.wildfly.build-tools>
       <version.remoting.jmx.wildfly>2.0.1.Final-redhat-1</version.remoting.jmx.wildfly>
@@ -60,7 +60,7 @@
       <version.karaf>2.3.3</version.karaf>
       <version.pax.exam>4.1.0</version.pax.exam>
       <version.h2.database>1.3.173.redhat-2</version.h2.database>
-      <version.resteasy>3.0.16.Final-redhat-1</version.resteasy>
+      <version.resteasy>3.0.18.Final-redhat-1</version.resteasy>
       <version.lucene>5.5.1.redhat-1</version.lucene>
 
       <checkstyle.config.location>${session.executionRootDirectory}/checkstyle/src/main/resources/checkstyle.xml</checkstyle.config.location>
