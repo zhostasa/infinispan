@@ -1,9 +1,8 @@
 package org.infinispan.statetransfer;
 
-import static org.junit.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -28,47 +27,22 @@ import org.jgroups.protocols.DISCARD;
 import org.testng.annotations.Test;
 
 /**
- * tests scenario for ISPN-2574
+ * Tests scenario for ISPN-7127
  *
  * - create nodes A, B - start node C - starts state transfer from B to C
- * - abruptly kill B before it is able to send StateResponse to C
+ * - abruptly kill B before it is able to reply to the StateRequestCommand from C
  * - C resends the request to A
  * - finally cluster A, C is formed where all entries are properly backed up on both nodes
  *
  * @author Michal Linhard
+ * @author Dan Berindei
  * @since 5.2
  */
 @Test(groups = "functional", testName = "statetransfer.StateTransferRestartTest")
 @CleanupAfterMethod
-public class StateTransferRestartTest extends MultipleCacheManagersTest {
+public class StateTransferRestart2Test extends MultipleCacheManagersTest {
 
    private ConfigurationBuilder cfgBuilder;
-   private GlobalConfigurationBuilder gcfgBuilder;
-
-   private class MockTransport extends JGroupsTransport {
-      volatile Callable<Void> callOnStateResponseCommand;
-
-      @Override
-      public CompletableFuture<Map<Address, Response>> invokeRemotelyAsync(Collection<Address> recipients,
-                                                                           ReplicableCommand rpcCommand,
-                                                                           ResponseMode mode, long timeout,
-                                                                           ResponseFilter responseFilter,
-                                                                           DeliverOrder deliverOrder,
-                                                                           boolean anycast) throws Exception {
-         if (callOnStateResponseCommand != null && rpcCommand.getClass() == StateResponseCommand.class) {
-            log.trace("Ignoring StateResponseCommand");
-            try {
-               callOnStateResponseCommand.call();
-            } catch (Exception e) {
-               log.error("Error in callOnStateResponseCommand", e);
-            }
-            return CompletableFuture.completedFuture(Collections.emptyMap());
-         }
-         return super.invokeRemotelyAsync(recipients, rpcCommand, mode, timeout, responseFilter, deliverOrder, anycast);
-      }
-   }
-
-   private MockTransport mockTransport = new MockTransport();
 
    @Override
    protected void createCacheManagers() throws Throwable {
@@ -78,15 +52,15 @@ public class StateTransferRestartTest extends MultipleCacheManagersTest {
       cfgBuilder.clustering().stateTransfer().fetchInMemoryState(true);
       cfgBuilder.clustering().stateTransfer().timeout(20000);
 
-      gcfgBuilder = new GlobalConfigurationBuilder();
-      gcfgBuilder.transport().transport(mockTransport);
+      GlobalConfigurationBuilder gcb0 = new GlobalConfigurationBuilder().clusteredDefault();
+      addClusterEnabledCacheManager(gcb0, cfgBuilder, new TransportFlags().withFD(true));
+      GlobalConfigurationBuilder gcb1 = new GlobalConfigurationBuilder().clusteredDefault();
+      addClusterEnabledCacheManager(gcb1, cfgBuilder, new TransportFlags().withFD(true));
    }
 
    public void testStateTransferRestart() throws Throwable {
       final int numKeys = 100;
 
-      addClusterEnabledCacheManager(cfgBuilder, new TransportFlags().withFD(true));
-      addClusterEnabledCacheManager(gcfgBuilder, cfgBuilder, new TransportFlags().withFD(true));
       log.info("waiting for cluster { c0, c1 }");
       waitForClusterToForm();
 
@@ -101,31 +75,41 @@ public class StateTransferRestartTest extends MultipleCacheManagersTest {
       assertEquals(numKeys, c0.entrySet().size());
       assertEquals(numKeys, c1.entrySet().size());
 
-      mockTransport.callOnStateResponseCommand = () -> {
-         fork((Callable<Void>) () -> {
-            log.info("KILLING the c1 cache");
-            try {
-               DISCARD d3 = TestingUtil.getDiscardForCache(c1);
-               d3.setDiscardAll(true);
-               d3.setExcludeItself(true);
-               TestingUtil.killCacheManagers(manager(c1));
-            } catch (Exception e) {
-               log.info("there was some exception while killing cache");
+      GlobalConfigurationBuilder gcb2 = new GlobalConfigurationBuilder();
+      gcb2.transport().transport(new JGroupsTransport() {
+         @Override
+         public CompletableFuture<Map<Address, Response>> invokeRemotelyAsync(Collection<Address> recipients,
+                                                                              ReplicableCommand rpcCommand,
+                                                                              ResponseMode mode,
+                                                                              long timeout,
+                                                                              ResponseFilter responseFilter,
+                                                                              DeliverOrder deliverOrder,
+                                                                              boolean anycast)
+               throws Exception {
+            if (rpcCommand instanceof StateRequestCommand &&
+                  ((StateRequestCommand) rpcCommand).getType() == StateRequestCommand.Type.START_STATE_TRANSFER &&
+                  recipients.contains(address(1))) {
+               DISCARD d1 = TestingUtil.getDiscardForCache(c1);
+               d1.setDiscardAll(true);
+               d1.setExcludeItself(true);
+
+               fork((Callable<Void>) () -> {
+                  log.info("KILLING the c1 cache");
+                  try {
+                     TestingUtil.killCacheManagers(manager(c1));
+                  } catch (Exception e) {
+                     log.info("there was some exception while killing cache");
+                  }
+                  return null;
+               });
             }
-            return null;
-         });
-         try {
-            // sleep and wait to be killed
-            Thread.sleep(25000);
-         } catch (InterruptedException e) {
-            log.info("Interrupted as expected.");
-            Thread.currentThread().interrupt();
+            return super.invokeRemotelyAsync(recipients, rpcCommand, mode, timeout, responseFilter, deliverOrder,
+                                             anycast);
          }
-         return null;
-      };
+      });
 
       log.info("adding cache c2");
-      addClusterEnabledCacheManager(cfgBuilder, new TransportFlags().withFD(true));
+      addClusterEnabledCacheManager(gcb2, cfgBuilder, new TransportFlags().withFD(true));
       log.info("get c2");
       final Cache<Object, Object> c2 = cache(2);
 

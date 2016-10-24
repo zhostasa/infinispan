@@ -670,12 +670,8 @@ public class StateConsumerImpl implements StateConsumer {
             // cancel all inbound transfers
             stateRequestExecutor.cancelQueuedTasks();
 
-            for (Iterator<List<InboundTransferTask>> it = transfersBySource.values().iterator(); it.hasNext(); ) {
-               List<InboundTransferTask> inboundTransfers = it.next();
-               it.remove();
-               for (InboundTransferTask inboundTransfer : inboundTransfers) {
-                  inboundTransfer.cancel();
-               }
+            for (List<InboundTransferTask> inboundTransfers : transfersBySource.values()) {
+               inboundTransfers.forEach(InboundTransferTask::cancel);
             }
             transfersBySource.clear();
             transfersBySegment.clear();
@@ -857,36 +853,6 @@ public class StateConsumerImpl implements StateConsumer {
       }
    }
 
-
-   private void retryTransferTask(InboundTransferTask task) {
-      if (trace) log.tracef("Retrying failed task: %s", task);
-      task.cancel();
-
-      // look for other sources for the failed segments and replace all failed tasks with new tasks to be retried
-      // remove+add needs to be atomic
-      synchronized (transferMapsLock) {
-         Set<Integer> failedSegments = new HashSet<Integer>();
-         Set<Address> excludedSources = new HashSet<>();
-         if (removeTransfer(task)) {
-            excludedSources.add(task.getSource());
-            failedSegments.addAll(task.getSegments());
-         }
-
-         // should re-add only segments we still own and are not already in
-         failedSegments.retainAll(getOwnedSegments(cacheTopology.getWriteConsistentHash()));
-         // When the cache stops, the write CH stays unchanged, but the transfers map is cleared
-         failedSegments.retainAll(transfersBySegment.keySet());
-
-         if (!failedSegments.isEmpty()) {
-            Map<Address, Set<Integer>> sources = new HashMap<Address, Set<Integer>>();
-            findSources(failedSegments, sources, excludedSources);
-            for (Map.Entry<Address, Set<Integer>> e : sources.entrySet()) {
-               addTransfer(e.getKey(), e.getValue());
-            }
-         }
-      }
-   }
-
    /**
     * Cancel transfers for segments we no longer own.
     *
@@ -1057,14 +1023,8 @@ public class StateConsumerImpl implements StateConsumer {
    }
 
    void onTaskCompletion(final InboundTransferTask inboundTransfer) {
-      retryOrNotifyCompletion(inboundTransfer);
-   }
-
-   private void retryOrNotifyCompletion(InboundTransferTask inboundTransfer) {
-      if (!inboundTransfer.isCompletedSuccessfully() && !inboundTransfer.isCancelled()) {
-         retryTransferTask(inboundTransfer);
-      } else {
-         if (trace) log.tracef("Inbound transfer finished: %s", inboundTransfer);
+      if (trace) log.tracef("Inbound transfer finished: %s", inboundTransfer);
+      if (inboundTransfer.isCompletedSuccessfully()) {
          removeTransfer(inboundTransfer);
          notifyEndOfRebalanceIfNeeded(cacheTopology.getTopologyId(), cacheTopology.getRebalanceId());
       }
