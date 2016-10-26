@@ -44,7 +44,7 @@ public class QueryOperation extends RetryOnFailureOperation<QueryResponse> {
    protected QueryResponse executeOperation(Transport transport) {
       HeaderParams params = writeHeader(transport, QUERY_REQUEST);
       QueryRequest queryRequest = new QueryRequest();
-      queryRequest.setJpqlString(remoteQuery.getJPAQuery());
+      queryRequest.setQueryString(remoteQuery.getQueryString());
       if (remoteQuery.getStartOffset() > 0) {
          queryRequest.setStartOffset(remoteQuery.getStartOffset());
       }
