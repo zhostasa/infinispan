@@ -12,11 +12,7 @@ public interface Ids extends org.infinispan.commons.marshall.Ids {
    // No internal externalizer should use this upper limit Id or anything higher than that.
    int MAX_ID = 255;
 
-   int ARRAY_LIST = 0;
-   int LINKED_LIST = 1;
    int MAPS = 2;
-   int JDK_SETS = 3;
-   int SINGLETON_LIST = 4;
    // responses
    int SUCCESSFUL_RESPONSE = 5;
    int EXTENDED_RESPONSE = 6;
@@ -174,4 +170,14 @@ public interface Ids extends org.infinispan.commons.marshall.Ids {
    int AFFINITY_FUNCTION_PARTITIONER = 165;
 
    int PERSISTENT_UUID = 166;
+
+   // 167 is ImmutableEntry in commons
+   int COLLECTIONS = 168;
+
+   int MIME_CACHE_ENTRY = 171;
+   int UUID = 172;
+
+   // 173-174 used in commons
+   int ARRAYS = 175;
+
 }

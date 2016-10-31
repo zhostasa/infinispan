@@ -18,6 +18,7 @@ import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.LambdaExternalizer;
 import org.infinispan.commons.marshall.MarshallableFunctionExternalizers;
 import org.infinispan.commons.marshall.StreamingMarshaller;
+import org.infinispan.commons.marshall.exts.EquivalenceExternalizer;
 import org.infinispan.commons.util.ImmutableListCopy;
 import org.infinispan.commons.util.Immutables;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -67,6 +68,19 @@ import org.infinispan.filter.NullValueConverter;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.MetaParams;
 import org.infinispan.marshall.exts.*;
+import org.infinispan.functional.impl.MetaParamsInternalMetadata;
+import org.infinispan.marshall.exts.ArrayExternalizers;
+import org.infinispan.marshall.exts.CacheRpcCommandExternalizer;
+import org.infinispan.marshall.exts.CollectionExternalizer;
+import org.infinispan.marshall.exts.DoubleSummaryStatisticsExternalizer;
+import org.infinispan.marshall.exts.EnumSetExternalizer;
+import org.infinispan.marshall.exts.IntSummaryStatisticsExternalizer;
+import org.infinispan.marshall.exts.LongSummaryStatisticsExternalizer;
+import org.infinispan.marshall.exts.MapExternalizer;
+import org.infinispan.marshall.exts.MetaParamExternalizers;
+import org.infinispan.marshall.exts.OptionalExternalizer;
+import org.infinispan.marshall.exts.ReplicableCommandExternalizer;
+import org.infinispan.marshall.exts.UuidExternalizer;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.impl.InternalMetadataImpl;
 import org.infinispan.functional.impl.MetaParamsInternalMetadata;
@@ -247,12 +261,10 @@ public class ExternalizerTable implements ObjectTable {
    }
 
    private void loadInternalMarshallables() {
-      addInternalExternalizer(new ListExternalizer());
       addInternalExternalizer(new MapExternalizer());
-      addInternalExternalizer(new SetExternalizer());
       addInternalExternalizer(new EnumSetExternalizer());
-      addInternalExternalizer(new ArrayExternalizers.ListArray());
-      addInternalExternalizer(new SingletonListExternalizer());
+      addInternalExternalizer(new ArrayExternalizers());
+      addInternalExternalizer(new CollectionExternalizer());
 
       addInternalExternalizer(new IntSummaryStatisticsExternalizer());
       addInternalExternalizer(new LongSummaryStatisticsExternalizer());
@@ -383,6 +395,9 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new PersistentUUID.Externalizer());
 
       addInternalExternalizer(new Immutables.ImmutableEntryExternalizer());
+      addInternalExternalizer(new EquivalenceExternalizer());
+      addInternalExternalizer(new UuidExternalizer());
+      addInternalExternalizer(new Immutables.ImmutableSetWrapperExternalizer());
    }
 
    void addInternalExternalizer(AdvancedExternalizer<?> ext) {

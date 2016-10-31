@@ -169,7 +169,7 @@ public class JBossMarshallerTest extends AbstractInfinispanTest {
 
          @Override
          public Integer getId() {
-            return Ids.ARRAY_LIST;
+            return Ids.MAPS;
          }
 
          @Override
