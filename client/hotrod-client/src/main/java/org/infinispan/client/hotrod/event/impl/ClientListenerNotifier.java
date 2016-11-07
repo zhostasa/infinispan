@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,10 +41,8 @@ import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
-import org.infinispan.commons.equivalence.AnyEquivalence;
-import org.infinispan.commons.equivalence.ByteArrayEquivalence;
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.commons.util.CollectionFactory;
+import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.util.Util;
 
 /**
@@ -63,8 +62,7 @@ public class ClientListenerNotifier {
       allowedListeners.put(ClientCacheFailover.class, new Class[]{ClientCacheFailoverEvent.class});
    }
 
-   private final ConcurrentMap<byte[], EventDispatcher> clientListeners = CollectionFactory.makeConcurrentMap(
-         ByteArrayEquivalence.INSTANCE, AnyEquivalence.getInstance());
+   private final ConcurrentMap<WrappedByteArray, EventDispatcher> clientListeners = new ConcurrentHashMap<>();
 
    private final ExecutorService executor;
    private final Codec codec;
@@ -106,7 +104,7 @@ public class ClientListenerNotifier {
    public void addClientListener(AddClientListenerOperation op) {
       Map<Class<? extends Annotation>, List<ClientListenerInvocation>> invocables = findMethods(op.listener);
       EventDispatcher eventDispatcher = new EventDispatcher(op, invocables, op.getCacheName());
-      clientListeners.put(op.listenerId, eventDispatcher);
+      clientListeners.put(new WrappedByteArray(op.listenerId), eventDispatcher);
       if (trace)
          log.tracef("Add client listener with id %s, for listener %s and invocable methods %s",
                Util.printArray(op.listenerId), op.listener, invocables);
@@ -114,8 +112,8 @@ public class ClientListenerNotifier {
 
    public void failoverClientListeners(Set<SocketAddress> failedServers) {
       // Compile all listener ids that need failing over
-      List<byte[]> failoverListenerIds = new ArrayList<>();
-      for (Map.Entry<byte[], EventDispatcher> entry : clientListeners.entrySet()) {
+      List<WrappedByteArray> failoverListenerIds = new ArrayList<>();
+      for (Map.Entry<WrappedByteArray, EventDispatcher> entry : clientListeners.entrySet()) {
          EventDispatcher dispatcher = entry.getValue();
          if (failedServers.contains(dispatcher.transport.getRemoteSocketAddress()))
             failoverListenerIds.add(entry.getKey());
@@ -127,7 +125,7 @@ public class ClientListenerNotifier {
       failoverListenerIds.forEach(this::failoverClientListener);
    }
 
-   public void failoverClientListener(byte[] listenerId) {
+   public void failoverClientListener(WrappedByteArray listenerId) {
       EventDispatcher dispatcher = clientListeners.get(listenerId);
       removeClientListener(listenerId);
       // Invoke failover event callback, if presents
@@ -137,7 +135,7 @@ public class ClientListenerNotifier {
       if (trace) {
          SocketAddress failedServerAddress = dispatcher.transport.getRemoteSocketAddress();
          log.tracef("Fallback listener id %s from a failed server %s to %s",
-               Util.printArray(listenerId), failedServerAddress,
+               Util.printArray(listenerId.getBytes()), failedServerAddress,
                dispatcher.op.getDedicatedTransport().getRemoteSocketAddress());
       }
    }
@@ -151,15 +149,19 @@ public class ClientListenerNotifier {
    }
 
    public void startClientListener(byte[] listenerId) {
-      EventDispatcher eventDispatcher = clientListeners.get(listenerId);
+      EventDispatcher eventDispatcher = clientListeners.get(new WrappedByteArray(listenerId));
       executor.submit(eventDispatcher);
    }
 
    public void removeClientListener(byte[] listenerId) {
+      removeClientListener(new WrappedByteArray(listenerId));
+   }
+
+   private void removeClientListener(WrappedByteArray listenerId) {
       EventDispatcher dispatcher = clientListeners.remove(listenerId);
       dispatcher.transport.release(); // force shutting it
       if (trace)
-         log.tracef("Remove client listener with id %s", Util.printArray(listenerId));
+         log.tracef("Remove client listener with id %s", Util.printArray(listenerId.getBytes()));
    }
 
    public byte[] findListenerId(Object listener) {
@@ -171,13 +173,13 @@ public class ClientListenerNotifier {
    }
 
    public boolean isListenerConnected(byte[] listenerId) {
-      EventDispatcher dispatcher = clientListeners.get(listenerId);
+      EventDispatcher dispatcher = clientListeners.get(new WrappedByteArray(listenerId));
       // If listener not present, is not active
       return dispatcher != null && !dispatcher.stopped;
    }
 
    public Transport findTransport(byte[] listenerId) {
-      EventDispatcher dispatcher = clientListeners.get(listenerId);
+      EventDispatcher dispatcher = clientListeners.get(new WrappedByteArray(listenerId));
       if (dispatcher != null)
          return dispatcher.transport;
 
@@ -236,9 +238,9 @@ public class ClientListenerNotifier {
    }
 
    public void stop() {
-      for (byte[] listenerId : clientListeners.keySet()) {
+      for (WrappedByteArray listenerId : clientListeners.keySet()) {
          if (trace)
-            log.tracef("Remote cache manager stopping, remove client listener id %s", Util.printArray(listenerId));
+            log.tracef("Remote cache manager stopping, remove client listener id %s", Util.printArray(listenerId.getBytes()));
 
          removeClientListener(listenerId);
       }
@@ -252,7 +254,7 @@ public class ClientListenerNotifier {
    }
 
    public void invokeEvent(byte[] listenerId, ClientEvent clientEvent) {
-      EventDispatcher eventDispatcher = clientListeners.get(listenerId);
+      EventDispatcher eventDispatcher = clientListeners.get(new WrappedByteArray(listenerId));
       eventDispatcher.invokeClientEvent(clientEvent);
    }
 

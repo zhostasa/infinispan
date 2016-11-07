@@ -39,7 +39,6 @@ import org.infinispan.interceptors.impl.GroupingInterceptor;
 import org.infinispan.interceptors.impl.InvalidationInterceptor;
 import org.infinispan.interceptors.impl.InvocationContextInterceptor;
 import org.infinispan.interceptors.impl.IsMarshallableInterceptor;
-import org.infinispan.interceptors.impl.MarshalledValueInterceptor;
 import org.infinispan.interceptors.impl.NotificationInterceptor;
 import org.infinispan.interceptors.impl.PassivationWriterInterceptor;
 import org.infinispan.interceptors.impl.TransactionalStoreInterceptor;
@@ -101,10 +100,6 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
       }
    }
 
-   private boolean isUsingMarshalledValues(Configuration c) {
-      return c.storeAsBinary().enabled() && (c.storeAsBinary().storeKeysAsBinary() || c.storeAsBinary().storeValuesAsBinary());
-   }
-
    public AsyncInterceptorChain buildInterceptorChain() {
       TransactionMode transactionMode = configuration.transaction().transactionMode();
       boolean needsVersionAwareComponents = transactionMode.isTransactional() &&
@@ -116,8 +111,6 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
       // Add both the old class and the new interface
       componentRegistry.registerComponent(interceptorChain, AsyncInterceptorChain.class);
       componentRegistry.registerComponent(new InterceptorChain(interceptorChain), InterceptorChain.class);
-
-      boolean useMarshalledValues = isUsingMarshalledValues(configuration);
 
       boolean invocationBatching = configuration.invocationBatching().enabled();
       boolean isTotalOrder = configuration.transaction().transactionProtocol().isTotalOrder();
@@ -180,13 +173,6 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
       if (transactionMode.isTransactional())
          interceptorChain.appendInterceptor(createInterceptor(new TxInterceptor(), TxInterceptor.class), false);
 
-
-      if (useMarshalledValues) {
-         AsyncInterceptor interceptor =
-               createInterceptor(new MarshalledValueInterceptor(), MarshalledValueInterceptor.class);
-
-         interceptorChain.appendInterceptor(interceptor, false);
-      }
 
       if (configuration.transaction().useEagerLocking()) {
          configuration.transaction().lockingMode(LockingMode.PESSIMISTIC);

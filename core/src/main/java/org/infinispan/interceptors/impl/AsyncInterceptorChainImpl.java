@@ -74,7 +74,6 @@ public class AsyncInterceptorChainImpl implements AsyncInterceptorChain {
       map.put(org.infinispan.interceptors.InvalidationInterceptor.class, InvalidationInterceptor.class);
       map.put(org.infinispan.interceptors.InvocationContextInterceptor.class, InvocationContextInterceptor.class);
       map.put(org.infinispan.interceptors.IsMarshallableInterceptor.class, IsMarshallableInterceptor.class);
-      map.put(org.infinispan.interceptors.MarshalledValueInterceptor.class, MarshalledValueInterceptor.class);
       map.put(org.infinispan.interceptors.NotificationInterceptor.class, NotificationInterceptor.class);
       map.put(org.infinispan.interceptors.TxInterceptor.class, TxInterceptor.class);
       map.put(org.infinispan.interceptors.VersionedEntryWrappingInterceptor.class,

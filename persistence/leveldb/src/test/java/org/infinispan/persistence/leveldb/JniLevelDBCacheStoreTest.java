@@ -81,10 +81,4 @@ public class JniLevelDBCacheStoreTest extends LevelDBStoreTest {
    public void testReplaceExpiredEntry() throws Exception {
       super.testReplaceExpiredEntry();
    }
-
-   @Override
-   public void testLoadAndStoreMarshalledValues() throws PersistenceException {
-      super.testLoadAndStoreMarshalledValues();
-   }
-
 }

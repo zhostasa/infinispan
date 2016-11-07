@@ -26,6 +26,7 @@ import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.util.EnumUtil;
+import org.infinispan.compat.TypeConverter;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.InvocationContext;
@@ -38,6 +39,7 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.interceptors.DDAsyncInterceptor;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledValue;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.query.Transformer;
@@ -81,6 +83,7 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    protected ExecutorService asyncExecutor;
    protected Cache<?, ?> cache;
    protected InternalCacheRegistry internalCacheRegistry;
+   protected TypeConverter typeConverter;
 
    private static final Log log = LogFactory.getLog(QueryInterceptor.class, Log.class);
 
@@ -104,7 +107,8 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
                                      DistributionManager distributionManager,
                                      RpcManager rpcManager,
                                      DataContainer dataContainer,
-                                     @ComponentName(KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR) ExecutorService e) {
+                                     @ComponentName(KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR) ExecutorService e,
+                                     TypeConverter typeConverter) {
       this.transactionManager = transactionManager;
       this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
       this.distributionManager = distributionManager;
@@ -113,6 +117,7 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
       this.dataContainer = dataContainer;
       this.cache = cache;
       this.internalCacheRegistry = internalCacheRegistry;
+      this.typeConverter = typeConverter;
    }
 
    @Start
@@ -246,10 +251,8 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    }
 
    private Object extractValue(Object wrappedValue) {
-      if (wrappedValue instanceof MarshalledValue)
-         return ((MarshalledValue) wrappedValue).get();
-      else if (wrappedValue instanceof WrappedByteArray) {
-         return ((WrappedByteArray) wrappedValue).getBytes();
+      if (typeConverter != null) {
+         return typeConverter.unboxValue(wrappedValue);
       }
          return wrappedValue;
    }

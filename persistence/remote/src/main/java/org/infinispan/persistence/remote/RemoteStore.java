@@ -147,6 +147,9 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
 
    @Override
    public boolean contains(Object key) throws PersistenceException {
+      if (key instanceof WrappedByteArray) {
+         key = ((WrappedByteArray) key).getBytes();
+      }
       return remoteCache.containsKey(key);
    }
 

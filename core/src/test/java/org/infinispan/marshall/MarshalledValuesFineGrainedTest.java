@@ -1,11 +1,16 @@
 package org.infinispan.marshall;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+
 import org.infinispan.Cache;
+import org.infinispan.commons.marshall.WrappedByteArray;
+import org.infinispan.commons.marshall.WrappedBytes;
+import org.infinispan.compat.TypeConverter;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.marshall.core.MarshalledValue;
 import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -31,9 +36,10 @@ public class MarshalledValuesFineGrainedTest extends AbstractInfinispanTest {
 
    public void testStoreAsBinaryOnBoth() {
       ConfigurationBuilder c = new ConfigurationBuilder();
-      c.storeAsBinary().enable().storeKeysAsBinary(true).storeValuesAsBinary(true).build();
+      c.storeAsBinary().enable().build();
       ecm = TestCacheManagerFactory.createCacheManager(c);
       ecm.getCache().put(key, value);
+      TypeConverter converter = ecm.getCache().getAdvancedCache().getComponentRegistry().getComponent(TypeConverter.class);
 
       DataContainer<?, ?> dc = ecm.getCache().getAdvancedCache().getDataContainer();
 
@@ -41,58 +47,11 @@ public class MarshalledValuesFineGrainedTest extends AbstractInfinispanTest {
       Object key = entry.getKey();
       Object value = entry.getValue();
 
-      assert key instanceof MarshalledValue;
-      assert ((MarshalledValue) key).get().equals(this.key);
+      assertTrue(key instanceof WrappedBytes);
+      assertEquals(converter.unboxKey(key), this.key);
 
-      assert value instanceof MarshalledValue;
-      assert ((MarshalledValue) value).get().equals(this.value);
-   }
-
-   public void testStoreAsBinaryOnKeys() {
-      ConfigurationBuilder c = new ConfigurationBuilder();
-      c.storeAsBinary().enable().storeValuesAsBinary(false).build();
-      ecm = TestCacheManagerFactory.createCacheManager(c);
-      ecm.getCache().put(key, value);
-
-      DataContainer<?, ?> dc = ecm.getCache().getAdvancedCache().getDataContainer();
-
-      InternalCacheEntry entry = dc.iterator().next();
-      Object key = entry.getKey();
-      Object value = entry.getValue();
-
-      assert key instanceof MarshalledValue;
-      assert ((MarshalledValue) key).get().equals(this.key);
-
-      assert this.value.equals(value);
-   }
-
-   public void testStoreAsBinaryOnValues() {
-      ConfigurationBuilder c = new ConfigurationBuilder();
-      c.storeAsBinary().enable().storeKeysAsBinary(false).build();
-      ecm = TestCacheManagerFactory.createCacheManager(c);
-      ecm.getCache().put(key, value);
-
-      DataContainer<?, ?> dc = ecm.getCache().getAdvancedCache().getDataContainer();
-
-      InternalCacheEntry entry = dc.iterator().next();
-      Object key = entry.getKey();
-      Object value = entry.getValue();
-
-      assert this.key.equals(key);
-
-      assert value instanceof MarshalledValue;
-      assert ((MarshalledValue) value).get().equals(this.value);
-   }
-
-   public void testStoreAsBinaryOnNeither() {
-      ConfigurationBuilder c = new ConfigurationBuilder();
-      c.storeAsBinary().enable().storeKeysAsBinary(false).storeValuesAsBinary(false).build();
-      ecm = TestCacheManagerFactory.createCacheManager(c);
-      ecm.getCache().put(key, value);
-
-      DataContainer dc = ecm.getCache().getAdvancedCache().getDataContainer();
-
-      assert value.equals(dc.get(key).getValue());
+      assertTrue(value instanceof WrappedBytes);
+      assertEquals(converter.unboxValue(value), this.value);
    }
 
    public void testConditionalRemoveWithStoreAsBinaryOnBoth() {
