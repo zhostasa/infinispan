@@ -7,6 +7,7 @@ import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.P
 import java.util.Map;
 
 import org.infinispan.commands.FlagAffectedCommand;
+import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
 import org.infinispan.commands.write.RemoveCommand;
@@ -87,6 +88,25 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
    }
 
    @Override
+   public Object visitBackupWriteCommand(InvocationContext ctx, BackupWriteCommand command) throws Throwable {
+      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
+         BackupWriteCommand backupWriteCommand = (BackupWriteCommand) rCommand;
+         if (!isStoreEnabled(backupWriteCommand))
+            return rv;
+
+         //no need to check for proper write. we are remote, in a backup owner.
+         if (backupWriteCommand.isRemove()) {
+            removeEntry(rCtx, backupWriteCommand.getKey(), backupWriteCommand);
+         } else {
+            storeEntry(rCtx, backupWriteCommand.getKey(), backupWriteCommand);
+         }
+         if (getStatisticsEnabled())
+            cacheStores.incrementAndGet();
+         return rv;
+      });
+   }
+
+   @Override
    public BasicInvocationStage visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
       return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
          PutMapCommand putMapCommand = (PutMapCommand) rCommand;
@@ -123,11 +143,7 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
             return rv;
          if (!isProperWriter(rCtx, removeCommand, key))
             return rv;
-
-         boolean resp = persistenceManager
-               .deleteFromAllStores(key, skipSharedStores(rCtx, key, removeCommand) ? PRIVATE : BOTH);
-         log.tracef("Removed entry under key %s and got response %s from CacheStore", key, resp);
-
+         removeEntry(rCtx, key, removeCommand);
          return rv;
       });
    }
@@ -175,5 +191,10 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
          return false;
       }
       return true;
+   }
+
+   private void removeEntry(InvocationContext ctx, Object key, FlagAffectedCommand command) {
+      boolean resp = persistenceManager.deleteFromAllStores(key, skipSharedStores(ctx, key, command) ? PRIVATE : BOTH);
+      log.tracef("Removed entry under key %s and got response %s from CacheStore", key, resp);
    }
 }

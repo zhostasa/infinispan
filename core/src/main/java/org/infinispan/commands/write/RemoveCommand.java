@@ -32,9 +32,9 @@ import org.infinispan.util.logging.LogFactory;
 public class RemoveCommand extends AbstractDataWriteCommand {
    private static final Log log = LogFactory.getLog(RemoveCommand.class);
    public static final byte COMMAND_ID = 10;
-   protected CacheNotifier notifier;
-   boolean successful = true;
-   boolean nonExistent = false;
+   protected CacheNotifier<Object, Object> notifier;
+   protected boolean successful = true;
+   private boolean nonExistent = false;
 
    protected ValueMatcher valueMatcher;
    protected Equivalence valueEquivalence;
@@ -48,12 +48,14 @@ public class RemoveCommand extends AbstractDataWriteCommand {
    public RemoveCommand(Object key, Object value, CacheNotifier notifier, long flagsBitSet, Equivalence valueEquivalence, CommandInvocationId commandInvocationId) {
       super(key, flagsBitSet, commandInvocationId);
       this.value = value;
+      //noinspection unchecked
       this.notifier = notifier;
       this.valueEquivalence = valueEquivalence;
       this.valueMatcher = value != null ? ValueMatcher.MATCH_EXPECTED : ValueMatcher.MATCH_ALWAYS;
    }
 
    public void init(CacheNotifier notifier, Configuration configuration) {
+      //noinspection unchecked
       this.notifier = notifier;
       this.valueEquivalence = configuration.dataContainer().valueEquivalence();
    }
@@ -118,11 +120,8 @@ public class RemoveCommand extends AbstractDataWriteCommand {
 
    RemoveCommand that = (RemoveCommand) o;
 
-      if (value != null ? !value.equals(that.value) : that.value != null) {
-         return false;
-      }
+      return value != null ? value.equals(that.value) : that.value == null;
 
-      return true;
    }
 
    @Override
@@ -217,6 +216,22 @@ public class RemoveCommand extends AbstractDataWriteCommand {
    public final boolean isReturnValueExpected() {
       // IGNORE_RETURN_VALUES ignored for conditional remove
       return isConditional() || super.isReturnValueExpected();
+   }
+
+   @Override
+   public BackupWriteCommand createBackupWriteCommand() {
+      return BackupWriteCommand.constructRemove(commandInvocationId, key, getFlagsBitSet(), getTopologyId());
+   }
+
+   @Override
+   public void initPrimaryAck(PrimaryAckCommand command, Object returnValue) {
+      if (isConditional()) {
+         command.initWithBoolReturnValue(successful);
+      } else if (isReturnValueExpected()) {
+         command.initWithReturnValue(successful, returnValue);
+      } else {
+         command.initWithoutReturnValue(successful);
+      }
    }
 
    protected Object performRemove(CacheEntry e, InvocationContext ctx) {

@@ -83,7 +83,7 @@ public class ReplicableCommandExternalizer extends AbstractExternalizer<Replicab
       return replicableCommand;
    }
 
-   protected ReplicableCommand readCommandHeader(ObjectInput input) throws IOException, ClassNotFoundException {
+   private ReplicableCommand readCommandHeader(ObjectInput input) throws IOException {
       byte type = input.readByte();
       short methodId = input.readShort();
       return cmdFactory.fromStream((byte) methodId, type);
@@ -119,7 +119,7 @@ public class ReplicableCommandExternalizer extends AbstractExternalizer<Replicab
             WriteOnlyKeyCommand.class, WriteOnlyKeyValueCommand.class,
             WriteOnlyManyCommand.class, WriteOnlyManyEntriesCommand.class,
             ReadWriteManyCommand.class, ReadWriteManyEntriesCommand.class, ReplicableCommandRunnable.class,
-            ReplicableCommandManagerFunction.class);
+            ReplicableCommandManagerFunction.class, BackupWriteCommand.class);
       // Search only those commands that replicable and not cache specific replicable commands
       Collection<Class<? extends ReplicableCommand>> moduleCommands = globalComponentRegistry.getModuleProperties().moduleOnlyReplicableCommands();
       if (moduleCommands != null && !moduleCommands.isEmpty()) coreCommands.addAll(moduleCommands);

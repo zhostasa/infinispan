@@ -23,6 +23,11 @@ import org.infinispan.commands.tx.totalorder.TotalOrderNonVersionedPrepareComman
 import org.infinispan.commands.tx.totalorder.TotalOrderRollbackCommand;
 import org.infinispan.commands.tx.totalorder.TotalOrderVersionedCommitCommand;
 import org.infinispan.commands.tx.totalorder.TotalOrderVersionedPrepareCommand;
+import org.infinispan.commands.write.BackupAckCommand;
+import org.infinispan.commands.write.BackupPutMapAckCommand;
+import org.infinispan.commands.write.ExceptionAckCommand;
+import org.infinispan.commands.write.PrimaryAckCommand;
+import org.infinispan.commands.write.PrimaryPutMapAckCommand;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.BufferSizePredictor;
 import org.infinispan.commons.marshall.DelegatingObjectInput;
@@ -89,7 +94,9 @@ public final class CacheRpcCommandExternalizer extends AbstractExternalizer<Cach
                TotalOrderVersionedCommitCommand.class, TotalOrderRollbackCommand.class,
                XSiteStateTransferControlCommand.class, XSiteStatePushCommand.class, SingleXSiteRpcCommand.class,
                ClusteredGetAllCommand.class,
-               StreamRequestCommand.class, StreamSegmentResponseCommand.class, StreamResponseCommand.class);
+               StreamRequestCommand.class, StreamSegmentResponseCommand.class, StreamResponseCommand.class,
+               BackupAckCommand.class, PrimaryAckCommand.class,
+               PrimaryPutMapAckCommand.class, BackupPutMapAckCommand.class, ExceptionAckCommand.class);
       // Only interested in cache specific replicable commands
       coreCommands.addAll(gcr.getModuleProperties().moduleCacheRpcCommands());
       return coreCommands;

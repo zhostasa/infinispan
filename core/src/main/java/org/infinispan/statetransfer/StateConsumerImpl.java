@@ -44,6 +44,7 @@ import org.infinispan.transaction.totalorder.TotalOrderManager;
 import org.infinispan.transaction.xa.CacheTransaction;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.util.concurrent.BlockingTaskAwareExecutorService;
+import org.infinispan.util.concurrent.CommandAckCollector;
 import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.logging.Log;
@@ -120,6 +121,7 @@ public class StateConsumerImpl implements StateConsumer {
    private volatile KeyInvalidationListener keyInvalidationListener; //for test purpose only!
    private CommitManager commitManager;
    private ExecutorService stateTransferExecutor;
+   private CommandAckCollector commandAckCollector;
 
    private volatile CacheTopology cacheTopology;
 
@@ -194,7 +196,8 @@ public class StateConsumerImpl implements StateConsumer {
                     CacheNotifier cacheNotifier,
                     TotalOrderManager totalOrderManager,
                     @ComponentName(KnownComponentNames.REMOTE_COMMAND_EXECUTOR) BlockingTaskAwareExecutorService remoteCommandsExecutor,
-                    CommitManager commitManager) {
+                    CommitManager commitManager,
+                    CommandAckCollector commandAckCollector) {
       this.cache = cache;
       this.cacheName = cache.getName();
       this.stateTransferExecutor = stateTransferExecutor;
@@ -213,6 +216,7 @@ public class StateConsumerImpl implements StateConsumer {
       this.totalOrderManager = totalOrderManager;
       this.remoteCommandsExecutor = remoteCommandsExecutor;
       this.commitManager = commitManager;
+      this.commandAckCollector = commandAckCollector;
 
       isInvalidationMode = configuration.clustering().cacheMode().isInvalidation();
 
@@ -422,6 +426,8 @@ public class StateConsumerImpl implements StateConsumer {
             transactionTable.cleanupLeaverTransactions(rpcManager.getTransport().getMembers());
          }
 
+         commandAckCollector.onMembersChange(newWriteCh.getMembers());
+
          // Any data for segments we do not own should be removed from data container and cache store
          // We need to discard data from all segments we don't own, not just those we previously owned,
          // when we lose membership (e.g. because there was a merge, the local partition was in degraded mode
@@ -498,7 +504,7 @@ public class StateConsumerImpl implements StateConsumer {
    private Set<Integer> getOwnedSegments(ConsistentHash consistentHash) {
       Address address = rpcManager.getAddress();
       return consistentHash.getMembers().contains(address) ? consistentHash.getSegmentsForOwner(address)
-            : Collections.<Integer>emptySet();
+            : Collections.emptySet();
    }
 
    @Override

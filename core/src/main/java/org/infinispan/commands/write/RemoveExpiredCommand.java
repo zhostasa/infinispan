@@ -10,14 +10,12 @@ import java.util.Objects;
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.util.EnumUtil;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.entries.MVCCEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
-import org.infinispan.util.TimeService;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -33,8 +31,7 @@ public class RemoveExpiredCommand extends RemoveCommand {
    public static final int COMMAND_ID = 58;
    private static final Log log = LogFactory.getLog(RemoveExpiredCommand.class);
 
-   protected Long lifespan;
-   protected TimeService timeService;
+   private Long lifespan;
 
    public RemoveExpiredCommand() {
       // The value matcher will always be the same, so we don't need to serialize it like we do for the other commands
@@ -42,17 +39,11 @@ public class RemoveExpiredCommand extends RemoveCommand {
    }
 
    public RemoveExpiredCommand(Object key, Object value, Long lifespan, CacheNotifier notifier,
-           Equivalence valueEquivalence, TimeService timeService, CommandInvocationId commandInvocationId) {
+                               Equivalence valueEquivalence, CommandInvocationId commandInvocationId) {
       //valueEquivalence can be null because this command never compares values.
       super(key, value, notifier, EnumUtil.EMPTY_BIT_SET, valueEquivalence, commandInvocationId);
       this.lifespan = lifespan;
-      this.timeService = timeService;
       this.valueMatcher = ValueMatcher.MATCH_EXPECTED_OR_NULL;
-   }
-
-   public void init(CacheNotifier notifier, Configuration configuration, TimeService timeService) {
-      super.init(notifier, configuration);
-      this.timeService = timeService;
    }
 
    /**
@@ -166,5 +157,10 @@ public class RemoveExpiredCommand extends RemoveCommand {
    @Override
    public int hashCode() {
       return Objects.hash(super.hashCode(), lifespan);
+   }
+
+   @Override
+   public BackupWriteCommand createBackupWriteCommand() {
+      return BackupWriteCommand.constructRemoveExpired(commandInvocationId, key, getFlagsBitSet(), getTopologyId());
    }
 }

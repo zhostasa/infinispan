@@ -53,6 +53,10 @@ public class CommandInvocationId {
 
    }
 
+   public Address getAddress() {
+      return address;
+   }
+
    @Override
    public int hashCode() {
       int result = address != null ? address.hashCode() : 0;
@@ -65,6 +69,17 @@ public class CommandInvocationId {
       return "CommandInvocation:" + Objects.toString(address, "local") + ":" + id;
    }
 
+   public static void writeTo(ObjectOutput output, CommandInvocationId commandInvocationId) throws IOException {
+      output.writeObject(commandInvocationId.address);
+      output.writeLong(commandInvocationId.id);
+   }
+
+   public static CommandInvocationId readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
+      Address address = (Address) input.readObject();
+      long id = input.readLong();
+      return new CommandInvocationId(address, id);
+   }
+
    public static class Externalizer extends AbstractExternalizer<CommandInvocationId> {
 
       @Override
@@ -74,15 +89,12 @@ public class CommandInvocationId {
 
       @Override
       public void writeObject(ObjectOutput output, CommandInvocationId object) throws IOException {
-         output.writeObject(object.address);
-         output.writeLong(object.id);
+         writeTo(output, object);
       }
 
       @Override
       public CommandInvocationId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-         Address address = (Address) input.readObject();
-         long id = input.readLong();
-         return new CommandInvocationId(address, id);
+         return readFrom(input);
       }
 
       @Override

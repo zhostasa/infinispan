@@ -141,6 +141,9 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
             markTxForRollbackAndRethrow(ctx, th);
             throw new IllegalStateException("This should not be reached");
          }
+         if (ctx.isOriginLocal() && !(th instanceof CacheException)) {
+            th = new CacheException(th);
+         }
          throw th;
       }
    }

@@ -35,15 +35,21 @@ import org.infinispan.util.concurrent.locks.RemoteLockCommand;
 public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteCommand, MetadataAwareCommand, RemoteLockCommand {
    public static final byte COMMAND_ID = 9;
 
-   Map<Object, Object> map;
-   CacheNotifier notifier;
-   Metadata metadata;
-   boolean isForwarded = false;
+   private Map<Object, Object> map;
+   private CacheNotifier<Object, Object> notifier;
+   private Metadata metadata;
+   private boolean isForwarded = false;
+
+   public CommandInvocationId getCommandInvocationId() {
+      return commandInvocationId;
+   }
+
    private CommandInvocationId commandInvocationId;
 
    public PutMapCommand() {
    }
 
+   @SuppressWarnings("unchecked")
    public PutMapCommand(Map<?, ?> map, CacheNotifier notifier, Metadata metadata, long flagsBitSet, CommandInvocationId commandInvocationId) {
       this.map = (Map<Object, Object>) map;
       this.notifier = notifier;
@@ -53,15 +59,21 @@ public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteC
    }
 
    public PutMapCommand(PutMapCommand command) {
+      this(command, true);
+   }
+
+   public PutMapCommand(PutMapCommand command, boolean generateNewId) {
       this.map = command.map;
       this.notifier = command.notifier;
       this.metadata = command.metadata;
       this.isForwarded = command.isForwarded;
-      this.commandInvocationId = CommandInvocationId.generateIdFrom(command.commandInvocationId);
+      this.commandInvocationId = generateNewId ?
+            CommandInvocationId.generateIdFrom(command.commandInvocationId) :
+            command.commandInvocationId;
       setFlagsBitSet(command.getFlagsBitSet());
    }
 
-   public void init(CacheNotifier notifier) {
+   public void init(CacheNotifier<Object, Object> notifier) {
       this.notifier = notifier;
    }
 
@@ -90,7 +102,8 @@ public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteC
       return hasAnyFlag(FlagBitSets.SKIP_LOCKING);
    }
 
-   private MVCCEntry lookupMvccEntry(InvocationContext ctx, Object key) {
+   private MVCCEntry<Object, Object> lookupMvccEntry(InvocationContext ctx, Object key) {
+      //noinspection unchecked
       return (MVCCEntry) ctx.lookupEntry(key);
    }
 
@@ -100,7 +113,7 @@ public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteC
       Map<Object, Object> previousValues = new HashMap<>();
       for (Entry<Object, Object> e : map.entrySet()) {
          Object key = e.getKey();
-         MVCCEntry contextEntry = lookupMvccEntry(ctx, key);
+         MVCCEntry<Object, Object> contextEntry = lookupMvccEntry(ctx, key);
          if (contextEntry != null) {
             Object newValue = e.getValue();
             Object previousValue = contextEntry.getValue();
@@ -148,6 +161,7 @@ public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteC
 
    @Override
    public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
+      //noinspection unchecked
       map = (Map<Object, Object>) input.readObject();
       metadata = (Metadata) input.readObject();
       isForwarded = input.readBoolean();
@@ -163,9 +177,8 @@ public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteC
       PutMapCommand that = (PutMapCommand) o;
 
       if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
-      if (map != null ? !map.equals(that.map) : that.map != null) return false;
+      return map != null ? map.equals(that.map) : that.map == null;
 
-      return true;
    }
 
    @Override

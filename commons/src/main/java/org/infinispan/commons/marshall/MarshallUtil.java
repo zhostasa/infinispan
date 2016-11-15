@@ -365,6 +365,45 @@ public class MarshallUtil {
       }
    }
 
+   /**
+    * Marshalls a collection of integers.
+    *
+    * @param collection the collection to marshall.
+    * @param out        the {@link ObjectOutput} to write to.
+    * @throws IOException if an error occurs.
+    */
+   public static void marshallIntCollection(Collection<Integer> collection, ObjectOutput out) throws IOException {
+      final int size = collection == null ? NULL_VALUE : collection.size();
+      marshallInt(out, size);
+      if (size <= 0) {
+         return;
+      }
+      for (Integer integer : collection) {
+         out.writeInt(integer);
+      }
+   }
+
+   /**
+    * Unmarshalls a collection of integers.
+    *
+    * @param in      the {@link ObjectInput} to read from.
+    * @param builder the {@link CollectionBuilder} to build the collection of integer.
+    * @param <T>     the concrete type of the collection.
+    * @return the collection.
+    * @throws IOException if an error occurs.
+    */
+   public static <T extends Collection<Integer>> T unmarshallIntCollection(ObjectInput in, CollectionBuilder<Integer, T> builder) throws IOException {
+      final int size = unmarshallInt(in);
+      if (size == NULL_VALUE) {
+         return null;
+      }
+      T collection = Objects.requireNonNull(builder, "CollectionBuilder must be non-null").build(size);
+      for (int i = 0; i < size; ++i) {
+         collection.add(in.readInt());
+      }
+      return collection;
+   }
+
    public interface ArrayBuilder<E> {
       E[] build(int size);
    }

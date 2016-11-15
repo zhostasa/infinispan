@@ -32,6 +32,7 @@ import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.write.AbstractDataWriteCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
+import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.EvictCommand;
@@ -87,9 +88,9 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
          EnumSet.of(Flag.SKIP_OWNERSHIP_CHECK, Flag.CACHE_MODE_LOCAL);
 
    private EntryFactory entryFactory;
-   protected DataContainer<Object, Object> dataContainer;
+   private DataContainer<Object, Object> dataContainer;
    protected ClusteringDependentLogic cdl;
-   protected final EntryWrappingVisitor entryWrappingVisitor = new EntryWrappingVisitor();
+   private final EntryWrappingVisitor entryWrappingVisitor = new EntryWrappingVisitor();
    private CommandsFactory commandFactory;
    private boolean isUsingLockDelegation;
    private boolean isInvalidation;
@@ -195,8 +196,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       return visitDataReadCommand(ctx, command);
    }
 
-   private BasicInvocationStage visitDataReadCommand(InvocationContext ctx, AbstractDataCommand command)
-         throws Throwable {
+   private BasicInvocationStage visitDataReadCommand(InvocationContext ctx, AbstractDataCommand command) {
       entryFactory.wrapEntryForReading(ctx, command.getKey(), null);
       return invokeNext(ctx, command).handle(dataReadReturnHandler);
    }
@@ -295,7 +295,13 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, command.getMetadata());
    }
 
-   private void wrapEntryForPutIfNeeded(InvocationContext ctx, AbstractDataWriteCommand command) throws Throwable {
+   @Override
+   public BasicInvocationStage visitBackupWriteCommand(InvocationContext ctx, BackupWriteCommand command) throws Throwable {
+      entryFactory.wrapEntryForWriting(ctx, command.getKey(), EntryFactory.Wrap.WRAP_ALL, false, false);
+      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> applyChanges(rCtx, (BackupWriteCommand) rCommand));
+   }
+
+   private void wrapEntryForPutIfNeeded(InvocationContext ctx, AbstractDataWriteCommand command) {
       if (shouldWrap(command.getKey(), ctx, command)) {
          boolean skipRead = command.hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES) && !command.isConditional();
          entryFactory.wrapEntryForWriting(ctx, command.getKey(), EntryFactory.Wrap.WRAP_ALL, skipRead, false);
@@ -352,7 +358,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, null);
    }
 
-   private void wrapEntryForRemoveIfNeeded(InvocationContext ctx, RemoveCommand command) throws InterruptedException {
+   private void wrapEntryForRemoveIfNeeded(InvocationContext ctx, RemoveCommand command) {
       if (shouldWrap(command.getKey(), ctx, command)) {
          boolean forceWrap = command.getValueMatcher().nonExistentEntryCanMatch();
          EntryFactory.Wrap wrap = forceWrap ? EntryFactory.Wrap.WRAP_ALL : EntryFactory.Wrap.WRAP_NON_NULL;
@@ -368,7 +374,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, command.getMetadata());
    }
 
-   private void wrapEntryForReplaceIfNeeded(InvocationContext ctx, ReplaceCommand command) throws InterruptedException {
+   private void wrapEntryForReplaceIfNeeded(InvocationContext ctx, ReplaceCommand command) {
       if (shouldWrap(command.getKey(), ctx, command)) {
          // When retrying, we might still need to perform the command even if the previous value was removed
          EntryFactory.Wrap wrap =
@@ -386,7 +392,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             entryFactory.wrapEntryForWriting(ctx, key, EntryFactory.Wrap.WRAP_ALL, true, false);
          }
       }
-      return setSkipRemoteGetsAndInvokeNextForPutMapCommand(ctx, command);
+      return setSkipRemoteGetsAndInvokeNextForWriteCommand(ctx, command);
    }
 
    @Override
@@ -473,7 +479,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             entryFactory.wrapEntryForWriting(ctx, key, EntryFactory.Wrap.WRAP_ALL, true, false);
          }
       }
-      return setSkipRemoteGetsAndInvokeNextForPutMapCommand(ctx, command);
+      return setSkipRemoteGetsAndInvokeNextForWriteCommand(ctx, command);
    }
 
    @Override
@@ -485,7 +491,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             entryFactory.wrapEntryForWriting(ctx, key, EntryFactory.Wrap.WRAP_ALL, true, false);
          }
       }
-      return setSkipRemoteGetsAndInvokeNextForPutMapCommand(ctx, command);
+      return setSkipRemoteGetsAndInvokeNextForWriteCommand(ctx, command);
    }
 
    @Override
@@ -503,7 +509,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             entryFactory.wrapEntryForWriting(ctx, key, EntryFactory.Wrap.WRAP_ALL, false, false);
          }
       }
-      return setSkipRemoteGetsAndInvokeNextForPutMapCommand(ctx, command);
+      return setSkipRemoteGetsAndInvokeNextForWriteCommand(ctx, command);
    }
 
    @Override
@@ -514,7 +520,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             entryFactory.wrapEntryForWriting(ctx, key, EntryFactory.Wrap.WRAP_ALL, false, false);
          }
       }
-      return setSkipRemoteGetsAndInvokeNextForPutMapCommand(ctx, command);
+      return setSkipRemoteGetsAndInvokeNextForWriteCommand(ctx, command);
    }
 
    private Flag extractStateTransferFlag(InvocationContext ctx, FlagAffectedCommand command) {
@@ -564,29 +570,44 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       cdl.commitEntry(entry, metadata, command, ctx, stateTransferFlag, l1Invalidation);
    }
 
-   private void stopStateTransferIfNeeded(FlagAffectedCommand command) {
-      if (command instanceof ClearCommand) {
-         // If we are committing a ClearCommand now then no keys should be written by state transfer from
-         // now on until current rebalance ends.
-         if (stateConsumer != null) {
-            stateConsumer.stopApplyingState();
+   private void applyChanges(InvocationContext ctx, BackupWriteCommand command) {
+      stateTransferLock.acquireSharedTopologyLock();
+      try {
+         boolean syncRpc = defaultSynchronous && !command.hasFlag(Flag.FORCE_ASYNCHRONOUS) ||
+               command.hasFlag(Flag.FORCE_SYNCHRONOUS);
+         if (stateConsumer != null && stateConsumer.getCacheTopology() != null) {
+            int commandTopologyId = command.getTopologyId();
+            int currentTopologyId = stateConsumer.getCacheTopology().getTopologyId();
+            // TotalOrderStateTransferInterceptor doesn't set the topology id for PFERs.
+            if (syncRpc && currentTopologyId != commandTopologyId && commandTopologyId != -1) {
+               // If we were the originator of a data command which we didn't own the key at the time means it
+               // was already committed, so there is no need to throw the OutdatedTopologyException
+               // This will happen if we submit a command to the primary owner and it responds and then a topology
+               // change happens before we get here
+               if (!ctx.isOriginLocal()) {
+                  if (trace) {
+                     log.tracef("Cache topology changed while the command was executing: expected %d, got %d",
+                           (Integer) commandTopologyId, (Integer) currentTopologyId);
+                  }
+                  throw OutdatedTopologyException.getCachedInstance();
+               }
+            }
          }
-         if (xSiteStateConsumer != null) {
-            xSiteStateConsumer.endStateTransfer(null);
-         }
+         commitContextEntries(ctx, command, command.getMetadata());
+      } finally {
+         stateTransferLock.releaseSharedTopologyLock();
       }
    }
 
-   private void applyChanges(InvocationContext ctx, FlagAffectedCommand command, Metadata metadata) {
+   private void applyChanges(InvocationContext ctx, WriteCommand command, Metadata metadata) {
       stateTransferLock.acquireSharedTopologyLock();
       try {
          // We only retry non-tx write commands
-         if (!isInvalidation && command instanceof WriteCommand) {
-            WriteCommand writeCommand = (WriteCommand) command;
+         if (!isInvalidation ) {
             // Can't perform the check during preload or if the cache isn't clustered
             boolean syncRpc = defaultSynchronous && !command.hasAnyFlag(FlagBitSets.FORCE_ASYNCHRONOUS) ||
                   command.hasAnyFlag(FlagBitSets.FORCE_SYNCHRONOUS);
-            if (writeCommand.isSuccessful() && stateConsumer != null && stateConsumer.getCacheTopology() != null) {
+            if (command.isSuccessful() && stateConsumer != null && stateConsumer.getCacheTopology() != null) {
                int commandTopologyId = command.getTopologyId();
                int currentTopologyId = stateConsumer.getCacheTopology().getTopologyId();
                // TotalOrderStateTransferInterceptor doesn't set the topology id for PFERs.
@@ -600,7 +621,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
                      if (trace) log.tracef("Cache topology changed while the command was executing: expected %d, got %d",
                            (Integer) commandTopologyId, (Integer) currentTopologyId);
                      // This shouldn't be necessary, as we'll have a fresh command instance when retrying
-                     writeCommand.setValueMatcher(writeCommand.getValueMatcher().matcherForRetry());
+                     command.setValueMatcher(command.getValueMatcher().matcherForRetry());
                      throw new OutdatedTopologyException("Cache topology changed while the command was executing: expected " +
                            commandTopologyId + ", got " + currentTopologyId);
                   }
@@ -617,8 +638,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    /**
     * Locks the value for the keys accessed by the command to avoid being override from a remote get.
     */
-   private BasicInvocationStage setSkipRemoteGetsAndInvokeNextForPutMapCommand(InvocationContext ctx,
-         WriteCommand command) throws Throwable {
+   private BasicInvocationStage setSkipRemoteGetsAndInvokeNextForWriteCommand(InvocationContext ctx, WriteCommand command) {
       return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          WriteCommand writeCommand = (WriteCommand) rCommand;
          if (!rCtx.isInTxScope()) {
@@ -639,7 +659,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
     * Locks the value for the keys accessed by the command to avoid being override from a remote get.
     */
    private BasicInvocationStage setSkipRemoteGetsAndInvokeNextForDataCommand(InvocationContext ctx,
-         DataWriteCommand command, Metadata metadata) throws Throwable {
+         DataWriteCommand command, Metadata metadata) {
       return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          DataWriteCommand dataWriteCommand = (DataWriteCommand) rCommand;
          if (!rCtx.isInTxScope()) {

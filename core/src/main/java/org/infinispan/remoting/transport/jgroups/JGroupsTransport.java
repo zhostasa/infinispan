@@ -59,6 +59,7 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.infinispan.xsite.XSiteBackup;
 import org.infinispan.xsite.XSiteReplicateCommand;
+import org.jgroups.AnycastAddress;
 import org.jgroups.Channel;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
@@ -131,8 +132,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    protected volatile List<Address> members = null;
    protected volatile Address coordinator = null;
    protected volatile boolean isCoordinator = false;
-   protected Lock viewUpdateLock = new ReentrantLock();
-   protected Condition viewUpdateCondition = viewUpdateLock.newCondition();
+   protected final Lock viewUpdateLock = new ReentrantLock();
+   protected final Condition viewUpdateCondition = viewUpdateLock.newCondition();
 
    /**
     * This form is used when the transport is created by an external source and passed in to the
@@ -245,7 +246,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       waitForView(viewId, Long.MAX_VALUE, TimeUnit.NANOSECONDS);
    }
 
-   public boolean waitForView(int viewId, long timeout, TimeUnit timeUnit) throws InterruptedException {
+   private boolean waitForView(int viewId, long timeout, TimeUnit timeUnit) throws InterruptedException {
       if (channel == null)
          return false;
 
@@ -712,6 +713,89 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       return timeoutException;
    }
 
+   @Override
+   public void sendTo(Address destination, ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception {
+      if (trace) {
+         log.tracef("sendTo: destination=%s, command=%s, order=%s", destination, rpcCommand, deliverOrder);
+      }
+      if (getAddress().equals(destination)) {
+         if (trace) {
+            log.tracef("Not sending message to self");
+         }
+         return;
+      }
+      final boolean rsvp = CommandAwareRpcDispatcher.isRsvpCommand(rpcCommand);
+      final org.jgroups.Address jgrpAddr = toJGroupsAddress(destination);
+
+      final Buffer buffer = dispatcher.marshallCall(rpcCommand);
+      Message message = CommandAwareRpcDispatcher.constructMessage(buffer, jgrpAddr,
+                                                                   org.jgroups.blocks.ResponseMode.GET_NONE,
+                                                                   rsvp, deliverOrder);
+      dispatcher.sendMessage(message, RequestOptions.ASYNC());
+   }
+
+   @Override
+   public void sendTo(ReplicableCommand rpcCommand, DeliverOrder deliverOrder, Collection<Address> destinations) throws Exception {
+      if (destinations == null) {
+         sendToAll(rpcCommand, deliverOrder);
+         return;
+      }
+      switch (destinations.size()) {
+         case 0:
+            return;
+         case 1:
+            sendTo(destinations.iterator().next(), rpcCommand, deliverOrder);
+            return;
+      }
+
+      if (trace) {
+         log.tracef("sendTo: destinations=%s, command=%s, order=%s", destinations, rpcCommand, deliverOrder);
+      }
+
+      final boolean rsvp = CommandAwareRpcDispatcher.isRsvpCommand(rpcCommand);
+      final List<org.jgroups.Address> jgrpAddrList = toJGroupsAddressListExcludingSelf(destinations, deliverOrder == DeliverOrder.TOTAL);
+
+      final Buffer buffer = dispatcher.marshallCall(rpcCommand);
+      if (deliverOrder == DeliverOrder.TOTAL) {
+         Message message = CommandAwareRpcDispatcher.constructMessage(buffer, new AnycastAddress(jgrpAddrList),
+                                                                      org.jgroups.blocks.ResponseMode.GET_NONE,
+                                                                      rsvp, deliverOrder);
+         dispatcher.sendMessage(message, RequestOptions.ASYNC());
+      } else if (jgrpAddrList.size() == 1) {
+         Message message = CommandAwareRpcDispatcher.constructMessage(buffer, jgrpAddrList.get(0),
+                                                                      org.jgroups.blocks.ResponseMode.GET_NONE,
+                                                                      rsvp, deliverOrder);
+         dispatcher.sendMessage(message, RequestOptions.ASYNC());
+      } else {
+         Message message = CommandAwareRpcDispatcher.constructMessage(buffer, null,
+                                                                      org.jgroups.blocks.ResponseMode.GET_NONE,
+                                                                      rsvp, deliverOrder);
+         dispatcher.castMessage(jgrpAddrList, message, RequestOptions.ASYNC());
+      }
+   }
+
+   @Override
+   public void sendToAll(ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception {
+      if (trace) {
+         log.tracef("sendToAll: command=%s, order=%s", rpcCommand, deliverOrder);
+      }
+
+      final boolean rsvp = CommandAwareRpcDispatcher.isRsvpCommand(rpcCommand);
+
+      final Buffer buffer = dispatcher.marshallCall(rpcCommand);
+      if (deliverOrder == DeliverOrder.TOTAL) {
+         Message message = CommandAwareRpcDispatcher.constructMessage(buffer, new AnycastAddress(),
+                                                                      org.jgroups.blocks.ResponseMode.GET_NONE,
+                                                                      rsvp, deliverOrder);
+         dispatcher.sendMessage(message, RequestOptions.ASYNC());
+      } else {
+         Message message = CommandAwareRpcDispatcher.constructMessage(buffer, null,
+                                                                      org.jgroups.blocks.ResponseMode.GET_NONE,
+                                                                      rsvp, deliverOrder);
+         dispatcher.castMessage(null, message, RequestOptions.ASYNC());
+      }
+   }
+
    private boolean ignoreTimeout(ResponseFilter responseFilter) {
       return responseFilter != null && !responseFilter.needMoreResponses();
    }
@@ -791,7 +875,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    public BackupResponse backupRemotely(Collection<XSiteBackup> backups, XSiteReplicateCommand rpcCommand) throws Exception {
       if(trace)
          log.tracef("About to send to backups %s, command %s", backups, rpcCommand);
-      Buffer buf = dispatcher.marshallCall(dispatcher.getMarshaller(), rpcCommand);
+      Buffer buf = dispatcher.marshallCall(rpcCommand);
       Map<XSiteBackup, Future<Object>> syncBackupCalls = new HashMap<>(backups.size());
       for (XSiteBackup xsb : backups) {
          SiteMaster recipient = new SiteMaster(xsb.getSiteName());

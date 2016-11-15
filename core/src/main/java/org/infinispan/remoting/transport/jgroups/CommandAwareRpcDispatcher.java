@@ -254,7 +254,7 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
       }
    }
 
-   protected static Message constructMessage(Buffer buf, Address recipient,ResponseMode mode, boolean rsvp,
+   static Message constructMessage(Buffer buf, Address recipient,ResponseMode mode, boolean rsvp,
                                              DeliverOrder deliverOrder) {
       Message msg = new Message();
       msg.setBuffer(buf);
@@ -275,10 +275,10 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
       return msg;
    }
 
-   Buffer marshallCall(Marshaller marshaller, ReplicableCommand command) {
+   Buffer marshallCall(ReplicableCommand command) {
       Buffer buf;
       try {
-         buf = marshaller.objectToBuffer(command);
+         buf = req_marshaller.objectToBuffer(command);
       } catch (RuntimeException e) {
          throw e;
       } catch (Exception e) {
@@ -296,7 +296,7 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
 
       // Replay capability requires responses from all members!
       Buffer buf;
-      buf = marshallCall(marshaller, command);
+      buf = marshallCall(command);
       Message msg = constructMessage(buf, destination, mode, rsvp, deliverOrder);
       NotifyingFuture<Response> request = sendMessageWithFuture(msg, new RequestOptions(mode, timeout));
       if (mode == ResponseMode.GET_NONE)
@@ -388,7 +388,7 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
       if (trace) log.tracef("Replication task sending %s to addresses %s with response mode %s", command, dests, mode);
       boolean rsvp = isRsvpCommand(command);
 
-      Buffer buf = marshallCall(marshaller, command);
+      Buffer buf = marshallCall(command);
       Message msg;
       RequestOptions opts;
       if (deliverOrder == DeliverOrder.TOTAL) {
@@ -423,7 +423,7 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
       return retval;
    }
 
-   private static boolean isRsvpCommand(ReplicableCommand command) {
+   static boolean isRsvpCommand(ReplicableCommand command) {
       return command instanceof FlagAffectedCommand &&
             ((FlagAffectedCommand) command).hasAnyFlag(FlagBitSets.GUARANTEED_DELIVERY);
    }
