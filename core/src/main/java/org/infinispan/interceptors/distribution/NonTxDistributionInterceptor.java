@@ -82,10 +82,19 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
             InternalCacheEntry remoteEntry = null;
             if (readNeedsRemoteValue(ctx, command)) {
                if (trace) log.tracef("Doing a remote get for key %s", key);
-               remoteEntry = retrieveFromProperSource(key, ctx, false, command, false);
+               remoteEntry = retrieveFromRemoteSource(key, ctx, false, command, false);
                command.setRemotelyFetchedValue(remoteEntry);
                if (remoteEntry != null) {
                   entryFactory.wrapExternalEntry(ctx, key, remoteEntry, EntryFactory.Wrap.STORE, false);
+               }
+            }
+            if (remoteEntry == null) {
+               // Then search for the entry in the local data container, in case we became an owner after
+               // EntryWrappingInterceptor and the local node is now the only owner.
+               // TODO Check fails if the entry was passivated
+               InternalCacheEntry localEntry = fetchValueLocallyIfAvailable(dm.getReadConsistentHash(), key);
+               if (localEntry != null) {
+                  entryFactory.wrapExternalEntry(ctx, key, localEntry, EntryFactory.Wrap.STORE, false);
                }
             }
          }
@@ -226,7 +235,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
             if (readNeedsRemoteValue(ctx, command)) {
                if (trace)
                   log.tracef("Doing a remote get for key %s", key);
-               remoteEntry = retrieveFromProperSource(key, ctx, false, command, false);
+               remoteEntry = retrieveFromRemoteSource(key, ctx, false, command, false);
                // TODO Do we need to do something else instead of setRemotelyFetchedValue?
                // command.setRemotelyFetchedValue(remoteEntry);
                if (remoteEntry != null) {
@@ -234,6 +243,15 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
                }
                return command.perform(remoteEntry);
             }
+
+            // Then search for the entry in the local data container, in case we became an owner after
+            // EntryWrappingInterceptor and the local node is now the only owner.
+            // TODO Check fails if the entry was passivated
+            InternalCacheEntry localEntry = fetchValueLocallyIfAvailable(dm.getReadConsistentHash(), key);
+            if (localEntry != null) {
+               entryFactory.wrapExternalEntry(ctx, key, localEntry, EntryFactory.Wrap.STORE, false);
+            }
+            return command.perform(localEntry);
          }
       }
       return invokeNextInterceptor(ctx, command);
@@ -674,9 +692,22 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       InternalCacheEntry remoteEntry = null;
       if (writeNeedsRemoteValue(ctx, command, key)) {
          // First try to fetch from remote owners
-         remoteEntry = retrieveFromProperSource(key, ctx, false, command, false);
-         if (remoteEntry != null) {
-            entryFactory.wrapExternalEntry(ctx, key, remoteEntry, EntryFactory.Wrap.STORE, false);
+         if (!isValueAvailableLocally(dm.getReadConsistentHash(), key)) {
+            if (trace) log.tracef("Doing a remote get for key %s", key);
+            remoteEntry = retrieveFromRemoteSource(key, ctx, false, command, false);
+            if (remoteEntry != null) {
+               entryFactory.wrapExternalEntry(ctx, key, remoteEntry, EntryFactory.Wrap.STORE, false);
+            }
+         }
+         if (remoteEntry == null) {
+            // Then search for the entry in the local data container, in case we became an owner after
+            // EntryWrappingInterceptor and the local node is now the only owner.
+            // We can skip the local lookup if the operation doesn't need the previous values
+            // TODO Check fails if the entry was passivated
+            InternalCacheEntry localEntry = fetchValueLocallyIfAvailable(dm.getReadConsistentHash(), key);
+            if (localEntry != null) {
+               entryFactory.wrapExternalEntry(ctx, key, localEntry, EntryFactory.Wrap.STORE, false);
+            }
          }
       }
    }
