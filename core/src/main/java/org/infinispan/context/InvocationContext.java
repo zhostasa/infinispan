@@ -16,7 +16,7 @@ import org.infinispan.remoting.transport.Address;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public interface InvocationContext extends EntryLookup, Cloneable {
+public interface InvocationContext extends EntryLookup, SequentialInvocationContext, Cloneable {
 
    /**
     * Returns true if the call was originated locally, false if it is the result of a remote rpc.

@@ -4,6 +4,7 @@ import org.infinispan.Cache;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
+import org.infinispan.interceptors.BaseCustomSequentialInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 /**

@@ -2,7 +2,6 @@ package org.infinispan.context;
 
 import org.infinispan.commands.DataCommand;
 import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.impl.LocalTxInvocationContext;
@@ -10,6 +9,7 @@ import org.infinispan.context.impl.NonTxInvocationContext;
 import org.infinispan.context.impl.RemoteTxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.SurvivesRestarts;
+import org.infinispan.interceptors.SequentialInterceptorChain;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.impl.LocalTransaction;
 import org.infinispan.transaction.impl.RemoteTransaction;
@@ -28,8 +28,8 @@ import javax.transaction.Transaction;
 public class NonTransactionalInvocationContextFactory extends AbstractInvocationContextFactory {
 
    @Inject
-   public void init(Configuration config) {
-      super.init(config);
+   public void init(Configuration config, SequentialInterceptorChain interceptorChain) {
+      super.init(config, interceptorChain);
    }
 
    @Override
@@ -37,7 +37,7 @@ public class NonTransactionalInvocationContextFactory extends AbstractInvocation
       if (keyCount == 1) {
          return new SingleKeyNonTxInvocationContext(null, keyEq);
       } else if (keyCount > 0) {
-         return new NonTxInvocationContext(keyCount, null, keyEq);
+         return new NonTxInvocationContext(keyCount, null, keyEq, interceptorChain);
       }
       return createInvocationContext(null, false);
    }
@@ -49,7 +49,7 @@ public class NonTransactionalInvocationContextFactory extends AbstractInvocation
 
    @Override
    public NonTxInvocationContext createNonTxInvocationContext() {
-      NonTxInvocationContext ctx = new NonTxInvocationContext(null, keyEq);
+      NonTxInvocationContext ctx = new NonTxInvocationContext(null, keyEq, interceptorChain);
       return ctx;
    }
 
@@ -60,7 +60,7 @@ public class NonTransactionalInvocationContextFactory extends AbstractInvocation
 
    @Override
    public NonTxInvocationContext createRemoteInvocationContext(Address origin) {
-      NonTxInvocationContext ctx = new NonTxInvocationContext(origin, keyEq);
+      NonTxInvocationContext ctx = new NonTxInvocationContext(origin, keyEq, interceptorChain);
       return ctx;
    }
 
