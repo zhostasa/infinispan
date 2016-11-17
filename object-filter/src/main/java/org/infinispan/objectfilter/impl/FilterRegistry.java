@@ -1,5 +1,10 @@
 package org.infinispan.objectfilter.impl;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.infinispan.objectfilter.FilterCallback;
 import org.infinispan.objectfilter.FilterSubscription;
 import org.infinispan.objectfilter.SortField;
@@ -9,11 +14,6 @@ import org.infinispan.objectfilter.impl.predicateindex.be.BETreeMaker;
 import org.infinispan.objectfilter.impl.syntax.BooleanExpr;
 import org.infinispan.objectfilter.impl.syntax.BooleanFilterNormalizer;
 import org.infinispan.objectfilter.impl.util.StringHelper;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A registry for filters on the same type of entity.
@@ -90,7 +90,7 @@ public final class FilterRegistry<TypeMetadata, AttributeMetadata, AttributeId e
          // translate sort field paths
          translatedSortFields = new ArrayList<>(sortFields.length);
          for (SortField sortField : sortFields) {
-            translatedSortFields.add(metadataAdapter.mapPropertyNamePathToFieldIdPath(sortField.getPath().getPath()));
+            translatedSortFields.add(metadataAdapter.mapPropertyNamePathToFieldIdPath(sortField.getPath().asArrayPath()));
          }
       }
 

@@ -1,5 +1,5 @@
 /**
- * The syntactic representation of a JPA query. This is the output of the HQL parser. This representation needs further
+ * The syntactic representation of an Infinispan-QL query (the output of the parser). This representation needs further
  * processing before it can become 'executable'. All structures are meant to be immutable after construction.
  *
  * @author anistor@redhat.com

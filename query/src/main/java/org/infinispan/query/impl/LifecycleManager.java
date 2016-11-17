@@ -1,5 +1,18 @@
 package org.infinispan.query.impl;
 
+import static org.infinispan.query.impl.IndexPropertyInspector.getDataCacheName;
+import static org.infinispan.query.impl.IndexPropertyInspector.getLockingCacheName;
+import static org.infinispan.query.impl.IndexPropertyInspector.getMetadataCacheName;
+import static org.infinispan.query.impl.IndexPropertyInspector.hasInfinispanDirectory;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.hibernate.search.cfg.Environment;
 import org.hibernate.search.cfg.SearchMapping;
 import org.hibernate.search.cfg.spi.SearchConfiguration;
@@ -29,7 +42,7 @@ import org.infinispan.jmx.ResourceDMBean;
 import org.infinispan.lifecycle.AbstractModuleLifecycle;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.objectfilter.impl.ReflectionMatcher;
-import org.infinispan.objectfilter.impl.hql.ReflectionEntityNamesResolver;
+import org.infinispan.objectfilter.impl.syntax.parser.ReflectionEntityNamesResolver;
 import org.infinispan.query.MassIndexer;
 import org.infinispan.query.backend.IndexModificationStrategy;
 import org.infinispan.query.backend.QueryInterceptor;
@@ -65,18 +78,6 @@ import org.infinispan.registry.InternalCacheRegistry.Flag;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.logging.LogFactory;
 import org.kohsuke.MetaInfServices;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import static org.infinispan.query.impl.IndexPropertyInspector.getDataCacheName;
-import static org.infinispan.query.impl.IndexPropertyInspector.getLockingCacheName;
-import static org.infinispan.query.impl.IndexPropertyInspector.getMetadataCacheName;
-import static org.infinispan.query.impl.IndexPropertyInspector.hasInfinispanDirectory;
 
 /**
  * Lifecycle of the Query module: initializes the Hibernate Search engine and shuts it down
@@ -124,7 +125,7 @@ public class LifecycleManager extends AbstractModuleLifecycle {
 
          registerMatcher(cr, searchFactory);
 
-         QueryEngine queryEngine = new QueryEngine(cache, isIndexed);
+         QueryEngine<Class<?>> queryEngine = new QueryEngine<>(cache, isIndexed);
          cr.registerComponent(queryEngine, QueryEngine.class);
       }
    }

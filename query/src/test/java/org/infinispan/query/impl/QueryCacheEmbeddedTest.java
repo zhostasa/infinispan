@@ -1,8 +1,22 @@
 package org.infinispan.query.impl;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.calls;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.objectfilter.impl.hql.FilterParsingResult;
+import org.infinispan.objectfilter.impl.syntax.parser.FilterParsingResult;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
@@ -11,7 +25,7 @@ import org.infinispan.query.dsl.embedded.impl.QueryCache;
 import org.infinispan.query.dsl.embedded.impl.QueryEngine;
 import org.infinispan.query.dsl.embedded.testdomain.hsearch.UserHS;
 import org.infinispan.query.dsl.impl.BaseQueryBuilder;
-import org.infinispan.query.dsl.impl.JPAQueryGenerator;
+import org.infinispan.query.dsl.impl.QueryStringCreator;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;
@@ -23,20 +37,6 @@ import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.testng.annotations.Test;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.calls;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
 
 /**
  * @author anistor@redhat.com
@@ -71,7 +71,7 @@ public class QueryCacheEmbeddedTest extends SingleCacheManagerTest {
             .having("name").eq("John").toBuilder();
 
       // obtain the query string
-      String queryString = ((BaseQueryBuilder) queryQueryBuilder).accept(new JPAQueryGenerator());
+      String queryString = ((BaseQueryBuilder) queryQueryBuilder).accept(new QueryStringCreator());
 
       // everything set up, test follows ...
 

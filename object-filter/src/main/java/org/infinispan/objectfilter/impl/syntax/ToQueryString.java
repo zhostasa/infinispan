@@ -2,7 +2,7 @@ package org.infinispan.objectfilter.impl.syntax;
 
 /**
  * @author anistor@redhat.com
- * @since 8.3
+ * @since 9.0
  */
 interface ToQueryString {
 

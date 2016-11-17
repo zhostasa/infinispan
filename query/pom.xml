@@ -37,13 +37,15 @@
       </dependency>
 
       <dependency>
-         <groupId>org.hibernate.hql</groupId>
-         <artifactId>hibernate-hql-parser</artifactId>
+         <groupId>org.hibernate</groupId>
+         <artifactId>hibernate-search-engine</artifactId>
       </dependency>
 
       <dependency>
          <groupId>org.hibernate</groupId>
          <artifactId>hibernate-search-engine</artifactId>
+         <classifier>tests</classifier>
+         <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -87,6 +89,11 @@
            <scope>test</scope>
        </dependency>
 
+      <dependency>
+         <groupId>org.easytesting</groupId>
+         <artifactId>fest-assert</artifactId>
+      </dependency>
+
        <dependency>
            <groupId>com.h2database</groupId>
            <artifactId>h2</artifactId>
@@ -109,6 +116,13 @@
            <artifactId>byteman-bmunit</artifactId>
            <scope>test</scope>
        </dependency>
+
+      <dependency>
+         <groupId>org.hamcrest</groupId>
+         <artifactId>hamcrest-core</artifactId>
+         <version>1.2</version>
+         <scope>test</scope>
+      </dependency>
 
    </dependencies>
 

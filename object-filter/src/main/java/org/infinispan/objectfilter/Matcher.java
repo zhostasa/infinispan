@@ -7,10 +7,10 @@ import org.infinispan.objectfilter.impl.aggregation.FieldAccumulator;
 import org.infinispan.query.dsl.Query;
 
 /**
- * An object matcher able to test a given object against multiple registered filters specified either as JPA queries or
- * using the query DSL (see {@link org.infinispan.query.dsl}). The matching filters are notified via a callback supplied
- * when registering the filter. The filter will have to specify the fully qualified type name of the matching
- * object/entity because simple names cannot be resolved as it would happen in the case of an {@link
+ * An object matcher able to test a given object against multiple registered filters specified either as Ickle queries
+ * (a JP-QL subset) or using the query DSL (see {@link org.infinispan.query.dsl}). The matching filters are notified via
+ * a callback supplied when registering the filter. The filter will have to specify the fully qualified type name of the
+ * matching object/entity because simple names cannot be resolved as it would happen in the case of an {@link
  * javax.persistence.EntityManager} which has knowledge of all types in advance.
  *
  * @author anistor@redhat.com

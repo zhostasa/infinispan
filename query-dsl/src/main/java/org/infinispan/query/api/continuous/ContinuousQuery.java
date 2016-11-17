@@ -1,8 +1,9 @@
 package org.infinispan.query.api.continuous;
 
-import org.infinispan.query.dsl.Query;
-
 import java.util.List;
+import java.util.Map;
+
+import org.infinispan.query.dsl.Query;
 
 /**
  * A container of continuous query listeners for a cache.
@@ -12,6 +13,10 @@ import java.util.List;
  * @since 8.2
  */
 public interface ContinuousQuery<K, V> {
+
+   <C> void addContinuousQueryListener(String queryString, ContinuousQueryListener<K, C> listener);
+
+   <C> void addContinuousQueryListener(String queryString, Map<String, Object> namedParameters, ContinuousQueryListener<K, C> listener);
 
    <C> void addContinuousQueryListener(Query query, ContinuousQueryListener<K, C> listener);
 

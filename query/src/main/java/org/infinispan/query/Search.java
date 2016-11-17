@@ -1,14 +1,16 @@
 package org.infinispan.query;
 
+import java.util.Map;
+
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilterConverter;
 import org.infinispan.objectfilter.ObjectFilter;
 import org.infinispan.objectfilter.impl.ReflectionMatcher;
+import org.infinispan.query.api.continuous.ContinuousQuery;
 import org.infinispan.query.continuous.impl.ContinuousQueryImpl;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
-import org.infinispan.query.api.continuous.ContinuousQuery;
 import org.infinispan.query.dsl.embedded.impl.EmbeddedQueryFactory;
 import org.infinispan.query.dsl.embedded.impl.JPACacheEventFilterConverter;
 import org.infinispan.query.dsl.embedded.impl.JPAFilterAndConverter;
@@ -22,16 +24,25 @@ import org.infinispan.security.AuthorizationPermission;
  * Helper class to get a SearchManager out of an indexing enabled cache.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author anistor@redhat.com
  */
 public final class Search {
 
    private Search() {
    }
 
+   public static <K, V> CacheEventFilterConverter<K, V, ObjectFilter.FilterResult> makeFilter(String queryString) {
+      return makeFilter(queryString, null);
+   }
+
+   public static <K, V> CacheEventFilterConverter<K, V, ObjectFilter.FilterResult> makeFilter(String queryString, Map<String, Object> namedParameters) {
+      JPAFilterAndConverter<K, V> filterAndConverter = new JPAFilterAndConverter<>(queryString, namedParameters, ReflectionMatcher.class);
+      return new JPACacheEventFilterConverter<>(filterAndConverter);
+   }
+
    public static <K, V> CacheEventFilterConverter<K, V, ObjectFilter.FilterResult> makeFilter(Query query) {
       BaseQuery baseQuery = (BaseQuery) query;
-      JPAFilterAndConverter<K, V> filterAndConverter = new JPAFilterAndConverter<>(baseQuery.getQueryString(), baseQuery.getNamedParameters(), ReflectionMatcher.class);
-      return new JPACacheEventFilterConverter<>(filterAndConverter);
+      return makeFilter(baseQuery.getQueryString(), baseQuery.getNamedParameters());
    }
 
    public static QueryFactory getQueryFactory(Cache<?, ?> cache) {

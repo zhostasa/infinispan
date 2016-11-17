@@ -1,22 +1,22 @@
 package org.infinispan.query.logging;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.hibernate.hql.ParsingException;
-import org.hibernate.search.backend.LuceneWork;
-import org.infinispan.commons.CacheException;
-import org.infinispan.remoting.transport.Address;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
-
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.hibernate.search.backend.LuceneWork;
+import org.infinispan.commons.CacheException;
+import org.infinispan.objectfilter.ParsingException;
+import org.infinispan.remoting.transport.Address;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * Log abstraction for the query module. For this module, message ids
@@ -138,6 +138,6 @@ public interface Log extends org.infinispan.util.logging.Log {
    @Message(value = "The type %s is not an indexed entity.", id = 14030)
    IllegalArgumentException getNoIndexedEntityException(String typeName);
 
-   @Message(value = "No queries can be applied to property %2$s in type %1$s since the property is analyzed.", id = 14031)
-   ParsingException getQueryOnAnalyzedPropertyNotSupportedException(String typeName, String propertyName);
+   @Message(value = "Prefix, wildcard or regexp queries cannot be fuzzy: %s", id = 14036)
+   ParsingException getPrefixWildcardOrRegexpQueriesCannotBeFuzzy(String s); //todo [anistor] this should be thrown earlier at parsing time
 }

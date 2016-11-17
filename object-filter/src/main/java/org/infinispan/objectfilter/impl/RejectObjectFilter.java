@@ -1,15 +1,15 @@
 package org.infinispan.objectfilter.impl;
 
-import org.infinispan.objectfilter.ObjectFilter;
-import org.infinispan.objectfilter.impl.hql.FilterParsingResult;
-
 import java.util.Map;
+
+import org.infinispan.objectfilter.ObjectFilter;
+import org.infinispan.objectfilter.impl.syntax.parser.FilterParsingResult;
 
 /**
  * A filter that rejects all inputs. Does not support sorting and projections.
  *
  * @author anistor@redhat.com
- * @since 8.3
+ * @since 9.0
  */
 final class RejectObjectFilter<TypeMetadata>
       extends ObjectFilterBase<TypeMetadata> implements ObjectFilter {

@@ -1,15 +1,15 @@
 package org.infinispan.objectfilter.impl;
 
-import org.infinispan.objectfilter.impl.hql.ObjectPropertyHelper;
-import org.infinispan.objectfilter.impl.hql.ProtobufEntityNamesResolver;
-import org.infinispan.objectfilter.impl.hql.ProtobufPropertyHelper;
+import java.util.List;
+
 import org.infinispan.objectfilter.impl.predicateindex.ProtobufMatcherEvalContext;
+import org.infinispan.objectfilter.impl.syntax.IndexedFieldProvider;
+import org.infinispan.objectfilter.impl.syntax.parser.ObjectPropertyHelper;
+import org.infinispan.objectfilter.impl.syntax.parser.ProtobufPropertyHelper;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.WrappedMessage;
 import org.infinispan.protostream.descriptors.Descriptor;
 import org.infinispan.protostream.descriptors.FieldDescriptor;
-
-import java.util.List;
 
 /**
  * @author anistor@redhat.com
@@ -21,8 +21,8 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptor, FieldDescript
 
    private final Descriptor wrappedMessageDescriptor;
 
-   public ProtobufMatcher(SerializationContext serializationContext) {
-      super(new ProtobufPropertyHelper(new ProtobufEntityNamesResolver(serializationContext), serializationContext));
+   public ProtobufMatcher(SerializationContext serializationContext, IndexedFieldProvider<Descriptor> indexedFieldProvider) {
+      super(new ProtobufPropertyHelper(serializationContext, indexedFieldProvider));
       this.serializationContext = serializationContext;
       this.wrappedMessageDescriptor = serializationContext.getMessageDescriptor(WrappedMessage.PROTOBUF_TYPE_NAME);
    }
