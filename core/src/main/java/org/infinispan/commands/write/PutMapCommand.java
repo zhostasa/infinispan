@@ -7,7 +7,6 @@ import org.infinispan.commands.Visitor;
 import org.infinispan.container.entries.MVCCEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.metadata.Metadatas;
@@ -82,12 +81,12 @@ public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteC
 
    @Override
    public boolean hasZeroLockAcquisition() {
-      return hasAnyFlag(FlagBitSets.ZERO_LOCK_ACQUISITION_TIMEOUT);
+      return hasFlag(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT);
    }
 
    @Override
    public boolean hasSkipLocking() {
-      return hasAnyFlag(FlagBitSets.SKIP_LOCKING);
+      return hasFlag(Flag.SKIP_LOCKING);
    }
 
    private MVCCEntry lookupMvccEntry(InvocationContext ctx, Object key) {

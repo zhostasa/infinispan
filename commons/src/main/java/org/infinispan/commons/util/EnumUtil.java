@@ -95,10 +95,7 @@ public class EnumUtil {
    }
 
    public static boolean containsAll(long bitSet, long testBitSet) {
-      return (bitSet & testBitSet) == testBitSet;
+      return bitSet == testBitSet || (bitSet & testBitSet) == testBitSet;
    }
 
-   public static boolean containsAny(long bitSet, long testBitSet) {
-      return (bitSet & testBitSet) != 0;
-   }
 }

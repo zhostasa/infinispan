@@ -4,7 +4,7 @@ import org.infinispan.IllegalLifecycleStateException;
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commons.CacheException;
-import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.context.Flag;
 import org.infinispan.remoting.inboundhandler.DeliverOrder;
 import org.infinispan.remoting.inboundhandler.InboundInvocationHandler;
 import org.infinispan.remoting.inboundhandler.Reply;
@@ -444,8 +444,8 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
    }
 
    private static boolean isRsvpCommand(ReplicableCommand command) {
-      return command instanceof FlagAffectedCommand &&
-            ((FlagAffectedCommand) command).hasAnyFlag(FlagBitSets.GUARANTEED_DELIVERY);
+      return command instanceof FlagAffectedCommand
+            && ((FlagAffectedCommand) command).hasFlag(Flag.GUARANTEED_DELIVERY);
    }
 
 }

@@ -10,8 +10,8 @@ import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.PutMapCommand;
+import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.remoting.inboundhandler.DeliverOrder;
@@ -65,7 +65,7 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
    @Override
    protected final Object visitDataReadCommand(InvocationContext ctx, DataCommand command) throws Throwable {
       try {
-         if (ctx.isInTxScope() && command.hasAnyFlag(FlagBitSets.FORCE_WRITE_LOCK) && !hasSkipLocking(command)) {
+         if (ctx.isInTxScope() && command.hasFlag(Flag.FORCE_WRITE_LOCK) && !hasSkipLocking(command)) {
             Object key = command.getKey();
             acquireRemoteIfNeeded(ctx, key, command);
             lockOrRegisterBackupLock((TxInvocationContext<?>) ctx, key, getLockTimeoutMillis(command));
@@ -83,7 +83,7 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
    @Override
    public Object visitGetAllCommand(InvocationContext ctx, GetAllCommand command) throws Throwable {
       try {
-         if (ctx.isInTxScope() && command.hasAnyFlag(FlagBitSets.FORCE_WRITE_LOCK) && !hasSkipLocking(command)) {
+         if (ctx.isInTxScope() && command.hasFlag(Flag.FORCE_WRITE_LOCK) && !hasSkipLocking(command)) {
             acquireAllRemoteIfNeeded(ctx, command.getKeys(), command);
             //noinspection unchecked
             lockAllOrRegisterBackupLock((TxInvocationContext<?>) ctx, (Collection<Object>) command.getKeys(), getLockTimeoutMillis(command));
@@ -172,7 +172,7 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
          if (ctx.isOriginLocal()) {
             final boolean isSingleKeyAndLocal = !command.multipleKeys() && cdl.localNodeIsPrimaryOwner(command.getSingleKey());
             boolean needBackupLocks = !isSingleKeyAndLocal || isStateTransferInProgress();
-            if (needBackupLocks && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
+            if (needBackupLocks && !command.hasFlag(Flag.CACHE_MODE_LOCAL)) {
                LocalTransaction localTx = (LocalTransaction) ctx.getCacheTransaction();
                if (!localTx.getAffectedKeys().containsAll(command.getKeys())) {
                   invokeNextInterceptor(ctx, command);
@@ -203,7 +203,7 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
 
    private void acquireAllRemoteIfNeeded(InvocationContext ctx, Collection<?> keys, LocalFlagAffectedCommand command) throws Throwable {
       boolean needBackupLocks = ctx.isOriginLocal() && (!isLockOwner(keys) || isStateTransferInProgress());
-      if (needBackupLocks && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
+      if (needBackupLocks && !command.hasFlag(Flag.CACHE_MODE_LOCAL)) {
          final TxInvocationContext txContext = (TxInvocationContext) ctx;
          LocalTransaction localTransaction = (LocalTransaction) txContext.getCacheTransaction();
          if (localTransaction.getAffectedKeys().containsAll(keys)) {
@@ -219,7 +219,7 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
 
    private void acquireRemoteIfNeeded(InvocationContext ctx, Object key, LocalFlagAffectedCommand command) throws Throwable {
       boolean needBackupLocks = ctx.isOriginLocal() && (!isLockOwner(key) || isStateTransferInProgress());
-      if (needBackupLocks && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
+      if (needBackupLocks && !command.hasFlag(Flag.CACHE_MODE_LOCAL)) {
          final TxInvocationContext txContext = (TxInvocationContext) ctx;
          LocalTransaction localTransaction = (LocalTransaction) txContext.getCacheTransaction();
          if (localTransaction.getAffectedKeys().contains(key)) {

@@ -29,8 +29,8 @@ import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.KnownComponentNames;
@@ -492,7 +492,7 @@ public final class QueryInterceptor extends CommandInterceptor {
    }
 
    private boolean usingSkipIndexCleanup(final LocalFlagAffectedCommand command) {
-      return command != null && command.hasAnyFlag(FlagBitSets.SKIP_INDEX_CLEANUP);
+      return command != null && command.hasFlag(Flag.SKIP_INDEX_CLEANUP);
    }
 
    public IndexModificationStrategy getIndexModificationMode() {

@@ -9,7 +9,6 @@ import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.entries.MVCCEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.metadata.Metadata;
@@ -97,7 +96,7 @@ public final class ReadWriteKeyValueCommand<K, V, R> extends AbstractWriteKeyCom
       if (e == null) return null;
 
       // Command only has one previous value, do not override it
-      if (prevValue == null && !hasAnyFlag(FlagBitSets.COMMAND_RETRY)) {
+      if (prevValue == null && !hasFlag(Flag.COMMAND_RETRY)) {
          prevValue = e.getValue();
          prevMetadata = e.getMetadata();
       }

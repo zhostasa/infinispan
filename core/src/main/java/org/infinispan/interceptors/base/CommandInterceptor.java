@@ -10,7 +10,6 @@ import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
@@ -117,14 +116,14 @@ public abstract class CommandInterceptor extends AbstractVisitor {
 
    protected final long getLockAcquisitionTimeout(LocalFlagAffectedCommand command, boolean skipLocking) {
       if (!skipLocking)
-         return command.hasAnyFlag(FlagBitSets.ZERO_LOCK_ACQUISITION_TIMEOUT) ?
-                0 : cacheConfiguration.locking().lockAcquisitionTimeout();
+         return command.hasFlag(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT) ?
+               0 : cacheConfiguration.locking().lockAcquisitionTimeout();
 
       return -1;
    }
 
    protected final boolean hasSkipLocking(LocalFlagAffectedCommand command) {
-      return command.hasAnyFlag(FlagBitSets.SKIP_LOCKING);
+      return command.hasFlag(Flag.SKIP_LOCKING);
    }
 
    protected <K, V> Cache<K, V> getCacheWithFlags(Cache<K, V> cache, LocalFlagAffectedCommand command) {

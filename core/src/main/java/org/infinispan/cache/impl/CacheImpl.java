@@ -40,7 +40,6 @@ import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextContainer;
 import org.infinispan.context.InvocationContextFactory;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.eviction.EvictionManager;
@@ -1612,7 +1611,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
       if (!config.clustering().cacheMode().isDistributed()) {
          //in these cluster modes we won't RPC for a get, so no need to fork a thread.
          return true;
-      } else if (EnumUtil.containsAny(flags, FlagBitSets.SKIP_REMOTE_LOOKUP | FlagBitSets.CACHE_MODE_LOCAL)) {
+      } else if (EnumUtil.hasEnum(flags, Flag.SKIP_REMOTE_LOOKUP) || EnumUtil.hasEnum(flags, Flag.CACHE_MODE_LOCAL)) {
          //with these flags we won't RPC either
          return true;
       }
@@ -1629,7 +1628,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    private boolean isSkipLoader(long flags) {
       boolean hasCacheLoaderConfig = !config.persistence().stores().isEmpty();
       return !hasCacheLoaderConfig
-            || (EnumUtil.containsAny(flags, FlagBitSets.SKIP_CACHE_LOAD | FlagBitSets.SKIP_CACHE_STORE));
+            || (EnumUtil.hasEnum(flags, Flag.SKIP_CACHE_LOAD) || EnumUtil.hasEnum(flags, Flag.SKIP_CACHE_STORE));
    }
 
    @Override
