@@ -14,11 +14,15 @@ import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.interceptors.SequentialInterceptor;
 import org.infinispan.interceptors.SequentialInterceptorChain;
+import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -40,6 +44,8 @@ public class SequentialInterceptorChainImpl implements SequentialInterceptorChai
          new ImmutableListCopy<>(new SequentialInterceptor[0]);
    private static final Log log = LogFactory.getLog(SequentialInterceptorChainImpl.class);
 
+   private static final Map<Class<? extends CommandInterceptor>, Class<? extends SequentialInterceptor>> legacyInterceptors;
+
    final ComponentMetadataRepo componentMetadataRepo;
 
    final ReentrantLock lock = new ReentrantLock();
@@ -47,6 +53,33 @@ public class SequentialInterceptorChainImpl implements SequentialInterceptorChai
    // Modifications are guarded with "lock", but reads do not need synchronization
    private volatile List<SequentialInterceptor> interceptors = EMPTY_INTERCEPTORS_LIST;
    private volatile InterceptorListNode firstInterceptor = null;
+
+   static {
+      Map<Class<? extends CommandInterceptor>, Class<? extends SequentialInterceptor>> map = new HashMap<>();
+      map.put(org.infinispan.interceptors.ActivationInterceptor.class, ActivationInterceptor.class);
+      map.put(org.infinispan.interceptors.BatchingInterceptor.class, BatchingInterceptor.class);
+      map.put(org.infinispan.interceptors.CacheLoaderInterceptor.class, CacheLoaderInterceptor.class);
+      map.put(org.infinispan.interceptors.CacheMgmtInterceptor.class, CacheMgmtInterceptor.class);
+      map.put(org.infinispan.interceptors.CacheWriterInterceptor.class, CacheWriterInterceptor.class);
+      map.put(org.infinispan.interceptors.CallInterceptor.class, CallInterceptor.class);
+      map.put(org.infinispan.interceptors.ClusteredActivationInterceptor.class, ClusteredActivationInterceptor.class);
+      map.put(org.infinispan.interceptors.ClusteredCacheLoaderInterceptor.class,
+            ClusteredCacheLoaderInterceptor.class);
+      map.put(org.infinispan.interceptors.ClusteringInterceptor.class, ClusteringInterceptor.class);
+      map.put(org.infinispan.interceptors.DeadlockDetectingInterceptor.class, DeadlockDetectingInterceptor.class);
+      map.put(org.infinispan.interceptors.DistCacheWriterInterceptor.class, DistCacheWriterInterceptor.class);
+      map.put(org.infinispan.interceptors.EntryWrappingInterceptor.class, EntryWrappingInterceptor.class);
+      map.put(org.infinispan.interceptors.GroupingInterceptor.class, GroupingInterceptor.class);
+      map.put(org.infinispan.interceptors.InvalidationInterceptor.class, InvalidationInterceptor.class);
+      map.put(org.infinispan.interceptors.InvocationContextInterceptor.class, InvocationContextInterceptor.class);
+      map.put(org.infinispan.interceptors.IsMarshallableInterceptor.class, IsMarshallableInterceptor.class);
+      map.put(org.infinispan.interceptors.MarshalledValueInterceptor.class, MarshalledValueInterceptor.class);
+      map.put(org.infinispan.interceptors.NotificationInterceptor.class, NotificationInterceptor.class);
+      map.put(org.infinispan.interceptors.TxInterceptor.class, TxInterceptor.class);
+      map.put(org.infinispan.interceptors.VersionedEntryWrappingInterceptor.class,
+            VersionedEntryWrappingInterceptor.class);
+      legacyInterceptors = Collections.unmodifiableMap(map);
+   }
 
    public SequentialInterceptorChainImpl(ComponentMetadataRepo componentMetadataRepo) {
       this.componentMetadataRepo = componentMetadataRepo;
@@ -79,6 +112,8 @@ public class SequentialInterceptorChainImpl implements SequentialInterceptorChai
          throw new CacheConfigurationException("Detected interceptor of type [" + clazz.getName() +
                                                      "] being added to the interceptor chain " +
                                                      System.identityHashCode(this) + " more than once!");
+      if (legacyInterceptors.containsKey(clazz))
+         throw new CacheConfigurationException("Cannot add a legacy interceptor to the chain: " + clazz);
    }
 
    public void addInterceptor(SequentialInterceptor interceptor, int position) {
@@ -127,8 +162,9 @@ public class SequentialInterceptorChainImpl implements SequentialInterceptorChai
 
    protected boolean interceptorMatches(SequentialInterceptor interceptor,
                                         Class<? extends SequentialInterceptor> clazz) {
+      Class<? extends SequentialInterceptor> realClazz = legacyInterceptors.getOrDefault(clazz, clazz);
       Class<? extends SequentialInterceptor> interceptorType = interceptor.getClass();
-      return clazz == interceptorType;
+      return realClazz == interceptorType;
    }
 
    public boolean addInterceptorAfter(SequentialInterceptor toAdd,

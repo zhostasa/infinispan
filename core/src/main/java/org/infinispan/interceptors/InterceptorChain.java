@@ -12,9 +12,17 @@ import java.util.List;
 /**
  * Knows how to build and manage an chain of interceptors. Also in charge with invoking methods on the chain.
  *
+ * <p>Note that since 8.4, most interceptors in the chain do not implement {@link CommandInterceptor}, and
+ * {@code InterceptorChain} does not see the new interceptors, e.g.
+ * {@code getInterceptorsWhichExtend(org.infinispan.interceptors.CallInterceptor.class)}
+ * returns an empty collection.
+ * The old interceptor classes extending {@link CommandInterceptor} still exist, and referencing them when
+ * adding a new interceptor still works:
+ * {@code chain.addInterceptorBefore(i, org.infinispan.interceptors.CallInterceptor.class}.
+ *
  * @author Mircea.Markus@jboss.com
  * @author Galder Zamarreño
- * @deprecated Since 8.3, will be removed.
+ * @deprecated Since 8.3, will be removed in 9.0.
  */
 @Deprecated
 @Scope(Scopes.NAMED_CACHE)
