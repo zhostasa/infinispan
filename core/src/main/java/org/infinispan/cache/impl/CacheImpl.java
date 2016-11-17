@@ -156,8 +156,6 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    private boolean isClassLoaderInContext;
    private LocalTopologyManager localTopologyManager;
    private volatile boolean stopping = false;
-   private boolean transactional;
-   private boolean batchingEnabled;
 
    public CacheImpl(String name) {
       this.name = name;
@@ -216,8 +214,6 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
       // have to have access to the default metadata on some operations
       defaultMetadata = new EmbeddedMetadata.Builder()
               .lifespan(config.expiration().lifespan()).maxIdle(config.expiration().maxIdle()).build();
-      transactional = config.transaction().transactionMode().isTransactional();
-      batchingEnabled = config.invocationBatching().enabled();
    }
 
    private void assertKeyNotNull(Object key) {
@@ -518,7 +514,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    final void removeGroup(String groupName, long explicitFlags, ClassLoader explicitClassLoader) {
-      if (!transactional) {
+      if (transactionManager == null) {
          nonTransactionalRemoveGroup(groupName, explicitFlags, explicitClassLoader);
       } else {
          transactionalRemoveGroup(groupName, explicitFlags, explicitClassLoader);
@@ -775,9 +771,25 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
       return notifier.getListeners();
    }
 
+   private InvocationContext getInvocationContextForWrite(ClassLoader explicitClassLoader, int keyCount, boolean isPutForExternalRead) {
+      InvocationContext ctx = isPutForExternalRead
+            ? invocationContextFactory.createSingleKeyNonTxInvocationContext()
+            : invocationContextFactory.createInvocationContext(true, keyCount);
+      return setInvocationContextClassLoader(ctx, explicitClassLoader);
+   }
+
    private InvocationContext getInvocationContextForRead(ClassLoader explicitClassLoader, int keyCount) {
+      if (config.transaction().transactionMode().isTransactional()) {
+         Transaction transaction = getOngoingTransaction();
+         //if we are in the scope of a transaction than return a transactional context. This is relevant e.g.
+         // FORCE_WRITE_LOCK is used on read operations - in that case, the lock is held for the the transaction's
+         // lifespan (when in tx scope) vs. call lifespan (when not in tx scope).
+         if (transaction != null)
+            return getInvocationContext(transaction, explicitClassLoader, false);
+      }
       InvocationContext result = invocationContextFactory.createInvocationContext(false, keyCount);
-      return setInvocationContextClassLoader(result, explicitClassLoader);
+      setInvocationContextClassLoader(result, explicitClassLoader);
+      return result;
    }
 
    private InvocationContext getInvocationContextWithImplicitTransactionForAsyncOps(boolean isPutForExternalRead, ClassLoader explicitClassLoader, int keyCount) {
@@ -800,21 +812,23 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    private InvocationContext getInvocationContextWithImplicitTransaction(boolean isPutForExternalRead, ClassLoader explicitClassLoader, int keyCount) {
       InvocationContext invocationContext;
       boolean txInjected = false;
-      if (transactional) {
-         if (!isPutForExternalRead) {
-            Transaction transaction = getOngoingTransaction();
-            if (transaction == null && config.transaction().autoCommit()) {
-               transaction = tryBegin();
-               txInjected = true;
-            }
-            invocationContext = invocationContextFactory.createInvocationContext(transaction, txInjected);
-         } else {
-            invocationContext = invocationContextFactory.createSingleKeyNonTxInvocationContext();
+      if (config.transaction().transactionMode().isTransactional() && !isPutForExternalRead) {
+         Transaction transaction = getOngoingTransaction();
+         if (transaction == null && config.transaction().autoCommit()) {
+            transaction = tryBegin();
+            txInjected = true;
          }
+         invocationContext = getInvocationContext(transaction, explicitClassLoader, txInjected);
       } else {
-         invocationContext = invocationContextFactory.createInvocationContext(true, keyCount);
+         invocationContext = getInvocationContextForWrite(explicitClassLoader, keyCount, isPutForExternalRead);
       }
-      return setInvocationContextClassLoader(invocationContext, explicitClassLoader);
+      return invocationContext;
+   }
+
+   private InvocationContext getInvocationContext(Transaction tx, ClassLoader explicitClassLoader,
+                                                  boolean implicitTransaction) {
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(tx, implicitTransaction);
+      return setInvocationContextClassLoader(ctx, explicitClassLoader);
    }
 
    private InvocationContext setInvocationContextClassLoader(InvocationContext ctx, ClassLoader explicitClassLoader) {
@@ -842,14 +856,13 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    boolean lock(Collection<? extends K> keys, long flagsBitSet, ClassLoader explicitClassLoader) {
-      if (!transactional)
+      if (!config.transaction().transactionMode().isTransactional())
          throw new UnsupportedOperationException("Calling lock() on non-transactional caches is not allowed");
 
       if (keys == null || keys.isEmpty()) {
          throw new IllegalArgumentException("Cannot lock empty list of keys");
       }
-      InvocationContext ctx = invocationContextFactory.createInvocationContext(true, UNBOUNDED);
-      ctx = setInvocationContextClassLoader(ctx, explicitClassLoader);
+      InvocationContext ctx = getInvocationContextForWrite(explicitClassLoader, UNBOUNDED, false);
       LockControlCommand command = commandsFactory.buildLockControlCommand(keys, flagsBitSet);
       ctx.setLockOwner(command.getKeyLockOwner());
       return (Boolean) invoker.invoke(ctx, command);
@@ -860,8 +873,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
       if (locksToAcquire == null || locksToAcquire.length == 0) {
          throw new IllegalArgumentException("Cannot lock empty list of keys");
       }
-      InvocationContext ctx = invocationContextFactory.createInvocationContext(true, UNBOUNDED);
-      ctx = setInvocationContextClassLoader(ctx, null);
+      InvocationContext ctx = getInvocationContextForWrite(null, UNBOUNDED, false);
       ApplyDeltaCommand command = commandsFactory.buildApplyDeltaCommand(deltaAwareValueKey, delta,
                                                                          Arrays.asList(locksToAcquire));
       ctx.setLockOwner(command.getKeyLockOwner());
@@ -1070,7 +1082,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public boolean startBatch() {
-      if (!batchingEnabled) {
+      if (!config.invocationBatching().enabled()) {
          throw log.invocationBatchingNotEnabled();
       }
       return batchContainer.startBatch();
@@ -1078,7 +1090,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public void endBatch(boolean successful) {
-      if (!batchingEnabled) {
+      if (!config.invocationBatching().enabled()) {
          throw log.invocationBatchingNotEnabled();
       }
       batchContainer.endBatch(successful);
@@ -1643,7 +1655,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
          Transaction transaction = null;
          if (transactionManager != null) {
             transaction = transactionManager.getTransaction();
-            if (transaction == null && batchingEnabled) {
+            if (transaction == null && config.invocationBatching().enabled()) {
                transaction = batchContainer.getBatchTransaction();
             }
          }

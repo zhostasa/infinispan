@@ -24,17 +24,10 @@ public class TotalOrderDistributionInterceptor extends TxDistributionInterceptor
 
    private static final Log log = LogFactory.getLog(TotalOrderDistributionInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
-   private boolean onePhaseTotalOrderCommit;
-
-   @Override
-   public void start() {
-      super.start();
-      onePhaseTotalOrderCommit = Configurations.isOnePhaseTotalOrderCommit(cacheConfiguration);
-   }
 
    @Override
    public Object visitRollbackCommand(TxInvocationContext ctx, RollbackCommand command) throws Throwable {
-      if (onePhaseTotalOrderCommit || !ctx.hasModifications() ||
+      if (Configurations.isOnePhaseTotalOrderCommit(cacheConfiguration) || !ctx.hasModifications() ||
             !shouldTotalOrderRollbackBeInvokedRemotely(ctx)) {
          return invokeNextInterceptor(ctx, command);
       }
@@ -44,7 +37,7 @@ public class TotalOrderDistributionInterceptor extends TxDistributionInterceptor
 
    @Override
    public Object visitCommitCommand(TxInvocationContext ctx, CommitCommand command) throws Throwable {
-      if (onePhaseTotalOrderCommit || !ctx.hasModifications()) {
+      if (Configurations.isOnePhaseTotalOrderCommit(cacheConfiguration) || !ctx.hasModifications()) {
          return invokeNextInterceptor(ctx, command);
       }
       totalOrderTxCommit(ctx);

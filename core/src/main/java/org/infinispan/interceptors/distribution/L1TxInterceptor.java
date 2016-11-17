@@ -77,7 +77,7 @@ public class L1TxInterceptor extends L1NonTxInterceptor {
    }
 
    private void blockOnL1FutureIfNeeded(Future<?> f) {
-      if (f != null && isSyncCommitPhase()) {
+      if (f != null && cacheConfiguration.transaction().syncCommitPhase()) {
          try {
             f.get();
          } catch (Exception e) {

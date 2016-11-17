@@ -16,6 +16,7 @@ import org.infinispan.remoting.rpc.ResponseMode;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.remoting.rpc.RpcOptionsBuilder;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.statetransfer.StateConsumer;
 import org.infinispan.transaction.impl.LocalTransaction;
 
 import java.util.Collection;
@@ -37,17 +38,15 @@ public abstract class BaseRpcInterceptor extends CommandInterceptor {
    protected RpcManager rpcManager;
 
    protected boolean defaultSynchronous;
-   private boolean syncCommitPhase;
 
    @Inject
-   public void inject(RpcManager rpcManager) {
+   public void inject(RpcManager rpcManager, StateConsumer stateConsumer) {
       this.rpcManager = rpcManager;
    }
 
    @Start
    public void init() {
       defaultSynchronous = cacheConfiguration.clustering().cacheMode().isSynchronous();
-      syncCommitPhase = cacheConfiguration.transaction().syncCommitPhase();
    }
 
    protected final boolean isSynchronous(FlagAffectedCommand command) {
@@ -145,7 +144,7 @@ public abstract class BaseRpcInterceptor extends CommandInterceptor {
    }
 
    protected final boolean isSyncCommitPhase() {
-      return syncCommitPhase;
+      return cacheConfiguration.transaction().syncCommitPhase();
    }
 
    protected final TimeoutValidationResponseFilter getSelfDeliverFilter() {

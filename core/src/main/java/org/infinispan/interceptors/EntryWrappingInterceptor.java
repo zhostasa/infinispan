@@ -72,9 +72,6 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
    private static final boolean trace = log.isTraceEnabled();
    private static final long EVICT_FLAGS_BITSET =
          FlagBitSets.SKIP_OWNERSHIP_CHECK | FlagBitSets.CACHE_MODE_LOCAL;
-   private boolean transactional;
-   private boolean defaultSynchronous;
-   private boolean totalOrder;
 
    @Override
    protected Log getLog() {
@@ -101,9 +98,6 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
             (cacheConfiguration.clustering().cacheMode().isDistributed() ||
                    cacheConfiguration.clustering().cacheMode().isReplicated());
       isInvalidation = cacheConfiguration.clustering().cacheMode().isInvalidation();
-      transactional = cacheConfiguration.transaction().transactionMode().isTransactional();
-      defaultSynchronous = cacheConfiguration.clustering().cacheMode().isSynchronous();
-      totalOrder = cacheConfiguration.transaction().transactionProtocol().isTotalOrder();
    }
 
    @Override
@@ -139,7 +133,10 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
          entryFactory.wrapEntryForReading(ctx, command.getKey(), null);
          return invokeNextInterceptor(ctx, command);
       } finally {
-         if (ctx.isInTxScope()) {
+         //needed because entries might be added in L1
+         if (!ctx.isInTxScope())
+            commitContextEntries(ctx, command, null);
+         else {
             CacheEntry entry = ctx.lookupEntry(command.getKey());
             if (entry != null) {
                entry.setSkipLookup(true);
@@ -232,8 +229,9 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
          return true;
       }
       boolean result;
-      boolean isTransactional = transactional;
-      boolean isPutForExternalRead = command.hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ);
+      boolean isTransactional = cacheConfiguration.transaction().transactionMode().isTransactional();
+      boolean isPutForExternalRead =
+            command.hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ);
 
       // Invalidated caches should always wrap entries in order to local
       // changes from nodes that are not lock owners for these entries.
@@ -343,7 +341,10 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
 
          return invokeNextInterceptor(ctx, command);
       } finally {
-         if (ctx.isInTxScope()) {
+         //needed because entries might be added in L1
+         if (!ctx.isInTxScope())
+            commitContextEntries(ctx, command, null);
+         else {
             CacheEntry entry = ctx.lookupEntry(command.getKey());
             if (entry != null) {
                entry.setSkipLookup(true);
@@ -494,7 +495,8 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
             if (command instanceof WriteCommand) {
                WriteCommand writeCommand = (WriteCommand) command;
                // Can't perform the check during preload or if the cache isn't clustered
-               boolean isSync = (defaultSynchronous && !command.hasAnyFlag(FlagBitSets.FORCE_ASYNCHRONOUS)) ||
+               boolean isSync = (cacheConfiguration.clustering().cacheMode().isSynchronous() &&
+                     !command.hasAnyFlag(FlagBitSets.FORCE_ASYNCHRONOUS)) ||
                      command.hasAnyFlag(FlagBitSets.FORCE_SYNCHRONOUS);
                if (writeCommand.isSuccessful() && stateConsumer != null &&
                      stateConsumer.getCacheTopology() != null) {
@@ -659,9 +661,9 @@ public class EntryWrappingInterceptor extends CommandInterceptor {
     * @return true if the modification should be committed, false otherwise
     */
    protected boolean shouldCommitDuringPrepare(PrepareCommand command, TxInvocationContext ctx) {
-      return totalOrder ?
-             command.isOnePhaseCommit() && (!ctx.isOriginLocal() || !command.hasModifications()) :
-             command.isOnePhaseCommit();
+      boolean isTotalOrder = cacheConfiguration.transaction().transactionProtocol().isTotalOrder();
+      return isTotalOrder ? command.isOnePhaseCommit() && (!ctx.isOriginLocal() || !command.hasModifications()) :
+            command.isOnePhaseCommit();
    }
 
    protected final void wrapEntriesForPrepare(TxInvocationContext ctx, PrepareCommand command) throws Throwable {

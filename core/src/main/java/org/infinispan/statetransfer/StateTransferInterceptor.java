@@ -31,7 +31,6 @@ import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.Inject;
-import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.base.BaseStateTransferInterceptor;
 import org.infinispan.remoting.RemoteException;
 import org.infinispan.remoting.responses.UnsureResponse;
@@ -73,8 +72,6 @@ public class StateTransferInterceptor extends BaseStateTransferInterceptor {
    private StateTransferManager stateTransferManager;
 
    private final AffectedKeysVisitor affectedKeysVisitor = new AffectedKeysVisitor();
-   private boolean syncCommitPhase;
-   private boolean defaultSynchronous;
 
    @Override
    protected Log getLog() {
@@ -84,12 +81,6 @@ public class StateTransferInterceptor extends BaseStateTransferInterceptor {
    @Inject
    public void init(StateTransferManager stateTransferManager) {
       this.stateTransferManager = stateTransferManager;
-   }
-
-   @Start
-   public void start() {
-      syncCommitPhase = cacheConfiguration.transaction().syncCommitPhase();
-      defaultSynchronous = cacheConfiguration.clustering().cacheMode().isSynchronous();
    }
 
    @Override
@@ -276,9 +267,9 @@ public class StateTransferInterceptor extends BaseStateTransferInterceptor {
    private boolean isTxCommandAsync(TransactionBoundaryCommand command) {
       boolean async = false;
       if (command instanceof CommitCommand || command instanceof RollbackCommand) {
-         async = !syncCommitPhase;
+         async = !cacheConfiguration.transaction().syncCommitPhase();
       } else if (command instanceof PrepareCommand) {
-         async = !defaultSynchronous;
+         async = !cacheConfiguration.clustering().cacheMode().isSynchronous();
       }
       return async;
    }

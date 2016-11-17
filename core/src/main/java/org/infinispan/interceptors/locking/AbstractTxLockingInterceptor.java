@@ -10,7 +10,6 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
-import org.infinispan.factories.annotations.Start;
 import org.infinispan.partitionhandling.impl.PartitionHandlingManager;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.statetransfer.OutdatedTopologyException;
@@ -38,7 +37,6 @@ public abstract class AbstractTxLockingInterceptor extends AbstractLockingInterc
    protected RpcManager rpcManager;
    private PartitionHandlingManager partitionHandlingManager;
    private PendingLockManager pendingLockManager;
-   private boolean secondPhaseAsync;
 
    @Inject
    public void setDependencies(RpcManager rpcManager,
@@ -47,11 +45,6 @@ public abstract class AbstractTxLockingInterceptor extends AbstractLockingInterc
       this.rpcManager = rpcManager;
       this.partitionHandlingManager = partitionHandlingManager;
       this.pendingLockManager = pendingLockManager;
-   }
-
-   @Start
-   public void start() {
-      secondPhaseAsync = Configurations.isSecondPhaseAsync(cacheConfiguration);
    }
 
    @Override
@@ -209,6 +202,6 @@ public abstract class AbstractTxLockingInterceptor extends AbstractLockingInterc
 
    private boolean releaseLockOnTxCompletion(TxInvocationContext ctx) {
       return (ctx.isOriginLocal() && !partitionHandlingManager.isTransactionPartiallyCommitted(ctx.getGlobalTransaction()) ||
-                    (!ctx.isOriginLocal() && secondPhaseAsync));
+                    (!ctx.isOriginLocal() && Configurations.isSecondPhaseAsync(cacheConfiguration)));
    }
 }

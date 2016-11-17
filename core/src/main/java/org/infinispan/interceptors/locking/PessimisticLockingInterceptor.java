@@ -75,6 +75,8 @@ public class PessimisticLockingInterceptor extends AbstractTxLockingInterceptor 
       } catch (Throwable t) {
          releaseLocksOnFailureBeforePrepare(ctx);
          throw t;
+      } finally {
+         if (!ctx.isInTxScope()) lockManager.unlockAll(ctx);
       }
    }
 

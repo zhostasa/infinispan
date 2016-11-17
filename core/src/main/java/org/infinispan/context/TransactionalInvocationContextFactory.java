@@ -1,11 +1,8 @@
 package org.infinispan.context;
 
 import org.infinispan.batch.BatchContainer;
-import org.infinispan.commands.DataCommand;
 import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.commands.write.ClearCommand;
-import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.impl.LocalTxInvocationContext;
@@ -112,15 +109,5 @@ public class TransactionalInvocationContextFactory extends AbstractInvocationCon
    protected final NonTxInvocationContext newNonTxInvocationContext(Address origin) {
       NonTxInvocationContext ctx = new NonTxInvocationContext(origin, keyEq);
       return ctx;
-   }
-
-   @Override
-   public InvocationContext createRemoteInvocationContextForCommand(VisitableCommand cacheCommand,
-         Address origin) {
-      if (cacheCommand instanceof DataCommand && !(cacheCommand instanceof InvalidateCommand)) {
-         return new SingleKeyNonTxInvocationContext(origin, keyEq);
-      } else {
-         return super.createRemoteInvocationContextForCommand(cacheCommand, origin);
-      }
    }
 }
