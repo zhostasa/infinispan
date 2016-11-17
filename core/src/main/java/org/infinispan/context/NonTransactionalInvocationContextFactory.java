@@ -20,8 +20,8 @@ import javax.transaction.Transaction;
  * Invocation Context container to be used for non-transactional caches.
  *
  * @author Mircea Markus
- * @since 5.1
  * @private
+ * @deprecated Since 9.0, this class is going to be moved to an internal package.
  */
 @Deprecated
 @SurvivesRestarts

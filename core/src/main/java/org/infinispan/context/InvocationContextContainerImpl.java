@@ -9,8 +9,8 @@ import org.infinispan.factories.annotations.Stop;
  * InvocationContextContainer implementation.
  *
  * @author Dan Berindei
- * @since 7.0
  * @private
+ * @deprecated Since 9.0, this class is going to be moved to an internal package.
  */
 @Deprecated
 public class InvocationContextContainerImpl implements InvocationContextContainer {

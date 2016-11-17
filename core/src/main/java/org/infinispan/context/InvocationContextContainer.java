@@ -9,8 +9,8 @@ import org.infinispan.factories.scopes.Scopes;
  *
  * @author Manik Surtani (manik AT infinispan DOT org)
  * @author Mircea.Markus@jboss.com
- * @since 4.0
  * @private
+ * @deprecated Since 9.0, this interface is going to be moved to an internal package.
  */
 @Deprecated
 @Scope(Scopes.NAMED_CACHE)

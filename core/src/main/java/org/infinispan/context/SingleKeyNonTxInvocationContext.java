@@ -12,8 +12,8 @@ import java.util.Set;
 /**
  * @author Mircea Markus
  * @author Sanne Grinovero
- * @since 5.1
  * @private
+ * @deprecated Since 9.0, this class is going to be moved to an internal package.
  */
 @Deprecated
 public final class SingleKeyNonTxInvocationContext extends BaseSequentialInvocationContext implements InvocationContext {
