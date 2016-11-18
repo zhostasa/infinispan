@@ -81,6 +81,11 @@ import org.infinispan.xsite.statetransfer.XSiteStateConsumer;
  * @since 9.0
  */
 public class EntryWrappingInterceptor extends DDAsyncInterceptor {
+   private static final Log log = LogFactory.getLog(EntryWrappingInterceptor.class);
+   private static final boolean trace = log.isTraceEnabled();
+   private static final EnumSet<Flag> EVICT_FLAGS =
+         EnumSet.of(Flag.SKIP_OWNERSHIP_CHECK, Flag.CACHE_MODE_LOCAL);
+
    private EntryFactory entryFactory;
    protected DataContainer<Object, Object> dataContainer;
    protected ClusteringDependentLogic cdl;
@@ -88,17 +93,15 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    private CommandsFactory commandFactory;
    private boolean isUsingLockDelegation;
    private boolean isInvalidation;
-   private boolean isSync;
    private StateConsumer stateConsumer;       // optional
    private StateTransferLock stateTransferLock;
    private XSiteStateConsumer xSiteStateConsumer;
    private GroupManager groupManager;
    private CacheNotifier notifier;
 
-   private static final Log log = LogFactory.getLog(EntryWrappingInterceptor.class);
-   private static final boolean trace = log.isTraceEnabled();
-   private static final EnumSet<Flag> EVICT_FLAGS =
-         EnumSet.of(Flag.SKIP_OWNERSHIP_CHECK, Flag.CACHE_MODE_LOCAL);
+   private boolean transactional;
+   private boolean defaultSynchronous;
+   private boolean totalOrder;
 
    private final InvocationFinallyHandler dataReadReturnHandler = new InvocationFinallyHandler() {
       @Override
@@ -161,7 +164,9 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
             (cacheConfiguration.clustering().cacheMode().isDistributed() ||
                    cacheConfiguration.clustering().cacheMode().isReplicated());
       isInvalidation = cacheConfiguration.clustering().cacheMode().isInvalidation();
-      isSync = cacheConfiguration.clustering().cacheMode().isSynchronous();
+      transactional = cacheConfiguration.transaction().transactionMode().isTransactional();
+      defaultSynchronous = cacheConfiguration.clustering().cacheMode().isSynchronous();
+      totalOrder = cacheConfiguration.transaction().transactionProtocol().isTotalOrder();
    }
 
    @Override
@@ -310,7 +315,6 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
          return true;
       }
       boolean result;
-      boolean isTransactional = cacheConfiguration.transaction().transactionMode().isTransactional();
       boolean isPutForExternalRead = command.hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ);
 
       // Invalidated caches should always wrap entries in order to local
@@ -319,10 +323,10 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       // localNodeIsPrimaryOwner to always return true, would have had negative
       // impact on locking since locks would be always be acquired locally
       // and that would lead to deadlocks.
-      if (isInvalidation || (isTransactional && !isPutForExternalRead)) {
+      if (isInvalidation || (transactional && !isPutForExternalRead)) {
          result = true;
       } else {
-         if (isUsingLockDelegation || isTransactional) {
+         if (isUsingLockDelegation || transactional) {
             result = ctx.isOriginLocal() ? cdl.localNodeIsPrimaryOwner(key) : cdl.localNodeIsOwner(key);
          } else {
             result = cdl.localNodeIsOwner(key);
@@ -580,7 +584,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
          if (!isInvalidation && command instanceof WriteCommand) {
             WriteCommand writeCommand = (WriteCommand) command;
             // Can't perform the check during preload or if the cache isn't clustered
-            boolean syncRpc = isSync && !command.hasAnyFlag(FlagBitSets.FORCE_ASYNCHRONOUS) ||
+            boolean syncRpc = defaultSynchronous && !command.hasAnyFlag(FlagBitSets.FORCE_ASYNCHRONOUS) ||
                   command.hasAnyFlag(FlagBitSets.FORCE_SYNCHRONOUS);
             if (writeCommand.isSuccessful() && stateConsumer != null && stateConsumer.getCacheTopology() != null) {
                int commandTopologyId = command.getTopologyId();
@@ -751,8 +755,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
     * @return true if the modification should be committed, false otherwise
     */
    protected boolean shouldCommitDuringPrepare(PrepareCommand command, TxInvocationContext ctx) {
-      boolean isTotalOrder = cacheConfiguration.transaction().transactionProtocol().isTotalOrder();
-      return isTotalOrder ? command.isOnePhaseCommit() && (!ctx.isOriginLocal() || !command.hasModifications()) :
+      return totalOrder ? command.isOnePhaseCommit() && (!ctx.isOriginLocal() || !command.hasModifications()) :
             command.isOnePhaseCommit();
    }
 

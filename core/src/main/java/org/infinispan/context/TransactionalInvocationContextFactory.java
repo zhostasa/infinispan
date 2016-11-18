@@ -1,6 +1,13 @@
 package org.infinispan.context;
 
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.infinispan.batch.BatchContainer;
+import org.infinispan.commands.DataCommand;
+import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.impl.LocalTxInvocationContext;
@@ -12,10 +19,6 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.impl.LocalTransaction;
 import org.infinispan.transaction.impl.RemoteTransaction;
 import org.infinispan.transaction.impl.TransactionTable;
-
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 /**
  * Invocation context to be used for transactional caches.
@@ -108,5 +111,15 @@ public class TransactionalInvocationContextFactory extends AbstractInvocationCon
    protected final NonTxInvocationContext newNonTxInvocationContext(Address origin) {
       NonTxInvocationContext ctx = new NonTxInvocationContext(origin, keyEq);
       return ctx;
+   }
+
+   @Override
+   public InvocationContext createRemoteInvocationContextForCommand(VisitableCommand cacheCommand,
+         Address origin) {
+      if (cacheCommand instanceof DataCommand && !(cacheCommand instanceof InvalidateCommand)) {
+         return new SingleKeyNonTxInvocationContext(origin, keyEq);
+      } else {
+         return super.createRemoteInvocationContextForCommand(cacheCommand, origin);
+      }
    }
 }

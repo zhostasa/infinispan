@@ -1,6 +1,8 @@
 package org.infinispan.factories;
 
 
+import java.util.List;
+
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.Marshaller;
@@ -61,8 +63,6 @@ import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.List;
 
 /**
  * Factory class that builds an interceptor chain based on cache configuration.
@@ -143,7 +143,6 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
       }
 
       // add marshallable check interceptor for situations where we want to figure out before marshalling
-      // Store as binary marshalls keys/values eagerly now, so avoid extra serialization
       if (hasAsyncStore())
          interceptorChain.appendInterceptor(createInterceptor(new IsMarshallableInterceptor(), IsMarshallableInterceptor.class), false);
 

@@ -375,7 +375,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
             if (trace) log.tracef("I'm the primary owner, sending the command to all the backups (%s) in order to be applied.",
                   recipients);
             // check if a single owner has been configured and the target for the key is the local address
-            boolean isSingleOwnerAndLocal = cacheConfiguration.clustering().hash().numOwners() == 1;
+            boolean isSingleOwnerAndLocal = recipients != null && recipients.size() == 1;
             if (isSingleOwnerAndLocal) {
                return returnWith(localResult);
             }

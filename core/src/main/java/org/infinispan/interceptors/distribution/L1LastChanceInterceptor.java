@@ -25,7 +25,6 @@ import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.impl.BaseRpcInterceptor;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
-import org.infinispan.transaction.TransactionMode;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -44,7 +43,6 @@ public class L1LastChanceInterceptor extends BaseRpcInterceptor {
 
    private L1Manager l1Manager;
    private ClusteringDependentLogic cdl;
-   private Configuration configuration;
 
    private boolean nonTransactional;
 
@@ -52,12 +50,11 @@ public class L1LastChanceInterceptor extends BaseRpcInterceptor {
    public void init(L1Manager l1Manager, ClusteringDependentLogic cdl, Configuration configuration) {
       this.l1Manager = l1Manager;
       this.cdl = cdl;
-      this.configuration = configuration;
    }
 
    @Start
    public void start() {
-      nonTransactional = configuration.transaction().transactionMode() == TransactionMode.NON_TRANSACTIONAL;
+      nonTransactional = !cacheConfiguration.transaction().transactionMode().isTransactional();
    }
 
    @Override
@@ -152,7 +149,7 @@ public class L1LastChanceInterceptor extends BaseRpcInterceptor {
    }
 
    private void blockOnL1FutureIfNeededTx(Future<?> f) {
-      if (configuration.transaction().syncCommitPhase()) {
+      if (isSyncCommitPhase()) {
          blockOnL1FutureIfNeeded(f);
       }
    }

@@ -40,6 +40,7 @@ public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
    protected RpcManager rpcManager;
 
    protected boolean defaultSynchronous;
+   private boolean syncCommitPhase;
 
    protected abstract Log getLog();
 
@@ -51,6 +52,7 @@ public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
    @Start
    public void init() {
       defaultSynchronous = cacheConfiguration.clustering().cacheMode().isSynchronous();
+      syncCommitPhase = cacheConfiguration.transaction().syncCommitPhase();
    }
 
    protected final boolean isSynchronous(FlagAffectedCommand command) {
@@ -165,7 +167,7 @@ public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
    }
 
    protected final boolean isSyncCommitPhase() {
-      return cacheConfiguration.transaction().syncCommitPhase();
+      return syncCommitPhase;
    }
 
    protected final TimeoutValidationResponseFilter getSelfDeliverFilter() {

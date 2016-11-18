@@ -68,6 +68,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    private PartitionHandlingManager partitionHandlingManager;
 
    private boolean useClusteredWriteSkewCheck;
+   private boolean syncRollbackPhase;
 
    @Inject
    public void inject(PartitionHandlingManager partitionHandlingManager) {
@@ -77,6 +78,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    @Start
    public void start() {
       useClusteredWriteSkewCheck = Configurations.isVersioningEnabled(cacheConfiguration);
+      syncRollbackPhase = cacheConfiguration.transaction().syncRollbackPhase();
    }
 
    @Override
@@ -368,11 +370,11 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private RpcOptions createCommitRpcOptions() {
-      return createRpcOptionsFor2ndPhase(cacheConfiguration.transaction().syncCommitPhase());
+      return createRpcOptionsFor2ndPhase(isSyncCommitPhase());
    }
 
    private RpcOptions createRollbackRpcOptions() {
-      return createRpcOptionsFor2ndPhase(cacheConfiguration.transaction().syncRollbackPhase());
+      return createRpcOptionsFor2ndPhase(syncRollbackPhase);
    }
 
    private RpcOptions createRpcOptionsFor2ndPhase(boolean sync) {
@@ -384,7 +386,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    protected RpcOptions createPrepareRpcOptions() {
-      return cacheConfiguration.clustering().cacheMode().isSynchronous() ?
+      return defaultSynchronous ?
               rpcManager.getRpcOptionsBuilder(ResponseMode.SYNCHRONOUS_IGNORE_LEAVERS, DeliverOrder.NONE).build() :
               rpcManager.getDefaultRpcOptions(false);
    }
