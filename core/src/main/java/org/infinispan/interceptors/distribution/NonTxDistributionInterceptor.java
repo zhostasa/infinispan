@@ -39,6 +39,7 @@ import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.util.ReadOnlySegmentAwareMap;
 import org.infinispan.distribution.util.ReadOnlySegmentAwareSet;
@@ -734,10 +735,10 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
 
    @Override
    protected boolean writeNeedsRemoteValue(InvocationContext ctx, WriteCommand command, Object key) {
-      if (command.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+      if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
          return false;
       }
-      if (ctx.isOriginLocal() && command.hasFlag(Flag.SKIP_REMOTE_LOOKUP)) {
+      if (ctx.isOriginLocal() && command.hasAnyFlag(FlagBitSets.SKIP_REMOTE_LOOKUP)) {
          // Ignore SKIP_REMOTE_LOOKUP if we're already remote
          return false;
       }

@@ -1,5 +1,36 @@
 package org.infinispan.cache.impl;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.infinispan.context.Flag.FAIL_SILENTLY;
+import static org.infinispan.context.Flag.FORCE_ASYNCHRONOUS;
+import static org.infinispan.context.Flag.IGNORE_RETURN_VALUES;
+import static org.infinispan.context.Flag.PUT_FOR_EXTERNAL_READ;
+import static org.infinispan.context.Flag.ZERO_LOCK_ACQUISITION_TIMEOUT;
+import static org.infinispan.context.InvocationContextFactory.UNBOUNDED;
+import static org.infinispan.factories.KnownComponentNames.ASYNC_OPERATIONS_EXECUTOR;
+import static org.infinispan.factories.KnownComponentNames.CACHE_MARSHALLER;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
+
 import org.infinispan.AdvancedCache;
 import org.infinispan.CacheCollection;
 import org.infinispan.CacheSet;
@@ -40,6 +71,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextContainer;
 import org.infinispan.context.InvocationContextFactory;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.eviction.EvictionManager;
@@ -82,37 +114,6 @@ import org.infinispan.transaction.xa.recovery.RecoveryManager;
 import org.infinispan.util.concurrent.locks.LockManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.infinispan.context.Flag.FAIL_SILENTLY;
-import static org.infinispan.context.Flag.FORCE_ASYNCHRONOUS;
-import static org.infinispan.context.Flag.IGNORE_RETURN_VALUES;
-import static org.infinispan.context.Flag.PUT_FOR_EXTERNAL_READ;
-import static org.infinispan.context.Flag.ZERO_LOCK_ACQUISITION_TIMEOUT;
-import static org.infinispan.context.InvocationContextFactory.UNBOUNDED;
-import static org.infinispan.factories.KnownComponentNames.ASYNC_OPERATIONS_EXECUTOR;
-import static org.infinispan.factories.KnownComponentNames.CACHE_MARSHALLER;
 
 /**
  * @author Mircea.Markus@jboss.com
@@ -1626,7 +1627,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
       if (!config.clustering().cacheMode().isDistributed()) {
          //in these cluster modes we won't RPC for a get, so no need to fork a thread.
          return true;
-      } else if (EnumUtil.hasEnum(flags, Flag.SKIP_REMOTE_LOOKUP) || EnumUtil.hasEnum(flags, Flag.CACHE_MODE_LOCAL)) {
+      } else if (EnumUtil.containsAny(flags, FlagBitSets.SKIP_REMOTE_LOOKUP | FlagBitSets.CACHE_MODE_LOCAL)) {
          //with these flags we won't RPC either
          return true;
       }
@@ -1643,7 +1644,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    private boolean isSkipLoader(long flags) {
       boolean hasCacheLoaderConfig = !config.persistence().stores().isEmpty();
       return !hasCacheLoaderConfig
-            || (EnumUtil.hasEnum(flags, Flag.SKIP_CACHE_LOAD) || EnumUtil.hasEnum(flags, Flag.SKIP_CACHE_STORE));
+            || (EnumUtil.containsAny(flags, FlagBitSets.SKIP_CACHE_LOAD | FlagBitSets.SKIP_CACHE_STORE));
    }
 
    @Override

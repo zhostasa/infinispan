@@ -1,5 +1,12 @@
 package org.infinispan.commands.write;
 
+import static org.infinispan.commons.util.Util.toStr;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Objects;
+
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.util.EnumUtil;
@@ -13,15 +20,6 @@ import org.infinispan.notifications.cachelistener.CacheNotifier;
 import org.infinispan.util.TimeService;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
-
-import static org.infinispan.commons.util.Util.toStr;
 
 
 /**
@@ -131,6 +129,7 @@ public class RemoveExpiredCommand extends RemoveCommand {
       output.writeObject(commandInvocationId);
       output.writeObject(key);
       output.writeObject(value);
+      output.writeLong(Flag.copyWithoutRemotableFlags(getFlagsBitSet()));
       output.writeLong(lifespan);
    }
 
@@ -139,6 +138,7 @@ public class RemoveExpiredCommand extends RemoveCommand {
       commandInvocationId = (CommandInvocationId) input.readObject();
       key = input.readObject();
       value = input.readObject();
+      setFlagsBitSet(input.readLong());
       lifespan = input.readLong();
    }
 
@@ -166,16 +166,5 @@ public class RemoveExpiredCommand extends RemoveCommand {
    @Override
    public int hashCode() {
       return Objects.hash(super.hashCode(), lifespan);
-   }
-
-   @Override
-   public Set<Flag> getFlags() {
-      return EnumSet.of(Flag.SKIP_CACHE_LOAD);
-   }
-
-   @Override
-   public boolean hasFlag(Flag flag) {
-      // We skip cache load, since if the entry is not in memory then it wasn't updated since it last expired
-      return flag == Flag.SKIP_CACHE_LOAD;
    }
 }

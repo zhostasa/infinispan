@@ -1,26 +1,27 @@
 package org.infinispan.commands.write;
 
-import org.infinispan.atomic.CopyableDeltaAware;
-import org.infinispan.commands.CommandInvocationId;
-import org.infinispan.commons.equivalence.Equivalence;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.metadata.Metadata;
-import org.infinispan.atomic.Delta;
-import org.infinispan.atomic.DeltaAware;
-import org.infinispan.commands.MetadataAwareCommand;
-import org.infinispan.commands.Visitor;
-import org.infinispan.container.entries.MVCCEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.metadata.Metadatas;
-import org.infinispan.notifications.cachelistener.CacheNotifier;
+import static org.infinispan.commons.util.Util.toStr;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import static org.infinispan.commons.util.Util.toStr;
+import org.infinispan.atomic.CopyableDeltaAware;
+import org.infinispan.atomic.Delta;
+import org.infinispan.atomic.DeltaAware;
+import org.infinispan.commands.CommandInvocationId;
+import org.infinispan.commands.MetadataAwareCommand;
+import org.infinispan.commands.Visitor;
+import org.infinispan.commons.equivalence.Equivalence;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.container.entries.MVCCEntry;
+import org.infinispan.context.Flag;
+import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.metadata.Metadatas;
+import org.infinispan.notifications.cachelistener.CacheNotifier;
 
 /**
  * Implements functionality defined by {@link org.infinispan.Cache#put(Object, Object)}
@@ -80,12 +81,12 @@ public class PutKeyValueCommand extends AbstractDataWriteCommand implements Meta
 
    @Override
    public boolean readsExistingValues() {
-      return putIfAbsent || !hasFlag(Flag.IGNORE_RETURN_VALUES);
+      return putIfAbsent || !hasAnyFlag(FlagBitSets.IGNORE_RETURN_VALUES);
    }
 
    @Override
    public boolean alwaysReadsExistingValues() {
-      return hasFlag(Flag.DELTA_WRITE);
+      return hasAnyFlag(FlagBitSets.DELTA_WRITE);
    }
 
    @Override

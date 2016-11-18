@@ -1,10 +1,11 @@
 package org.infinispan.commands;
 
-import org.infinispan.commons.util.EnumUtil;
-import org.infinispan.context.Flag;
-
 import java.util.Arrays;
 import java.util.Set;
+
+import org.infinispan.commons.util.EnumUtil;
+import org.infinispan.context.Flag;
+import org.infinispan.context.impl.FlagBitSets;
 
 /**
  * Commands affected by Flags will be checked locally to control certain behaviors such whether or not to invoke
@@ -70,10 +71,21 @@ public interface LocalFlagAffectedCommand {
    /**
     * Check whether a particular flag is present in the command
     *
+    * Note: {@link #hasAnyFlag(long)} is now preferred.
+    *
     * @param flag to lookup in the command
     * @return true if the flag is present
     */
    default boolean hasFlag(Flag flag) {
       return EnumUtil.hasEnum(getFlagsBitSet(), flag);
+   }
+
+   /**
+    * Check whether any of the flags in the {@code testBitSet} parameter is present in the command.
+    *
+    * Should be used with the constants in {@link FlagBitSets}
+    */
+   default boolean hasAnyFlag(long testBitSet) {
+      return EnumUtil.containsAny(getFlagsBitSet(), testBitSet);
    }
 }

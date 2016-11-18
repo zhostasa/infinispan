@@ -44,6 +44,7 @@ import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.RemoteTxInvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
@@ -393,7 +394,7 @@ public class TxInterceptor<K, V> extends DDAsyncInterceptor implements JmxStatis
          WriteCommand writeCommand = (WriteCommand) rCommand;
          if (t != null && !(t instanceof OutdatedTopologyException)) {
             // Don't mark the transaction for rollback if it's fail silent (i.e. putForExternalRead)
-            if (rCtx.isOriginLocal() && rCtx.isInTxScope() && !writeCommand.hasFlag(Flag.FAIL_SILENTLY)) {
+            if (rCtx.isOriginLocal() && rCtx.isInTxScope() && !writeCommand.hasAnyFlag(FlagBitSets.FAIL_SILENTLY)) {
                TxInvocationContext txCtx = (TxInvocationContext) rCtx;
                txCtx.getTransaction().setRollbackOnly();
             }

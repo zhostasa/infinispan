@@ -1,17 +1,6 @@
 package org.infinispan.commands.write;
 
-import org.infinispan.commands.AbstractFlagAffectedCommand;
-import org.infinispan.commands.CommandInvocationId;
-import org.infinispan.commands.MetadataAwareCommand;
-import org.infinispan.commands.Visitor;
-import org.infinispan.container.entries.MVCCEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.metadata.Metadata;
-import org.infinispan.metadata.Metadatas;
-import org.infinispan.notifications.cachelistener.CacheNotifier;
-import org.infinispan.util.concurrent.locks.RemoteLockCommand;
+import static org.infinispan.commons.util.Util.toStr;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -24,7 +13,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static org.infinispan.commons.util.Util.toStr;
+import org.infinispan.commands.AbstractFlagAffectedCommand;
+import org.infinispan.commands.CommandInvocationId;
+import org.infinispan.commands.MetadataAwareCommand;
+import org.infinispan.commands.Visitor;
+import org.infinispan.container.entries.MVCCEntry;
+import org.infinispan.context.Flag;
+import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.lifecycle.ComponentStatus;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.metadata.Metadatas;
+import org.infinispan.notifications.cachelistener.CacheNotifier;
+import org.infinispan.util.concurrent.locks.RemoteLockCommand;
 
 /**
  * @author Mircea.Markus@jboss.com
@@ -81,12 +82,12 @@ public class PutMapCommand extends AbstractFlagAffectedCommand implements WriteC
 
    @Override
    public boolean hasZeroLockAcquisition() {
-      return hasFlag(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT);
+      return hasAnyFlag(FlagBitSets.ZERO_LOCK_ACQUISITION_TIMEOUT);
    }
 
    @Override
    public boolean hasSkipLocking() {
-      return hasFlag(Flag.SKIP_LOCKING);
+      return hasAnyFlag(FlagBitSets.SKIP_LOCKING);
    }
 
    private MVCCEntry lookupMvccEntry(InvocationContext ctx, Object key) {

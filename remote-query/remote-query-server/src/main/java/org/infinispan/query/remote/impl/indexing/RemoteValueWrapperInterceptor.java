@@ -1,13 +1,13 @@
 package org.infinispan.query.remote.impl.indexing;
 
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.compat.TypeConverter;
 import org.infinispan.context.Flag;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.interceptors.compat.BaseTypeConverterInterceptor;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
-
-import java.util.Set;
 
 /**
  * Converts the (Protobuf encoded) binary values put in remote caches to a hibernate-search indexing-enabled wrapper object
@@ -30,8 +30,8 @@ public final class RemoteValueWrapperInterceptor<K, V> extends BaseTypeConverter
       cacheNotifier.setTypeConverter(protobufTypeConverter);
    }
 
-   protected TypeConverter<Object, Object, Object, Object> determineTypeConverter(Set<Flag> flags) {
-      return flags != null && flags.contains(Flag.OPERATION_HOTROD) ? protobufTypeConverter : passThroughTypeConverter;
+   protected TypeConverter<Object, Object, Object, Object> determineTypeConverter(long flagsBitSet) {
+      return EnumUtil.containsAny(flagsBitSet, FlagBitSets.OPERATION_HOTROD) ? protobufTypeConverter : passThroughTypeConverter;
    }
 
    /**

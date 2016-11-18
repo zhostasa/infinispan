@@ -1,5 +1,14 @@
 package org.infinispan.transaction.impl;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+
+import javax.transaction.Transaction;
+
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.CacheException;
@@ -8,18 +17,11 @@ import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.transaction.Transaction;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Object that holds transaction's state on the node where it originated; as opposed to {@link RemoteTransaction}.
@@ -58,7 +60,7 @@ public abstract class LocalTransaction extends AbstractCacheTransaction {
          // we need to synchronize this collection to be able to get a valid snapshot from another thread during state transfer
          modifications = Collections.synchronizedList(new LinkedList<WriteCommand>());
       }
-      if (mod.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+      if (mod.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
          hasLocalOnlyModifications = true;
       }
       modifications.add(mod);

@@ -29,8 +29,8 @@ import org.infinispan.container.EntryFactory;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.entries.InternalCacheValue;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.RemoteValueRetrievedListener;
@@ -461,7 +461,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
 
    @Override
    public BasicInvocationStage visitGetAllCommand(InvocationContext ctx, GetAllCommand command) throws Throwable {
-      if (command.hasFlag(Flag.CACHE_MODE_LOCAL) || command.hasFlag(Flag.SKIP_REMOTE_LOOKUP)) {
+      if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL | FlagBitSets.SKIP_REMOTE_LOOKUP)) {
          return invokeNext(ctx, command);
       }
 
@@ -554,7 +554,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
 
    @Override
    public BasicInvocationStage visitReadOnlyManyCommand(InvocationContext ctx, ReadOnlyManyCommand command) throws Throwable {
-      if (command.hasFlag(Flag.CACHE_MODE_LOCAL) || command.hasFlag(Flag.SKIP_REMOTE_LOOKUP)) {
+      if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL | FlagBitSets.SKIP_REMOTE_LOOKUP)) {
          return invokeNext(ctx, command);
       }
 
@@ -662,7 +662,6 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
     * fetch it from a remote node. Does not check if the value is already in the context.
     */
    protected boolean readNeedsRemoteValue(InvocationContext ctx, AbstractDataCommand command) {
-      return ctx.isOriginLocal() && !command.hasFlag(Flag.CACHE_MODE_LOCAL) &&
-            !command.hasFlag(Flag.SKIP_REMOTE_LOOKUP);
+      return ctx.isOriginLocal() && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL | FlagBitSets.SKIP_REMOTE_LOOKUP);
    }
 }

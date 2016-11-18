@@ -31,8 +31,8 @@ import org.infinispan.container.EntryFactory;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.versioning.EntryVersionsMap;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.LocalTxInvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
@@ -97,7 +97,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
 
    @Override
    public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
-      if (command.hasFlag(Flag.PUT_FOR_EXTERNAL_READ)) {
+      if (command.hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ)) {
          return handleNonTxWriteCommand(ctx, command);
       }
 
@@ -317,7 +317,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
 
    @Override
    protected boolean writeNeedsRemoteValue(InvocationContext ctx, WriteCommand command, Object key) {
-      if (command.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+      if (command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
          return false;
       }
       if (ctx.isOriginLocal()) {
@@ -327,8 +327,8 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
             return false;
          }
          // TODO Could make DELTA_WRITE/ApplyDeltaCommand override SKIP_REMOTE_LOOKUP by changing next line to
-         // return !command.hasFlag(Flag.SKIP_REMOTE_LOOKUP) || command.alwaysReadsExistingValues();
-         return !command.hasFlag(Flag.SKIP_REMOTE_LOOKUP);
+         // return !command.hasAnyFlag(FlagBitSets.SKIP_REMOTE_LOOKUP) || command.alwaysReadsExistingValues();
+         return !command.hasAnyFlag(FlagBitSets.SKIP_REMOTE_LOOKUP);
       } else {
          // Ignore SKIP_REMOTE_LOOKUP on remote nodes
          // TODO Can we ignore the CACHE_MODE_LOCAL flag as well?

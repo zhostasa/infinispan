@@ -1,16 +1,16 @@
 package org.infinispan.interceptors.impl;
 
+import static org.infinispan.commons.util.Util.toStr;
+
 import org.infinispan.commands.write.WriteCommand;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
 import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import static org.infinispan.commons.util.Util.toStr;
 
 /**
  * The same as a regular cache loader interceptor, except that it contains additional logic to force loading from the
@@ -51,7 +51,7 @@ public class ClusteredCacheLoaderInterceptor extends CacheLoaderInterceptor {
             }
          } else {
             // TODO Do we replicate CACHE_MODE_LOCAL commands?
-            if (!cdl.localNodeIsPrimaryOwner(key) && !cmd.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+            if (!cdl.localNodeIsPrimaryOwner(key) && !cmd.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
                if (trace) {
                   log.tracef("Skip load for command %s. This node is not the primary owner of %s", cmd, toStr(key));
                }

@@ -1,21 +1,6 @@
 package org.infinispan.transaction.impl;
 
-import org.infinispan.commands.write.WriteCommand;
-import org.infinispan.commons.equivalence.Equivalence;
-import org.infinispan.commons.util.CollectionFactory;
-import org.infinispan.commons.util.ImmutableListCopy;
-import org.infinispan.commons.util.Immutables;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.container.versioning.EntryVersion;
-import org.infinispan.container.versioning.EntryVersionsMap;
-import org.infinispan.container.versioning.IncrementableEntryVersion;
-import org.infinispan.context.Flag;
-import org.infinispan.transaction.xa.CacheTransaction;
-import org.infinispan.transaction.xa.GlobalTransaction;
-import org.infinispan.util.KeyValuePair;
-import org.infinispan.util.concurrent.CompletableFutures;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import static org.infinispan.commons.util.Util.toStr;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +14,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static org.infinispan.commons.util.Util.toStr;
+import org.infinispan.commands.write.WriteCommand;
+import org.infinispan.commons.equivalence.Equivalence;
+import org.infinispan.commons.util.CollectionFactory;
+import org.infinispan.commons.util.ImmutableListCopy;
+import org.infinispan.commons.util.Immutables;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.container.versioning.EntryVersion;
+import org.infinispan.container.versioning.EntryVersionsMap;
+import org.infinispan.container.versioning.IncrementableEntryVersion;
+import org.infinispan.context.Flag;
+import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.transaction.xa.CacheTransaction;
+import org.infinispan.transaction.xa.GlobalTransaction;
+import org.infinispan.util.KeyValuePair;
+import org.infinispan.util.concurrent.CompletableFutures;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Base class for local and remote transaction. Impl note: The aggregated modification list and lookedUpEntries are not
@@ -112,7 +113,7 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
    @Override
    public final List<WriteCommand> getModifications() {
       if (hasLocalOnlyModifications) {
-         return modifications.stream().filter(cmd -> !cmd.hasFlag(Flag.CACHE_MODE_LOCAL)).collect(Collectors.toList());
+         return modifications.stream().filter(cmd -> !cmd.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)).collect(Collectors.toList());
       } else {
          return getAllModifications();
       }
@@ -134,7 +135,7 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
       }
       List<WriteCommand> mods = new ArrayList<>();
       for (WriteCommand cmd : modifications) {
-         if (cmd.hasFlag(Flag.CACHE_MODE_LOCAL)) {
+         if (cmd.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
             hasLocalOnlyModifications = true;
          }
          mods.add(cmd);

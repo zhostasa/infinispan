@@ -18,8 +18,8 @@ import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.container.DataContainer;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.BasicInvocationStage;
@@ -411,7 +411,7 @@ public class CacheMgmtInterceptor extends JmxStatsCommandInterceptor {
    }
 
    private boolean getStatisticsEnabled(FlagAffectedCommand cmd) {
-      return super.getStatisticsEnabled() && !cmd.hasFlag(Flag.SKIP_STATISTICS);
+      return super.getStatisticsEnabled() && !cmd.hasAnyFlag(FlagBitSets.SKIP_STATISTICS);
    }
 
    public void addEvictions(long numEvictions) {

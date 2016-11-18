@@ -8,7 +8,6 @@ import java.util.Collections;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.infinispan.InvalidCacheUsageException;
 import org.infinispan.commands.FlagAffectedCommand;
@@ -17,9 +16,9 @@ import org.infinispan.commands.control.LockControlCommand;
 import org.infinispan.commands.tx.TransactionBoundaryCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.CacheException;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextContainer;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.annotations.Inject;
@@ -116,7 +115,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
    private void rethrowException(InvocationContext ctx, VisitableCommand command, Throwable th) throws Throwable {
       // Only check for fail silently if there's a failure :)
       boolean suppressExceptions = (command instanceof FlagAffectedCommand)
-            && ((FlagAffectedCommand) command).hasFlag(Flag.FAIL_SILENTLY);
+            && ((FlagAffectedCommand) command).hasAnyFlag(FlagBitSets.FAIL_SILENTLY);
       // If we are shutting down there is every possibility that the invocation fails.
       suppressExceptions = suppressExceptions || shuttingDown;
       if (suppressExceptions) {

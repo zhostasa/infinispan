@@ -22,6 +22,7 @@ import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.transaction.xa.GlobalTransaction;
@@ -79,7 +80,7 @@ public class ClusteredGetAllCommand<K, V> extends LocalFlagAffectedRpcCommand {
 
    @Override
    public CompletableFuture<Object> invokeAsync() throws Throwable {
-      if (!hasFlag(Flag.FORCE_WRITE_LOCK)) {
+      if (!hasAnyFlag(FlagBitSets.FORCE_WRITE_LOCK)) {
          return invokeGetAll();
       } else {
          return acquireLocks().thenCompose(o -> invokeGetAll());

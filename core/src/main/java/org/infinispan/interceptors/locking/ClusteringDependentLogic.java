@@ -1,5 +1,13 @@
 package org.infinispan.interceptors.locking;
 
+import static org.infinispan.transaction.impl.WriteSkewHelper.performTotalOrderWriteSkewCheckAndReturnNewVersions;
+import static org.infinispan.transaction.impl.WriteSkewHelper.performWriteSkewCheckAndReturnNewVersions;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.tx.VersionedPrepareCommand;
 import org.infinispan.commands.tx.totalorder.TotalOrderPrepareCommand;
@@ -16,6 +24,7 @@ import org.infinispan.container.versioning.EntryVersionsMap;
 import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.annotations.Inject;
@@ -36,14 +45,6 @@ import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.transaction.impl.WriteSkewHelper;
 import org.infinispan.transaction.xa.CacheTransaction;
 import org.infinispan.util.TimeService;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static org.infinispan.transaction.impl.WriteSkewHelper.performTotalOrderWriteSkewCheckAndReturnNewVersions;
-import static org.infinispan.transaction.impl.WriteSkewHelper.performWriteSkewCheckAndReturnNewVersions;
 
 /**
  * Abstractization for logic related to different clustering modes: replicated or distributed. This implements the <a
@@ -496,7 +497,7 @@ public interface ClusteringDependentLogic {
             boolean doCommit = true;
             // ignore locality for removals, even if skipOwnershipCheck is not true
             boolean skipOwnershipCheck = command != null &&
-                  command.hasFlag(Flag.SKIP_OWNERSHIP_CHECK);
+                  command.hasAnyFlag(FlagBitSets.SKIP_OWNERSHIP_CHECK);
 
             boolean isForeignOwned = !skipOwnershipCheck && !localNodeIsOwner(entry.getKey());
             if (isForeignOwned && !entry.isRemoved()) {
