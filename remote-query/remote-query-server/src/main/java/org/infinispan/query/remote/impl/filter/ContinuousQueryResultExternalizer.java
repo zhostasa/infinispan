@@ -15,7 +15,7 @@ import org.infinispan.query.remote.impl.ExternalizerIds;
  * It will only be marshalled using protobuf before passing it to the remote client.
  *
  * @author anistor@redhat.com
- * @since 8.3
+ * @since 9.0
  */
 public final class ContinuousQueryResultExternalizer extends AbstractExternalizer<ContinuousQueryResult> {
 
