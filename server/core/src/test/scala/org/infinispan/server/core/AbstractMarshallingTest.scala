@@ -4,7 +4,7 @@ import org.testng.annotations.{AfterTest, BeforeTest}
 import java.util.Random
 import java.io.{ObjectOutputStream, ByteArrayOutputStream}
 import org.infinispan.test.TestingUtil
-import org.infinispan.commons.marshall.AbstractDelegatingMarshaller
+import org.infinispan.commons.marshall.StreamingMarshaller
 import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.test.fwk.TestCacheManagerFactory
 
@@ -16,14 +16,14 @@ import org.infinispan.test.fwk.TestCacheManagerFactory
  */
 abstract class AbstractMarshallingTest {
 
-   var marshaller : AbstractDelegatingMarshaller = _
+   var marshaller : StreamingMarshaller = _
    var cm : EmbeddedCacheManager = _
 
    @BeforeTest(alwaysRun=true)
    def setUp() {
       // Manual addition of externalizers to replication what happens in fully functional tests
       cm = TestCacheManagerFactory.createCacheManager()
-      marshaller = TestingUtil.extractCacheMarshaller(cm.getCache())
+      marshaller = TestingUtil.extractGlobalMarshaller(cm.getCache().getCacheManager())
    }
 
    @AfterTest(alwaysRun=true)

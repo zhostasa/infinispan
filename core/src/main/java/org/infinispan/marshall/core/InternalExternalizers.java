@@ -8,6 +8,7 @@ import org.infinispan.atomic.impl.AtomicHashMapDelta;
 import org.infinispan.atomic.impl.ClearOperation;
 import org.infinispan.atomic.impl.PutOperation;
 import org.infinispan.atomic.impl.RemoveOperation;
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.RemoteCommandsFactory;
 import org.infinispan.commons.hash.MurmurHash3;
 import org.infinispan.commons.io.ByteBufferImpl;
@@ -143,6 +144,7 @@ final class InternalExternalizers {
       addInternalExternalizer(new ClusterListenerReplicateCallable.Externalizer(), exts);
       addInternalExternalizer(new CollectionExternalizer(), exts);
       addInternalExternalizer(new CollectionKeyFilter.Externalizer(), exts);
+      addInternalExternalizer(new CommandInvocationId.Externalizer(), exts);
       addInternalExternalizer(new CompositeKeyFilter.Externalizer(), exts); // TODO: Untested in core
       addInternalExternalizer(new CompositeKeyValueFilter.Externalizer(), exts); // TODO: Untested in core
       addInternalExternalizer(new DefaultConsistentHash.Externalizer(), exts);
@@ -151,9 +153,7 @@ final class InternalExternalizers {
       addInternalExternalizer(new DldGlobalTransaction.Externalizer(), exts);
       addInternalExternalizer(new DoubleSummaryStatisticsExternalizer(), exts);
       addInternalExternalizer(new EmbeddedMetadata.Externalizer(), exts);
-      addInternalExternalizer(new EntryViews.NoValueReadOnlyViewExternalizer(), exts);
       addInternalExternalizer(new EntryViews.ReadWriteSnapshotViewExternalizer(), exts);
-      addInternalExternalizer(new EntryViews.ReadOnlySnapshotViewExternalizer(), exts);
       addInternalExternalizer(new EnumSetExternalizer(), exts);
       addInternalExternalizer(new EquivalenceExternalizer(), exts);
       addInternalExternalizer(new ExceptionResponse.Externalizer(), exts);

@@ -3,9 +3,13 @@ package org.infinispan.commands;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.commons.marshall.Ids;
 import org.infinispan.remoting.transport.Address;
 
 /**
@@ -74,6 +78,29 @@ public class CommandInvocationId {
       Address address = (Address) input.readObject();
       long id = input.readLong();
       return new CommandInvocationId(address, id);
+   }
+
+   public static class Externalizer extends AbstractExternalizer<CommandInvocationId> {
+
+      @Override
+      public Set<Class<? extends CommandInvocationId>> getTypeClasses() {
+         return Collections.singleton(CommandInvocationId.class);
+      }
+
+      @Override
+      public void writeObject(ObjectOutput output, CommandInvocationId object) throws IOException {
+         writeTo(output, object);
+      }
+
+      @Override
+      public CommandInvocationId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+         return readFrom(input);
+      }
+
+      @Override
+      public Integer getId() {
+         return Ids.COMMAND_INVOCATION_ID;
+      }
    }
 
 }

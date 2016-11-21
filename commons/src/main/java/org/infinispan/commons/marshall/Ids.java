@@ -166,4 +166,6 @@ public interface Ids {
 
    int IMMUTABLE_SET = 110;
 
+   int COMMAND_INVOCATION_ID = 111;
+
 }
