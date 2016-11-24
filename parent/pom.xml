@@ -165,7 +165,7 @@
       <version.slf4j>1.7.5</version.slf4j>
       <version.snappy>1.0.5</version.snappy>
       <version.solder>3.1.0.Final</version.solder>
-      <version.spring-session>1.2.2.RELEASE</version.spring-session>
+      <version.spring-session>1.2.2.RELEASE-redhat-1</version.spring-session>
       <version.spring-boot>1.4.0.RELEASE</version.spring-boot>
       <version.spring4>4.1.0.RELEASE</version.spring4>
       <version.spymemcached>2.5</version.spymemcached>
