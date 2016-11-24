@@ -10,11 +10,24 @@ final class ExternallyMarshallable {
    }
 
    public static boolean isAllowed(Object obj) {
-      String pkg = obj.getClass().getPackage().getName();
+      Class<?> clazz = obj.getClass();
+      return isAllowed(clazz);
+   }
+
+   public static boolean isAllowed(Class<?> clazz) {
+      Package pkg = clazz.getPackage();
+      if (pkg == null) {
+         if (clazz.isArray()) {
+            return false;
+         } else {
+            throw new IllegalStateException("No package info for " + clazz + ", runtime-generated class?");
+         }
+      }
+      String pkgName = pkg.getName();
       boolean isBlackList =
-            obj instanceof Serializable
-            && isMarshallablePackage(pkg)
-            && !isWhiteList(obj.getClass().getName());
+            Serializable.class.isAssignableFrom(clazz)
+            && isMarshallablePackage(pkgName)
+            && !isWhiteList(clazz.getName());
       return !isBlackList;
    }
 
@@ -72,6 +85,11 @@ final class ExternallyMarshallable {
             || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$Human")
             || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$HumanComparator")
             || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$Pojo")
+            || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$PojoAnnotated")
+            || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$PojoExtended")
+            || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$PojoWithExternalizer")
+            || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$PojoWithMultiExternalizer")
+            || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$PojoWithExternalAndInternal")
             || className.equals("org.infinispan.marshall.VersionAwareMarshallerTest$PojoWhichFailsOnUnmarshalling")
             || className.equals("org.infinispan.marshall.core.JBossMarshallingTest$ObjectThatContainsACustomReadObjectMethod")
             || className.equals("org.infinispan.marshall.core.MarshalledValueTest$Pojo")

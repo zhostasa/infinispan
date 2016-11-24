@@ -54,8 +54,6 @@ import org.infinispan.filter.KeyValueFilterAsKeyFilter;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.MetaParams;
 import org.infinispan.functional.impl.MetaParamsInternalMetadata;
-import org.infinispan.functional.impl.Params;
-import org.infinispan.marshall.exts.ArrayExternalizers;
 import org.infinispan.marshall.exts.CacheRpcCommandExternalizer;
 import org.infinispan.marshall.exts.CollectionExternalizer;
 import org.infinispan.marshall.exts.DoubleSummaryStatisticsExternalizer;
@@ -125,7 +123,6 @@ final class InternalExternalizers {
 
       // Add the rest of stateless externalizers
       addInternalExternalizer(new AcceptAllKeyValueFilter.Externalizer(), exts);
-      addInternalExternalizer(new ArrayExternalizers(), exts);
       addInternalExternalizer(new AtomicHashMap.Externalizer(), exts);
       addInternalExternalizer(new AtomicHashMapDelta.Externalizer(), exts);
       addInternalExternalizer(new AvailabilityMode.Externalizer(), exts);
