@@ -19,8 +19,6 @@ import org.hibernate.search.engine.service.spi.Service;
 import org.infinispan.hibernate.search.spi.CacheManagerService;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.query.affinity.AffinityShardIdentifierProvider;
-import org.infinispan.query.affinity.ShardIndexManager;
 
 import static org.hibernate.search.cfg.Environment.INDEX_MANAGER_IMPL_NAME;
 
@@ -138,9 +136,6 @@ public class SearchableCacheConfiguration extends SearchConfigurationBase implem
             key = HSEARCH_PREFIX + key.toString();
          }
          target.put(key, entry.getValue());
-         if (key.toString().endsWith(INDEX_MANAGER_IMPL_NAME) && entry.getValue().equals(ShardIndexManager.class.getName())) {
-            target.put(key.toString().replace(INDEX_MANAGER_IMPL_NAME, SHARDING_STRATEGY), AffinityShardIdentifierProvider.class.getName());
-         }
       }
       return target;
    }

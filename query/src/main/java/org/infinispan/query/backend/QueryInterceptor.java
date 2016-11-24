@@ -16,7 +16,6 @@ import org.hibernate.search.backend.spi.Work;
 import org.hibernate.search.backend.spi.WorkType;
 import org.hibernate.search.backend.spi.Worker;
 import org.hibernate.search.spi.SearchIntegrator;
-import org.hibernate.search.store.ShardIdentifierProvider;
 import org.infinispan.Cache;
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.LocalFlagAffectedCommand;
@@ -45,7 +44,6 @@ import org.infinispan.interceptors.DDAsyncInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledValue;
 import org.infinispan.query.Transformer;
-import org.infinispan.query.affinity.AffinityShardIdentifierProvider;
 import org.infinispan.query.impl.DefaultSearchWorkCreator;
 import org.infinispan.query.logging.Log;
 import org.infinispan.registry.InternalCacheRegistry;
@@ -230,13 +228,10 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    }
 
    protected void updateIndexes(final boolean usingSkipIndexCleanupFlag, final Object value, final Object key,
-         final TransactionContext transactionContext) {
+                                final TransactionContext transactionContext) {
       // Note: it's generally unsafe to assume there is no previous entry to cleanup: always use UPDATE
       // unless the specific flag is allowing this.
-      ShardIdentifierProvider shardIdentifierProvider = searchFactory.getIndexBinding(value.getClass()).getShardIdentifierProvider();
-      if (shardIdentifierProvider == null || !(shardIdentifierProvider instanceof AffinityShardIdentifierProvider) || isPrimaryOwner(key)) {
-         performSearchWork(value, keyToString(key), usingSkipIndexCleanupFlag ? WorkType.ADD : WorkType.UPDATE, transactionContext);
-      }
+      performSearchWork(value, keyToString(key), usingSkipIndexCleanupFlag ? WorkType.ADD : WorkType.UPDATE, transactionContext);
    }
 
    private void performSearchWork(Object value, Serializable id, WorkType workType,
