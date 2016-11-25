@@ -66,10 +66,14 @@ public abstract class AbstractXSiteTest extends AbstractCacheTest {
 
    private void killSites() {
       for (TestSite ts : sites) {
-         TestingUtil.killCacheManagers(ts.cacheManagers);
+         killSite(ts);
       }
       sites.clear();
       siteName2index.clear();
+   }
+
+   protected void killSite(TestSite ts) {
+      TestingUtil.killCacheManagers(ts.cacheManagers);
    }
 
    protected abstract void createSites();
