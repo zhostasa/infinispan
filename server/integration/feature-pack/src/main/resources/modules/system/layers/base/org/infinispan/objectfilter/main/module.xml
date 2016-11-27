@@ -6,7 +6,6 @@
    </resources>
 
    <dependencies>
-      <module name="org.infinispan.commons"/>
       <module name="org.infinispan.query.dsl"/>
       <!-- TODO [anistor] We still need antlr-runtime because RecognitionException is used by the logger -->
       <module name="org.antlr.antlr-runtime"/>
