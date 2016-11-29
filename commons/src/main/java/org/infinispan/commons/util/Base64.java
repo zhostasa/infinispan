@@ -37,7 +37,9 @@ import org.infinispan.commons.logging.LogFactory;
  * @author Robert Harder
  * @author rob@iharder.net
  * @since 4.2
+ * @deprecated Will be removed in next major version. Replaced by {@link java.util.Base64}.
  */
+@Deprecated
 public class Base64 {
 
    private static final Log log = LogFactory.getLog(Base64.class);
