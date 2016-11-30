@@ -77,8 +77,7 @@ abstract class TestBase {
             pair = executeAndCaptureErrOut(() -> {
                IckleParser parser = new IckleParser(tokens);
                IckleParser.statement_return statement = parser.statement();
-//               System.out.println(tokens.getTokens());
-               return (CommonTree) statement.getTree();
+               return statement.getTree();
             });
          }
 
