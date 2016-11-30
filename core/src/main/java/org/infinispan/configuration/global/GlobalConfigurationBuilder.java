@@ -91,10 +91,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
       return transport;
    }
 
-   /**
-    * This method allows configuration of the global, or cache manager level,
-    * jmx statistics.
-    */
+
    @Override
    public GlobalJmxStatisticsConfigurationBuilder globalJmxStatistics() {
       return globalJmxStatistics;
@@ -105,9 +102,6 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
       return serialization;
    }
 
-   /**
-    * @deprecated this returns the thread pool returned from {@link GlobalConfigurationBuilder#expirationThreadPool}
-    */
    @Deprecated
    @Override
    public ThreadPoolConfigurationBuilder evictionThreadPool() {
@@ -158,6 +152,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
       return shutdown;
    }
 
+   @Override
    public List<Builder<?>> modules() {
       return modules;
    }
@@ -186,6 +181,16 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
    @Override
    public GlobalStateConfigurationBuilder globalState() {
       return globalState;
+   }
+
+   @Override
+   public GlobalConfigurationBuilder defaultCacheName(String defaultCacheName) {
+      this.defaultCacheName = Optional.of(defaultCacheName);
+      return this;
+   }
+
+   public Optional<String> defaultCacheName() {
+      return defaultCacheName;
    }
 
    @SuppressWarnings("unchecked")
@@ -229,11 +234,14 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
             globalState.create(),
             modulesConfig,
             site.create(),
+            defaultCacheName,
             cl.get());
    }
 
    public GlobalConfigurationBuilder read(GlobalConfiguration template) {
+
       this.cl = new WeakReference<>(template.classLoader());
+      this.defaultCacheName = template.defaultCacheName();
 
       for (Object c : template.modules().values()) {
          BuiltBy builtBy = c.getClass().getAnnotation(BuiltBy.class);
@@ -261,16 +269,6 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
       GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
       builder.transport().defaultTransport();
       return builder;
-   }
-
-   @Override
-   public GlobalConfigurationBuilder defaultCacheName(String defaultCacheName) {
-      this.defaultCacheName = Optional.of(defaultCacheName);
-      return this;
-   }
-
-   public Optional<String> defaultCacheName() {
-      return defaultCacheName;
    }
 
    @Override
@@ -326,6 +324,8 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
          return false;
       if (!globalState.equals(that.globalState))
          return false;
+      if (!defaultCacheName.equals(that.defaultCacheName))
+         return false;
 
       return !transport.equals(that.transport);
    }
@@ -346,6 +346,8 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
       result = 31 * result + (site.hashCode());
       result = 31 * result + (security.hashCode());
       result = 31 * result + (globalState.hashCode());
+      result = 31 * result + (modules.hashCode());
+      result = 31 * result + (defaultCacheName.hashCode());
       return result;
    }
 

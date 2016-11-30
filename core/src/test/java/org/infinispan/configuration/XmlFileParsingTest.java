@@ -16,8 +16,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.infinispan.Version;
+import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.equivalence.AnyEquivalence;
-import org.infinispan.commons.equivalence.ByteArrayEquivalence;
 import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
@@ -326,6 +326,50 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
             assertNotNull(transport);
             assertTrue(transport instanceof CustomTransport);
          }
+      });
+   }
+
+   public void testNoDefaultCache() throws Exception {
+      String config = InfinispanStartTag.LATEST +
+            "<cache-container>" +
+            "   <transport cluster=\"demoCluster\"/>\n" +
+            "   <replicated-cache name=\"default\">\n" +
+            "   </replicated-cache>\n" +
+            "</cache-container>" +
+            TestingUtil.INFINISPAN_END_TAG;
+
+      InputStream is = new ByteArrayInputStream(config.getBytes());
+      withCacheManager(new CacheManagerCallable(TestCacheManagerFactory.fromStream(is)) {
+
+         @Override
+         public void call() {
+            GlobalConfiguration globalCfg = cm.getCacheManagerConfiguration();
+            assertFalse(globalCfg.defaultCacheName().isPresent());
+            assertNull(cm.getDefaultCacheConfiguration());
+            assertEquals(CacheMode.REPL_SYNC, cm.getCacheConfiguration("default").clustering().cacheMode());
+         }
+
+      });
+   }
+
+   @Test(expectedExceptions = CacheConfigurationException.class, expectedExceptionsMessageRegExp = "ISPN000432:.*")
+   public void testNoDefaultCacheDeclaration() throws Exception {
+      String config = InfinispanStartTag.LATEST +
+            "<cache-container default-cache=\"non-existent\">" +
+            "   <transport cluster=\"demoCluster\"/>\n" +
+            "   <replicated-cache name=\"default\">\n" +
+            "   </replicated-cache>\n" +
+            "</cache-container>" +
+            TestingUtil.INFINISPAN_END_TAG;
+
+      InputStream is = new ByteArrayInputStream(config.getBytes());
+      withCacheManager(new CacheManagerCallable(TestCacheManagerFactory.fromStream(is)) {
+
+         @Override
+         public void call() {
+            // Do nothing
+         }
+
       });
    }
 

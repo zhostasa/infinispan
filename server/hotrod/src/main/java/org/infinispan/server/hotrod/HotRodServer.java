@@ -167,6 +167,7 @@ public class HotRodServer extends AbstractProtocolServer<HotRodServerConfigurati
       // endpoint is available.
       super.startInternal(configuration, cacheManager);
 
+
       // Add self to topology cache last, after everything is initialized
       if (Configurations.isClustered(cacheManager.getCacheManagerConfiguration())) {
          defineTopologyCacheConfig(cacheManager);
@@ -240,6 +241,7 @@ public class HotRodServer extends AbstractProtocolServer<HotRodServerConfigurati
    protected void startDefaultCache() {
       Cache<Object, Object> cache = cacheManager.getCache(configuration.defaultCacheName());
       validateCacheConfiguration(cache.getCacheConfiguration());
+      getCacheInstance(configuration.defaultCacheName(), cacheManager, true, true);
    }
 
    private void preStartCaches() {

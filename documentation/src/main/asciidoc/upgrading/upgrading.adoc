@@ -8,10 +8,15 @@ Manik Surtani, Mircea Markus, Galder Zamarreño, Pete Muir, and others from the 
 This guide walks you through the process of upgrading Infinispan.
 
 == Upgrading from Infinispan 8.x to JBoss Data Grid 7.x
+
+=== Default Cache changes
+Up to Infinispan 8.x, the default cache always implicitly existed, even if not declared in the XML configuration.
+Additionally, the default cache configuration affected all other cache configurations, acting as some kind of base template.
+Since 9.0, the default cache only exists if it has been explicitly configured. Additionally, even if it has been specified,
+it will never act as base template for other caches.
+
 === New Cloud module for library mode
 In JBoss Data Grid 7.2, cloud related configuration were added to `infinispan-core` module. Since 7.2 they were moved to `infinispan-cloud` module.
-
-
 
 === Entry Retriever is now removed
 The entry retriever feature has been removed.  Please update to use the new Streams feature detailed in the User Guide.
@@ -216,7 +221,7 @@ builder.transaction().useSynchronization(false).recovery().enabled(false)
 
 === Cache Loader and Store configuration
 
-Cache Loader and Store configuration has changed greatly in Infinispan 5.2. Please refer to the link:../user_guide/user_guide.html#_cache_loaders_and_stores[Cache Loaders and Stores] documentation. 
+Cache Loader and Store configuration has changed greatly in Infinispan 5.2. Please refer to the link:../user_guide/user_guide.html#cache_loaders_and_stores[Cache Loaders and Stores] documentation.
 
 === Virtual Nodes and Segments
 
@@ -225,17 +230,17 @@ The concept of Virtual Nodes doesn't exist anymore in Infinispan 5.2 and has bee
 ==  Upgrading from 5.0 to 5.1
 === API
 
-The cache and cache manager hierarchies have changed slightly in 5.1 with the introduction of 
-link:$$https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/api/BasicCache.html$$[`BasicCache`]
-and 
-link:$$https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/api/BasicCacheContainer.html$$[`BasicCacheContainer`]
-, which are parent classes of existing 
-link:$$https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/Cache.html$$[`Cache`]
-and 
-link:$$https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/manager/CacheContainer.html$$[`CacheContainer`]
+The cache and cache manager hierarchies have changed slightly in 5.1 with the introduction of
+link:https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/api/BasicCache.html[`BasicCache`]
+and
+link:https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/api/BasicCacheContainer.html[`BasicCacheContainer`]
+, which are parent classes of existing
+link:https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/Cache.html[`Cache`]
+and
+link:https://docs.jboss.org/infinispan/5.1/apidocs/org/infinispan/manager/CacheContainer.html[`CacheContainer`]
 classes respectively. What's important is that Hot Rod clients must now code
 against `BasicCache` and `BasicCacheContainer` rather than `Cache` and `CacheContainer`.
-So previous code that was written like this will no longer compile. 
+So previous code that was written like this will no longer compile.
 
 [source,java]
 .WontCompile.java
@@ -275,7 +280,7 @@ RemoteCache cache = cacheContainer.getCache();
 
 === Eviction and Expiration
 
-* The eviction XML element no longer defines the `wakeUpInterval` attribute. This is now configured via the `expiration` element: 
+* The eviction XML element no longer defines the `wakeUpInterval` attribute. This is now configured via the `expiration` element:
 
 [source,xml]
 ----
@@ -286,14 +291,14 @@ Eviction's `maxEntries` is used as guide for the entire cache, but eviction happ
 
 === Transactions
 
-* A cache marked as `TRANSACTIONAL` cannot be accessed outside of a transaction, and a `NON_TRANSACTIONAL` cache cannot be accessed within a transaction. In 5.0, a transactional cache would support non-transactional calls as well.  This change was done to be in-line with expectations set out in link:$$https://github.com/jsr107$$[JSR-107] as well as to provide more consistent behavior. 
+* A cache marked as `TRANSACTIONAL` cannot be accessed outside of a transaction, and a `NON_TRANSACTIONAL` cache cannot be accessed within a transaction. In 5.0, a transactional cache would support non-transactional calls as well.  This change was done to be in-line with expectations set out in link:https://github.com/jsr107[JSR-107] as well as to provide more consistent behavior.
 
 * In 5.0, commit and rollback phases were asynchronous by default. Starting with 5.1, these are now synchronous by default, to provide the guarantees required by a single lock-owner model.
 
 === State transfer
 One of the big changes we made in 5.1 was to use the same push-based state transfer we introduced in 5.0 both for rehashing in distributed mode and for state retrieval in replicated mode. We even borrow the consistent hash concept in replicated mode to transfer state from all previous cache members at once in order to speed up transfer.
 
-As a consequence we've unified the state transfer configuration as well, there is now a `stateTransfer` element containing a simplified state transfer configuration. The corresponding attributes in the `stateRetrieval` and `hash` elements have been deprecated, as have been some attributes that are no longer used. 
+As a consequence we've unified the state transfer configuration as well, there is now a `stateTransfer` element containing a simplified state transfer configuration. The corresponding attributes in the `stateRetrieval` and `hash` elements have been deprecated, as have been some attributes that are no longer used.
 
 === Configuration
 If you use XML to configure Infinispan, you shouldn't notice any change, except a much faster startup, courtesy of the link:http://en.wikipedia.org/wiki/StAX[StAX] based parser. However, if you use programmatic configuration, read on for the important differences.
@@ -303,15 +308,15 @@ Configuration is now packaged in `org.infinispan.configuration`, and you must us
 [source,java]
 ----
 
-Configuration c1 = new ConfigurationBuilder()  
-   // Adjust any configuration defaults you want  
-   .clustering()  
-      .l1()  
-         .disable()  
-      .mode(DIST_SYNC)  
-      .hash()  
-         .numOwners(5)  
-   .build();  
+Configuration c1 = new ConfigurationBuilder()
+   // Adjust any configuration defaults you want
+   .clustering()
+      .l1()
+         .disable()
+      .mode(DIST_SYNC)
+      .hash()
+         .numOwners(5)
+   .build();
 
 ----
 
@@ -322,28 +327,28 @@ Configuration c1 = new ConfigurationBuilder()
 [source,java]
 ----
 
-Configuration c2 = new ConfigurationBuilder()  
-   // Read in C1 to provide defaults  
-   .read(c1)  
-   .clustering()  
-      .l1()  
-         .enable()  
-   // This cache is DIST_SYNC, will have 5 owners, with L1 cache enabled  
-   .build();  
+Configuration c2 = new ConfigurationBuilder()
+   // Read in C1 to provide defaults
+   .read(c1)
+   .clustering()
+      .l1()
+         .enable()
+   // This cache is DIST_SYNC, will have 5 owners, with L1 cache enabled
+   .build();
 
 ----
 
-This completely replaces the old system of defining a set of overrides on bean properties. Note that this means the behaviour of Infinispan configuration is somewhat different when used programmatically. Whilst before, you could define a default configuration, and any overrides would be applied on top of _your_ defaults when defined, now you must explicitly read in your defaults to the builder. This allows for much greater flexibility in your code (you can have a as many "default" configurations as you want), and makes your code more explicit and type safe (finding references works). 
+This completely replaces the old system of defining a set of overrides on bean properties. Note that this means the behaviour of Infinispan configuration is somewhat different when used programmatically. Whilst before, you could define a default configuration, and any overrides would be applied on top of _your_ defaults when defined, now you must explicitly read in your defaults to the builder. This allows for much greater flexibility in your code (you can have a as many "default" configurations as you want), and makes your code more explicit and type safe (finding references works).
 
 The schema is unchanged from before. Infinispan 4.0 configurations are currently not being parsed. To upgrade, just change the schema definition from:
 
 [source,xml]
 ----
 
-<infinispan  
-     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
-     xsi:schemaLocation="urn:infinispan:config:4.1 http://www.infinispan.org/schemas/infinispan-config-4.1.xsd"  
-     xmlns="urn:infinispan:config:4.1">  
+<infinispan
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="urn:infinispan:config:4.1 http://www.infinispan.org/schemas/infinispan-config-4.1.xsd"
+     xmlns="urn:infinispan:config:4.1">
 
 ----
 
@@ -352,10 +357,10 @@ to
 [source,xml]
 ----
 
-<infinispan  
-     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
-     xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"  
-     xmlns="urn:infinispan:config:5.1">  
+<infinispan
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
+     xmlns="urn:infinispan:config:5.1">
 
 ----
 
@@ -369,7 +374,7 @@ The `Flags` and `ClassLoader` API has changed. In the past, the following would 
 
 [source,java]
 ----
- cache.withFlags(f1, f2); cache.withClassLoader(cl); cache.put(k, v); 
+ cache.withFlags(f1, f2); cache.withClassLoader(cl); cache.put(k, v);
 ----
 
 In 5.1.0, these `withX()` methods return a new instance and not the cache itself, so thread locals are avoided and the code above will not work. If used in a fluent manner however, things still work:
@@ -383,4 +388,4 @@ The above pattern has always been the intention of this API anyway.
 
 === JGroups Bind Address
 
-Since upgrading to JGroups 3.x, `-Dbind.address` is ignored. This should be replaced with `-Djgroups.bind_addr`. 
+Since upgrading to JGroups 3.x, `-Dbind.address` is ignored. This should be replaced with `-Djgroups.bind_addr`.

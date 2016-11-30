@@ -49,6 +49,8 @@ class Encoder2x implements VersionedEncoder {
    public void writeHeader(Response r, ByteBuf buf, Cache<Address, ServerAddress> addressCache, HotRodServer server) {
       // Sometimes an error happens before we have added the cache to the knownCaches/knownCacheConfigurations map
       // If that happens, we pretend the cache is LOCAL and we skip the topology update
+      String cacheName = r.cacheName.isEmpty() ? server.getConfiguration().defaultCacheName() : r.cacheName;
+
       Optional<AbstractTopologyResponse> newTopology;
       boolean compatibilityEnabled;
       CacheTopology cacheTopology;

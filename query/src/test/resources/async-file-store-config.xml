@@ -4,7 +4,7 @@
       xsi:schemaLocation="urn:infinispan:config:8.3 infinispan-config-8.3.xsd"
       xmlns="urn:infinispan:config:8.3">
 
-   <cache-container default-cache="default">
+   <cache-container>
       <transport cluster="MyCluster"/>
       <local-cache name="queryCache_lucenestore_async_filestore">
          <transaction mode="NON_XA"/>

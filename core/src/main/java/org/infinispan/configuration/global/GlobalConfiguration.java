@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.infinispan.Version;
 import org.infinispan.factories.annotations.SurvivesRestarts;
@@ -51,6 +52,7 @@ public class GlobalConfiguration {
    private final ThreadPoolConfiguration persistenceThreadPool;
    private final ThreadPoolConfiguration stateTransferThreadPool;
    private final ThreadPoolConfiguration asyncThreadPool;
+   private final Optional<String> defaultCacheName;
 
    GlobalConfiguration(ThreadPoolConfiguration expirationThreadPool,
          ThreadPoolConfiguration listenerThreadPool,
@@ -62,7 +64,7 @@ public class GlobalConfiguration {
          TransportConfiguration transport, GlobalSecurityConfiguration security,
          SerializationConfiguration serialization, ShutdownConfiguration shutdown,
          GlobalStateConfiguration globalState,
-         List<?> modules, SiteConfiguration site,ClassLoader cl) {
+         List<?> modules, SiteConfiguration site, Optional<String> defaultCacheName, ClassLoader cl) {
       this.expirationThreadPool = expirationThreadPool;
       this.listenerThreadPool = listenerThreadPool;
       this.replicationQueueThreadPool = replicationQueueThreadPool;
@@ -82,6 +84,7 @@ public class GlobalConfiguration {
       this.modules = Collections.unmodifiableMap(moduleMap);
       this.site = site;
       this.cl = new WeakReference<>(cl);
+      this.defaultCacheName = defaultCacheName;
    }
 
    /**
@@ -211,6 +214,10 @@ public class GlobalConfiguration {
       return site;
    }
 
+   public Optional<String> defaultCacheName() {
+      return defaultCacheName;
+   }
+
    @Override
    public String toString() {
       return "GlobalConfiguration{" +
@@ -227,6 +234,7 @@ public class GlobalConfiguration {
             ", globalState=" + globalState +
             ", modules=" + modules +
             ", site=" + site +
+            ", defaultCacheName=" + defaultCacheName +
             ", cl=" + cl +
             '}';
    }

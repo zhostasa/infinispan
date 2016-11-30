@@ -1,5 +1,8 @@
 package org.infinispan.query.config;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -16,14 +19,16 @@ public class QueryParsingTest extends AbstractInfinispanTest {
    public void testConfigurationFileParsing() throws IOException {
       ParserRegistry parserRegistry = new ParserRegistry(Thread.currentThread().getContextClassLoader());
       ConfigurationBuilderHolder holder = parserRegistry.parseFile("configuration-parsing-test.xml");
-      Configuration defaultConfiguration = holder.getDefaultConfigurationBuilder().build();
+      Map<String, ConfigurationBuilder> namedConfigurations = holder.getNamedConfigurationBuilders();
+      Configuration defaultConfiguration = namedConfigurations.get("default").build();
 
-      assert defaultConfiguration.indexing().properties().size() == 0;
-      assert !defaultConfiguration.indexing().index().isEnabled();
+      assertEquals(defaultConfiguration.indexing().properties().size(), 0);
+      assertFalse(defaultConfiguration.indexing().index().isEnabled());
 
-      final Map<String, ConfigurationBuilder> namedConfigurations = holder.getNamedConfigurationBuilders();
+      Configuration simpleCfg = namedConfigurations.get("simple").build();
+      assertFalse(simpleCfg.indexing().index().isEnabled());
+      assertEquals(simpleCfg.indexing().properties().size(), 0);
 
-      final Configuration simpleCfg = namedConfigurations.get("simple").build();
       assert !simpleCfg.indexing().index().isEnabled();
       assert simpleCfg.indexing().properties().size() == 0;
 
@@ -46,16 +51,15 @@ public class QueryParsingTest extends AbstractInfinispanTest {
    public void testConfigurationFileParsingWithDefaultEnabled() throws IOException {
       ParserRegistry parserRegistry = new ParserRegistry(Thread.currentThread().getContextClassLoader());
       ConfigurationBuilderHolder holder = parserRegistry.parseFile("configuration-parsing-test-enbledInDefault.xml");
-      Configuration defaultConfiguration = holder.getDefaultConfigurationBuilder().build();
+      Map<String, ConfigurationBuilder> namedConfigurations = holder.getNamedConfigurationBuilders();
+      Configuration defaultConfiguration = namedConfigurations.get("default").build();
 
       assert defaultConfiguration.indexing().properties().size() == 2;
       assert defaultConfiguration.indexing().index().isEnabled();
       assert defaultConfiguration.indexing().properties().getProperty("hibernate.search.default.directory_provider").equals("someDefault");
 
-      final Map<String, ConfigurationBuilder> namedConfigurations = holder.getNamedConfigurationBuilders();
-
-      final Configuration nonSearchableCfg = namedConfigurations.get("not-searchable").build();
-      assert !nonSearchableCfg.indexing().index().isEnabled();
+      Configuration nonSearchableCfg = namedConfigurations.get("not-searchable").build();
+      assertFalse(nonSearchableCfg.indexing().index().isEnabled());
 
       final Configuration simpleCfg = namedConfigurations.get("simple").build();
       assert simpleCfg.indexing().index().isEnabled();

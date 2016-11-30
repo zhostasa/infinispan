@@ -223,7 +223,6 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
 
    private void writeExtraConfiguration(XMLExtendedStreamWriter writer, Map<Class<?>, ?> modules)
          throws XMLStreamException {
-      writer.writeStartElement(Element.MODULES);
       for (Entry<Class<?>, ?> entry : modules.entrySet()) {
          SerializedWith serializedWith = entry.getKey().getAnnotation(SerializedWith.class);
          if (serializedWith == null) {
@@ -236,7 +235,6 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
             throw log.unableToInstantiateSerializer(serializedWith.value());
          }
       }
-      writer.writeEndElement();
    }
 
    private void writeGlobalState(XMLExtendedStreamWriter writer, GlobalConfiguration globalConfiguration)
