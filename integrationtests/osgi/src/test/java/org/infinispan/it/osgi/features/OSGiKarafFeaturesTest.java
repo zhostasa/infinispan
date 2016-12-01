@@ -10,6 +10,7 @@ import org.apache.karaf.features.FeaturesService;
 import org.infinispan.it.osgi.util.MavenUtils;
 import org.infinispan.it.osgi.util.PaxExamUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -49,6 +50,9 @@ public class OSGiKarafFeaturesTest {
     */
    @Test
    public void testCleanInstall() throws Exception {
+      //ignore this test on SunOS, there is no binary for LevelDB
+      Assume.assumeFalse(System.getProperty("os.name").startsWith("sunos"));
+
       Bundle bundle = FrameworkUtil.getBundle(getClass());
       Assert.assertNotNull("Failed to find class bundle.", bundle);
 
