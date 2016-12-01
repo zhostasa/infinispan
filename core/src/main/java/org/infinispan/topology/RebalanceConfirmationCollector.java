@@ -21,19 +21,18 @@ class RebalanceConfirmationCollector {
    private final String cacheName;
    private final int topologyId;
    private final Set<Address> confirmationsNeeded;
+   private final Runnable whenCompleted;
 
-   public RebalanceConfirmationCollector(String cacheName, int topologyId, Collection<Address> members) {
+   public RebalanceConfirmationCollector(String cacheName, int topologyId, Collection<Address> members, Runnable whenCompleted) {
       this.cacheName = cacheName;
       this.topologyId = topologyId;
       this.confirmationsNeeded = new HashSet<Address>(members);
-      log.tracef("Initialized rebalance confirmation collector %d@%s, initial list is %s",
-                 (Integer)topologyId, cacheName, confirmationsNeeded);
+      this.whenCompleted = whenCompleted;
+      log.tracef("Initialized topology confirmation collector %d@%s, initial list is %s",
+            (Integer)topologyId, cacheName, confirmationsNeeded);
    }
 
-   /**
-    * @return {@code true} if everyone has confirmed
-    */
-   public boolean confirmPhase(Address node, int receivedTopologyId) {
+   public void confirmPhase(Address node, int receivedTopologyId) {
       synchronized (this) {
          if (topologyId > receivedTopologyId) {
             throw new CacheException(String.format("Received invalid rebalance confirmation from %s " +
@@ -43,26 +42,27 @@ class RebalanceConfirmationCollector {
          boolean removed = confirmationsNeeded.remove(node);
          if (!removed) {
             log.tracef("Rebalance confirmation collector %d@%s ignored confirmation for %s, which is already confirmed",
-                       (Integer)topologyId, cacheName, node);
-            return false;
+                  (Integer)topologyId, cacheName, node);
+            return;
          }
 
          log.tracef("Rebalance confirmation collector %d@%s received confirmation for %s, remaining list is %s",
-                    (Integer)topologyId, cacheName, node, confirmationsNeeded);
-         return confirmationsNeeded.isEmpty();
+               (Integer)topologyId, cacheName, node, confirmationsNeeded);
+         if (confirmationsNeeded.isEmpty()) {
+            whenCompleted.run();
+         }
       }
    }
 
-   /**
-    * @return {@code true} if everyone has confirmed
-    */
-   public boolean updateMembers(Collection<Address> newMembers) {
+   public void updateMembers(Collection<Address> newMembers) {
       synchronized (this) {
          // only return true the first time
          boolean modified = confirmationsNeeded.retainAll(newMembers);
          log.tracef("Rebalance confirmation collector %d@%s members list updated, remaining list is %s",
-                    (Integer)topologyId, cacheName, confirmationsNeeded);
-         return modified && confirmationsNeeded.isEmpty();
+               (Integer)topologyId, cacheName, confirmationsNeeded);
+         if (modified && confirmationsNeeded.isEmpty()) {
+            whenCompleted.run();
+         }
       }
    }
 

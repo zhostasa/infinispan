@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.tx.PrepareCommand;
+import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.infinispan.context.Flag;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.LocalTxInvocationContext;
@@ -38,7 +39,19 @@ import org.infinispan.util.logging.Log;
  * @since 9.0
  */
 public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
-   protected boolean trace = getLog().isTraceEnabled();
+   private final static ResponseFilter VALID_OR_EXCEPTIONAL = new ResponseFilter() {
+      @Override
+      public boolean isAcceptable(Response response, Address sender) {
+         return response.isValid() || response instanceof ExceptionResponse;
+      }
+
+      @Override
+      public boolean needMoreResponses() {
+         return true;
+      }
+   };
+
+   protected final boolean trace = getLog().isTraceEnabled();
 
    protected RpcManager rpcManager;
 
@@ -59,20 +72,18 @@ public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
    public void init() {
       defaultSynchronous = cacheConfiguration.clustering().cacheMode().isSynchronous();
       syncCommitPhase = cacheConfiguration.transaction().syncCommitPhase();
-      // This is a simplified state-less version of ClusteredGetResponseValidityFilter
-      staggeredOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.WAIT_FOR_VALID_RESPONSE, DeliverOrder.NONE).responseFilter(new ResponseFilter() {
-         @Override
-         public boolean isAcceptable(Response response, Address sender) {
-            return response.isValid() || response instanceof ExceptionResponse;
-         }
-
-         @Override
-         public boolean needMoreResponses() {
-            return true;
-         }
-      }).build();
-      defaultSyncOptions = rpcManager.getDefaultRpcOptions(true);
+      cacheConfiguration.clustering().attributes().attribute(ClusteringConfiguration.REMOTE_TIMEOUT)
+            .addListener(((a, o) -> initRpcOptions()));
+      initRpcOptions();
+      // async options don't depend on the remote timeout
       defaultAsyncOptions = rpcManager.getDefaultRpcOptions(false);
+   }
+
+   private void initRpcOptions() {
+      // This is a simplified state-less version of ClusteredGetResponseValidityFilter
+      staggeredOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.WAIT_FOR_VALID_RESPONSE, DeliverOrder.NONE)
+            .responseFilter(VALID_OR_EXCEPTIONAL).build();
+      defaultSyncOptions = rpcManager.getDefaultRpcOptions(true);
    }
 
    protected final boolean isSynchronous(FlagAffectedCommand command) {

@@ -81,7 +81,7 @@ class HotRod10ReplicationTest extends HotRodMultiNodeTest {
       assertStatus(resp, Success)
       assertTopologyReceived(resp.topologyResponse, servers, currentServerTopologyId)
 
-      resp = clients.tail.head.ping(INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + nodeCount)
+      resp = clients.tail.head.ping(INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + 2 * nodeCount)
       assertStatus(resp, Success)
       assertEquals(resp.topologyResponse, null)
    }
@@ -100,14 +100,14 @@ class HotRod10ReplicationTest extends HotRodMultiNodeTest {
       assertStatus(resp, Success)
       assertTopologyReceived(resp.topologyResponse, servers, currentServerTopologyId)
 
-      resp = clients.head.put(k(m) , 0, 0, v(m, "v3-"), INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + nodeCount)
+      resp = clients.head.put(k(m) , 0, 0, v(m, "v3-"), INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + 2 * nodeCount)
       assertStatus(resp, Success)
       assertEquals(resp.topologyResponse, null)
       assertSuccess(clients.tail.head.get(k(m), 0), v(m, "v3-"))
 
       val newServer = startClusteredServer(servers.tail.head.getPort + 25)
       try {
-         val resp = clients.head.put(k(m) , 0, 0, v(m, "v4-"), INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + nodeCount)
+         val resp = clients.head.put(k(m) , 0, 0, v(m, "v4-"), INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + 2 *  nodeCount)
          assertStatus(resp, Success)
          assertEquals(resp.topologyResponse.topologyId, currentServerTopologyId)
          val topoResp = resp.asTopologyAwareResponse
@@ -154,7 +154,7 @@ class HotRod10ReplicationTest extends HotRodMultiNodeTest {
          addr => assertTrue(topoResp.members.exists(_ == addr)))
       assertSuccess(clients.tail.head.get(k(m), 0), v(m, "v7-"))
 
-      resp = clients.head.put(k(m) , 0, 0, v(m, "v8-"), INTELLIGENCE_HASH_DISTRIBUTION_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + nodeCount)
+      resp = clients.head.put(k(m) , 0, 0, v(m, "v8-"), INTELLIGENCE_HASH_DISTRIBUTION_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + 2 * nodeCount)
       assertStatus(resp, Success)
 
       checkTopologyReceived(resp.topologyResponse, servers, cacheName)
