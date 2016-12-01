@@ -7,7 +7,7 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
 
 /**
- * @since 8.3
+ * @since 9.0
  */
 @Test(groups = "functional", testName = "query.remote.impl.ProtobufMetadataClusterPreserverStateAcrossRestartsTest")
 public class ProtobufMetadataClusterPreserverStateAcrossRestartsTest extends ProtobufMetadataCachePreserveStateAcrossRestartsTest {

@@ -1,8 +1,8 @@
 package org.infinispan.query.blackbox;
 
 import static org.infinispan.test.TestingUtil.withCacheManager;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.fail;
 
 import java.util.List;
 

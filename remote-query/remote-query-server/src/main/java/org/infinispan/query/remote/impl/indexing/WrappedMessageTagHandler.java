@@ -1,5 +1,7 @@
 package org.infinispan.query.remote.impl.indexing;
 
+import java.io.IOException;
+
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.infinispan.commons.CacheException;
@@ -9,8 +11,6 @@ import org.infinispan.protostream.TagHandler;
 import org.infinispan.protostream.WrappedMessage;
 import org.infinispan.protostream.descriptors.Descriptor;
 import org.infinispan.protostream.descriptors.FieldDescriptor;
-
-import java.io.IOException;
 
 /**
  * @author anistor@redhat.com

@@ -2,7 +2,7 @@ package org.infinispan.query.dsl.embedded.impl;
 
 /**
  * @author anistor@redhat.com
- * @since 8.3
+ * @since 9.0
  */
 @FunctionalInterface
 public interface ResultProcessor<In, Out> {
