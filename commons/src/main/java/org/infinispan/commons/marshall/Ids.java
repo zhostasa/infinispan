@@ -179,4 +179,7 @@ public interface Ids {
    int ENCODER_ENTRY_MAPPER = 124;
 
    int DATA_CONVERSION = 131;
+
+   int COUNTER_CONFIGURATION = 2000; //from counter
+   int COUNTER_STATE = 2001; //from counter
 }

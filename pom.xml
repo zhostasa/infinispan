@@ -33,6 +33,7 @@
       <module>cloud</module>
       <module>extended-statistics</module>
       <module>multimap</module>
+      <module>counter</module>
       <module>tools</module>
       <module>query</module>
       <module>query-dsl</module>
