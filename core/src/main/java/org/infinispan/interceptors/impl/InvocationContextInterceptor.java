@@ -25,7 +25,7 @@ import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.interceptors.BaseAsyncInterceptor;
 import org.infinispan.interceptors.BasicInvocationStage;
-import org.infinispan.interceptors.InvocationComposeHandler;
+import org.infinispan.interceptors.InvocationExceptionHandler;
 import org.infinispan.interceptors.InvocationStage;
 import org.infinispan.interceptors.totalorder.RetryPrepareException;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -51,20 +51,16 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
    private static final boolean trace = log.isTraceEnabled();
    private volatile boolean shuttingDown = false;
 
-   private final InvocationComposeHandler composeHandler = new InvocationComposeHandler() {
+   private final InvocationExceptionHandler suppressExceptionsHandler = new InvocationExceptionHandler() {
       @Override
-      public BasicInvocationStage apply(BasicInvocationStage stage, InvocationContext rCtx, VisitableCommand rCommand,
-                                        Object rv, Throwable t) throws Throwable {
-         if (t == null)
-            return stage;
-
+      public Object apply(InvocationContext rCtx, VisitableCommand rCommand, Throwable t) throws Throwable {
          if (t instanceof InvalidCacheUsageException || t instanceof InterruptedException) {
             throw t;
          } else {
             rethrowException(rCtx, rCommand, t);
          }
          // Ignore the exception
-         return returnWith(rCommand instanceof LockControlCommand ? Boolean.FALSE : null);
+         return rCommand instanceof LockControlCommand ? Boolean.FALSE : null;
       }
    };
 
@@ -104,7 +100,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
       }
 
       InvocationStage stage = invokeNext(ctx, command);
-      return stage.compose(composeHandler);
+      return stage.exceptionally(suppressExceptionsHandler);
    }
 
    private void rethrowException(InvocationContext ctx, VisitableCommand command, Throwable th) throws Throwable {
