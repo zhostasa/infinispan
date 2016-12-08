@@ -71,7 +71,7 @@ public class HotRodDecoder extends ByteToMessageDecoder {
    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
       try {
          if (CacheDecodeContext.isTrace) {
-            log.tracef("Decode using instance @%x", Integer.toString(System.identityHashCode(this)));
+            log.tracef("Decode using instance @%x", (Integer) System.identityHashCode(this));
          }
 
          if (resetRequested) {
