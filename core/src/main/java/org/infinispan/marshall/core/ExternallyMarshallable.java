@@ -171,6 +171,8 @@ final class ExternallyMarshallable {
             || className.equals("org.infinispan.server.core.transport.NettyTransport$ConnectionAdderTask") // prod
 
             || className.contains("ConsistentHashFactory")
+
+            || className.contains("org.jboss.as.quickstarts.datagrid") // quickstarts testing
             ;
    }
 
