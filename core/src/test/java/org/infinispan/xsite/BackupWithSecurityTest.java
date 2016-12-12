@@ -19,7 +19,7 @@ import org.infinispan.security.impl.IdentityRoleMapper;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.Test;
 
-@Test(testName = "xsite.BackupWithSecurityTest", groups = "functional")
+@Test(groups = "xsite", testName = "xsite.BackupWithSecurityTest")
 public class BackupWithSecurityTest extends AbstractMultipleSitesTest {
    static final Subject ADMIN;
    static final Map<AuthorizationPermission, Subject> SUBJECTS;
@@ -64,6 +64,14 @@ public class BackupWithSecurityTest extends AbstractMultipleSitesTest {
    protected void killSite(TestSite ts) {
       Security.doAs(ADMIN, (PrivilegedAction<Void>) () -> {
          BackupWithSecurityTest.super.killSite(ts);
+         return null;
+      });
+   }
+
+   @Override
+   protected void clearSite(TestSite ts) {
+      Security.doAs(ADMIN, (PrivilegedAction<Object>) () -> {
+         BackupWithSecurityTest.super.clearSite(ts);
          return null;
       });
    }
