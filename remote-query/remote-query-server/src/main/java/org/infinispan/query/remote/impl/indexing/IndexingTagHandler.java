@@ -2,7 +2,6 @@ package org.infinispan.query.remote.impl.indexing;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericDocValuesField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.util.impl.ToStringNullMarker;
@@ -46,7 +45,7 @@ final class IndexingTagHandler implements TagHandler {
 
    private MessageContext<? extends MessageContext> messageContext;
 
-   public IndexingTagHandler(Descriptor messageDescriptor, Document document) {
+   IndexingTagHandler(Descriptor messageDescriptor, Document document) {
       this.document = document;
       this.messageContext = new MessageContext<>(null, null, messageDescriptor);
    }
@@ -141,11 +140,7 @@ final class IndexingTagHandler implements TagHandler {
       fullFieldName = fullFieldName != null ? fullFieldName + "." + fieldName : fieldName;
       switch (type) {
          case DOUBLE:
-            luceneOptions.addNumericFieldToDocument(fullFieldName, value, document);
-            break;
          case FLOAT:
-            luceneOptions.addNumericFieldToDocument(fullFieldName, value, document);
-            break;
          case INT64:
          case UINT64:
          case INT32:
@@ -157,14 +152,16 @@ final class IndexingTagHandler implements TagHandler {
          case SINT32:
          case SINT64:
          case ENUM:
+//            if (isSortable) {
+//               luceneOptions.addNumericDocValuesFieldToDocument(fieldName, (Number) value, document);
+//            }
             luceneOptions.addNumericFieldToDocument(fullFieldName, value, document);
-            break;
-         case BOOL:
-            String indexedBoolean = value.toString();
-            luceneOptions.addFieldToDocument(fullFieldName, indexedBoolean, document);
             break;
          default:
             String indexedString = String.valueOf(value);
+//            if (isSortable) {
+//               luceneOptions.addSortedDocValuesFieldToDocument(fullFieldName, indexedString, document);
+//            }
             luceneOptions.addFieldToDocument(fullFieldName, indexedString, document);
       }
    }
