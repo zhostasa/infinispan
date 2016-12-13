@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.it.osgi.util.IspnKarafOptions;
 import org.infinispan.it.osgi.util.OSGiTestUtils;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -35,6 +36,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerMethod.class)
 @Category(PerMethod.class)
+@Ignore("See https://issues.jboss.org/browse/JDG-588")
 public class InfinispanEmbeddedServiceFactoryTest {
    @org.ops4j.pax.exam.Configuration
    public Option[] config() throws Exception {
