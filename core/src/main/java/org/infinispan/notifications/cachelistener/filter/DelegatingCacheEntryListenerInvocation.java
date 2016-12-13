@@ -1,6 +1,7 @@
 package org.infinispan.notifications.cachelistener.filter;
 
 import java.lang.annotation.Annotation;
+import java.util.Set;
 import java.util.UUID;
 
 import org.infinispan.notifications.Listener;
@@ -84,5 +85,10 @@ public abstract class DelegatingCacheEntryListenerInvocation<K, V> implements Ca
    @Override
    public <C> CacheEventConverter<? super K, ? super V, C> getConverter() {
       return invocation.getConverter();
+   }
+
+   @Override
+   public Set<Class<? extends Annotation>> getFilterAnnotations() {
+      return invocation.getFilterAnnotations();
    }
 }

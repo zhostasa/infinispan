@@ -2,6 +2,8 @@ package org.infinispan.client.hotrod.impl.protocol;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.VersionedMetadata;
@@ -68,4 +70,7 @@ public interface Codec {
     * Writes a stream of data
     */
    OutputStream writeAsStream(Transport transport, Runnable afterClose);
+
+   void writeClientListenerInterests(Transport transport, Set<Class<? extends Annotation>> classes);
+
 }
