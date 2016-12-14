@@ -558,7 +558,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <forkMode>once</forkMode>
+                    <forkCount>1</forkCount>
+                    <threadCount>1</threadCount>
                     <failIfNoTests>false</failIfNoTests>
                     <excludedGroups>${groups.unstable}</excludedGroups>
                     <systemPropertyVariables>

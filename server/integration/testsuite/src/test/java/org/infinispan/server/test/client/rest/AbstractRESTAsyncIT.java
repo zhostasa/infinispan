@@ -40,7 +40,9 @@ public abstract class AbstractRESTAsyncIT {
 
     @After
     public void tearDown() throws Exception {
-        delete(fullPathKey(null));
+        delete(fullPathKey(KEY_A));
+        delete(fullPathKey(KEY_B));
+        delete(fullPathKey(KEY_C));
         RESTHelper.clearServers();
     }
 
