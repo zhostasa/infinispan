@@ -17,7 +17,7 @@ import org.hibernate.search.bridge.builtin.NumericFieldBridge;
 import org.hibernate.search.bridge.builtin.StringEncodingCalendarBridge;
 import org.hibernate.search.bridge.builtin.StringEncodingDateBridge;
 import org.hibernate.search.bridge.builtin.impl.NullEncodingTwoWayFieldBridge;
-import org.hibernate.search.bridge.builtin.impl.TwoWayString2FieldBridgeAdaptor;
+import org.hibernate.search.bridge.util.impl.TwoWayString2FieldBridgeAdaptor;
 import org.hibernate.search.engine.metadata.impl.DocumentFieldMetadata;
 import org.hibernate.search.engine.metadata.impl.EmbeddedTypeMetadata;
 import org.hibernate.search.engine.metadata.impl.PropertyMetadata;
@@ -63,7 +63,7 @@ public final class HibernateSearchPropertyHelper extends ReflectionPropertyHelpe
          if (resolvedProperty != null) {
             List<String> translatedPropertyPath = new ArrayList<>(propertyPath.length);
             for (EmbeddedTypeMetadata embeddedTypeMetadata : resolvedProperty.embeddedTypeMetadataList) {
-               translatedPropertyPath.add(embeddedTypeMetadata.getEmbeddedFieldName());
+               translatedPropertyPath.add(embeddedTypeMetadata.getEmbeddedPropertyName());
             }
             if (resolvedProperty.propertyMetadata != null) {
                translatedPropertyPath.add(resolvedProperty.propertyMetadata.getPropertyAccessorName());
@@ -99,9 +99,9 @@ public final class HibernateSearchPropertyHelper extends ReflectionPropertyHelpe
    private Object convertToPropertyType(String value, FieldBridge bridge) {
       try {
          if (bridge instanceof NullEncodingTwoWayFieldBridge) {
-            return convertToPropertyType(value, ((NullEncodingTwoWayFieldBridge) bridge).unwrap());
+            return convertToPropertyType(value, ((NullEncodingTwoWayFieldBridge) bridge).unwrap(FieldBridge.class));
          } else if (bridge instanceof TwoWayString2FieldBridgeAdaptor) {
-            TwoWayStringBridge unwrapped = ((TwoWayString2FieldBridgeAdaptor) bridge).unwrap();
+            TwoWayStringBridge unwrapped = ((TwoWayString2FieldBridgeAdaptor) bridge).unwrap(TwoWayStringBridge.class);
             if (unwrapped instanceof BooleanBridge) {
                if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
                   throw log.getInvalidBooleanLiteralException(value);
@@ -171,7 +171,7 @@ public final class HibernateSearchPropertyHelper extends ReflectionPropertyHelpe
          if (resolvedProperty != null) {
             TypeMetadata typeMetadata = resolvedProperty.rootTypeMetadata;
             for (EmbeddedTypeMetadata embeddedTypeMetadata : resolvedProperty.embeddedTypeMetadataList) {
-               ReflectionHelper.PropertyAccessor accessor = getPropertyAccessor(typeMetadata.getType(), embeddedTypeMetadata.getEmbeddedFieldName());
+               ReflectionHelper.PropertyAccessor accessor = getPropertyAccessor(typeMetadata.getType(), embeddedTypeMetadata.getEmbeddedPropertyName());
                if (accessor.isMultiple()) {
                   return true;
                }
@@ -327,7 +327,7 @@ public final class HibernateSearchPropertyHelper extends ReflectionPropertyHelpe
 
          boolean found = false;
          for (EmbeddedTypeMetadata embeddedTypeMetadata : typeMetadata.getEmbeddedTypeMetadata()) {
-            if (embeddedTypeMetadata.getEmbeddedFieldName().equals(propertyPath[i])) {
+            if (embeddedTypeMetadata.getEmbeddedPropertyName().equals(propertyPath[i])) {
                embeddedTypeMetadataList.add(embeddedTypeMetadata);
                if (i == propertyPath.length - 1) {
                   return new ResolvedProperty(rootTypeMetadata, embeddedTypeMetadataList, null, null);
