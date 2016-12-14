@@ -18,23 +18,24 @@ public interface DataWriteCommand extends WriteCommand, DataCommand {
    CommandInvocationId getCommandInvocationId();
 
    /**
-    * Create the {@link BackupWriteCommand} to send to the backup owners.
+    * Initializes the {@link BackupWriteRcpCommand} to send the update to backup owner of a key.
     * <p>
-    * The primary owner is the only member which creates the command to send it.
+    * This method will be invoked in the primary owner only.
     *
-    * @return the {@link BackupWriteCommand} to send to the backup owners.
+    * @param command the {@link BackupWriteRcpCommand} to initialize.
     */
-   default BackupWriteCommand createBackupWriteCommand() {
+   default void initBackupWriteRcpCommand(BackupWriteRcpCommand command) {
       throw new UnsupportedOperationException();
    }
 
    /**
-    * Initializes the primary owner acknowledges with the return value and if it is successful or not.
+    * Initializes the primary owner acknowledge with the return value, the {@link CommandInvocationId} and the topology
+    * id.
     *
-    * @param command     the {@link PrimaryAckCommand} to initialize.
-    * @param returnValue the local return value.
+    * @param command          the {@link PrimaryAckCommand} to initialize.
+    * @param localReturnValue the local return value.
     */
-   default void initPrimaryAck(PrimaryAckCommand command, Object returnValue) {
+   default void initPrimaryAck(PrimaryAckCommand command, Object localReturnValue) {
       throw new UnsupportedOperationException();
    }
 

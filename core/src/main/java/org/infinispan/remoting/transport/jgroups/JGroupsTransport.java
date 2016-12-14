@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -700,6 +701,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
    @Override
    public void sendTo(Address destination, ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception {
+      Objects.requireNonNull(destination, "Destination must be non-null");
       if (trace) {
          log.tracef("sendTo: destination=%s, command=%s, order=%s", destination, rpcCommand, deliverOrder);
       }
@@ -713,13 +715,12 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       final org.jgroups.Address jgrpAddr = toJGroupsAddress(destination);
 
       final Buffer buffer = dispatcher.marshallCall(rpcCommand);
-      final RequestOptions options = CommandAwareRpcDispatcher.constructRequestOptions(
-            org.jgroups.blocks.ResponseMode.GET_NONE, rsvp, deliverOrder, 0);
+      final RequestOptions options = CommandAwareRpcDispatcher.constructRequestOptions(org.jgroups.blocks.ResponseMode.GET_NONE, rsvp, deliverOrder, 0);
       dispatcher.sendMessage(jgrpAddr, buffer, options);
    }
 
    @Override
-   public void sendTo(ReplicableCommand rpcCommand, DeliverOrder deliverOrder, Collection<Address> destinations) throws Exception {
+   public void sendToMany(Collection<Address> destinations, ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception {
       if (destinations == null) {
          sendToAll(rpcCommand, deliverOrder);
          return;
@@ -747,12 +748,11 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       } else if (jgrpAddrList.size() == 1) {
          dispatcher.sendMessage(jgrpAddrList.get(0), buffer, options);
       } else {
-         dispatcher.castMessage(jgrpAddrList, buffer, options);
+         dispatcher.castMessage(jgrpAddrList, buffer, options.anycasting(true).useAnycastAddresses(false));
       }
    }
 
-   @Override
-   public void sendToAll(ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception {
+   private void sendToAll(ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception {
       if (trace) {
          log.tracef("sendToAll: command=%s, order=%s", rpcCommand, deliverOrder);
       }
@@ -760,13 +760,12 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       final boolean rsvp = CommandAwareRpcDispatcher.isRsvpCommand(rpcCommand);
 
       final Buffer buffer = dispatcher.marshallCall(rpcCommand);
-      final RequestOptions options = CommandAwareRpcDispatcher.constructRequestOptions(
-            org.jgroups.blocks.ResponseMode.GET_NONE, rsvp, deliverOrder, 0);
+      final RequestOptions options = CommandAwareRpcDispatcher.constructRequestOptions(org.jgroups.blocks.ResponseMode.GET_NONE, rsvp, deliverOrder, 0);
       if (deliverOrder == DeliverOrder.TOTAL) {
          AnycastAddress anycastAddress = new AnycastAddress();
          dispatcher.sendMessage(anycastAddress, buffer, options);
       } else {
-         dispatcher.castMessage(null, buffer, options);
+         dispatcher.castMessage(null, buffer, options.anycasting(false));
       }
    }
 

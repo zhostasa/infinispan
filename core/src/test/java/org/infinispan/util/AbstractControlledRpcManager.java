@@ -64,8 +64,8 @@ public abstract class AbstractControlledRpcManager implements RpcManager {
    }
 
    @Override
-   public void sendTo(ReplicableCommand command, DeliverOrder deliverOrder, Collection<Address> destinations) {
-      realOne.sendTo(command, deliverOrder, destinations);
+   public void sendToMany(Collection<Address> destinations, ReplicableCommand command, DeliverOrder deliverOrder) {
+      realOne.sendToMany(destinations, command, deliverOrder);
    }
 
    @Override

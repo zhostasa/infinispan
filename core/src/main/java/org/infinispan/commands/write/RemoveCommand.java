@@ -219,16 +219,17 @@ public class RemoveCommand extends AbstractDataWriteCommand {
    }
 
    @Override
-   public BackupWriteCommand createBackupWriteCommand() {
-      return BackupWriteCommand.constructRemove(commandInvocationId, key, getFlagsBitSet(), getTopologyId());
+   public void initBackupWriteRcpCommand(BackupWriteRcpCommand command) {
+      command.setRemove(commandInvocationId, key, getFlagsBitSet(), getTopologyId());
    }
 
    @Override
-   public void initPrimaryAck(PrimaryAckCommand command, Object returnValue) {
+   public void initPrimaryAck(PrimaryAckCommand command, Object localReturnValue) {
+      command.initCommandInvocationIdAndTopologyId(commandInvocationId, getTopologyId());
       if (isConditional()) {
          command.initWithBoolReturnValue(successful);
       } else if (isReturnValueExpected()) {
-         command.initWithReturnValue(successful, returnValue);
+         command.initWithReturnValue(successful, localReturnValue);
       } else {
          command.initWithoutReturnValue(successful);
       }

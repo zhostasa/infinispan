@@ -60,12 +60,12 @@ public interface RpcManager {
     * Asynchronously sends the {@link ReplicableCommand} to the set of destination using the specified {@link
     * DeliverOrder}.
     *
-    * @param command      the {@link ReplicableCommand} to send.
-    * @param deliverOrder the {@link DeliverOrder} to use.
     * @param destinations the collection of destination's {@link Address}. If {@code null}, it sends to all the members
     *                     in the cluster.
+    * @param command      the {@link ReplicableCommand} to send.
+    * @param deliverOrder the {@link DeliverOrder} to use.
     */
-   void sendTo(ReplicableCommand command, DeliverOrder deliverOrder, Collection<Address> destinations);
+   void sendToMany(Collection<Address> destinations, ReplicableCommand command, DeliverOrder deliverOrder);
 
    /**
     * @return a reference to the underlying transport.

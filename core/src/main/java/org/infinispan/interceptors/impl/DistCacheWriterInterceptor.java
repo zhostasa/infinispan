@@ -7,7 +7,6 @@ import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.P
 import java.util.Map;
 
 import org.infinispan.commands.FlagAffectedCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
 import org.infinispan.commands.write.RemoveCommand;
@@ -81,25 +80,6 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
             return rv;
 
          storeEntry(rCtx, key, putKeyValueCommand);
-         if (getStatisticsEnabled())
-            cacheStores.incrementAndGet();
-         return rv;
-      });
-   }
-
-   @Override
-   public Object visitBackupWriteCommand(InvocationContext ctx, BackupWriteCommand command) throws Throwable {
-      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
-         BackupWriteCommand backupWriteCommand = (BackupWriteCommand) rCommand;
-         if (!isStoreEnabled(backupWriteCommand))
-            return rv;
-
-         //no need to check for proper write. we are remote, in a backup owner.
-         if (backupWriteCommand.isRemove()) {
-            removeEntry(rCtx, backupWriteCommand.getKey(), backupWriteCommand);
-         } else {
-            storeEntry(rCtx, backupWriteCommand.getKey(), backupWriteCommand);
-         }
          if (getStatisticsEnabled())
             cacheStores.incrementAndGet();
          return rv;

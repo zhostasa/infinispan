@@ -1,7 +1,6 @@
 package org.infinispan.distribution.rehash;
 
 import org.infinispan.AdvancedCache;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -50,7 +49,6 @@ import static org.testng.AssertJUnit.assertNotNull;
 public class NonTxBackupOwnerBecomingPrimaryOwnerTest extends MultipleCacheManagersTest {
 
    private static final String CACHE_NAME = BasicCacheContainer.DEFAULT_CACHE_NAME;
-   protected boolean functionalAPI = false;
 
    @Override
    protected void createCacheManagers() throws Throwable {
@@ -141,19 +139,13 @@ public class NonTxBackupOwnerBecomingPrimaryOwnerTest extends MultipleCacheManag
       // Every operation command will be blocked before reaching the distribution interceptor on cache1
       CyclicBarrier beforeCache1Barrier = new CyclicBarrier(2);
       BlockingInterceptor blockingInterceptor1 = new BlockingInterceptor(beforeCache1Barrier,
-            functionalAPI ?
-                  op.getCommandClass() :
-                  BackupWriteCommand.class,
-            false, false);
+            op.getCommandClass(), false, false);
       cache1.getAsyncInterceptorChain().addInterceptorBefore(blockingInterceptor1, TriangleDistributionInterceptor.class);
 
       // Every operation command will be blocked after returning to the distribution interceptor on cache2
       CyclicBarrier afterCache2Barrier = new CyclicBarrier(2);
       BlockingInterceptor blockingInterceptor2 = new BlockingInterceptor(afterCache2Barrier,
-            functionalAPI ?
-                  op.getCommandClass() :
-                  BackupWriteCommand.class,
-            true, false);
+            op.getCommandClass(), true, false);
       cache2.getAsyncInterceptorChain().addInterceptorBefore(blockingInterceptor2, StateTransferInterceptor.class);
 
       // Put from cache0 with cache0 as primary owner, cache2 will become the primary owner for the retry
@@ -183,13 +175,9 @@ public class NonTxBackupOwnerBecomingPrimaryOwnerTest extends MultipleCacheManag
          beforeCache1Barrier.await(10, TimeUnit.SECONDS);
          beforeCache1Barrier.await(10, TimeUnit.SECONDS);
       }
-
-      if (functionalAPI) {
-         //cache 2 is blocking BackupWriteCommand but the retry sends the original command.
-         // And allow the retry to finish successfully on cache2
-         afterCache2Barrier.await(10, TimeUnit.SECONDS);
-         afterCache2Barrier.await(10, TimeUnit.SECONDS);
-      }
+      // And allow the retry to finish successfully on cache2
+      afterCache2Barrier.await(10, TimeUnit.SECONDS);
+      afterCache2Barrier.await(10, TimeUnit.SECONDS);
 
       // Check that the write command didn't fail
       Object result = future.get(10, TimeUnit.SECONDS);

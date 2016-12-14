@@ -41,12 +41,6 @@ public class BackupAckCommand extends BaseRpcCommand {
    }
 
    @Override
-   public Object invoke() throws Throwable {
-      commandAckCollector.backupAck(commandInvocationId, getOrigin(), topologyId);
-      return null;
-   }
-
-   @Override
    public CompletableFuture<Object> invokeAsync() throws Throwable {
       commandAckCollector.backupAck(commandInvocationId, getOrigin(), topologyId);
       return CompletableFutures.completedNull();

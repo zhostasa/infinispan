@@ -32,7 +32,6 @@ import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.write.AbstractDataWriteCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.EvictCommand;
@@ -293,12 +292,6 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
          throws Throwable {
       wrapEntryForPutIfNeeded(ctx, command);
       return setSkipRemoteGetsAndInvokeNextForDataCommand(ctx, command, command.getMetadata());
-   }
-
-   @Override
-   public BasicInvocationStage visitBackupWriteCommand(InvocationContext ctx, BackupWriteCommand command) throws Throwable {
-      entryFactory.wrapEntryForWriting(ctx, command.getKey(), EntryFactory.Wrap.WRAP_ALL, false, false);
-      return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> applyChanges(rCtx, (BackupWriteCommand) rCommand));
    }
 
    private void wrapEntryForPutIfNeeded(InvocationContext ctx, AbstractDataWriteCommand command) {
@@ -568,35 +561,6 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    protected void commitContextEntry(CacheEntry entry, InvocationContext ctx, FlagAffectedCommand command,
                                      Metadata metadata, Flag stateTransferFlag, boolean l1Invalidation) {
       cdl.commitEntry(entry, metadata, command, ctx, stateTransferFlag, l1Invalidation);
-   }
-
-   private void applyChanges(InvocationContext ctx, BackupWriteCommand command) {
-      stateTransferLock.acquireSharedTopologyLock();
-      try {
-         boolean syncRpc = defaultSynchronous && !command.hasFlag(Flag.FORCE_ASYNCHRONOUS) ||
-               command.hasFlag(Flag.FORCE_SYNCHRONOUS);
-         if (stateConsumer != null && stateConsumer.getCacheTopology() != null) {
-            int commandTopologyId = command.getTopologyId();
-            int currentTopologyId = stateConsumer.getCacheTopology().getTopologyId();
-            // TotalOrderStateTransferInterceptor doesn't set the topology id for PFERs.
-            if (syncRpc && currentTopologyId != commandTopologyId && commandTopologyId != -1) {
-               // If we were the originator of a data command which we didn't own the key at the time means it
-               // was already committed, so there is no need to throw the OutdatedTopologyException
-               // This will happen if we submit a command to the primary owner and it responds and then a topology
-               // change happens before we get here
-               if (!ctx.isOriginLocal()) {
-                  if (trace) {
-                     log.tracef("Cache topology changed while the command was executing: expected %d, got %d",
-                           (Integer) commandTopologyId, (Integer) currentTopologyId);
-                  }
-                  throw OutdatedTopologyException.getCachedInstance();
-               }
-            }
-         }
-         commitContextEntries(ctx, command, command.getMetadata());
-      } finally {
-         stateTransferLock.releaseSharedTopologyLock();
-      }
    }
 
    private void applyChanges(InvocationContext ctx, WriteCommand command, Metadata metadata) {

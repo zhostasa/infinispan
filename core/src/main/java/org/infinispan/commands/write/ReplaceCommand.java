@@ -235,14 +235,15 @@ public class ReplaceCommand extends AbstractDataWriteCommand implements Metadata
    }
 
    @Override
-   public BackupWriteCommand createBackupWriteCommand() {
-      return BackupWriteCommand.constructWrite(commandInvocationId, key, newValue, metadata, getFlagsBitSet(), getTopologyId());
+   public void initBackupWriteRcpCommand(BackupWriteRcpCommand command) {
+      command.setReplace(commandInvocationId, key, newValue, metadata, getFlagsBitSet(), getTopologyId());
    }
 
    @Override
-   public void initPrimaryAck(PrimaryAckCommand command, Object returnValue) {
+   public void initPrimaryAck(PrimaryAckCommand command, Object localReturnValue) {
+      command.initCommandInvocationIdAndTopologyId(commandInvocationId, getTopologyId());
       if (oldValue == null) {
-         command.initWithReturnValue(successful, returnValue);
+         command.initWithReturnValue(successful, localReturnValue);
       } else {
          command.initWithBoolReturnValue(successful);
       }

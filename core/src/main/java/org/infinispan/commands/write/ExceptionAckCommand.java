@@ -43,12 +43,6 @@ public class ExceptionAckCommand extends BaseRpcCommand {
    }
 
    @Override
-   public Object invoke() throws Throwable {
-      commandAckCollector.completeExceptionally(commandInvocationId, throwable, topologyId);
-      return null;
-   }
-
-   @Override
    public CompletableFuture<Object> invokeAsync() throws Throwable {
       commandAckCollector.completeExceptionally(commandInvocationId, throwable, topologyId);
       return CompletableFutures.completedNull();

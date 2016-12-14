@@ -36,7 +36,7 @@ public class MarshallUtil {
     */
    public static <K, V, T extends Map<K, V>> void marshallMap(T map, ObjectOutput out) throws IOException {
       final int mapSize = map == null ? NULL_VALUE : map.size();
-      marshallInt(out, mapSize);
+      marshallSize(out, mapSize);
       if (mapSize <= 0) return;
 
       for (Map.Entry<K, V> me : map.entrySet()) {
@@ -55,10 +55,10 @@ public class MarshallUtil {
     * @return The populated {@link Map} created by the {@link MapBuilder} or {@code null}.
     * @throws IOException            If any of the usual Input/Output related exceptions occur.
     * @throws ClassNotFoundException If the class of a serialized object cannot be found.
-    * @see {@link #marshallMap(Map, ObjectOutput)}
+    * @see #marshallMap(Map, ObjectOutput)
     */
    public static <K, V, T extends Map<K, V>> T unmarshallMap(ObjectInput in, MapBuilder<K, V, T> builder) throws IOException, ClassNotFoundException {
-      final int size = unmarshallInt(in);
+      final int size = unmarshallSize(in);
       if (size == NULL_VALUE) {
          return null;
       }
@@ -97,7 +97,7 @@ public class MarshallUtil {
     * @param checkNull If {@code true}, it checks if the {@link UUID} marshalled was {@link null}.
     * @return {@link UUID} marshalled.
     * @throws IOException If any of the usual Input/Output related exceptions occur.
-    * @see {@link #marshallUUID(UUID, ObjectOutput, boolean)}.
+    * @see #marshallUUID(UUID, ObjectOutput, boolean).
     */
    public static UUID unmarshallUUID(ObjectInput in, boolean checkNull) throws IOException {
       if (checkNull && in.readBoolean()) {
@@ -118,7 +118,7 @@ public class MarshallUtil {
     */
    public static <E> void marshallArray(E[] array, ObjectOutput out) throws IOException {
       final int size = array == null ? NULL_VALUE : array.length;
-      marshallInt(out, size);
+      marshallSize(out, size);
       if (size <= 0) {
          return;
       }
@@ -136,10 +136,10 @@ public class MarshallUtil {
     * @return The populated array.
     * @throws IOException            If any of the usual Input/Output related exceptions occur.
     * @throws ClassNotFoundException If the class of a serialized object cannot be found.
-    * @see {@link #marshallArray(Object[], ObjectOutput)}.
+    * @see #marshallArray(Object[], ObjectOutput).
     */
    public static <E> E[] unmarshallArray(ObjectInput in, ArrayBuilder<E> builder) throws IOException, ClassNotFoundException {
-      final int size = unmarshallInt(in);
+      final int size = unmarshallSize(in);
       if (size == NULL_VALUE) {
          return null;
       } else if (size == 0) {
@@ -166,7 +166,7 @@ public class MarshallUtil {
     */
    public static <E> void marshallCollection(Collection<E> collection, ObjectOutput out) throws IOException {
       final int size = collection == null ? NULL_VALUE : collection.size();
-      marshallInt(out, size);
+      marshallSize(out, size);
       if (size <= 0) {
          return;
       }
@@ -187,7 +187,7 @@ public class MarshallUtil {
     * @throws ClassNotFoundException If the class of a serialized object cannot be found.
     */
    public static <E, T extends Collection<E>> T unmarshallCollection(ObjectInput in, CollectionBuilder<E, T> builder) throws IOException, ClassNotFoundException {
-      final int size = unmarshallInt(in);
+      final int size = unmarshallSize(in);
       if (size == NULL_VALUE) {
          return null;
       }
@@ -204,10 +204,10 @@ public class MarshallUtil {
     * <p>
     * Used when the size of the {@link Collection} is not needed for it construction.
     *
-    * @see {@link #unmarshallCollection(ObjectInput, CollectionBuilder)}.
+    * @see #unmarshallCollection(ObjectInput, CollectionBuilder).
     */
    public static <E, T extends Collection<E>> T unmarshallCollectionUnbounded(ObjectInput in, UnboundedCollectionBuilder<E, T> builder) throws IOException, ClassNotFoundException {
-      final int size = unmarshallInt(in);
+      final int size = unmarshallSize(in);
       if (size == NULL_VALUE) {
          return null;
       }
@@ -244,7 +244,7 @@ public class MarshallUtil {
     * @param in {@link ObjectInput} to read.
     * @return The {@link String} or {@code null}.
     * @throws IOException If any of the usual Input/Output related exceptions occur.
-    * @see {@link #marshallString(String, ObjectOutput)}.
+    * @see #marshallString(String, ObjectOutput).
     */
    public static String unmarshallString(ObjectInput in) throws IOException {
       if (in.readBoolean()) {
@@ -256,11 +256,11 @@ public class MarshallUtil {
    /**
     * Same as {@link #marshallArray(Object[], ObjectOutput)} but specialized for byte arrays.
     *
-    * @see {@link #marshallArray(Object[], ObjectOutput)}.
+    * @see #marshallArray(Object[], ObjectOutput).
     */
    public static void marshallByteArray(byte[] array, ObjectOutput out) throws IOException {
       final int size = array == null ? NULL_VALUE : array.length;
-      marshallInt(out, size);
+      marshallSize(out, size);
       if (size <= 0) {
          return;
       }
@@ -272,10 +272,10 @@ public class MarshallUtil {
     * <p>
     * No {@link ArrayBuilder} is necessary.
     *
-    * @see {@link  #unmarshallArray(ObjectInput, ArrayBuilder)}.
+    * @see #unmarshallArray(ObjectInput, ArrayBuilder).
     */
    public static byte[] unmarshallByteArray(ObjectInput in) throws IOException {
-      final int size = unmarshallInt(in);
+      final int size = unmarshallSize(in);
       if (size == NULL_VALUE) {
          return null;
       } else if (size == 0) {
@@ -290,7 +290,7 @@ public class MarshallUtil {
     * A special marshall implementation for integer.
     * <p>
     * This method supports negative values but they are handles as {@link #NULL_VALUE}. It means that the real value is
-    * lost and {@link #NULL_VALUE} is returned by {@link #unmarshallInt(ObjectInput)}.
+    * lost and {@link #NULL_VALUE} is returned by {@link #unmarshallSize(ObjectInput)}.
     * <p>
     * The integer is marshalled in a variable length from 1 to 5 bytes. Negatives values are always marshalled in 1
     * byte.
@@ -299,7 +299,7 @@ public class MarshallUtil {
     * @param value Integer value to marshall.
     * @throws IOException If any of the usual Input/Output related exceptions occur.
     */
-   public static void marshallInt(ObjectOutput out, int value) throws IOException {
+   public static void marshallSize(ObjectOutput out, int value) throws IOException {
       if (value < 0) {
          out.writeByte(0x80); //meaning it is a negative value!
          return;
@@ -324,9 +324,9 @@ public class MarshallUtil {
     * @param in {@link ObjectInput} to read.
     * @return The integer value or {@link #NULL_VALUE} if the original value was negative.
     * @throws IOException If any of the usual Input/Output related exceptions occur.
-    * @see {@link #marshallInt(ObjectOutput, int)}.
+    * @see #marshallSize(ObjectOutput, int).
     */
-   public static int unmarshallInt(ObjectInput in) throws IOException {
+   public static int unmarshallSize(ObjectInput in) throws IOException {
       byte b = in.readByte();
       if ((b & 0x80) != 0) {
          return NULL_VALUE; //negative value
@@ -374,7 +374,7 @@ public class MarshallUtil {
     */
    public static void marshallIntCollection(Collection<Integer> collection, ObjectOutput out) throws IOException {
       final int size = collection == null ? NULL_VALUE : collection.size();
-      marshallInt(out, size);
+      marshallSize(out, size);
       if (size <= 0) {
          return;
       }
@@ -393,7 +393,7 @@ public class MarshallUtil {
     * @throws IOException if an error occurs.
     */
    public static <T extends Collection<Integer>> T unmarshallIntCollection(ObjectInput in, CollectionBuilder<Integer, T> builder) throws IOException {
-      final int size = unmarshallInt(in);
+      final int size = unmarshallSize(in);
       if (size == NULL_VALUE) {
          return null;
       }

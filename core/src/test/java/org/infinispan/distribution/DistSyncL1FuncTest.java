@@ -3,7 +3,6 @@ package org.infinispan.distribution;
 import org.infinispan.Cache;
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.read.GetCacheEntryCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.interceptors.AsyncInterceptor;
@@ -18,6 +17,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -74,7 +74,8 @@ public class DistSyncL1FuncTest extends BaseDistSyncL1Test {
          CommandAckCollector collector = TestingUtil.extractComponent(nonOwnerCache, CommandAckCollector.class);
          List<CommandInvocationId> pendingIds = collector.getPendingCommands();
          assertEquals(1, pendingIds.size());
-         collector.awaitWithoutRemoving(pendingIds.get(0), 30, TimeUnit.SECONDS);
+         CompletableFuture<?> cFuture = collector.getCollectorCompletableFuture(pendingIds.get(0));
+         cFuture.get(30, TimeUnit.SECONDS);
 
          // Stop blocking new commands as we check that a put returns the correct previous value
          blockingInterceptor.suspend(true);
@@ -262,7 +263,7 @@ public class DistSyncL1FuncTest extends BaseDistSyncL1Test {
 
       // Add a barrier to block the backup owner from committing the write to memory
       CyclicBarrier backupOwnerWriteBarrier = new CyclicBarrier(2);
-      addBlockingInterceptor(backupOwnerCache, backupOwnerWriteBarrier, BackupWriteCommand.class, L1NonTxInterceptor.class, true);
+      addBlockingInterceptor(backupOwnerCache, backupOwnerWriteBarrier, PutKeyValueCommand.class, L1NonTxInterceptor.class, true);
 
       try {
          Future<String> future = fork(() -> ownerCache.put(key, secondValue));

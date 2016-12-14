@@ -34,14 +34,14 @@ import org.infinispan.commands.tx.totalorder.TotalOrderVersionedCommitCommand;
 import org.infinispan.commands.tx.totalorder.TotalOrderVersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.BackupAckCommand;
-import org.infinispan.commands.write.BackupPutMapAckCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
+import org.infinispan.commands.write.BackupMultiKeyAckCommand;
+import org.infinispan.commands.write.BackupWriteRcpCommand;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.ExceptionAckCommand;
 import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.commands.write.InvalidateL1Command;
 import org.infinispan.commands.write.PrimaryAckCommand;
-import org.infinispan.commands.write.PrimaryPutMapAckCommand;
+import org.infinispan.commands.write.PrimaryMultiKeyAckCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
 import org.infinispan.commands.write.RemoveCommand;
@@ -181,9 +181,6 @@ public class RemoteCommandsFactory {
             case ReplicableCommandManagerFunction.COMMAND_ID:
                command = new ReplicableCommandManagerFunction();
                break;
-            case BackupWriteCommand.COMMAND_ID:
-               command = new BackupWriteCommand();
-               break;
             default:
                throw new CacheException("Unknown command id " + id + "!");
          }
@@ -308,14 +305,17 @@ public class RemoteCommandsFactory {
             case PrimaryAckCommand.COMMAND_ID:
                command = new PrimaryAckCommand(cacheName);
                break;
-            case BackupPutMapAckCommand.COMMAND_ID:
-               command = new BackupPutMapAckCommand(cacheName);
+            case BackupMultiKeyAckCommand.COMMAND_ID:
+               command = new BackupMultiKeyAckCommand(cacheName);
                break;
-            case PrimaryPutMapAckCommand.COMMAND_ID:
-               command = new PrimaryPutMapAckCommand(cacheName);
+            case PrimaryMultiKeyAckCommand.COMMAND_ID:
+               command = new PrimaryMultiKeyAckCommand(cacheName);
                break;
             case ExceptionAckCommand.COMMAND_ID:
                command = new ExceptionAckCommand(cacheName);
+               break;
+            case BackupWriteRcpCommand.COMMAND_ID:
+               command = new BackupWriteRcpCommand(cacheName);
                break;
             default:
                throw new CacheException("Unknown command id " + id + "!");

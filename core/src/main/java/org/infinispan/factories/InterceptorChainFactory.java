@@ -17,7 +17,7 @@ import org.infinispan.factories.annotations.DefaultFactoryFor;
 import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.InterceptorChain;
-import org.infinispan.interceptors.TriangleInterceptor;
+import org.infinispan.interceptors.TriangleAckInterceptor;
 import org.infinispan.interceptors.compat.TypeConverterInterceptor;
 import org.infinispan.interceptors.distribution.DistributionBulkInterceptor;
 import org.infinispan.interceptors.distribution.L1LastChanceInterceptor;
@@ -169,7 +169,7 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
       }
 
       if (transactionMode == TransactionMode.NON_TRANSACTIONAL && cacheMode.isDistributed()) {
-         interceptorChain.appendInterceptor(createInterceptor(new TriangleInterceptor(), TriangleInterceptor.class), false);
+         interceptorChain.appendInterceptor(createInterceptor(new TriangleAckInterceptor(), TriangleAckInterceptor.class), false);
       }
 
       // The partition handling must run every time the state transfer interceptor retries a command (in non-transactional caches)

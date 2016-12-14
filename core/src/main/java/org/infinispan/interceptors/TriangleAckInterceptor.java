@@ -1,12 +1,18 @@
 package org.infinispan.interceptors;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.PrimaryAckCommand;
-import org.infinispan.commands.write.PrimaryPutMapAckCommand;
+import org.infinispan.commands.write.PrimaryMultiKeyAckCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
 import org.infinispan.commands.write.RemoveCommand;
@@ -19,18 +25,13 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.remoting.inboundhandler.DeliverOrder;
 import org.infinispan.remoting.rpc.RpcManager;
-import org.infinispan.remoting.rpc.RpcOptions;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.statetransfer.OutdatedTopologyException;
+import org.infinispan.statetransfer.StateTransferManager;
+import org.infinispan.topology.CacheTopology;
 import org.infinispan.util.concurrent.CommandAckCollector;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * It handles the acknowledges for the triangle algorithm (distributed mode only!)
@@ -38,25 +39,25 @@ import java.util.stream.Collectors;
  * It is placed between the {@link org.infinispan.statetransfer.StateTransferInterceptor} and the {@link
  * org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor}.
  * <p>
- * The acknowledges are sent while the lock isn't acquire and it interacts with the {@link
+ * The acknowledges are sent after the lock is released and it interacts with the {@link
  * org.infinispan.statetransfer.StateTransferInterceptor} to trigger the retries when topology changes while the
  * commands are processing.
  *
  * @author Pedro Ruivo
  * @since 9.0
  */
-public class TriangleInterceptor extends DDAsyncInterceptor {
+public class TriangleAckInterceptor extends DDAsyncInterceptor {
 
-   private static final Log log = LogFactory.getLog(TriangleInterceptor.class);
+   private static final Log log = LogFactory.getLog(TriangleAckInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
 
    private RpcManager rpcManager;
    private CommandsFactory commandsFactory;
    private CommandAckCollector commandAckCollector;
    private DistributionManager distributionManager;
+   private StateTransferManager stateTransferManager;
 
    private Address localAddress;
-   private long timeoutNanoseconds;
 
    private static Collection<Integer> calculateSegments(Collection<?> keys, ConsistentHash ch) {
       return keys.stream().map(ch::getSegment).collect(Collectors.toSet());
@@ -64,33 +65,33 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
 
    @Inject
    public void inject(RpcManager rpcManager, CommandsFactory commandsFactory, CommandAckCollector commandAckCollector,
-                      DistributionManager distributionManager) {
+         DistributionManager distributionManager, StateTransferManager stateTransferManager) {
       this.rpcManager = rpcManager;
       this.commandsFactory = commandsFactory;
       this.commandAckCollector = commandAckCollector;
       this.distributionManager = distributionManager;
+      this.stateTransferManager = stateTransferManager;
    }
 
    @Start
    public void start() {
       localAddress = rpcManager.getAddress();
-      RpcOptions options = rpcManager.getDefaultRpcOptions(true);
-      timeoutNanoseconds = options.timeUnit().toNanos(options.timeout());
    }
 
    @Override
-   public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
-      return handleWriteCommands(ctx, command);
+   public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command)
+         throws Throwable {
+      return handleWriteCommand(ctx, command);
    }
 
    @Override
    public BasicInvocationStage visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
-      return handleWriteCommands(ctx, command);
+      return handleWriteCommand(ctx, command);
    }
 
    @Override
    public BasicInvocationStage visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
-      return handleWriteCommands(ctx, command);
+      return handleWriteCommand(ctx, command);
    }
 
    @Override
@@ -100,11 +101,6 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
       } else {
          return handleRemotePutMapCommand(ctx, command);
       }
-   }
-
-   @Override
-   public BasicInvocationStage visitBackupWriteCommand(InvocationContext ctx, BackupWriteCommand command) throws Throwable {
-      return invokeNext(ctx, command).handle(this::onBackupCommand);
    }
 
    private BasicInvocationStage handleRemotePutMapCommand(InvocationContext ctx, PutMapCommand command) {
@@ -119,7 +115,8 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
          if (cmd.isForwarded()) {
             sendPutMapBackupAck(cmd, segments);
          } else {
-            sendPrimaryPutMapAck(cmd, segments, (Map<Object, Object>) rv);
+            //noinspection unchecked
+            sendPrimaryPutMapAck(cmd, (Map<Object, Object>) rv);
          }
          return stage;
       });
@@ -132,52 +129,83 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
             disposeCollectorOnException(cmd.getCommandInvocationId());
             return stage;
          }
-         return waitCollector(cmd.getCommandInvocationId(), rv);
+         return waitCollectorAsync(stage, cmd.getCommandInvocationId());
       });
    }
 
 
-   private BasicInvocationStage handleWriteCommands(InvocationContext ctx, DataWriteCommand command) {
-      return invokeNext(ctx, command).compose(this::onWriteCommand);
+   private BasicInvocationStage handleWriteCommand(InvocationContext ctx, DataWriteCommand command) {
+      if (ctx.isOriginLocal()) {
+         return invokeNext(ctx, command).compose(this::onLocalWriteCommand);
+      } else {
+         CacheTopology cacheTopology = stateTransferManager.getCacheTopology();
+         if (command.getTopologyId() != cacheTopology.getTopologyId()) {
+            sendExceptionAck(command.getCommandInvocationId(), command.getTopologyId(),
+                  OutdatedTopologyException.getCachedInstance());
+            throw OutdatedTopologyException.getCachedInstance();
+         }
+         KeyOwnership keyOwnership = KeyOwnership
+               .ownership(cacheTopology.getWriteConsistentHash().locateOwners(command.getKey()), localAddress);
+         switch (keyOwnership) {
+            case BACKUP:
+               return invokeNext(ctx, command).compose(this::onRemoteBackupOwner);
+            case PRIMARY:
+               return invokeNext(ctx, command).compose(this::onRemotePrimaryOwner);
+            default:
+               throw new IllegalStateException();
+         }
+      }
    }
 
-   private BasicInvocationStage onWriteCommand(BasicInvocationStage stage, InvocationContext rCtx, VisitableCommand rCommand, Object rv, Throwable t) throws Throwable {
-      final DataWriteCommand cmd = (DataWriteCommand) rCommand;
-      final CommandInvocationId id = cmd.getCommandInvocationId();
-      if (rCtx.isOriginLocal()) {
-         if (t != null) {
-            disposeCollectorOnException(id);
-            return stage;
-         }
-         return waitCollector(id, rv);
+   @SuppressWarnings("unused")
+   private BasicInvocationStage onRemotePrimaryOwner(BasicInvocationStage stage, InvocationContext rCtx,
+         VisitableCommand rCommand, Object rv, Throwable throwable) {
+      DataWriteCommand command = (DataWriteCommand) rCommand;
+      if (throwable != null) {
+         sendExceptionAck(command.getCommandInvocationId(), command.getTopologyId(), throwable);
       } else {
-         //we are the primary owner! send back ack.
-         if (t != null) {
-            sendExceptionAck(id, cmd.getTopologyId(), t);
-         } else {
-            sendPrimaryAck(cmd, rv);
-         }
+         sendPrimaryAck(command, rv);
       }
       return stage;
    }
 
-   private void disposeCollectorOnException(CommandInvocationId id) {
-      //a local exception occur. No need to wait for acks.
-      commandAckCollector.dispose(id);
-   }
-
-   private BasicInvocationStage waitCollector(CommandInvocationId id, Object currentReturnValue) throws Throwable {
-      //waiting for acks based on default rpc timeout.
-      return returnWith(commandAckCollector.awaitCollector(id, timeoutNanoseconds, TimeUnit.NANOSECONDS, currentReturnValue));
-   }
-
-   private void onBackupCommand(InvocationContext rCtx, VisitableCommand rCommand, Object rv, Throwable throwable) {
-      BackupWriteCommand cmd = (BackupWriteCommand) rCommand;
+   @SuppressWarnings("unused")
+   private BasicInvocationStage onRemoteBackupOwner(BasicInvocationStage stage, InvocationContext rCtx,
+         VisitableCommand rCommand, Object rv, Throwable throwable) {
+      DataWriteCommand cmd = (DataWriteCommand) rCommand;
       if (throwable != null) {
          sendExceptionAck(cmd.getCommandInvocationId(), cmd.getTopologyId(), throwable);
       } else {
          sendBackupAck(cmd);
       }
+      return stage;
+   }
+
+   @SuppressWarnings("unused")
+   private BasicInvocationStage onLocalWriteCommand(BasicInvocationStage stage, InvocationContext rCtx,
+         VisitableCommand rCommand, Object rv, Throwable throwable) {
+      final DataWriteCommand cmd = (DataWriteCommand) rCommand;
+      cmd.getCommandInvocationId();
+      if (throwable != null) {
+         disposeCollectorOnException(cmd.getCommandInvocationId());
+         return stage;
+      }
+      return waitCollectorAsync(stage, cmd.getCommandInvocationId());
+   }
+
+   private void disposeCollectorOnException(CommandInvocationId id) {
+      //a local exception occur. No need to wait for acknowledges.
+      commandAckCollector.dispose(id);
+   }
+
+   private BasicInvocationStage waitCollectorAsync(BasicInvocationStage stage, CommandInvocationId id) {
+      //waiting for acknowledges based on default rpc timeout.
+      CompletableFuture<Object> collectorFuture = commandAckCollector.getCollectorCompletableFutureToWait(id);
+      if (collectorFuture == null) {
+         //no collector, return immediately.
+         return stage;
+      }
+      return returnWithAsync(collectorFuture);
    }
 
    private void sendPrimaryAck(DataWriteCommand command, Object returnValue) {
@@ -186,12 +214,12 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
       if (trace) {
          log.tracef("Sending ack for command %s. Originator=%s.", id, origin);
       }
-      PrimaryAckCommand ackCommand = commandsFactory.buildPrimaryAckCommand(id, command.getTopologyId());
+      PrimaryAckCommand ackCommand = commandsFactory.buildPrimaryAckCommand();
       command.initPrimaryAck(ackCommand, returnValue);
-      rpcManager.sendTo(id.getAddress(), ackCommand, command.isSuccessful() ? DeliverOrder.NONE : DeliverOrder.PER_SENDER);
+      rpcManager.sendTo(origin, ackCommand, command.isSuccessful() ? DeliverOrder.NONE : DeliverOrder.PER_SENDER);
    }
 
-   private void sendBackupAck(BackupWriteCommand command) {
+   private void sendBackupAck(DataWriteCommand command) {
       final CommandInvocationId id = command.getCommandInvocationId();
       final Address origin = id.getAddress();
       if (trace) {
@@ -200,7 +228,8 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
       if (origin.equals(localAddress)) {
          commandAckCollector.backupAck(id, origin, command.getTopologyId());
       } else {
-         rpcManager.sendTo(origin, commandsFactory.buildBackupAckCommand(id, command.getTopologyId()), DeliverOrder.NONE);
+         rpcManager
+               .sendTo(origin, commandsFactory.buildBackupAckCommand(id, command.getTopologyId()), DeliverOrder.NONE);
       }
    }
 
@@ -211,25 +240,27 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
          log.tracef("Sending ack for command %s. Originator=%s.", id, origin);
       }
       if (id.getAddress().equals(localAddress)) {
-         commandAckCollector.putMapBackupAck(id, localAddress, segments, command.getTopologyId());
+         commandAckCollector.multiKeyBackupAck(id, localAddress, segments, command.getTopologyId());
       } else {
-         rpcManager.sendTo(id.getAddress(), commandsFactory.buildBackupPutMapAckCommand(id, segments, command.getTopologyId()), DeliverOrder.NONE);
+         rpcManager.sendTo(id.getAddress(),
+               commandsFactory.buildBackupMultiKeyAckCommand(id, segments, command.getTopologyId()), DeliverOrder.NONE);
       }
    }
 
-   private void sendPrimaryPutMapAck(PutMapCommand command, Collection<Integer> segments, Map<Object, Object> returnValue) {
+   private void sendPrimaryPutMapAck(PutMapCommand command,
+         Map<Object, Object> returnValue) {
       final CommandInvocationId id = command.getCommandInvocationId();
       final Address origin = id.getAddress();
       if (trace) {
          log.tracef("Sending ack for command %s. Originator=%s.", id, origin);
       }
-      PrimaryPutMapAckCommand ack = commandsFactory.buildPrimaryPutMapAckCommand(
+      PrimaryMultiKeyAckCommand ack = commandsFactory.buildPrimaryMultiKeyAckCommand(
             command.getCommandInvocationId(),
             command.getTopologyId());
       if (command.hasFlag(Flag.IGNORE_RETURN_VALUES)) {
-         ack.initWithoutReturnValue(segments);
+         ack.initWithoutReturnValue();
       } else {
-         ack.initWithReturnValue(segments, returnValue);
+         ack.initWithReturnValue(returnValue);
       }
       rpcManager.sendTo(id.getAddress(), ack, command.isSuccessful() ? DeliverOrder.NONE : DeliverOrder.PER_SENDER);
    }
@@ -242,12 +273,15 @@ public class TriangleInterceptor extends DDAsyncInterceptor {
       if (origin.equals(localAddress)) {
          commandAckCollector.completeExceptionally(id, throwable, topologyId);
       } else {
-         rpcManager.sendTo(origin, commandsFactory.buildExceptionAckCommand(id, throwable, topologyId), DeliverOrder.NONE);
+         rpcManager
+               .sendTo(origin, commandsFactory.buildExceptionAckCommand(id, throwable, topologyId), DeliverOrder.NONE);
       }
    }
 
    public enum KeyOwnership {
-      PRIMARY, BACKUP, NONE;
+      PRIMARY,
+      BACKUP,
+      NONE;
 
       public static KeyOwnership ownership(List<Address> owners, Address localNode) {
          Iterator<Address> iterator = owners.iterator();

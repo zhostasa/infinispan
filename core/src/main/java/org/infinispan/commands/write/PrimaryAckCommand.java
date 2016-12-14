@@ -39,25 +39,29 @@ public class PrimaryAckCommand extends BaseRpcCommand {
       super(cacheName);
    }
 
-   public PrimaryAckCommand(ByteString cacheName, CommandInvocationId commandInvocationId, int topologyId) {
-      super(cacheName);
-      this.commandInvocationId = commandInvocationId;
-      this.topologyId = topologyId;
-   }
-
    private static Type valueOf(int index) {
       return CACHED_TYPE[index];
    }
 
-   @Override
-   public Object invoke() throws Throwable {
-      ack();
-      return null;
+   public void initCommandInvocationIdAndTopologyId(CommandInvocationId id, int topologyId) {
+      this.commandInvocationId = id;
+      this.topologyId = topologyId;
    }
 
    @Override
    public CompletableFuture<Object> invokeAsync() throws Throwable {
-      ack();
+      switch (type) {
+         case SUCCESS_WITH_BOOL_RETURN_VALUE:
+         case SUCCESS_WITH_RETURN_VALUE:
+         case SUCCESS_WITHOUT_RETURN_VALUE:
+            commandAckCollector.primaryAck(commandInvocationId, returnValue, true, getOrigin(), topologyId);
+            break;
+         case UNSUCCESSFUL_WITH_BOOL_RETURN_VALUE:
+         case UNSUCCESSFUL_WITH_RETURN_VALUE:
+         case UNSUCCESSFUL_WITHOUT_RETURN_VALUE:
+            commandAckCollector.primaryAck(commandInvocationId, returnValue, false, getOrigin(), topologyId);
+            break;
+      }
       return CompletableFutures.completedNull();
    }
 
@@ -144,21 +148,6 @@ public class PrimaryAckCommand extends BaseRpcCommand {
             ", type=" + type +
             ", topologyId=" + topologyId +
             '}';
-   }
-
-   private void ack() {
-      switch (type) {
-         case SUCCESS_WITH_BOOL_RETURN_VALUE:
-         case SUCCESS_WITH_RETURN_VALUE:
-         case SUCCESS_WITHOUT_RETURN_VALUE:
-            commandAckCollector.primaryAck(commandInvocationId, returnValue, true, getOrigin(), topologyId);
-            break;
-         case UNSUCCESSFUL_WITH_BOOL_RETURN_VALUE:
-         case UNSUCCESSFUL_WITH_RETURN_VALUE:
-         case UNSUCCESSFUL_WITHOUT_RETURN_VALUE:
-            commandAckCollector.primaryAck(commandInvocationId, returnValue, false, getOrigin(), topologyId);
-            break;
-      }
    }
 
    private enum Type {

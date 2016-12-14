@@ -89,6 +89,11 @@ public class NonTxOriginatorBecomingPrimaryOwnerTest extends MultipleCacheManage
          distInterceptorBarrier.await(10, TimeUnit.SECONDS);
          distInterceptorBarrier.await(10, TimeUnit.SECONDS);
 
+         if (cache2.getAdvancedCache().getDistributionManager().getPrimaryLocation(key).equals(address(2))) {
+            // cache2 forwards the command back to cache0, blocking again
+            distInterceptorBarrier.await(10, TimeUnit.SECONDS);
+            distInterceptorBarrier.await(10, TimeUnit.SECONDS);
+         }
          // Check that the put command didn't fail
          Object result = future.get(10, TimeUnit.SECONDS);
          assertNull(result);

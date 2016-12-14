@@ -160,7 +160,7 @@ public class RemoveExpiredCommand extends RemoveCommand {
    }
 
    @Override
-   public BackupWriteCommand createBackupWriteCommand() {
-      return BackupWriteCommand.constructRemoveExpired(commandInvocationId, key, getFlagsBitSet(), getTopologyId());
+   public void initBackupWriteRcpCommand(BackupWriteRcpCommand command) {
+      command.setRemoveExpired(commandInvocationId, key, value, EnumUtil.bitSetOf(Flag.SKIP_CACHE_LOAD), getTopologyId());
    }
 }

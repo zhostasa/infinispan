@@ -14,8 +14,6 @@ import org.infinispan.commons.CacheException;
  */
 public class OutdatedTopologyException extends CacheException {
 
-   //TODO? should we create a special externalizer to return the cached exception? Is it ever worth to send the stack trace/message when originated remotely?
-
    @SuppressWarnings("ThrowableInstanceNeverThrown")
    private static final OutdatedTopologyException CACHED = new OutdatedTopologyException();
 
@@ -25,11 +23,7 @@ public class OutdatedTopologyException extends CacheException {
    }
 
    public OutdatedTopologyException(String msg) {
-      super(msg);
-   }
-
-   public OutdatedTopologyException(String msg, Throwable cause) {
-      super(msg, cause);
+      super(msg, null, false, false);
    }
 
    /**

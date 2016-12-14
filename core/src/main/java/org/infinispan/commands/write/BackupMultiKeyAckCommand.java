@@ -17,13 +17,13 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A command that represents an acknowledge sent by a backup owner to the originator.
  * <p>
- * The acknowledge signals a successful execution of the the {@link PutMapCommand}. It contains the segments ids of
- * the updated keys.
+ * The acknowledge signals a successful execution of a multi-key command, like {@link PutMapCommand}. It contains the
+ * segments ids of the updated keys.
  *
  * @author Pedro Ruivo
  * @since 9.0
  */
-public class BackupPutMapAckCommand extends BaseRpcCommand {
+public class BackupMultiKeyAckCommand extends BaseRpcCommand {
 
    public static final byte COMMAND_ID = 41;
    private CommandInvocationId commandInvocationId;
@@ -31,15 +31,16 @@ public class BackupPutMapAckCommand extends BaseRpcCommand {
    private Collection<Integer> segments;
    private int topologyId;
 
-   public BackupPutMapAckCommand() {
+   public BackupMultiKeyAckCommand() {
       super(null);
    }
 
-   public BackupPutMapAckCommand(ByteString cacheName) {
+   public BackupMultiKeyAckCommand(ByteString cacheName) {
       super(cacheName);
    }
 
-   public BackupPutMapAckCommand(ByteString cacheName, CommandInvocationId commandInvocationId, Collection<Integer> segments, int topologyId) {
+   public BackupMultiKeyAckCommand(ByteString cacheName, CommandInvocationId commandInvocationId,
+         Collection<Integer> segments, int topologyId) {
       super(cacheName);
       this.commandInvocationId = commandInvocationId;
       this.segments = segments;
@@ -47,14 +48,8 @@ public class BackupPutMapAckCommand extends BaseRpcCommand {
    }
 
    @Override
-   public Object invoke() throws Throwable {
-      commandAckCollector.putMapBackupAck(commandInvocationId, getOrigin(), segments, topologyId);
-      return null;
-   }
-
-   @Override
    public CompletableFuture<Object> invokeAsync() throws Throwable {
-      commandAckCollector.putMapBackupAck(commandInvocationId, getOrigin(), segments, topologyId);
+      commandAckCollector.multiKeyBackupAck(commandInvocationId, getOrigin(), segments, topologyId);
       return CompletableFutures.completedNull();
    }
 
@@ -88,7 +83,7 @@ public class BackupPutMapAckCommand extends BaseRpcCommand {
 
    @Override
    public String toString() {
-      return "BackupPutMapAckCommand{" +
+      return "BackupMultiKeyAckCommand{" +
             "commandInvocationId=" + commandInvocationId +
             ", segments=" + segments +
             ", topologyId=" + topologyId +

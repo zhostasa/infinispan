@@ -42,9 +42,8 @@ public class DistAsyncFuncTest extends DistSyncFuncTest {
          for (ReplListener rl : r) rl.expect(command);
          for (ReplListener rl : r) rl.waitForRpc();
       } else {
-         final boolean isTriangle = isTriangle();
          for (Cache<?, ?> c : getOwners(key)) {
-            listenerLookup.get(c).expect(isTriangle ? TestingUtil.triangleWrite(command, c, key) : command);
+            listenerLookup.get(c).expect(command);
             listenerLookup.get(c).waitForRpc();
          }
 

@@ -8,7 +8,6 @@ import java.util.concurrent.Future;
 
 import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
@@ -73,23 +72,7 @@ public class L1LastChanceInterceptor extends BaseRpcInterceptor {
       return visitDataWriteCommand(ctx, command, false);
    }
 
-   @Override
-   public Object visitBackupWriteCommand(InvocationContext ctx, BackupWriteCommand command) throws Throwable {
-      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
-         BackupWriteCommand backupWriteCommand = (BackupWriteCommand) rCommand;
-         if (trace) {
-            log.trace("Sending additional invalidation for requestors if necessary.");
-         }
-         // Send out a last attempt L1 invalidation in case if someone cached the L1
-         // value after they already received an invalidation
-         blockOnL1FutureIfNeeded(l1Manager.flushCache(Collections.singleton(backupWriteCommand.getKey()),
-               rCtx.getOrigin(),
-               !backupWriteCommand.isRemove()));
-         return rv;
-      });
-   }
-
-   private BasicInvocationStage visitDataWriteCommand(InvocationContext ctx, DataWriteCommand command, boolean assumeOriginKeptEntryInL1) {
+   public BasicInvocationStage visitDataWriteCommand(InvocationContext ctx, DataWriteCommand command, boolean assumeOriginKeptEntryInL1) throws Throwable {
       return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
          Object key;
          DataWriteCommand writeCommand = (DataWriteCommand) rCommand;

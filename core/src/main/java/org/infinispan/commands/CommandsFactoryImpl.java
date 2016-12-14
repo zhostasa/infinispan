@@ -41,15 +41,16 @@ import org.infinispan.commands.tx.totalorder.TotalOrderVersionedCommitCommand;
 import org.infinispan.commands.tx.totalorder.TotalOrderVersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.BackupAckCommand;
-import org.infinispan.commands.write.BackupPutMapAckCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
+import org.infinispan.commands.write.BackupMultiKeyAckCommand;
+import org.infinispan.commands.write.BackupWriteRcpCommand;
 import org.infinispan.commands.write.ClearCommand;
+import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.EvictCommand;
 import org.infinispan.commands.write.ExceptionAckCommand;
 import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.commands.write.InvalidateL1Command;
 import org.infinispan.commands.write.PrimaryAckCommand;
-import org.infinispan.commands.write.PrimaryPutMapAckCommand;
+import org.infinispan.commands.write.PrimaryMultiKeyAckCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
 import org.infinispan.commands.write.RemoveCommand;
@@ -100,7 +101,6 @@ import org.infinispan.transaction.xa.DldGlobalTransaction;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.transaction.xa.recovery.RecoveryManager;
 import org.infinispan.util.ByteString;
-import org.infinispan.util.TimeService;
 import org.infinispan.util.concurrent.CommandAckCollector;
 import org.infinispan.util.concurrent.locks.LockManager;
 import org.infinispan.util.logging.Log;
@@ -169,7 +169,6 @@ public class CommandsFactoryImpl implements CommandsFactory {
    private LocalStreamManager localStreamManager;
    private ClusterStreamManager clusterStreamManager;
    private ClusteringDependentLogic clusteringDependentLogic;
-   private TimeService timeService;
    private CommandAckCollector commandAckCollector;
 
    private Map<Byte, ModuleCommandInitializer> moduleCommandInitializers;
@@ -183,12 +182,12 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                  RecoveryManager recoveryManager, StateProvider stateProvider, StateConsumer stateConsumer,
                                  LockManager lockManager, InternalEntryFactory entryFactory,
                                  StateTransferManager stm, BackupSender backupSender, CancellationService cancellationService,
-                                 TimeService timeService, XSiteStateProvider xSiteStateProvider, XSiteStateConsumer xSiteStateConsumer,
+                                 XSiteStateProvider xSiteStateProvider, XSiteStateConsumer xSiteStateConsumer,
                                  XSiteStateTransferManager xSiteStateTransferManager,
                                  GroupManager groupManager, PartitionHandlingManager partitionHandlingManager,
                                  LocalStreamManager localStreamManager, ClusterStreamManager clusterStreamManager,
-                                 ClusteringDependentLogic clusteringDependentLogic,
-                                 CommandAckCollector commandAckCollector, StreamingMarshaller marshaller) {
+                                 ClusteringDependentLogic clusteringDependentLogic, StreamingMarshaller marshaller,
+                                 CommandAckCollector commandAckCollector) {
       this.dataContainer = container;
       this.notifier = notifier;
       this.cache = cache;
@@ -213,9 +212,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
       this.localStreamManager = localStreamManager;
       this.clusterStreamManager = clusterStreamManager;
       this.clusteringDependentLogic = clusteringDependentLogic;
-      this.timeService = timeService;
-      this.commandAckCollector = commandAckCollector;
       this.marshaller = marshaller;
+      this.commandAckCollector = commandAckCollector;
    }
 
    @Start(priority = 1)
@@ -513,18 +511,18 @@ public class CommandsFactoryImpl implements CommandsFactory {
             BackupAckCommand command = (BackupAckCommand) c;
             command.setCommandAckCollector(commandAckCollector);
             break;
-         case BackupWriteCommand.COMMAND_ID:
-            BackupWriteCommand bwc = (BackupWriteCommand) c;
-            bwc.setNotifier(notifier);
+         case BackupWriteRcpCommand.COMMAND_ID:
+            BackupWriteRcpCommand bwc = (BackupWriteRcpCommand) c;
+            bwc.init(icf, interceptorChain, notifier);
             break;
          case PrimaryAckCommand.COMMAND_ID:
             ((PrimaryAckCommand) c).setCommandAckCollector(commandAckCollector);
             break;
-         case BackupPutMapAckCommand.COMMAND_ID:
-            ((BackupPutMapAckCommand) c).setCommandAckCollector(commandAckCollector);
+         case BackupMultiKeyAckCommand.COMMAND_ID:
+            ((BackupMultiKeyAckCommand) c).setCommandAckCollector(commandAckCollector);
             break;
-         case PrimaryPutMapAckCommand.COMMAND_ID:
-            ((PrimaryPutMapAckCommand) c).setCommandAckCollector(commandAckCollector);
+         case PrimaryMultiKeyAckCommand.COMMAND_ID:
+            ((PrimaryMultiKeyAckCommand) c).setCommandAckCollector(commandAckCollector);
             break;
          case ExceptionAckCommand.COMMAND_ID:
             ((ExceptionAckCommand) c).setCommandAckCollector(commandAckCollector);
@@ -586,7 +584,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
 
    @Override
    public <T> DistributedExecuteCommand<T> buildDistributedExecuteCommand(Callable<T> callable, Address sender, Collection keys) {
-      return new DistributedExecuteCommand<T>(cacheName, keys, callable);
+      return new DistributedExecuteCommand<>(cacheName, keys, callable);
    }
 
    @Override
@@ -743,23 +741,30 @@ public class CommandsFactoryImpl implements CommandsFactory {
    }
 
    @Override
-   public PrimaryAckCommand buildPrimaryAckCommand(CommandInvocationId id, int topologyId) {
-      return new PrimaryAckCommand(cacheName, id, topologyId);
+   public PrimaryAckCommand buildPrimaryAckCommand() {
+      return new PrimaryAckCommand(cacheName);
    }
 
    @Override
-   public BackupPutMapAckCommand buildBackupPutMapAckCommand(CommandInvocationId id, Collection<Integer> segments, int topologyId) {
-      return new BackupPutMapAckCommand(cacheName, id, segments, topologyId);
+   public BackupMultiKeyAckCommand buildBackupMultiKeyAckCommand(CommandInvocationId id, Collection<Integer> segments, int topologyId) {
+      return new BackupMultiKeyAckCommand(cacheName, id, segments, topologyId);
    }
 
    @Override
-   public PrimaryPutMapAckCommand buildPrimaryPutMapAckCommand(CommandInvocationId id, int topologyId) {
-      return new PrimaryPutMapAckCommand(cacheName, id, topologyId);
+   public PrimaryMultiKeyAckCommand buildPrimaryMultiKeyAckCommand(CommandInvocationId id, int topologyId) {
+      return new PrimaryMultiKeyAckCommand(cacheName, id, topologyId);
    }
 
    @Override
    public ExceptionAckCommand buildExceptionAckCommand(CommandInvocationId id, Throwable throwable, int topologyId) {
       return new ExceptionAckCommand(cacheName, id, throwable, topologyId);
+   }
+
+   @Override
+   public BackupWriteRcpCommand buildBackupWriteRcpCommand(DataWriteCommand command) {
+      BackupWriteRcpCommand cmd = new BackupWriteRcpCommand(cacheName);
+      command.initBackupWriteRcpCommand(cmd);
+      return cmd;
    }
 
    private ValueMatcher getValueMatcher(Object o) {

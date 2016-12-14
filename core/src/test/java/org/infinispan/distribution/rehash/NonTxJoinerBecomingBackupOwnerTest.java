@@ -2,7 +2,6 @@ package org.infinispan.distribution.rehash;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.commands.read.GetKeyValueCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
@@ -34,8 +33,6 @@ import static org.testng.AssertJUnit.assertEquals;
 @Test(groups = "functional", testName = "distribution.rehash.NonTxJoinerBecomingBackupOwnerTest")
 @CleanupAfterMethod
 public class NonTxJoinerBecomingBackupOwnerTest extends MultipleCacheManagersTest {
-
-   protected boolean functionalAPI = false;
 
    @Override
    protected void createCacheManagers() throws Throwable {
@@ -115,9 +112,7 @@ public class NonTxJoinerBecomingBackupOwnerTest extends MultipleCacheManagersTes
             cache1.getRpcManager().getMembers().size() == 3 &&
             cache2.getRpcManager().getMembers().size() == 3);
 
-      CommandMatcher writeCommandMatcher = functionalAPI ?
-            matchCommand(op.getCommandClass()).build() :
-            matchCommand(BackupWriteCommand.class).build();
+      CommandMatcher writeCommandMatcher = matchCommand(op.getCommandClass()).build();
       // Allow the value to be written on cache1 before "write:cache1_before_return"
       advanceOnInterceptor(sequencer, cache1, StateTransferInterceptor.class, writeCommandMatcher).before("write:cache1_before_return");
       // The remote get (if any) will happen after "write:cache2_before_dist"

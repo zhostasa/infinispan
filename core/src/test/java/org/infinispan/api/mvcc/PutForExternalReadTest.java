@@ -1,9 +1,7 @@
 package org.infinispan.api.mvcc;
 
 import static org.infinispan.context.Flag.CACHE_MODE_LOCAL;
-import static org.infinispan.test.TestingUtil.isTriangleAlgorithm;
 import static org.infinispan.test.TestingUtil.k;
-import static org.infinispan.test.TestingUtil.triangleWrite;
 import static org.infinispan.test.TestingUtil.v;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
@@ -21,7 +19,6 @@ import javax.transaction.TransactionManager;
 
 import org.infinispan.Cache;
 import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -57,16 +54,12 @@ public abstract class PutForExternalReadTest extends MultipleCacheManagersTest {
       final Cache<MagicKey, String> cache1 = cache(0, CACHE_NAME);
       final Cache<MagicKey, String> cache2 = cache(1, CACHE_NAME);
 
-
-      final boolean isTriangle = isTriangleAlgorithm(cache1);
-
       final CyclicBarrier barrier = new CyclicBarrier(2);
       cache1.getAdvancedCache().getAsyncInterceptorChain().addInterceptor(new BaseAsyncInterceptor() {
          @Override
          public BasicInvocationStage visitCommand(InvocationContext ctx, VisitableCommand command)
                throws Throwable {
-            if ((isTriangle && command instanceof BackupWriteCommand) ||
-                  (!isTriangle && command instanceof PutKeyValueCommand)) {
+            if (command instanceof PutKeyValueCommand) {
                if (!ctx.isOriginLocal()) {
                   // wait first before the check
                   barrier.await(10, TimeUnit.SECONDS);
@@ -143,7 +136,7 @@ public abstract class PutForExternalReadTest extends MultipleCacheManagersTest {
          @Override
          public BasicInvocationStage visitCommand(InvocationContext ctx, VisitableCommand command)
                throws Throwable {
-            if (command instanceof PutKeyValueCommand || command instanceof RemoveCommand || command instanceof BackupWriteCommand) {
+            if (command instanceof PutKeyValueCommand || command instanceof RemoveCommand) {
                throw new RuntimeException("Barf!");
             }
             return invokeNext(ctx, command);
@@ -180,9 +173,7 @@ public abstract class PutForExternalReadTest extends MultipleCacheManagersTest {
       assertFalse(cache2.containsKey(key));
       ReplListener replListener2 = replListener(cache2);
 
-      replListener2.expect(isTriangleAlgorithm(cache2) ?
-                                 triangleWrite(PutKeyValueCommand.class, cache2, key) :
-                                 PutKeyValueCommand.class);
+      replListener2.expect(PutKeyValueCommand.class);
       cache1.putForExternalRead(key, value);
       replListener2.waitForRpc();
 

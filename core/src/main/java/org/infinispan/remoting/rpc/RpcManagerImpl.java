@@ -257,7 +257,7 @@ public class RpcManagerImpl implements RpcManager, JmxStatisticsExposer {
    }
 
    @Override
-   public void sendTo(ReplicableCommand command, DeliverOrder deliverOrder, Collection<Address> destinations) {
+   public void sendToMany(Collection<Address> destinations, ReplicableCommand command, DeliverOrder deliverOrder) {
       if (trace) {
          log.tracef("%s invoking %s to list %s ordered by %s", t.getAddress(), command, destinations, deliverOrder);
       }
@@ -267,7 +267,7 @@ public class RpcManagerImpl implements RpcManager, JmxStatisticsExposer {
       CacheRpcCommand cacheRpc = toCacheRpcCommand(command);
 
       try {
-         t.sendTo(cacheRpc, deliverOrder, destinations);
+         t.sendToMany(destinations, cacheRpc, deliverOrder);
       } catch (Exception e) {
          errorReplicating(e);
       }

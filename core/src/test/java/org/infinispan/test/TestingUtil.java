@@ -55,7 +55,6 @@ import org.infinispan.Cache;
 import org.infinispan.cache.impl.CacheImpl;
 import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.write.BackupWriteCommand;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -1583,20 +1582,7 @@ public class TestingUtil {
          throw new AssertionError("Leaked threads: " + leakedThreads);
    }
 
-   public static boolean isTriangleAlgorithm(Cache<?, ?> cache) {
-      return isTriangleAlgorithm(cache.getCacheConfiguration());
-   }
-
-   public static boolean isTriangleAlgorithm(Configuration configuration) {
-      return isTriangleAlgorithm(configuration.clustering().cacheMode(), configuration.transaction().transactionMode().isTransactional());
-   }
-
    public static boolean isTriangleAlgorithm(CacheMode cacheMode, boolean transactional) {
       return cacheMode.isDistributed() && !transactional;
    }
-
-   public static Class<? extends VisitableCommand> triangleWrite(Class<? extends VisitableCommand> commandClass, Cache<?, ?> onCache, Object key) {
-      return isFirstOwner(onCache, key) ? commandClass : BackupWriteCommand.class;
-   }
-
 }

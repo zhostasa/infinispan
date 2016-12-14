@@ -68,23 +68,13 @@ public interface Transport extends Lifecycle {
     * Asynchronously sends the {@link ReplicableCommand} to the set of destination using the specified {@link
     * DeliverOrder}.
     *
-    * @param rpcCommand   the {@link ReplicableCommand} to send.
-    * @param deliverOrder the {@link DeliverOrder} to use.
     * @param destinations the collection of destination's {@link Address}. If {@code null}, it sends to all the members
     *                     in the cluster.
-    * @throws Exception if there was problem sending the request.
-    */
-   void sendTo(ReplicableCommand rpcCommand, DeliverOrder deliverOrder, Collection<Address> destinations) throws Exception;
-
-   /**
-    * Asynchronously sends the {@link ReplicableCommand} to all members in the cluster using the specified {@link
-    * DeliverOrder}.
-    *
     * @param rpcCommand   the {@link ReplicableCommand} to send.
     * @param deliverOrder the {@link DeliverOrder} to use.
     * @throws Exception if there was problem sending the request.
     */
-   void sendToAll(ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception;
+   void sendToMany(Collection<Address> destinations, ReplicableCommand rpcCommand, DeliverOrder deliverOrder) throws Exception;
 
    /**
     * @deprecated Use {@link #invokeRemotely(Map, ResponseMode, long, ResponseFilter, DeliverOrder, boolean)} instead
