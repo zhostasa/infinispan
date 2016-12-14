@@ -172,6 +172,7 @@ final class ExternallyMarshallable {
 
             || className.contains("ConsistentHashFactory")
 
+            || className.equals("org.jboss.as.clustering.infinispan.equivalence.AnyServerEquivalence")
             || className.contains("org.jboss.as.quickstarts.datagrid") // quickstarts testing
             ;
    }
