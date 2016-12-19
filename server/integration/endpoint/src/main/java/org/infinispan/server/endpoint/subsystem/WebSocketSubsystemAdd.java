@@ -17,9 +17,9 @@
 //  * MA  02110-1301, USA.
 //  */
 // package org.infinispan.server.endpoint.subsystem;
-// 
+//
 // import java.util.List;
-// 
+//
 // import org.infinispan.server.websocket.WebSocketServer;
 // import org.infinispan.server.websocket.configuration.WebSocketServerConfigurationBuilder;
 // import org.jboss.as.controller.AttributeDefinition;
@@ -30,7 +30,7 @@
 // import org.jboss.dmr.ModelNode;
 // import org.jboss.msc.service.ServiceBuilder;
 // import org.jboss.msc.service.ServiceController;
-// 
+//
 // /**
 //  * WebSocketSubsystemAdd.
 //  *
@@ -38,12 +38,12 @@
 //  * @since 5.3
 //  */
 // class WebSocketSubsystemAdd extends ProtocolServiceSubsystemAdd {
-// 
+//
 //    static final WebSocketSubsystemAdd INSTANCE = new WebSocketSubsystemAdd();
-// 
+//
 //    private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
 //       target.setEmptyObject();
-// 
+//
 //       for (AttributeDefinition attr : ProtocolServerConnectorResource.COMMON_CONNECTOR_ATTRIBUTES) {
 //          attr.validateAndSet(source, target);
 //       }
@@ -51,7 +51,7 @@
 //          attr.validateAndSet(source, target);
 //       }
 //    }
-// 
+//
 //    @Override
 //    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 //       // Read the full model
@@ -61,22 +61,22 @@
 //       this.configureProtocolServer(configurationBuilder, config);
 //       // Create the service
 //       final ProtocolServerService service = new ProtocolServerService(getServiceName(operation), WebSocketServer.class, configurationBuilder);
-// 
+//
 //       // Setup the various dependencies with injectors and install the service
 //       ServiceBuilder<?> builder = context.getServiceTarget().addService(EndpointUtils.getServiceName(operation, "websocket"), service);
-// 
+//
 //       String cacheContainerName = getCacheContainerName(operation);
 //       EndpointUtils.addCacheContainerDependency(builder, cacheContainerName, service.getCacheManager());
 //       EndpointUtils.addSocketBindingDependency(builder, getSocketBindingName(operation), service.getSocketBinding());
 //       EndpointUtils.addCacheDependency(builder, cacheContainerName, null);
 //       builder.install();
 //    }
-// 
+//
 //    @Override
 //    protected void populateModel(ModelNode source, ModelNode target) throws OperationFailedException {
 //       populate(source, target);
 //    }
-// 
+//
 //    @Override
 //    protected boolean requiresRuntimeVerification() {
 //       return false;

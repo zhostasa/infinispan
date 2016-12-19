@@ -317,7 +317,7 @@ public class AsyncStoreStressTest {
          }
       };
    }
-   
+
    private boolean withStore(String key, Callable<Boolean> call) {
       boolean result = false;
       try {

@@ -9,7 +9,7 @@ public class CapacityFactor {
     public static float capacityFactor(HashConfiguration hash) {
         return hash.capacityFactor();
     }
-    
+
     public static HashConfigurationBuilder capacityFactor(HashConfigurationBuilder builder, float capacityFactor) {
         return builder.capacityFactor(capacityFactor);
     }

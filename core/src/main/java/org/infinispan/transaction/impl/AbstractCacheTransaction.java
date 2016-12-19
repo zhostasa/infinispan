@@ -295,7 +295,7 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
    public void addReadKey(Object key) {
       // No-op
    }
-   
+
    @Override
    public boolean keyRead(Object key) {
       return false;
@@ -335,7 +335,7 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
    protected final void internalSetStateTransferFlag(Flag stateTransferFlag) {
       this.stateTransferFlag = stateTransferFlag;
    }
-   
+
    @Override
    public long getCreationTime() {
       return txCreationTime;

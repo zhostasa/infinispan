@@ -17,5 +17,5 @@ public class GroupsDistAsyncFuncTest extends DistAsyncFuncTest {
       groupsEnabled = true;
       groupers = Collections.<Grouper<?>>singletonList(new KXGrouper());
    }
-   
+
 }

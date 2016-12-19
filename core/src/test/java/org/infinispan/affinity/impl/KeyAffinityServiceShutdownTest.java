@@ -74,5 +74,5 @@ public class KeyAffinityServiceShutdownTest extends BaseKeyAffinityServiceTest {
          }
       }
       assertEquals(registered, isRegistered);
-   }   
+   }
 }

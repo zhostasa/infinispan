@@ -31,7 +31,7 @@ public class NodeKey implements Serializable {
       this.contents = contents;
       this.fqn = fqn;
    }
-   
+
    public Fqn getFqn() {
       return fqn;
    }
@@ -85,12 +85,12 @@ public class NodeKey implements Serializable {
          }
          output.write(type);
       }
-      
+
       @Override
       public NodeKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Fqn fqn = (Fqn) input.readObject();
          int typeb = input.readUnsignedByte();
-         NodeKey.Type type = null; 
+         NodeKey.Type type = null;
          switch (typeb) {
             case DATA_BYTE:
                type = DATA;

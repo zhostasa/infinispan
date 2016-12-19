@@ -25,7 +25,7 @@ public class BulkGetKeysOperation<K> extends RetryOnFailureOperation<Set<K>> {
       super(codec, transportFactory, cacheName, topologyId, flags, clientIntelligence);
       this.scope = scope;
    }
-   
+
    @Override
    protected Transport getTransport(int retryCount, Set<SocketAddress> failedServers) {
       return transportFactory.getTransport(failedServers, cacheName);

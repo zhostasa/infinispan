@@ -60,7 +60,7 @@ public class DistSkipRemoteLookupTest extends BaseDistFunctionalTest<Object, Str
       assert c3.get(k1).equals("new_val");
       assertOnAllCachesAndOwnership(k1, "new_val");
    }
-   
+
    @Test
    public void testSkipLookupOnRemove() {
       MagicKey k1 = new MagicKey(c1, c2);
@@ -71,7 +71,7 @@ public class DistSkipRemoteLookupTest extends BaseDistFunctionalTest<Object, Str
       assertIsInContainerImmortal(c2, k1);
       assertIsNotInL1(c3, k1);
       assertIsNotInL1(c4, k1);
-      
+
       assert value.equals(c1.get(k1));
       assert value.equals(c1.remove(k1));
       assert null == c1.put(k1, value);
@@ -82,7 +82,7 @@ public class DistSkipRemoteLookupTest extends BaseDistFunctionalTest<Object, Str
 
       assert null == c4.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(k1);
    }
-   
+
    @Test
    public void testSkipLookupOnAsyncRemove() throws InterruptedException, ExecutionException {
       MagicKey k1 = new MagicKey(c1, c2);
@@ -93,7 +93,7 @@ public class DistSkipRemoteLookupTest extends BaseDistFunctionalTest<Object, Str
       assertIsInContainerImmortal(c2, k1);
       assertIsNotInL1(c3, k1);
       assertIsNotInL1(c4, k1);
-      
+
       assert value.equals(c1.get(k1));
       assert value.equals(c1.remove(k1));
       assert null == c1.put(k1, value);

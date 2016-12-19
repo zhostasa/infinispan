@@ -16,9 +16,9 @@ import javax.enterprise.util.AnnotationLiteral;
 /**
  * We use this annotation as a carrier of qualifiers so that other extensions have access to the original qualifiers of the bean
  * (those removed and replaced by synthetic qualifier by the {@link DefaultBeanExtension}).
- * 
+ *
  * @author Jozef Hartinger
- * 
+ *
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)

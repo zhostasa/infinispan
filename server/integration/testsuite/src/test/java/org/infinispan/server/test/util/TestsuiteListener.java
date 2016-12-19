@@ -6,12 +6,12 @@ import org.junit.runner.notification.RunListener;
 
 /**
  * Logs test methods.
- * 
+ *
  * @author <a href="mailto:mlinhard@redhat.com">Michal Linhard</a>
  *
  */
 public class TestsuiteListener extends RunListener {
-    
+
     private static final Logger log = Logger.getLogger(TestsuiteListener.class);
 
     @Override

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author Galder Zamarreño
- * 
+ *
  * @private
  */
 public class ThreadNameInfo {

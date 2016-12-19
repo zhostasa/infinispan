@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 
 /**
  * This is a base functional test class for tests with multiple cache stores
- * 
+ *
  * @author Michal Linhard (mlinhard@redhat.com)
  */
 @Test(groups = "unit", testName = "persistence.MultiStoresFunctionalTest")
@@ -34,7 +34,7 @@ public abstract class MultiStoresFunctionalTest<TStoreConfigurationBuilder exten
    protected abstract TStoreConfigurationBuilder buildCacheStoreConfig(PersistenceConfigurationBuilder builder, String discriminator) throws Exception;
 
    /**
-    * 
+    *
     * Create n configs using cache store. sets passivation = false, purge = false, fetch persistent
     * state = true
     */

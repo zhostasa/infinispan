@@ -1,5 +1,5 @@
 // package org.infinispan.test.integration.as;
-// 
+//
 // import org.infinispan.Cache;
 // import org.infinispan.Version;
 // import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -20,7 +20,7 @@
 // import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 // import org.junit.Test;
 // import org.junit.runner.RunWith;
-// 
+//
 // /**
 //  * Test the Infinispan AS module integration
 //  *
@@ -29,19 +29,19 @@
 //  */
 // @RunWith(Arquillian.class)
 // public class InfinispanTreeIT {
-// 
+//
 //    @Deployment
 //    public static Archive<?> deployment() {
 //       WebArchive archive = ShrinkWrap.create(WebArchive.class, "simple.war").addClass(InfinispanTreeIT.class).add(manifest(), "META-INF/MANIFEST.MF");
 //       return archive;
 //    }
-// 
+//
 //    private static Asset manifest() {
 //       String manifest = Descriptors.create(ManifestDescriptor.class)
 //             .attribute("Dependencies", "org.infinispan:" + Version.getModuleSlot() + " service, org.infinispan.tree:" + Version.getModuleSlot() + " services").exportAsString();
 //       return new StringAsset(manifest);
 //    }
-// 
+//
 //    @Test
 //    public void testCacheManager() {
 //       ConfigurationBuilder builder = new ConfigurationBuilder();
@@ -55,5 +55,5 @@
 //       leaf.put("fruit", "orange");
 //       cm.stop();
 //    }
-// 
+//
 // }

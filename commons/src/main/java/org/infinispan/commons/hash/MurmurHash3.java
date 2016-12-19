@@ -36,7 +36,7 @@ public class MurmurHash3 implements Hash {
 
    private MurmurHash3() {
    }
-   
+
    static class State {
       long h1;
       long h2;

@@ -110,7 +110,7 @@ public class GetAllCommandStressTest extends MultipleCacheManagersTest {
                Set<Integer> keysToUse = keys[offset];
                try {
                   int iteration = 0;
-                  
+
                   while (!complete.get()) {
                      log.tracef("Starting iteration %s", iteration);
                      Map<Integer, Integer> results = cache.getAdvancedCache().getAll(keysToUse);

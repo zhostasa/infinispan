@@ -579,7 +579,7 @@ public abstract class BaseAtomicHashMapAPITest extends MultipleCacheManagersTest
       final Cache<MagicKey, Object> cache2 = cache(1, "atomic");
       testInsertDeleteCycle(new MagicKey(cache2));
    }
-   
+
    public void testInsertDeleteInsertCyclePrimaryOwner() throws Exception {
       final Cache<MagicKey, Object> cache1 = cache(0, "atomic");
       testInsertDeleteCycle(new MagicKey(cache1));

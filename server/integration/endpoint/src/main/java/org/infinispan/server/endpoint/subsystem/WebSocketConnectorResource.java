@@ -17,11 +17,11 @@
 //  * MA  02110-1301, USA.
 //  */
 // package org.infinispan.server.endpoint.subsystem;
-// 
+//
 // import org.jboss.as.controller.PathElement;
 // import org.jboss.as.controller.ResourceDefinition;
 // import org.jboss.as.controller.registry.ManagementResourceRegistration;
-// 
+//
 // /**
 //  * WebSocketConnectorResource.
 //  *
@@ -29,14 +29,14 @@
 //  * @since 5.3
 //  */
 // public class WebSocketConnectorResource extends ProtocolServerConnectorResource implements ResourceDefinition {
-// 
+//
 //    public static final PathElement WEBSOCKET_CONNECTOR_PATH = PathElement.pathElement(ModelKeys.WEBSOCKET_CONNECTOR);
-// 
+//
 //    public WebSocketConnectorResource(boolean isRuntimeRegistration) {
 //       super(WEBSOCKET_CONNECTOR_PATH, EndpointExtension.getResourceDescriptionResolver(ModelKeys.WEBSOCKET_CONNECTOR), WebSocketSubsystemAdd.INSTANCE,
 //             WebSocketSubsystemRemove.INSTANCE, isRuntimeRegistration);
 //    }
-// 
+//
 //    @Override
 //    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
 //       super.registerAttributes(resourceRegistration);
@@ -44,5 +44,5 @@
 //          ProtocolServerMetricsHandler.registerMetrics(resourceRegistration, "websocket");
 //       }
 //    }
-// 
+//
 // }

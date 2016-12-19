@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = "unstable", testName = "distribution.DistSyncTxFuncTest", description = "See ISPN-4039, original group: functional")
 public class DistSyncTxFuncTest extends BaseDistFunctionalTest<Object, String> {
-   
+
    public DistSyncTxFuncTest() {
       sync = true;
       tx = true;
@@ -205,7 +205,7 @@ public class DistSyncTxFuncTest extends BaseDistFunctionalTest<Object, String> {
       asserLocked(c2, false, k1, k2);
       asserLocked(c3, false, k1, k2);
       asserLocked(c4, false, k1, k2);
-      
+
 
       log.info("***** Here it starts!");
       TransactionManager tm4 = getTransactionManager(c4);
@@ -246,7 +246,7 @@ public class DistSyncTxFuncTest extends BaseDistFunctionalTest<Object, String> {
       asserLocked(c2, false, k1, k2);
       asserLocked(c3, false, k1, k2);
       asserLocked(c4, false, k1, k2);
-      
+
       checkOwnership(k1, k2, "value1", "value2");
    }
 

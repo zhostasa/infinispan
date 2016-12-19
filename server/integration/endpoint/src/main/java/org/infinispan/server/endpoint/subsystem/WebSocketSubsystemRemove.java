@@ -17,22 +17,22 @@
 //  * MA  02110-1301, USA.
 //  */
 // package org.infinispan.server.endpoint.subsystem;
-// 
+//
 // import org.jboss.as.controller.AbstractRemoveStepHandler;
 // import org.jboss.as.controller.OperationContext;
 // import org.jboss.as.controller.OperationFailedException;
 // import org.jboss.dmr.ModelNode;
-// 
+//
 // /**
 //  * @author Tristan Tarrant
 //  */
 // public class WebSocketSubsystemRemove extends AbstractRemoveStepHandler {
-// 
+//
 //    static final WebSocketSubsystemRemove INSTANCE = new WebSocketSubsystemRemove();
-// 
+//
 //    @Override
 //    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 //       context.removeService(EndpointUtils.getServiceName(operation, "websocket"));
 //    }
-// 
+//
 // }

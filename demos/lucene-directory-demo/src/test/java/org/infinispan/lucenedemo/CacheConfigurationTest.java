@@ -16,13 +16,13 @@ import org.testng.annotations.Test;
 
 /**
  * CacheCreationTest.
- * 
+ *
  * @author Sanne Grinovero
  * @since 4.0
  */
 @Test(groups = "functional", testName = "lucenedemo.CacheConfigurationTest")
 public class CacheConfigurationTest {
-   
+
    private EmbeddedCacheManager cacheManager1;
    private EmbeddedCacheManager cacheManager2;
    private Directory directoryNodeOne;
@@ -43,7 +43,7 @@ public class CacheConfigurationTest {
       cache2.clear();
       directoryNodeTwo = DirectoryBuilder.newDirectoryInstance(cache2, cache2, cache2, "index-name").create();
    }
-   
+
    @AfterTest
    public void cleanup() throws IOException {
       directoryNodeOne.close();

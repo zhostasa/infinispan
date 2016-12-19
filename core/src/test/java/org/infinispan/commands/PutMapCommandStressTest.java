@@ -110,7 +110,7 @@ public class PutMapCommandStressTest extends MultipleCacheManagersTest {
                Map<Integer, Integer> keysToUse = keys[offset];
                try {
                   int iteration = 0;
-                  
+
                   while (!complete.get()) {
                      log.tracef("Starting iteration %s", iteration);
                      // UNCOMMENT following to test insertions by themselves

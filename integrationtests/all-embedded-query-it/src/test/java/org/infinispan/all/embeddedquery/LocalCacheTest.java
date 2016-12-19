@@ -75,7 +75,7 @@ public class LocalCacheTest extends AbstractQueryTest {
       assertEquals("Expected 0 but was " + elems, 0, elems);
       StaticTestingErrorHandler.assertAllGood(cache);
    }
-   
+
    @Test
    public void testEagerIterator() {
       loadTestingData();

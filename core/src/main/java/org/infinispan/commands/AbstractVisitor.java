@@ -77,7 +77,7 @@ public abstract class AbstractVisitor implements Visitor {
    public Object visitEvictCommand(InvocationContext ctx, EvictCommand command) throws Throwable {
       return handleDefault(ctx, command);
    }
-   
+
    @Override
    public Object visitApplyDeltaCommand(InvocationContext ctx, ApplyDeltaCommand command) throws Throwable {
       return handleDefault(ctx, command);
@@ -136,7 +136,7 @@ public abstract class AbstractVisitor implements Visitor {
    public Object visitInvalidateCommand(InvocationContext ctx, InvalidateCommand invalidateCommand) throws Throwable {
       return handleDefault(ctx, invalidateCommand);
    }
-   
+
    @Override
    public Object visitInvalidateL1Command(InvocationContext ctx, InvalidateL1Command invalidateL1Command) throws Throwable {
       return visitInvalidateCommand(ctx, invalidateL1Command);
@@ -177,7 +177,7 @@ public abstract class AbstractVisitor implements Visitor {
    public Object visitUnknownCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
       return handleDefault(ctx, command);
    }
-   
+
    @Override
    public <V> Object visitDistributedExecuteCommand(InvocationContext ctx, DistributedExecuteCommand<V> command) throws Throwable {
       return handleDefault(ctx, command);

@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
  */
 @Test(testName="distribution.groups.GroupsDistSyncUnsafeFuncTest", groups = "functional")
 public class GroupsDistSyncUnsafeFuncTest extends DistSyncUnsafeFuncTest {
-   
+
    public GroupsDistSyncUnsafeFuncTest() {
       groupsEnabled = true;
       groupers = Collections.<Grouper<?>>singletonList(new KXGrouper());
