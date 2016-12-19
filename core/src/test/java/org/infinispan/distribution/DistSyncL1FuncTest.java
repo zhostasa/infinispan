@@ -1,5 +1,17 @@
 package org.infinispan.distribution;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.infinispan.Cache;
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.read.GetCacheEntryCommand;
@@ -14,18 +26,6 @@ import org.infinispan.test.TestingUtil;
 import org.infinispan.tx.dld.ControlledRpcManager;
 import org.infinispan.util.concurrent.CommandAckCollector;
 import org.testng.annotations.Test;
-
-import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 @Test(groups = {"functional", "smoke"}, testName = "distribution.DistSyncL1FuncTest")
 public class DistSyncL1FuncTest extends BaseDistSyncL1Test {

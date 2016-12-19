@@ -1,7 +1,11 @@
 package org.infinispan.configuration.parsing;
 
 import static org.infinispan.test.TestingUtil.withCacheManager;
-import static org.testng.AssertJUnit.*;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,7 +21,16 @@ import org.infinispan.commons.executors.ScheduledThreadPoolExecutorFactory;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.configuration.QueryableDataContainer;
-import org.infinispan.configuration.cache.*;
+import org.infinispan.configuration.cache.BackupConfiguration;
+import org.infinispan.configuration.cache.BackupFailurePolicy;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.Index;
+import org.infinispan.configuration.cache.InterceptorConfiguration;
+import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
+import org.infinispan.configuration.cache.StoreConfiguration;
+import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.distribution.ch.impl.SyncConsistentHashFactory;

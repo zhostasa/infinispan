@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,14 +23,6 @@ import org.infinispan.server.websocket.handlers.PutHandler;
 import org.infinispan.server.websocket.handlers.RemoveHandler;
 import org.infinispan.server.websocket.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An HTTP server which serves Web Socket requests on an Infinispan cacheManager.

@@ -1,8 +1,8 @@
 package org.infinispan.persistence.jdbc.configuration;
 
+import org.infinispan.commons.configuration.attributes.Attribute;
 import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
-import org.infinispan.commons.configuration.attributes.Attribute;
 import org.infinispan.persistence.jdbc.TableManipulation;
 
 public class TableManipulationConfiguration {

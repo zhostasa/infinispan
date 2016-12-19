@@ -2,7 +2,6 @@ package org.infinispan.distribution;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.replication.SyncReplPessimisticLockingTest;
-
 import org.testng.annotations.Test;
 
 /**

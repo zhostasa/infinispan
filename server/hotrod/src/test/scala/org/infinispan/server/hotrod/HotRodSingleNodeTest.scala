@@ -1,14 +1,14 @@
 package org.infinispan.server.hotrod
 
-import org.infinispan.test.SingleCacheManagerTest
-import test.HotRodClient
+import io.netty.channel.ChannelFuture
 import org.infinispan.AdvancedCache
-import test.HotRodTestingUtil._
-import org.infinispan.test.fwk.TestCacheManagerFactory
 import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.server.core.test.ServerTestingUtil._
-import org.testng.annotations.{Test, AfterClass}
-import io.netty.channel.ChannelFuture
+import org.infinispan.server.hotrod.test.HotRodClient
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.SingleCacheManagerTest
+import org.infinispan.test.fwk.TestCacheManagerFactory
+import org.testng.annotations.{AfterClass, Test}
 
 /**
  * Base test class for single node Hot Rod tests.

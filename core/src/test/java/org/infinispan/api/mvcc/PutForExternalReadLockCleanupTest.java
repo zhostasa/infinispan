@@ -1,5 +1,7 @@
 package org.infinispan.api.mvcc;
 
+import static org.testng.AssertJUnit.assertEquals;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -7,8 +9,6 @@ import org.infinispan.distribution.MagicKey;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.testng.annotations.Test;
-
-import static org.testng.AssertJUnit.assertEquals;
 
 @Test(groups = "functional", testName = "api.mvcc.PutForExternalReadLockCleanupTest")
 @CleanupAfterMethod

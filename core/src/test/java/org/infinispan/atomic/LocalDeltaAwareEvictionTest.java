@@ -1,5 +1,12 @@
 package org.infinispan.atomic;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
+import java.util.concurrent.Callable;
+
 import org.infinispan.Cache;
 import org.infinispan.atomic.impl.AtomicHashMapProxy;
 import org.infinispan.atomic.impl.FineGrainedAtomicHashMapProxy;
@@ -14,11 +21,6 @@ import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
-
-import java.util.Map;
-import java.util.concurrent.Callable;
-
-import static org.junit.Assert.*;
 
 /**
  * @author anistor@redhat.com

@@ -1,14 +1,14 @@
 package org.infinispan.nearcache.jms;
 
+import javax.jms.BytesMessage;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.jms.BytesMessage;
-import javax.jms.Message;
-import javax.jms.MessageListener;
 
 /**
  * JMS listener that listens for remote cache events and invalidates cache

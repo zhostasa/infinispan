@@ -1,5 +1,7 @@
 package org.infinispan.statetransfer;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -24,8 +26,6 @@ import org.infinispan.test.fwk.TransportFlags;
 import org.infinispan.transaction.lookup.DummyTransactionManagerLookup;
 import org.jgroups.protocols.DISCARD;
 import org.testng.annotations.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * tests scenario for ISPN-2574

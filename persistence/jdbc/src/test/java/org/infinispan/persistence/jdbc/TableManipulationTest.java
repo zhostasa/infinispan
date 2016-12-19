@@ -2,6 +2,7 @@ package org.infinispan.persistence.jdbc;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,12 +10,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.PooledConnectionFactoryConfiguration;
 import org.infinispan.persistence.jdbc.configuration.SimpleConnectionFactoryConfiguration;
 import org.infinispan.persistence.jdbc.connectionfactory.PooledConnectionFactory;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.test.fwk.UnitTestDatabaseManager;
 import org.testng.annotations.AfterTest;

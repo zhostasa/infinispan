@@ -1,5 +1,22 @@
 package org.infinispan.stream.impl.local;
 
+import java.util.LongSummaryStatistics;
+import java.util.OptionalDouble;
+import java.util.OptionalLong;
+import java.util.PrimitiveIterator;
+import java.util.Spliterator;
+import java.util.function.BiConsumer;
+import java.util.function.LongBinaryOperator;
+import java.util.function.LongConsumer;
+import java.util.function.LongFunction;
+import java.util.function.LongPredicate;
+import java.util.function.LongToDoubleFunction;
+import java.util.function.LongToIntFunction;
+import java.util.function.LongUnaryOperator;
+import java.util.function.ObjLongConsumer;
+import java.util.function.Supplier;
+import java.util.stream.LongStream;
+
 import org.infinispan.Cache;
 import org.infinispan.CacheStream;
 import org.infinispan.DoubleCacheStream;
@@ -18,6 +35,7 @@ import org.infinispan.stream.impl.intops.primitive.l.MapToObjLongOperation;
 import org.infinispan.stream.impl.intops.primitive.l.PeekLongOperation;
 import org.infinispan.stream.impl.intops.primitive.l.SkipLongOperation;
 import org.infinispan.stream.impl.intops.primitive.l.SortedLongOperation;
+import org.infinispan.util.function.SerializableBiConsumer;
 import org.infinispan.util.function.SerializableLongBinaryOperator;
 import org.infinispan.util.function.SerializableLongConsumer;
 import org.infinispan.util.function.SerializableLongFunction;
@@ -26,25 +44,7 @@ import org.infinispan.util.function.SerializableLongToDoubleFunction;
 import org.infinispan.util.function.SerializableLongToIntFunction;
 import org.infinispan.util.function.SerializableLongUnaryOperator;
 import org.infinispan.util.function.SerializableObjLongConsumer;
-import org.infinispan.util.function.SerializableBiConsumer;
 import org.infinispan.util.function.SerializableSupplier;
-
-import java.util.LongSummaryStatistics;
-import java.util.OptionalDouble;
-import java.util.OptionalLong;
-import java.util.PrimitiveIterator;
-import java.util.Spliterator;
-import java.util.function.BiConsumer;
-import java.util.function.LongBinaryOperator;
-import java.util.function.LongConsumer;
-import java.util.function.LongFunction;
-import java.util.function.LongPredicate;
-import java.util.function.LongToDoubleFunction;
-import java.util.function.LongToIntFunction;
-import java.util.function.LongUnaryOperator;
-import java.util.function.ObjLongConsumer;
-import java.util.function.Supplier;
-import java.util.stream.LongStream;
 
 /**
  * LongStream that wraps a given stream to allow for additional functionality such as injection of values into

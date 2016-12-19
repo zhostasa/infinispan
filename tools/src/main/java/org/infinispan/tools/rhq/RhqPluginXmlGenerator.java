@@ -17,19 +17,13 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import javassist.ClassClassPath;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtMethod;
-
+import org.infinispan.commons.util.ClassFinder;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.jmx.annotations.MBean;
 import org.infinispan.jmx.annotations.ManagedAttribute;
 import org.infinispan.jmx.annotations.ManagedOperation;
 import org.infinispan.jmx.annotations.Parameter;
-import org.infinispan.commons.util.ClassFinder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -38,6 +32,12 @@ import com.sun.javadoc.LanguageVersion;
 import com.sun.javadoc.RootDoc;
 import com.sun.tools.doclets.standard.Standard;
 import com.sun.tools.javadoc.Main;
+
+import javassist.ClassClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
 
 /**
  * RhqPluginDoclet.

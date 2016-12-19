@@ -1,5 +1,12 @@
 package org.infinispan.rhq;
 
+import static org.infinispan.rhq.RhqUtil.constructNumericMeasure;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mc4j.ems.connection.EmsConnection;
@@ -19,13 +26,6 @@ import org.rhq.core.pluginapi.inventory.ResourceContext;
 import org.rhq.core.pluginapi.operation.OperationResult;
 import org.rhq.plugins.jmx.MBeanResourceComponent;
 import org.rhq.plugins.jmx.util.ObjectNameQueryUtility;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import static org.infinispan.rhq.RhqUtil.constructNumericMeasure;
 
 /**
  * Component class for Caches within Infinispan

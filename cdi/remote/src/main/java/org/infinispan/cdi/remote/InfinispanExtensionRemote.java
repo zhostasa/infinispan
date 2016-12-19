@@ -1,24 +1,36 @@
 package org.infinispan.cdi.remote;
 
-import org.infinispan.cdi.remote.logging.RemoteLog;
-import org.infinispan.cdi.common.util.BeanBuilder;
-import org.infinispan.cdi.common.util.ContextualLifecycle;
-import org.infinispan.cdi.common.util.Reflections;
-import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.infinispan.commons.logging.LogFactory;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.util.AnnotationLiteral;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.AnnotatedMember;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.InjectionTarget;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import javax.enterprise.inject.spi.ProcessProducer;
+import javax.enterprise.inject.spi.Producer;
+import javax.enterprise.util.AnnotationLiteral;
+
+import org.infinispan.cdi.common.util.BeanBuilder;
+import org.infinispan.cdi.common.util.ContextualLifecycle;
+import org.infinispan.cdi.common.util.Reflections;
+import org.infinispan.cdi.remote.logging.RemoteLog;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.commons.logging.LogFactory;
 
 public class InfinispanExtensionRemote implements Extension {
 

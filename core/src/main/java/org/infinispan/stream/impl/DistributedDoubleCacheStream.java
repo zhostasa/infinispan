@@ -1,5 +1,27 @@
 package org.infinispan.stream.impl;
 
+import java.util.Arrays;
+import java.util.DoubleSummaryStatistics;
+import java.util.Iterator;
+import java.util.OptionalDouble;
+import java.util.PrimitiveIterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.BiConsumer;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleFunction;
+import java.util.function.DoublePredicate;
+import java.util.function.DoubleToIntFunction;
+import java.util.function.DoubleToLongFunction;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
+import java.util.function.ObjDoubleConsumer;
+import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
+
 import org.infinispan.Cache;
 import org.infinispan.CacheStream;
 import org.infinispan.DoubleCacheStream;
@@ -22,6 +44,7 @@ import org.infinispan.stream.impl.termop.primitive.ForEachDoubleOperation;
 import org.infinispan.stream.impl.termop.primitive.ForEachFlatMapDoubleOperation;
 import org.infinispan.stream.impl.termop.primitive.ForEachFlatMapObjDoubleOperation;
 import org.infinispan.stream.impl.termop.primitive.ForEachObjDoubleOperation;
+import org.infinispan.util.function.SerializableBiConsumer;
 import org.infinispan.util.function.SerializableDoubleBinaryOperator;
 import org.infinispan.util.function.SerializableDoubleConsumer;
 import org.infinispan.util.function.SerializableDoubleFunction;
@@ -30,30 +53,7 @@ import org.infinispan.util.function.SerializableDoubleToIntFunction;
 import org.infinispan.util.function.SerializableDoubleToLongFunction;
 import org.infinispan.util.function.SerializableDoubleUnaryOperator;
 import org.infinispan.util.function.SerializableObjDoubleConsumer;
-import org.infinispan.util.function.SerializableBiConsumer;
 import org.infinispan.util.function.SerializableSupplier;
-
-import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
-import java.util.Iterator;
-import java.util.OptionalDouble;
-import java.util.PrimitiveIterator;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.function.BiConsumer;
-import java.util.function.DoubleBinaryOperator;
-import java.util.function.DoubleConsumer;
-import java.util.function.DoubleFunction;
-import java.util.function.DoublePredicate;
-import java.util.function.DoubleToIntFunction;
-import java.util.function.DoubleToLongFunction;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
-import java.util.function.ObjDoubleConsumer;
-import java.util.function.Supplier;
-import java.util.function.ToDoubleFunction;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 /**
  * Implementation of {@link DoubleStream} that utilizes a lazily evaluated distributed back end execution.  Note this

@@ -1,11 +1,11 @@
 package org.infinispan.api;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNull;
+
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.testng.annotations.Test;
-
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNull;
 
 @Test (groups = "functional", testName = "api.GetOnRemovedKeyTest")
 public class GetOnRemovedKeyTest extends MultipleCacheManagersTest {

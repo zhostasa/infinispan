@@ -1,5 +1,7 @@
 package org.infinispan.commands;
 
+import java.util.Map;
+
 import org.infinispan.commands.control.LockControlCommand;
 import org.infinispan.commands.functional.ReadOnlyKeyCommand;
 import org.infinispan.commands.functional.ReadOnlyManyCommand;
@@ -69,8 +71,6 @@ import org.infinispan.xsite.SingleXSiteRpcCommand;
 import org.infinispan.xsite.XSiteAdminCommand;
 import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
 import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
-
-import java.util.Map;
 
 /**
  * Specifically used to create un-initialized {@link org.infinispan.commands.ReplicableCommand}s from a byte stream.

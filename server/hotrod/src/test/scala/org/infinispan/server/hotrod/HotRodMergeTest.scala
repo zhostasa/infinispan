@@ -3,14 +3,14 @@ package org.infinispan.server.hotrod
 import java.lang.reflect.Method
 
 import org.infinispan.commons.api.BasicCacheContainer.DEFAULT_CACHE_NAME
-import org.infinispan.configuration.cache.{ConfigurationBuilder, CacheMode}
+import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
 import org.infinispan.partitionhandling.BasePartitionHandlingTest
 import org.infinispan.partitionhandling.BasePartitionHandlingTest.PartitionDescriptor
 import org.infinispan.server.core.test.ServerTestingUtil._
 import org.infinispan.server.hotrod.Constants._
 import org.infinispan.server.hotrod.OperationStatus._
-import org.infinispan.server.hotrod.test.{HotRodClient, HotRodTestingUtil}
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test.{HotRodClient, HotRodTestingUtil}
 import org.infinispan.test.AbstractCacheTest.CleanupPhase
 import org.infinispan.test.AbstractInfinispanTest.Condition
 import org.infinispan.test.TestingUtil

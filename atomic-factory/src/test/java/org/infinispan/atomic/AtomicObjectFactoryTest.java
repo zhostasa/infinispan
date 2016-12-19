@@ -1,5 +1,11 @@
 package org.infinispan.atomic;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -10,13 +16,6 @@ import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.Test;
-
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
 
 /**
  * @author Pierre Sutra

@@ -1,8 +1,6 @@
 package org.infinispan.transaction.impl;
 
 import org.infinispan.transaction.xa.CacheTransaction;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
 
 /**
  * Base class for both Sync and XAResource enlistment adapters.

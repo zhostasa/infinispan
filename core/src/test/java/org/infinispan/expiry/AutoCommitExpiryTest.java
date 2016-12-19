@@ -27,8 +27,6 @@ import org.infinispan.util.ControlledTimeService;
 import org.infinispan.util.TimeService;
 import org.testng.annotations.Test;
 
-import static org.testng.AssertJUnit.assertEquals;
-
 @Test(groups = "functional", testName = "expiry.AutoCommitExpiryTest")
 public abstract class AutoCommitExpiryTest extends SingleCacheManagerTest {
    private final CacheMode mode;

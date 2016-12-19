@@ -1,18 +1,18 @@
 package org.infinispan.persistence.jdbc;
 
-import org.infinispan.commons.CacheConfigurationException;
-import org.infinispan.persistence.spi.PersistenceException;
-import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
-import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
-import org.infinispan.persistence.jdbc.logging.Log;
-import org.infinispan.util.logging.LogFactory;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+
+import org.infinispan.commons.CacheConfigurationException;
+import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
+import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
+import org.infinispan.persistence.jdbc.logging.Log;
+import org.infinispan.persistence.spi.PersistenceException;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Contains all the logic of manipulating the table, including creating it if needed and access operations like

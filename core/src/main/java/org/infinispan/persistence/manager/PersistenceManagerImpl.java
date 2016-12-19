@@ -1,5 +1,37 @@
 package org.infinispan.persistence.manager;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.infinispan.context.Flag.CACHE_MODE_LOCAL;
+import static org.infinispan.context.Flag.IGNORE_RETURN_VALUES;
+import static org.infinispan.context.Flag.SKIP_CACHE_STORE;
+import static org.infinispan.context.Flag.SKIP_INDEXING;
+import static org.infinispan.context.Flag.SKIP_LOCKING;
+import static org.infinispan.context.Flag.SKIP_OWNERSHIP_CHECK;
+import static org.infinispan.context.Flag.SKIP_XSITE_BACKUP;
+import static org.infinispan.factories.KnownComponentNames.PERSISTENCE_EXECUTOR;
+import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.BOTH;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.infinispan.AdvancedCache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.io.ByteBufferFactory;
@@ -48,23 +80,6 @@ import org.infinispan.util.TimeService;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
-import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.infinispan.context.Flag.*;
-import static org.infinispan.factories.KnownComponentNames.PERSISTENCE_EXECUTOR;
-import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.BOTH;
 
 public class PersistenceManagerImpl implements PersistenceManager {
 

@@ -1,15 +1,15 @@
 package org.infinispan.marshall.exts;
 
-import org.infinispan.commons.marshall.AbstractExternalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.marshall.core.Ids;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+
+import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.marshall.core.Ids;
 
 public final class UuidExternalizer extends AbstractExternalizer<UUID> {
 

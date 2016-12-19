@@ -1,16 +1,15 @@
 package org.infinispan.commons.io;
 
-import org.infinispan.commons.marshall.AbstractExternalizer;
-import org.infinispan.commons.marshall.Ids;
-import org.infinispan.commons.util.Util;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Arrays;
 import java.util.Set;
+
+import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.commons.marshall.Ids;
+import org.infinispan.commons.util.Util;
 
 /**
  * A byte buffer that exposes the internal byte array with minimal copying

@@ -1,10 +1,10 @@
 package org.infinispan.server.core.transport;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-
 import java.util.Collections;
 import java.util.List;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
 
 /**
  * @author wburns

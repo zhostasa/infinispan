@@ -1,15 +1,15 @@
 package org.infinispan.rhq;
 
+import static org.infinispan.commons.util.Util.recursiveFileRemove;
+import static org.infinispan.test.TestingUtil.tmpDirectory;
+import static org.infinispan.test.TestingUtil.withCacheManager;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.test.CacheManagerCallable;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-
-import static org.infinispan.commons.util.Util.recursiveFileRemove;
-import static org.infinispan.test.TestingUtil.tmpDirectory;
-import static org.infinispan.test.TestingUtil.withCacheManager;
 
 /**
  * Standalone cache for infinispan testing

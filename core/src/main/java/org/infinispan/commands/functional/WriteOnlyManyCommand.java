@@ -1,5 +1,13 @@
 package org.infinispan.commands.functional;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.infinispan.commands.Visitor;
 import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
 import org.infinispan.commons.marshall.MarshallUtil;
@@ -8,14 +16,6 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.lifecycle.ComponentStatus;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @deprecated Since 8.3, will be removed.

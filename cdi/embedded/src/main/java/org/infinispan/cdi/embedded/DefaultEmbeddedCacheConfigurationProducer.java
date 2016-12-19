@@ -1,12 +1,12 @@
 package org.infinispan.cdi.embedded;
 
-import org.infinispan.cdi.embedded.util.logging.EmbeddedLog;
+import javax.enterprise.inject.Produces;
+
 import org.infinispan.cdi.common.util.defaultbean.DefaultBean;
+import org.infinispan.cdi.embedded.util.logging.EmbeddedLog;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-
-import javax.enterprise.inject.Produces;
 
 /**
  * <p>The default embedded cache {@link Configuration} producer.</p>

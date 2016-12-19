@@ -1,5 +1,13 @@
 package org.infinispan.remoting.rpc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -9,11 +17,6 @@ import org.infinispan.remoting.responses.SuccessfulResponse;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.testng.annotations.Test;
-
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
 
 /**
  * @author William Burns

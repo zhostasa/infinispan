@@ -1,20 +1,21 @@
 package org.infinispan.cdi.embedded;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
-import org.infinispan.cdi.embedded.event.cache.CacheEventBridge;
-import org.infinispan.cdi.common.util.Reflections;
-import org.infinispan.cdi.embedded.event.cachemanager.CacheManagerEventBridge;
-import org.infinispan.manager.CacheContainer;
-import org.infinispan.manager.EmbeddedCacheManager;
+import java.lang.annotation.Annotation;
+import java.util.Set;
 
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
-import java.lang.annotation.Annotation;
-import java.util.Set;
+
+import org.infinispan.AdvancedCache;
+import org.infinispan.Cache;
+import org.infinispan.cdi.common.util.Reflections;
+import org.infinispan.cdi.embedded.event.cache.CacheEventBridge;
+import org.infinispan.cdi.embedded.event.cachemanager.CacheManagerEventBridge;
+import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
  * This class is responsible to produce the {@link Cache} and {@link AdvancedCache}. This class use the

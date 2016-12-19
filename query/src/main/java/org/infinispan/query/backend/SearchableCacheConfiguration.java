@@ -12,15 +12,13 @@ import org.hibernate.annotations.common.reflection.ReflectionManager;
 import org.hibernate.search.cfg.SearchMapping;
 import org.hibernate.search.cfg.spi.SearchConfiguration;
 import org.hibernate.search.cfg.spi.SearchConfigurationBase;
-import org.hibernate.search.engine.spi.SearchMappingHelper;
 import org.hibernate.search.engine.service.classloading.impl.DefaultClassLoaderService;
 import org.hibernate.search.engine.service.classloading.spi.ClassLoaderService;
 import org.hibernate.search.engine.service.spi.Service;
-import org.infinispan.hibernate.search.spi.CacheManagerService;
+import org.hibernate.search.engine.spi.SearchMappingHelper;
 import org.infinispan.factories.ComponentRegistry;
+import org.infinispan.hibernate.search.spi.CacheManagerService;
 import org.infinispan.manager.EmbeddedCacheManager;
-
-import static org.hibernate.search.cfg.Environment.INDEX_MANAGER_IMPL_NAME;
 
 /**
  * Class that implements {@link org.hibernate.search.cfg.spi.SearchConfiguration} so that within Infinispan-Query, there

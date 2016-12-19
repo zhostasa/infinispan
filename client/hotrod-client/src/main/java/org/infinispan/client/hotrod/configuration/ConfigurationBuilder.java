@@ -14,7 +14,6 @@ import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.TypedProperties;
-import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHashV2;
 import org.infinispan.client.hotrod.impl.consistenthash.SegmentConsistentHash;

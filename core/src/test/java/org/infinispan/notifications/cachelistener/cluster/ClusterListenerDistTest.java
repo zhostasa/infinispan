@@ -1,18 +1,7 @@
 package org.infinispan.notifications.cachelistener.cluster;
 
-import org.infinispan.Cache;
-import org.infinispan.commands.write.PutKeyValueCommand;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.distribution.BlockingInterceptor;
-import org.infinispan.distribution.MagicKey;
-import org.infinispan.interceptors.distribution.TriangleDistributionInterceptor;
-import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
-import org.infinispan.notifications.cachelistener.event.Event;
-import org.infinispan.interceptors.distribution.NonTxDistributionInterceptor;
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.test.TestingUtil;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -21,8 +10,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import org.infinispan.Cache;
+import org.infinispan.commands.write.PutKeyValueCommand;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.distribution.BlockingInterceptor;
+import org.infinispan.distribution.MagicKey;
+import org.infinispan.interceptors.distribution.TriangleDistributionInterceptor;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.test.TestingUtil;
+import org.testng.annotations.Test;
 
 /**
  * Cluster listener test having a configuration of non tx and dist

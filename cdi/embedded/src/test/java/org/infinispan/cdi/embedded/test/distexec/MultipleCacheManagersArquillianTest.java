@@ -1,13 +1,13 @@
 package org.infinispan.cdi.embedded.test.distexec;
 
+import java.lang.reflect.Method;
+
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.jboss.arquillian.testng.Arquillian;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
-
-import java.lang.reflect.Method;
 
 public abstract class MultipleCacheManagersArquillianTest extends Arquillian {
 

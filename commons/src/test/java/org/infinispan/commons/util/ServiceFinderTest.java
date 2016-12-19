@@ -1,10 +1,10 @@
 package org.infinispan.commons.util;
 
-import org.testng.annotations.Test;
+import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.Collection;
 
-import static org.testng.AssertJUnit.assertEquals;
+import org.testng.annotations.Test;
 
 /**
  * @author Tristan Tarrant

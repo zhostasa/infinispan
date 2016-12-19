@@ -1,6 +1,5 @@
 package org.infinispan.nearcache.jms;
 
-import org.infinispan.commons.configuration.Builder;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 

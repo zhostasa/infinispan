@@ -1,5 +1,9 @@
 package org.infinispan.rhq;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mc4j.ems.connection.EmsConnection;
@@ -8,10 +12,6 @@ import org.rhq.core.pluginapi.inventory.DiscoveredResourceDetails;
 import org.rhq.core.pluginapi.inventory.ResourceDiscoveryContext;
 import org.rhq.plugins.jmx.MBeanResourceDiscoveryComponent;
 import org.rhq.plugins.jmx.util.ObjectNameQueryUtility;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Discovery class for individual cache instances

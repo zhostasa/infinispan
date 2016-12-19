@@ -1,11 +1,11 @@
 package org.infinispan.expiration.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
 import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Listener
 public class ExpiredCacheListener {

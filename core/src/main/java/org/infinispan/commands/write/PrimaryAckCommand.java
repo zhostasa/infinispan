@@ -1,16 +1,16 @@
 package org.infinispan.commands.write;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.concurrent.CompletableFuture;
+
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.remote.BaseRpcCommand;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.util.ByteString;
 import org.infinispan.util.concurrent.CommandAckCollector;
 import org.infinispan.util.concurrent.CompletableFutures;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * A command that represents an acknowledge sent by the primary owner to the originator.

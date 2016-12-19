@@ -1,11 +1,11 @@
 package org.infinispan.api.mvcc;
 
+import java.lang.reflect.Method;
+
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.testng.annotations.Test;
-
-import java.lang.reflect.Method;
 
 @Test(groups = "functional", testName = "api.mvcc.PutForExternalReadReplNonTxTest")
 @CleanupAfterMethod

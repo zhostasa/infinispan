@@ -1,5 +1,7 @@
 package org.infinispan.functional;
 
+import static org.testng.Assert.assertEquals;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -28,8 +30,6 @@ import org.infinispan.util.CountingCARD;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertEquals;
 
 /**
  * @author Radim Vansa &lt;rvansa@redhat.com&gt; && Krzysztof Sobolewski &lt;Krzysztof.Sobolewski@atende.pl&gt;

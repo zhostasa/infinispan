@@ -1,5 +1,12 @@
 package org.infinispan.cdi.embedded.test.distexec;
 
+import static org.infinispan.cdi.embedded.test.testutil.Deployments.baseDeployment;
+
+import java.io.Serializable;
+import java.util.concurrent.Callable;
+
+import javax.inject.Inject;
+
 import org.infinispan.Cache;
 import org.infinispan.cdi.embedded.Input;
 import org.infinispan.cdi.embedded.test.DefaultTestEmbeddedCacheManagerProducer;
@@ -9,12 +16,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import javax.inject.Inject;
-import java.io.Serializable;
-import java.util.concurrent.Callable;
-
-import static org.infinispan.cdi.embedded.test.testutil.Deployments.baseDeployment;
 
 /**
  * Tests CDI integration with org.infinispan.distexec.DistributedExecutorService

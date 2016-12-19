@@ -1,13 +1,13 @@
 package org.infinispan.server.hotrod
 
-import org.infinispan.commons.util.EnumUtil
-import org.testng.annotations.Test
-import org.testng.Assert._
 import org.infinispan.commands.remote.ClusteredGetCommand
-import org.infinispan.server.core.AbstractMarshallingTest
 import org.infinispan.commons.api.BasicCacheContainer
 import org.infinispan.commons.equivalence.ByteArrayEquivalence
+import org.infinispan.commons.util.EnumUtil
+import org.infinispan.server.core.AbstractMarshallingTest
 import org.infinispan.util.ByteString
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 /**
  * Tests marshalling of Hot Rod classes.

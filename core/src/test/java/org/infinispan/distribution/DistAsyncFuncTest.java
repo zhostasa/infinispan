@@ -1,14 +1,14 @@
 package org.infinispan.distribution;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.infinispan.Cache;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.write.InvalidateL1Command;
 import org.infinispan.test.ReplListener;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Test(groups = {"functional", "smoke"}, testName = "distribution.DistAsyncFuncTest")
 public class DistAsyncFuncTest extends DistSyncFuncTest {

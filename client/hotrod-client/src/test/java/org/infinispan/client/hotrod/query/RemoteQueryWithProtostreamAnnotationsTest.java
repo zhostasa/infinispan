@@ -1,5 +1,12 @@
 package org.infinispan.client.hotrod.query;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.util.List;
+
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
@@ -20,13 +27,6 @@ import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.BeforeClass;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests for remote queries over HotRod on a local cache using RAM directory.

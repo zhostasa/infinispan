@@ -1,15 +1,15 @@
 package org.infinispan.remoting;
 
-import org.infinispan.commons.marshall.AbstractExternalizer;
-import org.infinispan.commons.util.Util;
-import org.infinispan.marshall.core.Ids;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
+
+import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.commons.util.Util;
+import org.infinispan.marshall.core.Ids;
 
 /**
  * Wrapper object for entries that arrive via RESTful PUT/POST interface.

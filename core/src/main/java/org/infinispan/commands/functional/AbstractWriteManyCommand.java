@@ -1,13 +1,13 @@
 package org.infinispan.commands.functional;
 
+import java.util.Set;
+
 import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.functional.impl.Params;
-
-import java.util.Set;
 
 /**
  * @deprecated Since 8.3, will be removed.

@@ -1,18 +1,18 @@
 package org.infinispan.commands.write;
 
-import org.infinispan.commands.CommandInvocationId;
-import org.infinispan.commands.remote.BaseRpcCommand;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.util.ByteString;
-import org.infinispan.util.concurrent.CommandAckCollector;
-import org.infinispan.util.concurrent.CompletableFutures;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+
+import org.infinispan.commands.CommandInvocationId;
+import org.infinispan.commands.remote.BaseRpcCommand;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.util.ByteString;
+import org.infinispan.util.concurrent.CommandAckCollector;
+import org.infinispan.util.concurrent.CompletableFutures;
 
 /**
  * A command that represents an acknowledge sent by a backup owner to the originator.

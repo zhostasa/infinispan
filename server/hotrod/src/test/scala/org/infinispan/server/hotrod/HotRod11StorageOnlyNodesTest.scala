@@ -1,16 +1,17 @@
 package org.infinispan.server.hotrod
 
-import org.infinispan.test.AbstractCacheTest._
 import java.lang.reflect.Method
-import test.HotRodTestingUtil._
-import org.testng.Assert._
-import test.HotRodMagicKeyGenerator
-import org.infinispan.server.hotrod.OperationStatus._
-import org.testng.annotations.Test
-import org.infinispan.test.TestingUtil
-import org.infinispan.server.core.test.ServerTestingUtil
+
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
+import org.infinispan.server.core.test.ServerTestingUtil
 import org.infinispan.server.hotrod.Constants._
+import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodMagicKeyGenerator
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.AbstractCacheTest._
+import org.infinispan.test.TestingUtil
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 /**
  * Tests Hot Rod distribution mode when some of the cache managers do not have HotRod servers running.

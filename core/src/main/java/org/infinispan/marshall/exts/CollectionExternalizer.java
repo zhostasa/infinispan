@@ -1,12 +1,5 @@
 package org.infinispan.marshall.exts;
 
-import org.infinispan.commons.marshall.AdvancedExternalizer;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.commons.util.Util;
-import org.infinispan.distribution.util.ReadOnlySegmentAwareCollection;
-import org.infinispan.marshall.core.Ids;
-import org.jboss.marshalling.util.IdentityIntMap;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -19,6 +12,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.util.Util;
+import org.infinispan.distribution.util.ReadOnlySegmentAwareCollection;
+import org.infinispan.marshall.core.Ids;
+import org.jboss.marshalling.util.IdentityIntMap;
 
 public class CollectionExternalizer implements AdvancedExternalizer<Collection> {
 

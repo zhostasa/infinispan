@@ -1,10 +1,5 @@
 package org.infinispan.commons.util;
 
-import net.jcip.annotations.Immutable;
-import org.infinispan.commons.io.UnsignedNumeric;
-import org.infinispan.commons.marshall.AbstractExternalizer;
-import org.infinispan.commons.marshall.Ids;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -17,6 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+
+import net.jcip.annotations.Immutable;
 
 
 /**

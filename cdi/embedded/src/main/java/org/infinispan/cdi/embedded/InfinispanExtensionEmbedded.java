@@ -1,23 +1,8 @@
 package org.infinispan.cdi.embedded;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
-import org.infinispan.cdi.common.util.DefaultLiteral;
-import org.infinispan.cdi.embedded.util.logging.EmbeddedLog;
-import org.infinispan.cdi.embedded.event.cachemanager.CacheManagerEventBridge;
-import org.infinispan.cdi.common.util.BeanBuilder;
-import org.infinispan.cdi.common.util.Beans;
-import org.infinispan.cdi.common.util.ContextualLifecycle;
-import org.infinispan.cdi.common.util.ContextualReference;
-import org.infinispan.cdi.common.util.Reflections;
-import org.infinispan.cdi.common.util.defaultbean.DefaultBean;
-import org.infinispan.cdi.common.util.defaultbean.DefaultBeanHolder;
-import org.infinispan.cdi.common.util.defaultbean.Installed;
-import org.infinispan.commons.logging.LogFactory;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
@@ -31,9 +16,25 @@ import javax.enterprise.inject.spi.ProcessBean;
 import javax.enterprise.inject.spi.ProcessProducer;
 import javax.enterprise.inject.spi.Producer;
 import javax.enterprise.util.TypeLiteral;
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.infinispan.AdvancedCache;
+import org.infinispan.Cache;
+import org.infinispan.cdi.common.util.BeanBuilder;
+import org.infinispan.cdi.common.util.Beans;
+import org.infinispan.cdi.common.util.ContextualLifecycle;
+import org.infinispan.cdi.common.util.ContextualReference;
+import org.infinispan.cdi.common.util.DefaultLiteral;
+import org.infinispan.cdi.common.util.Reflections;
+import org.infinispan.cdi.common.util.defaultbean.DefaultBean;
+import org.infinispan.cdi.common.util.defaultbean.DefaultBeanHolder;
+import org.infinispan.cdi.common.util.defaultbean.Installed;
+import org.infinispan.cdi.embedded.event.cachemanager.CacheManagerEventBridge;
+import org.infinispan.cdi.embedded.util.logging.EmbeddedLog;
+import org.infinispan.commons.logging.LogFactory;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
  * The Infinispan CDI extension for embedded caches

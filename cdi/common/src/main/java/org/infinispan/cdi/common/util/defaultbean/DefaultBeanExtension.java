@@ -1,19 +1,6 @@
 package org.infinispan.cdi.common.util.defaultbean;
 
 
-import org.infinispan.cdi.common.util.AnyLiteral;
-import org.infinispan.cdi.common.util.DefaultLiteral;
-import org.infinispan.cdi.common.util.HierarchyDiscovery;
-import org.infinispan.cdi.common.util.Synthetic;
-import org.infinispan.cdi.common.util.annotatedtypebuilder.AnnotatedTypeBuilder;
-import org.infinispan.cdi.common.util.logging.Log;
-import org.infinispan.cdi.common.util.Reflections;
-import org.infinispan.commons.logging.LogFactory;
-
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -25,6 +12,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Disposes;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedParameter;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ObserverMethod;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.ProcessBean;
+import javax.enterprise.inject.spi.ProcessProducerField;
+import javax.enterprise.inject.spi.ProcessProducerMethod;
+
+import org.infinispan.cdi.common.util.AnyLiteral;
+import org.infinispan.cdi.common.util.DefaultLiteral;
+import org.infinispan.cdi.common.util.HierarchyDiscovery;
+import org.infinispan.cdi.common.util.Reflections;
+import org.infinispan.cdi.common.util.Synthetic;
+import org.infinispan.cdi.common.util.annotatedtypebuilder.AnnotatedTypeBuilder;
+import org.infinispan.cdi.common.util.logging.Log;
+import org.infinispan.commons.logging.LogFactory;
 
 /**
  * Registers beans annotated @DefaultBean

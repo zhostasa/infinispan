@@ -1,18 +1,9 @@
 package org.infinispan.client.hotrod.event;
 
-import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
-import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
-import org.infinispan.client.hotrod.annotation.ClientCacheEntryModified;
-import org.infinispan.client.hotrod.annotation.ClientCacheEntryRemoved;
-import org.infinispan.client.hotrod.annotation.ClientListener;
-import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.metadata.Metadata;
-import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
-import org.infinispan.notifications.cachelistener.filter.CacheEventFilterFactory;
-import org.infinispan.notifications.cachelistener.filter.EventType;
-import org.infinispan.filter.NamedFactory;
-import org.junit.Assert;
+import static org.infinispan.test.TestingUtil.assertAnyEquals;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,8 +14,19 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.infinispan.test.TestingUtil.assertAnyEquals;
-import static org.testng.AssertJUnit.*;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
+import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
+import org.infinispan.client.hotrod.annotation.ClientCacheEntryModified;
+import org.infinispan.client.hotrod.annotation.ClientCacheEntryRemoved;
+import org.infinispan.client.hotrod.annotation.ClientListener;
+import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.filter.NamedFactory;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilterFactory;
+import org.infinispan.notifications.cachelistener.filter.EventType;
+import org.junit.Assert;
 
 @ClientListener
 public class EventLogListener<K> implements RemoteCacheSupplier<K> {

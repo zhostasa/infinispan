@@ -1,11 +1,12 @@
 package org.infinispan.server.hotrod
 
-import org.testng.annotations.Test
 import java.lang.reflect.Method
-import test.HotRodTestingUtil._
-import org.testng.Assert._
-import test.{HotRodClient, UniquePortThreadLocal}
+
 import org.infinispan.manager.EmbeddedCacheManager
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test.{HotRodClient, UniquePortThreadLocal}
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 /**
  * Tests idle timeout logic in Hot Rod.

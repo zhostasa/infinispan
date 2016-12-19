@@ -26,9 +26,9 @@ import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
-import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.base.CommandInterceptor;
+import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 

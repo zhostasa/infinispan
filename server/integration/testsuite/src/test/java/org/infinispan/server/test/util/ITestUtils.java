@@ -1,5 +1,7 @@
 package org.infinispan.server.test.util;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -13,15 +15,11 @@ import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.server.test.client.hotrod.AbstractRemoteCacheManagerIT;
 import org.infinispan.server.test.client.memcached.MemcachedClient;
 import org.jboss.arquillian.container.test.api.Config;
 import org.jboss.arquillian.container.test.api.ContainerController;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Often repeated test code routines.

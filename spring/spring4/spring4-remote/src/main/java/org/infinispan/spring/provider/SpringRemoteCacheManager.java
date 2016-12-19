@@ -1,9 +1,9 @@
 package org.infinispan.spring.provider;
 
+import java.util.Collection;
+
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.springframework.util.Assert;
-
-import java.util.Collection;
 
 /**
  * <p>

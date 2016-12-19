@@ -1,15 +1,12 @@
 package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
-import java.net.NetworkInterface
 import java.util.EnumSet
 
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
-import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.registry.InternalCacheRegistry
 import org.infinispan.server.core.test.ServerTestingUtil._
 import org.infinispan.server.hotrod.OperationStatus._
-import org.infinispan.server.hotrod.configuration.{HotRodServerConfiguration, HotRodServerConfigurationBuilder}
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.server.hotrod.test.{HotRodClient, TestErrorResponse}
 import org.infinispan.test.AbstractCacheTest._

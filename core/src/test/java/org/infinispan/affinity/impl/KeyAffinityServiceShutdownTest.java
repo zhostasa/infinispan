@@ -1,11 +1,11 @@
 package org.infinispan.affinity.impl;
 
+import static org.junit.Assert.assertEquals;
+
 import org.infinispan.affinity.KeyAffinityServiceFactory;
 import org.infinispan.affinity.ListenerRegistration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.testng.annotations.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Mircea.Markus@jboss.com

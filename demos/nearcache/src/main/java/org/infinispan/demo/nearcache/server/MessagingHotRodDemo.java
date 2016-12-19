@@ -1,21 +1,6 @@
 package org.infinispan.demo.nearcache.server;
 
-import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
-
 import java.io.InputStream;
-
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
-import org.infinispan.server.core.ProtocolServer;
-import org.infinispan.server.hotrod.HotRodServer;
-import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -26,6 +11,19 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
+import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
+import org.infinispan.server.hotrod.HotRodServer;
+import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Hot Rod and JMS messaging server

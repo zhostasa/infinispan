@@ -1,12 +1,12 @@
 package org.infinispan.distribution;
 
-import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.tx.PrepareCommand;
-import org.testng.annotations.Test;
-
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
+import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commands.tx.PrepareCommand;
+import org.testng.annotations.Test;
 
 
 @Test(groups = "functional", testName = "distribution.DistSyncTx1PCL1FuncTest")

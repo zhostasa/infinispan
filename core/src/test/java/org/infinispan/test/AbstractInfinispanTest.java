@@ -1,15 +1,8 @@
 package org.infinispan.test;
 
-import org.infinispan.test.fwk.TestResourceTracker;
-import org.infinispan.util.DefaultTimeService;
-import org.infinispan.util.TimeService;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
-import javax.transaction.TransactionManager;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.BrokenBarrierException;
@@ -31,8 +24,16 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.fail;
+import javax.transaction.TransactionManager;
+
+import org.infinispan.test.fwk.TestResourceTracker;
+import org.infinispan.util.DefaultTimeService;
+import org.infinispan.util.TimeService;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 
 
 /**

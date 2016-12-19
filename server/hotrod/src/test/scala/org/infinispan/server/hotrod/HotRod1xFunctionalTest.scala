@@ -1,12 +1,12 @@
 package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
-import java.util.{Arrays, Optional}
+import java.util.Optional
 
-import test.HotRodTestingUtil._
-import org.testng.Assert._
 import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.server.hotrod.test.{HotRodClient, TestResponseWithPrevious}
+import org.testng.Assert._
 import org.testng.annotations.Test
 
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRod1xFunctionalTest")

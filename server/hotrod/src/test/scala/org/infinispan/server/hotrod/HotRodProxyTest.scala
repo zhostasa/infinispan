@@ -1,14 +1,13 @@
 package org.infinispan.server.hotrod
 
-import org.infinispan.manager.EmbeddedCacheManager
-import test.HotRodTestingUtil._
-import org.infinispan.server.hotrod.OperationStatus._
-import org.testng.annotations.Test
-import org.testng.Assert._
-import org.infinispan.test.AbstractCacheTest._
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
-import org.infinispan.commons.equivalence.ByteArrayEquivalence
+import org.infinispan.manager.EmbeddedCacheManager
+import org.infinispan.server.hotrod.OperationStatus._
 import org.infinispan.server.hotrod.test.HotRodTestingUtil
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.AbstractCacheTest._
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 import scala.collection.JavaConversions._
 

@@ -1,7 +1,7 @@
 package org.infinispan.query.remote.impl.filter;
 
-import static org.infinispan.query.remote.impl.filter.JPAFilterConverterUtils.unmarshallQueryString;
 import static org.infinispan.query.remote.impl.filter.JPAFilterConverterUtils.unmarshallParams;
+import static org.infinispan.query.remote.impl.filter.JPAFilterConverterUtils.unmarshallQueryString;
 
 import java.util.Map;
 

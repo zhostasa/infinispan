@@ -1,5 +1,11 @@
 package org.infinispan.server.test.task;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
 import org.infinispan.arquillian.core.RunningServer;
@@ -25,12 +31,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
 @Category({Task.class})

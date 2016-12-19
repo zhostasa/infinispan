@@ -5,7 +5,7 @@ import java.lang.reflect.Method
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
 import org.infinispan.server.hotrod.Constants._
 import org.infinispan.server.hotrod.OperationStatus._
-import org.infinispan.server.hotrod.test.{HotRodMagicKeyGenerator, HotRodClient}
+import org.infinispan.server.hotrod.test.HotRodMagicKeyGenerator
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.stats.impl.ClusterCacheStatsImpl
 import org.infinispan.test.AbstractCacheTest._

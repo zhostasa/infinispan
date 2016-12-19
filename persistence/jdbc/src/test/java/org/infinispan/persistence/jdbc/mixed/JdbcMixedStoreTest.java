@@ -1,10 +1,15 @@
 package org.infinispan.persistence.jdbc.mixed;
 
+import static org.infinispan.test.TestingUtil.internalMetadata;
+
+import java.util.Set;
+
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.util.ReflectionUtil;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.persistence.spi.PersistenceException;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.marshall.core.MarshalledEntryImpl;
 import org.infinispan.persistence.jdbc.TableManipulation;
 import org.infinispan.persistence.jdbc.TableName;
@@ -14,8 +19,7 @@ import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactoryConfig
 import org.infinispan.persistence.jdbc.stringbased.Person;
 import org.infinispan.persistence.keymappers.DefaultTwoWayKey2StringMapper;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
-import org.infinispan.marshall.core.MarshalledEntry;
-import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.test.fwk.UnitTestDatabaseManager;
@@ -23,10 +27,6 @@ import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.util.Set;
-
-import static org.infinispan.test.TestingUtil.internalMetadata;
 
 /**
  * Tester class for {@link JdbcMixedStore}

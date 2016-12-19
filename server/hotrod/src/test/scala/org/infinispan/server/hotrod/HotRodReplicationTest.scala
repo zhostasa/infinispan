@@ -2,15 +2,15 @@ package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
 
-import test.HotRodTestingUtil._
-import org.infinispan.server.hotrod.OperationStatus._
-import org.testng.annotations.Test
-import org.infinispan.test.AbstractCacheTest._
-import org.testng.Assert._
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
+import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.AbstractTestTopologyAwareResponse
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.AbstractCacheTest._
 import org.infinispan.test.TestingUtil
 import org.infinispan.topology.ClusterCacheStatus
-import test.AbstractTestTopologyAwareResponse
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 import scala.collection.JavaConversions._
 

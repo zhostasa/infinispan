@@ -1,15 +1,16 @@
 package org.infinispan.nearcache.cdi;
 
-import org.infinispan.Cache;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheRemoveAll;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
+import org.infinispan.Cache;
 
 /**
  * Global operations for the address cache

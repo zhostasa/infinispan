@@ -1,9 +1,11 @@
 package org.infinispan.client.hotrod;
 
-import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.infinispan.client.hotrod.test.InternalRemoteCacheManager;
-import org.infinispan.client.hotrod.test.SingleHotRodServerTest;
-import org.testng.annotations.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -13,7 +15,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.test.InternalRemoteCacheManager;
+import org.infinispan.client.hotrod.test.SingleHotRodServerTest;
+import org.testng.annotations.Test;
 
 /**
  * @author Mircea.Markus@jboss.com

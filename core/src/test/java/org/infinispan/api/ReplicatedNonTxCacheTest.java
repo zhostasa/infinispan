@@ -1,5 +1,8 @@
 package org.infinispan.api;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 import org.infinispan.Cache;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.RemoveCommand;
@@ -13,9 +16,6 @@ import org.infinispan.test.TestingUtil;
 import org.infinispan.tx.dld.ControlledRpcManager;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 /**
  * Data inconsistency can happen in non-transactional caches. the tests replicates this scenario: assuming N1 and N2 are

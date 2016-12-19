@@ -1,8 +1,11 @@
 package org.infinispan.hibernate.search.spi;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockFactory;
-import org.hibernate.search.backend.BackendFactory;
 import org.hibernate.search.cfg.Environment;
 import org.hibernate.search.engine.service.spi.ServiceManager;
 import org.hibernate.search.indexes.spi.DirectoryBasedIndexManager;
@@ -11,15 +14,11 @@ import org.hibernate.search.store.spi.DirectoryHelper;
 import org.hibernate.search.store.spi.LockFactoryCreator;
 import org.infinispan.Cache;
 import org.infinispan.hibernate.search.impl.AsyncDeleteExecutorService;
+import org.infinispan.hibernate.search.impl.LoggerFactory;
 import org.infinispan.hibernate.search.logging.Log;
 import org.infinispan.hibernate.search.util.configuration.impl.ConfigurationParseHelper;
-import org.infinispan.hibernate.search.impl.LoggerFactory;
 import org.infinispan.lucene.directory.DirectoryBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * A DirectoryProvider using Infinispan to store the Index. This depends on the CacheManagerServiceProvider to get a

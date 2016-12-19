@@ -9,9 +9,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
-import org.infinispan.server.hotrod.CacheDecodeContext;
-import org.infinispan.server.hotrod.ErrorResponse;
-import org.infinispan.server.hotrod.HotRodOperation;
 
 /**
  * Very simple handler that sole purpose is to put the decode context into the channel

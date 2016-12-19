@@ -1,16 +1,17 @@
 package org.infinispan.server.hotrod
 
-import org.infinispan.test.AbstractCacheTest._
 import java.lang.reflect.Method
-import org.infinispan.topology.ClusterCacheStatus
-import test.HotRodTestingUtil._
-import org.testng.Assert._
-import test.HotRodClient
-import org.infinispan.server.hotrod.OperationStatus._
-import org.testng.annotations.Test
+
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
 import org.infinispan.server.hotrod.Constants._
+import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodClient
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.AbstractCacheTest._
 import org.infinispan.test.TestingUtil
+import org.infinispan.topology.ClusterCacheStatus
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 /**
  * Tests Hot Rod replication mode using Hot Rod's 1.1 protocol.

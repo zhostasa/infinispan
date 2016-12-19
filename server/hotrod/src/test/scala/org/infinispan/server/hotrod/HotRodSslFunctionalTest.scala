@@ -1,11 +1,11 @@
 package org.infinispan.server.hotrod
 
-import org.testng.annotations.Test
-import test.HotRodTestingUtil._
-import org.infinispan.server.hotrod.test._
+import org.infinispan.commons.util.SslContextFactory
 import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder
-import org.infinispan.commons.util.SslContextFactory
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test._
+import org.testng.annotations.Test
 
 /**
  * Hot Rod server functional test over SSL

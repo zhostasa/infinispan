@@ -1,19 +1,18 @@
 package org.infinispan.atomic;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.infinispan.Cache;
 import org.infinispan.InvalidCacheUsageException;
 import org.infinispan.atomic.container.Container;
 import org.infinispan.atomic.container.ContainerSignature;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**

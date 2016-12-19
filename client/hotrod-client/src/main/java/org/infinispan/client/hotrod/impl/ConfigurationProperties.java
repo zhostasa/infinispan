@@ -5,8 +5,8 @@ import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.infinispan.client.hotrod.ProtocolVersion;

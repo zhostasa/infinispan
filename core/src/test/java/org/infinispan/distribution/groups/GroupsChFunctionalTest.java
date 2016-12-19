@@ -1,5 +1,7 @@
 package org.infinispan.distribution.groups;
 
+import java.util.Collections;
+
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistSyncFuncTest;
 import org.infinispan.distribution.group.Grouper;
@@ -7,8 +9,6 @@ import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.util.Collections;
 
 /**
  * @author Pete Muir

@@ -28,16 +28,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import javax.security.auth.Subject;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.BitSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
-
-import static org.infinispan.server.hotrod.ResponseWriting.writeResponse;
-
 /**
  * Handler that performs actual cache operations.  Note this handler should be on a separate executor group than the
  * decoder.

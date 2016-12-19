@@ -1,5 +1,8 @@
 package org.infinispan.atomic.sharded.collections;
 
+import static org.infinispan.atomic.Utils.assertOnAllCaches;
+import static org.testng.AssertJUnit.assertEquals;
+
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.configuration.cache.CacheMode;
@@ -9,11 +12,6 @@ import org.infinispan.test.AbstractCacheTest;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.fwk.TransportFlags;
 import org.testng.annotations.Test;
-
-import java.util.*;
-
-import static org.infinispan.atomic.Utils.assertOnAllCaches;
-import static org.testng.AssertJUnit.assertEquals;
 
 /**
  * @author Pierre Sutra

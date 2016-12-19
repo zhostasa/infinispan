@@ -8,8 +8,8 @@ import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.filter.KeyFilter;
-import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.marshall.core.MarshalledEntry;
+import org.infinispan.persistence.spi.AdvancedCacheLoader;
 
 /**
  * Defines the logic for interacting with the chain of external storage.

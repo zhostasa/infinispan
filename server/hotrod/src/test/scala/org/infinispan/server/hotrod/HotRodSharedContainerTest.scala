@@ -1,18 +1,18 @@
 package org.infinispan.server.hotrod
 
-import test.HotRodClient
 import java.lang.reflect.Method
-import org.infinispan.test.MultipleCacheManagersTest
-import test.HotRodTestingUtil._
-import org.infinispan.test.AbstractCacheTest._
-import org.testng.annotations.{AfterMethod, Test}
-import org.infinispan.server.core.test.ServerTestingUtil._
-import org.infinispan.test.fwk.TestCacheManagerFactory
-import org.infinispan.configuration.cache.CacheMode
+
 import org.infinispan.commons.CacheConfigurationException
-import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder
+import org.infinispan.configuration.cache.CacheMode
 import org.infinispan.configuration.global.GlobalConfigurationBuilder
-import org.infinispan.server.hotrod.test.UniquePortThreadLocal
+import org.infinispan.server.core.test.ServerTestingUtil._
+import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test.{HotRodClient, UniquePortThreadLocal}
+import org.infinispan.test.AbstractCacheTest._
+import org.infinispan.test.MultipleCacheManagersTest
+import org.infinispan.test.fwk.TestCacheManagerFactory
+import org.testng.annotations.{AfterMethod, Test}
 
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRodSharedContainerTest")
 class HotRodSharedContainerTest extends MultipleCacheManagersTest {

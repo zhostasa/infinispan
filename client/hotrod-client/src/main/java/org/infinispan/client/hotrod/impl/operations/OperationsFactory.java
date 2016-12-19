@@ -1,6 +1,5 @@
 package org.infinispan.client.hotrod.impl.operations;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -18,7 +17,6 @@ import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
 import org.infinispan.client.hotrod.impl.query.RemoteQuery;
 import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
-import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransport;
 
 import net.jcip.annotations.Immutable;
 

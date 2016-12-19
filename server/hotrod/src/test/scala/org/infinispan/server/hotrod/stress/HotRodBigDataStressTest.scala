@@ -1,10 +1,11 @@
 package org.infinispan.server.hotrod.stress
 
 import java.lang.reflect.Method
-import org.infinispan.test.TestingUtil.generateRandomString
-import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+
 import org.infinispan.server.hotrod.HotRodSingleNodeTest
 import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.TestingUtil.generateRandomString
 import org.testng.annotations.Test
 
 /**

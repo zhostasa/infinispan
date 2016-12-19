@@ -1,10 +1,11 @@
 package org.infinispan.cdi.common.util.defaultbean;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
+
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 
 class DefaultManagedBean<T> extends AbstractDefaultBean<T> {
 

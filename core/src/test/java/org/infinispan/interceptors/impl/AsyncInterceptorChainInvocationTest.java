@@ -7,9 +7,7 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.infinispan.commands.VisitableCommand;

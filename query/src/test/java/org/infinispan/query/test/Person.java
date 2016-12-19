@@ -1,5 +1,8 @@
 package org.infinispan.query.test;
 
+import java.io.Serializable;
+import java.util.Date;
+
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
@@ -13,9 +16,6 @@ import org.hibernate.search.annotations.Resolution;
 import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.StringBridge;
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * @author Navin Surtani

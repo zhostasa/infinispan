@@ -1,5 +1,20 @@
 package org.infinispan.distribution.rehash;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNotNull;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.AdvancedCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.CacheMode;
@@ -21,21 +36,6 @@ import org.infinispan.transaction.TransactionMode;
 import org.infinispan.util.BaseControlledConsistentHashFactory;
 import org.mockito.Mockito;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertFalse;
-import static org.testng.AssertJUnit.assertNotNull;
 
 /**
  * Tests data loss during state transfer a backup owner of a key becomes the primary owner

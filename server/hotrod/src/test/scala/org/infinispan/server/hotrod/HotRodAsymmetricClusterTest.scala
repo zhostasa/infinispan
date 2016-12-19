@@ -1,13 +1,13 @@
 package org.infinispan.server.hotrod
 
-import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
-import org.infinispan.test.AbstractCacheTest._
-import org.testng.annotations.Test
 import java.lang.reflect.Method
-import test.HotRodTestingUtil._
+
+import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
 import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.AbstractCacheTest._
 import org.infinispan.test.fwk.TestCacheManagerFactory
-import org.infinispan.commons.equivalence.ByteArrayEquivalence
+import org.testng.annotations.Test
 
 /**
  * Tests behaviour of Hot Rod servers with asymmetric clusters

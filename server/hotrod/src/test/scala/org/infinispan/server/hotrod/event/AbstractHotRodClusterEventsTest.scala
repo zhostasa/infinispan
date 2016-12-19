@@ -7,18 +7,18 @@ import java.util.{Collections, Optional}
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
 import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.metadata.Metadata
+import org.infinispan.notifications.cachelistener.event.Event
+import org.infinispan.notifications.cachelistener.filter._
 import org.infinispan.server.hotrod.OperationStatus._
 import org.infinispan.server.hotrod._
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.server.hotrod.test._
 import org.infinispan.test.AbstractCacheTest._
 import org.infinispan.test.TestingUtil
+import org.infinispan.util.KeyValuePair
 import org.testng.annotations.Test
 
 import scala.collection.mutable.ListBuffer
-import org.infinispan.notifications.cachelistener.event.Event
-import org.infinispan.notifications.cachelistener.filter.{CacheEventConverter, CacheEventConverterFactory, CacheEventFilter, CacheEventFilterFactory, EventType}
-import org.infinispan.util.KeyValuePair
 
 /**
  * @author Galder Zamarreño

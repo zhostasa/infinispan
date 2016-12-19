@@ -25,14 +25,13 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.EnumSet;
 
-import org.jgroups.logging.LogFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jgroups.Global;
+import org.jgroups.logging.LogFactory;
 import org.kohsuke.MetaInfServices;
 
 /**

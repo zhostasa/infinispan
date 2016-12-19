@@ -1,7 +1,6 @@
 package org.infinispan.distribution;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.persistence.dummy.DummyInMemoryStore;
 import org.infinispan.persistence.dummy.DummyInMemoryStoreConfigurationBuilder;
 
 /**

@@ -1,18 +1,18 @@
 package org.infinispan.persistence.jdbc;
 
-import org.infinispan.persistence.spi.PersistenceException;
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfiguration;
 import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.connectionfactory.PooledConnectionFactory;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.test.fwk.UnitTestDatabaseManager;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
-
-import java.sql.Connection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Tester class for {@link org.infinispan.persistence.jdbc.connectionfactory.PooledConnectionFactory}.

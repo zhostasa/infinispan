@@ -6,10 +6,7 @@ import org.infinispan.server.hotrod.logging.Log;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelPipeline;
 import io.netty.util.CharsetUtil;
-
-import java.security.PrivilegedActionException;
 
 /**
  * Static helper to provide common way of writing response to channel

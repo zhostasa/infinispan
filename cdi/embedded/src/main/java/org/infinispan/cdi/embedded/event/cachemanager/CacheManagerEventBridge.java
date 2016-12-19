@@ -1,14 +1,14 @@
 package org.infinispan.cdi.embedded.event.cachemanager;
 
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
 import org.infinispan.cdi.embedded.event.AbstractEventBridge;
 import org.infinispan.notifications.Listenable;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.Event;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
-
-import java.lang.annotation.Annotation;
-import java.util.Set;
 
 /**
  * @author Pete Muir

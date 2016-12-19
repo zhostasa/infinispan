@@ -1,14 +1,17 @@
 package org.infinispan.cdi.common.util.defaultbean;
 
-import javax.enterprise.util.AnnotationLiteral;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Set;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.enterprise.util.AnnotationLiteral;
 
 /**
  * We use this annotation as a carrier of qualifiers so that other extensions have access to the original qualifiers of the bean

@@ -1,5 +1,7 @@
 package org.infinispan.client.hotrod.impl.operations;
 
+import static java.util.Arrays.stream;
+
 import java.net.SocketAddress;
 import java.util.BitSet;
 import java.util.Set;
@@ -9,11 +11,8 @@ import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.impl.consistenthash.SegmentConsistentHash;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
 import org.infinispan.client.hotrod.impl.protocol.HeaderParams;
-import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
 import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
-
-import static java.util.Arrays.stream;
 
 /**
  * @author gustavonalle

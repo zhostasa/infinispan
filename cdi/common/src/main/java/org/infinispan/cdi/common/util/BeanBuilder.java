@@ -1,5 +1,11 @@
 package org.infinispan.cdi.common.util;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -9,11 +15,6 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.PassivationCapable;
 import javax.inject.Named;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * <p>

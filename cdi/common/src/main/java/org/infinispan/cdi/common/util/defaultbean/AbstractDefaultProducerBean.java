@@ -1,13 +1,14 @@
 package org.infinispan.cdi.common.util.defaultbean;
 
-import org.infinispan.cdi.common.util.Beans;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Set;
+
+import org.infinispan.cdi.common.util.Beans;
 
 
 /**

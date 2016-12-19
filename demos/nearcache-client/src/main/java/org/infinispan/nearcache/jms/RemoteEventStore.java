@@ -1,9 +1,6 @@
 package org.infinispan.nearcache.jms;
 
-import org.infinispan.persistence.spi.PersistenceException;
-import org.infinispan.persistence.remote.RemoteStore;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import java.util.Properties;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -14,7 +11,11 @@ import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.Properties;
+
+import org.infinispan.persistence.remote.RemoteStore;
+import org.infinispan.persistence.spi.PersistenceException;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * A remote cache store that registers itself to listen for remote cache events

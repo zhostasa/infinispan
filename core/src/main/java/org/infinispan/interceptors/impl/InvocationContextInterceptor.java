@@ -17,7 +17,6 @@ import org.infinispan.commands.tx.TransactionBoundaryCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.InvocationContextContainer;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.ComponentRegistry;

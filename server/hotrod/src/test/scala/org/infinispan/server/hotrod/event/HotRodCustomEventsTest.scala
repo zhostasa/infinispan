@@ -5,12 +5,12 @@ import java.util.{Collections, Optional, List => JList}
 
 import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.metadata.Metadata
+import org.infinispan.notifications.cachelistener.filter.{CacheEventConverter, CacheEventConverterFactory, EventType}
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.server.hotrod.test._
 import org.infinispan.server.hotrod.{Bytes, HotRodServer, HotRodSingleNodeTest}
-import org.testng.annotations.Test
-import org.infinispan.notifications.cachelistener.filter.{CacheEventConverter, CacheEventConverterFactory, EventType}
 import org.infinispan.util.KeyValuePair
+import org.testng.annotations.Test
 
 /**
  * @author Galder Zamarreño

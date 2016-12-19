@@ -1,5 +1,21 @@
 package org.infinispan.statetransfer;
 
+import static org.infinispan.distribution.DistributionTestHelper.isFirstOwner;
+import static org.infinispan.util.BlockingLocalTopologyManager.LatchType;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import org.infinispan.Cache;
 import org.infinispan.commands.read.GetCacheEntryCommand;
 import org.infinispan.commands.remote.ClusteredGetCommand;
@@ -16,26 +32,10 @@ import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.tx.dld.ControlledRpcManager;
-import org.infinispan.util.BlockingLocalTopologyManager;
 import org.infinispan.util.BaseControlledConsistentHashFactory;
+import org.infinispan.util.BlockingLocalTopologyManager;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import static org.infinispan.distribution.DistributionTestHelper.isFirstOwner;
-import static org.infinispan.util.BlockingLocalTopologyManager.LatchType;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
 
 /**
  * Test multiple possible situations of interleaving between a remote get and state transfer.

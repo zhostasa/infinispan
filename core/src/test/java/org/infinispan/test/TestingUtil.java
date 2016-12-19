@@ -2,7 +2,6 @@ package org.infinispan.test;
 
 import static java.io.File.separator;
 import static org.infinispan.commons.api.BasicCacheContainer.DEFAULT_CACHE_NAME;
-import static org.infinispan.distribution.DistributionTestHelper.isFirstOwner;
 import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.BOTH;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.fail;
@@ -57,7 +56,6 @@ import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;

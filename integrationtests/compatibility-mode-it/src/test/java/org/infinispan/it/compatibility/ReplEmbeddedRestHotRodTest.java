@@ -1,5 +1,10 @@
 package org.infinispan.it.compatibility;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -8,17 +13,10 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.configuration.cache.CacheMode;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import javax.servlet.http.HttpServletResponse;
-
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 /**
  * Tests embedded, Hot Rod and REST compatibility in a replicated

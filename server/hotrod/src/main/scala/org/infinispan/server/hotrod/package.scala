@@ -1,10 +1,7 @@
 package org.infinispan.server
 
-import java.util.Optional
-import java.util.function.{Function => J8Function}
-import java.util.function.{Consumer => J8Consumer}
-import java.util.function.{BiConsumer => J8BiConsumer}
-import java.util.{List => JList}
+import java.util.function.{BiConsumer => J8BiConsumer, Consumer => J8Consumer, Function => J8Function}
+import java.util.{Optional, List => JList}
 
 import org.infinispan.remoting.transport.Address
 import org.infinispan.util.KeyValuePair

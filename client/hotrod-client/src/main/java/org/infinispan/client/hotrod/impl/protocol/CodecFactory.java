@@ -1,10 +1,5 @@
 package org.infinispan.client.hotrod.impl.protocol;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.infinispan.client.hotrod.ProtocolVersion;
-
 import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_10;
 import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_11;
 import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_12;
@@ -15,6 +10,11 @@ import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_22;
 import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_23;
 import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_24;
 import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_25;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.infinispan.client.hotrod.ProtocolVersion;
 
 /**
  * Codec factory.

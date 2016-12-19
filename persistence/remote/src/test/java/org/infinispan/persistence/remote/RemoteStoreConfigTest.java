@@ -1,9 +1,13 @@
 package org.infinispan.persistence.remote;
 
+import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
+import static org.infinispan.test.TestingUtil.withCacheManager;
+import static org.junit.Assert.assertEquals;
+
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.test.HotRodClientTestingUtil;
-import org.infinispan.persistence.spi.CacheLoader;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.spi.CacheLoader;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.infinispan.test.CacheManagerCallable;
@@ -12,10 +16,6 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
-import static org.infinispan.test.TestingUtil.withCacheManager;
 
 /**
  * Simple test to sample how remote cache store is configured.

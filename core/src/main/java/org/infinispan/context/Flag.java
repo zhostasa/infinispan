@@ -7,13 +7,13 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.infinispan.Cache;
 import org.infinispan.AdvancedCache;
+import org.infinispan.Cache;
+import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.util.EnumUtil;
-import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.marshall.core.Ids;
 
 /**

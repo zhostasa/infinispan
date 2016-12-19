@@ -2,21 +2,17 @@ package org.infinispan.server.hotrod
 
 import java.util.function.Consumer
 
-import test.UniquePortThreadLocal
-import test.HotRodTestingUtil._
+import org.infinispan.commons.CacheConfigurationException
+import org.infinispan.configuration.cache.{ClusterLoaderConfiguration, Configuration, ConfigurationBuilder, VersioningScheme}
+import org.infinispan.manager.EmbeddedCacheManager
+import org.infinispan.server.core.test.Stoppable
+import org.infinispan.server.hotrod.configuration.{HotRodServerConfiguration, HotRodServerConfigurationBuilder}
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test.UniquePortThreadLocal
 import org.infinispan.test.fwk.TestCacheManagerFactory
+import org.infinispan.util.concurrent.IsolationLevel
 import org.testng.Assert._
 import org.testng.annotations.Test
-import org.infinispan.server.core.test.Stoppable
-import org.infinispan.configuration.cache.{ConfigurationBuilder, Configuration}
-import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder
-import org.infinispan.configuration.cache.ClusterLoaderConfiguration
-import org.infinispan.server.hotrod.configuration.HotRodServerConfiguration
-import org.infinispan.util.concurrent.IsolationLevel
-import org.infinispan.commons.CacheConfigurationException
-import org.infinispan.configuration.cache.VersioningScheme
-import org.infinispan.manager.EmbeddedCacheManager
-import org.infinispan.test.AbstractInfinispanTest
 
 /**
  * Test to verify that configuration changes are reflected in backend caches.

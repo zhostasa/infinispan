@@ -1,15 +1,6 @@
 package org.infinispan.commands.read;
 
-import org.infinispan.commands.AbstractTopologyAffectedCommand;
-import org.infinispan.commands.Visitor;
-import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.container.InternalEntryFactory;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import static org.infinispan.commons.util.Util.toStr;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -21,7 +12,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.infinispan.commons.util.Util.toStr;
+import org.infinispan.commands.AbstractTopologyAffectedCommand;
+import org.infinispan.commands.Visitor;
+import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.container.InternalEntryFactory;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.context.Flag;
+import org.infinispan.context.InvocationContext;
+import org.infinispan.lifecycle.ComponentStatus;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Retrieves multiple entries at once.

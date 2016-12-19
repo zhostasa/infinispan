@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.management.ObjectName;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mc4j.ems.connection.EmsConnection;
@@ -16,8 +18,6 @@ import org.rhq.core.pluginapi.inventory.ResourceDiscoveryContext;
 import org.rhq.plugins.jmx.JMXComponent;
 import org.rhq.plugins.jmx.MBeanResourceDiscoveryComponent;
 import org.rhq.plugins.jmx.util.ObjectNameQueryUtility;
-
-import javax.management.ObjectName;
 
 /**
  * Discovery class for Infinispan engines

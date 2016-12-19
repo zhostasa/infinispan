@@ -1,21 +1,20 @@
 package org.infinispan.server.hotrod
 
-import test.{HotRodClient, TestErrorResponse}
 import java.lang.reflect.Method
 import java.util.EnumSet
 
-import org.infinispan.server.hotrod.OperationStatus._
-import org.infinispan.test.MultipleCacheManagersTest
-import test.HotRodTestingUtil._
-import org.infinispan.test.AbstractCacheTest._
-import org.testng.annotations.{AfterClass, BeforeClass, Test}
-import org.infinispan.server.core.test.ServerTestingUtil._
-import org.infinispan.test.fwk.TestCacheManagerFactory
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
-import org.infinispan.commons.equivalence.ByteArrayEquivalence
 import org.infinispan.registry.InternalCacheRegistry
+import org.infinispan.server.core.test.ServerTestingUtil._
+import org.infinispan.server.hotrod.OperationStatus._
 import org.infinispan.server.hotrod.configuration.HotRodServerConfiguration
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test.{HotRodClient, TestErrorResponse}
+import org.infinispan.test.AbstractCacheTest._
+import org.infinispan.test.MultipleCacheManagersTest
+import org.infinispan.test.fwk.TestCacheManagerFactory
 import org.testng.Assert._
+import org.testng.annotations.{AfterClass, BeforeClass, Test}
 
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRodSingleClusteredTest")
 class HotRodSingleClusteredTest extends MultipleCacheManagersTest {

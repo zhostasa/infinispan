@@ -1,5 +1,20 @@
 package org.infinispan.configuration;
 
+import static org.infinispan.test.TestingUtil.INFINISPAN_END_TAG;
+import static org.infinispan.test.TestingUtil.INFINISPAN_START_TAG_NO_SCHEMA;
+import static org.infinispan.test.TestingUtil.withCacheManager;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
 import org.infinispan.Version;
 import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.commons.equivalence.ByteArrayEquivalence;
@@ -8,7 +23,6 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.CapacityFactor;
 import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.InterceptorConfiguration;
@@ -42,15 +56,6 @@ import org.infinispan.transaction.TransactionProtocol;
 import org.infinispan.transaction.lookup.GenericTransactionManagerLookup;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.testng.annotations.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
-import static org.infinispan.test.TestingUtil.*;
-import static org.testng.AssertJUnit.*;
 
 @Test(groups = "unit", testName = "configuration.XmlFileParsingTest")
 public class XmlFileParsingTest extends AbstractInfinispanTest {

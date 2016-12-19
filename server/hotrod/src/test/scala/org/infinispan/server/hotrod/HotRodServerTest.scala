@@ -3,12 +3,12 @@ package org.infinispan.server.hotrod
 import java.util.function.Consumer
 
 import org.infinispan.manager.EmbeddedCacheManager
-import org.testng.annotations.Test
-import org.testng.Assert._
 import org.infinispan.server.core.test.Stoppable
-import org.infinispan.test.fwk.TestCacheManagerFactory._
-import test.HotRodTestingUtil._
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.fwk.TestCacheManagerFactory._
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 /**
  * Hot Rod server unit test.

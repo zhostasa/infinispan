@@ -1,13 +1,14 @@
 package org.infinispan.server.hotrod
 
-import test.HotRodClient
-import test.HotRodTestingUtil._
-import org.infinispan.manager.EmbeddedCacheManager
-import org.infinispan.test.{TestingUtil, MultipleCacheManagersTest}
-import org.infinispan.server.core.test.ServerTestingUtil._
-import org.testng.annotations.{BeforeClass, AfterMethod, AfterClass, Test}
 import org.infinispan.configuration.cache.ConfigurationBuilder
+import org.infinispan.manager.EmbeddedCacheManager
+import org.infinispan.server.core.test.ServerTestingUtil._
+import org.infinispan.server.hotrod.test.HotRodClient
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.infinispan.test.fwk.TestCacheManagerFactory
+import org.infinispan.test.{MultipleCacheManagersTest, TestingUtil}
+import org.testng.annotations.{AfterClass, AfterMethod, BeforeClass, Test}
+
 import scala.collection.JavaConversions._
 
 /**

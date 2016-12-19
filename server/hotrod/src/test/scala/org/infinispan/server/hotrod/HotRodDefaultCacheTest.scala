@@ -1,11 +1,12 @@
 package org.infinispan.server.hotrod
 
-import test.HotRodTestingUtil._
-import org.infinispan.manager.EmbeddedCacheManager
-import org.testng.annotations.Test
 import java.lang.reflect.Method
+
+import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.testng.AssertJUnit._
+import org.testng.annotations.Test
 
 /**
  * Test class for setting an alternate default cache

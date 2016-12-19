@@ -1,5 +1,14 @@
 package org.infinispan.commands.functional;
 
+import static org.infinispan.functional.impl.EntryViews.snapshot;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Function;
+
 import org.infinispan.commands.AbstractTopologyAffectedCommand;
 import org.infinispan.commands.LocalCommand;
 import org.infinispan.commands.Visitor;
@@ -9,15 +18,6 @@ import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.lifecycle.ComponentStatus;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.function.Function;
-
-import static org.infinispan.functional.impl.EntryViews.snapshot;
 
 /**
  * @deprecated Since 8.3, will be removed.

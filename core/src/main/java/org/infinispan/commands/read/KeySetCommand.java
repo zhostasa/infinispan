@@ -1,5 +1,10 @@
 package org.infinispan.commands.read;
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.stream.StreamSupport;
+
 import org.infinispan.Cache;
 import org.infinispan.CacheSet;
 import org.infinispan.CacheStream;
@@ -15,11 +20,6 @@ import org.infinispan.distribution.DistributionManager;
 import org.infinispan.stream.impl.local.KeyStreamSupplier;
 import org.infinispan.stream.impl.local.LocalCacheStream;
 import org.infinispan.util.DataContainerRemoveIterator;
-
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.stream.StreamSupport;
 
 /**
  * Command implementation for {@link java.util.Map#keySet()} functionality.

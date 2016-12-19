@@ -1,7 +1,7 @@
 package org.infinispan.persistence.sifs;
 
-import static org.infinispan.persistence.PersistenceUtil.internalMetadata;
 import static org.infinispan.commons.util.Util.recursiveFileRemove;
+import static org.infinispan.persistence.PersistenceUtil.internalMetadata;
 import static org.testng.AssertJUnit.assertEquals;
 
 import org.infinispan.commons.util.Util;

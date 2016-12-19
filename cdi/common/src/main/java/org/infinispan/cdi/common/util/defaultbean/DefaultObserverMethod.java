@@ -1,8 +1,8 @@
 package org.infinispan.cdi.common.util.defaultbean;
 
-import org.infinispan.cdi.common.util.ForwardingObserverMethod;
-import org.infinispan.cdi.common.util.InjectableMethod;
-import org.infinispan.cdi.common.util.ParameterValueRedefiner;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
@@ -11,9 +11,10 @@ import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.ObserverMethod;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Set;
+
+import org.infinispan.cdi.common.util.ForwardingObserverMethod;
+import org.infinispan.cdi.common.util.InjectableMethod;
+import org.infinispan.cdi.common.util.ParameterValueRedefiner;
 
 class DefaultObserverMethod<T, X> extends ForwardingObserverMethod<T> {
 

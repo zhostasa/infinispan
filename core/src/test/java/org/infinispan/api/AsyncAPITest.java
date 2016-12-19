@@ -1,5 +1,14 @@
 package org.infinispan.api;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.util.Collections;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.Cache;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -9,13 +18,6 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.util.DefaultTimeService;
 import org.infinispan.util.TimeService;
 import org.testng.annotations.Test;
-
-import java.util.Collections;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
-import static org.testng.AssertJUnit.assertTrue;
 
 @Test(groups = "functional", testName = "api.AsyncAPITest")
 public class AsyncAPITest extends SingleCacheManagerTest {

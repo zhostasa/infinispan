@@ -2,9 +2,9 @@ package org.infinispan.server.hotrod.test
 
 import java.lang.reflect.Method
 import java.net.NetworkInterface
-import java.util.{Arrays, Collections, Optional, List => JList, Map => JMap}
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.{Arrays, Collections, Optional, List => JList, Map => JMap}
 
 import io.netty.channel.{Channel, ChannelFuture, ChannelInitializer}
 import org.infinispan.commons.api.BasicCacheContainer

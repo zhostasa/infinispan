@@ -1,10 +1,10 @@
 package org.infinispan.persistence.sifs.configuration;
 
+import static org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfiguration.*;
+
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-
-import static org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfiguration.*;
 
 /**
  * @author Radim Vansa &lt;rvansa@redhat.com&gt;

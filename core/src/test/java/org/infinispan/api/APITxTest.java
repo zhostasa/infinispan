@@ -1,19 +1,19 @@
 package org.infinispan.api;
 
+import static org.testng.AssertJUnit.assertEquals;
+
+import java.util.Map;
+
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
-
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-
-import static org.testng.AssertJUnit.assertEquals;
-
-import java.util.Map;
 
 /**
  * @author William Burns

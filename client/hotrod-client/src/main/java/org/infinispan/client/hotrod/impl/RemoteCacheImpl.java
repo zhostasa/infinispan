@@ -1,10 +1,9 @@
 package org.infinispan.client.hotrod.impl;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.infinispan.client.hotrod.filter.Filters.makeFactoryParams;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +37,6 @@ import org.infinispan.client.hotrod.impl.operations.ContainsKeyOperation;
 import org.infinispan.client.hotrod.impl.operations.ExecuteOperation;
 import org.infinispan.client.hotrod.impl.operations.GetAllParallelOperation;
 import org.infinispan.client.hotrod.impl.operations.GetOperation;
-import org.infinispan.client.hotrod.impl.operations.GetStreamOperation;
 import org.infinispan.client.hotrod.impl.operations.GetWithMetadataOperation;
 import org.infinispan.client.hotrod.impl.operations.GetWithVersionOperation;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
@@ -46,7 +44,6 @@ import org.infinispan.client.hotrod.impl.operations.PingOperation;
 import org.infinispan.client.hotrod.impl.operations.PutAllParallelOperation;
 import org.infinispan.client.hotrod.impl.operations.PutIfAbsentOperation;
 import org.infinispan.client.hotrod.impl.operations.PutOperation;
-import org.infinispan.client.hotrod.impl.operations.PutStreamOperation;
 import org.infinispan.client.hotrod.impl.operations.RemoveClientListenerOperation;
 import org.infinispan.client.hotrod.impl.operations.RemoveIfUnmodifiedOperation;
 import org.infinispan.client.hotrod.impl.operations.RemoveOperation;
@@ -59,8 +56,6 @@ import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.query.dsl.Query;
-
-import static org.infinispan.client.hotrod.filter.Filters.makeFactoryParams;
 
 /**
  * @author Mircea.Markus@jboss.com

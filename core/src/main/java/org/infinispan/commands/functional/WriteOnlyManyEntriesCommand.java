@@ -1,5 +1,12 @@
 package org.infinispan.commands.functional;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 import org.infinispan.commands.Visitor;
 import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
 import org.infinispan.container.entries.CacheEntry;
@@ -7,13 +14,6 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.lifecycle.ComponentStatus;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Map;
-import java.util.Collection;
-import java.util.function.BiConsumer;
 
 /**
  * @deprecated Since 8.3, will be removed.

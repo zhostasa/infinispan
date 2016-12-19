@@ -1,12 +1,18 @@
 package org.infinispan.client.hotrod;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
-import org.infinispan.client.hotrod.configuration.ServerConfiguration;
 import org.infinispan.client.hotrod.event.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.InvalidatedNearRemoteCache;
 import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
@@ -22,17 +28,7 @@ import org.infinispan.client.hotrod.near.NearCacheService;
 import org.infinispan.commons.executors.ExecutorFactory;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.FileLookupFactory;
-import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.commons.util.Util;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Factory for {@link org.infinispan.client.hotrod.RemoteCache}s. <p/> <p> <b>Lifecycle:</b> </p> In order to be able to

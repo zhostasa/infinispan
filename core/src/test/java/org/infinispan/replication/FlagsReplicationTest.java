@@ -1,5 +1,10 @@
 package org.infinispan.replication;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.fail;
+
 import javax.transaction.Transaction;
 
 import org.infinispan.AdvancedCache;
@@ -8,8 +13,6 @@ import org.infinispan.distribution.BaseDistFunctionalTest;
 import org.infinispan.transaction.LockingMode;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import static org.testng.AssertJUnit.*;
 
 /**
  * Verifies the Flags affect both local and remote nodes.

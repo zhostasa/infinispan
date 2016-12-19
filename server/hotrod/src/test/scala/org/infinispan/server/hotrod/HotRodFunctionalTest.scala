@@ -1,24 +1,22 @@
 package org.infinispan.server.hotrod
 
-import org.testng.annotations.Test
 import java.lang.reflect.Method
-
-import test.HotRodTestingUtil._
-import org.testng.Assert._
-import java.util.{Arrays, Optional}
-
-import org.infinispan.server.hotrod.OperationStatus._
-import org.infinispan.server.hotrod.test._
-import org.infinispan.test.TestingUtil.generateRandomString
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import java.util.{Arrays, Optional}
 
-import org.infinispan.server.core.test.Stoppable
-import org.infinispan.server.hotrod.configuration.HotRodServerConfiguration
-import org.infinispan.test.fwk.TestCacheManagerFactory
-import org.infinispan.server.core.QueryFacade
 import org.infinispan.AdvancedCache
 import org.infinispan.manager.EmbeddedCacheManager
+import org.infinispan.server.core.QueryFacade
+import org.infinispan.server.core.test.Stoppable
+import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.configuration.HotRodServerConfiguration
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test._
+import org.infinispan.test.TestingUtil.generateRandomString
+import org.infinispan.test.fwk.TestCacheManagerFactory
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 import scala.collection.JavaConversions._
 

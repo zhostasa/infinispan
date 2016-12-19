@@ -1,16 +1,15 @@
 package org.infinispan.persistence.manager;
 
-import org.infinispan.context.InvocationContext;
-import org.infinispan.factories.annotations.SurvivesRestarts;
-import org.infinispan.filter.KeyFilter;
-import org.infinispan.marshall.core.MarshalledEntry;
-import org.infinispan.persistence.manager.PersistenceManager;
-import org.infinispan.persistence.spi.AdvancedCacheLoader;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Executor;
+
+import org.infinispan.context.InvocationContext;
+import org.infinispan.factories.annotations.SurvivesRestarts;
+import org.infinispan.filter.KeyFilter;
+import org.infinispan.marshall.core.MarshalledEntry;
+import org.infinispan.persistence.spi.AdvancedCacheLoader;
 
 /**
  * @author Radim Vansa &lt;rvansa@redhat.com&gt;

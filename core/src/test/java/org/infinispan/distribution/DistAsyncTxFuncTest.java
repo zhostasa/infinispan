@@ -1,13 +1,5 @@
 package org.infinispan.distribution;
 
-import org.infinispan.Cache;
-import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.write.InvalidateL1Command;
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.test.ReplListener;
-import org.infinispan.test.TestingUtil;
-import org.testng.annotations.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,6 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.infinispan.Cache;
+import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commands.write.InvalidateL1Command;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.test.ReplListener;
+import org.infinispan.test.TestingUtil;
+import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "distribution.DistAsyncTxFuncTest")
 public class DistAsyncTxFuncTest extends DistSyncTxFuncTest {

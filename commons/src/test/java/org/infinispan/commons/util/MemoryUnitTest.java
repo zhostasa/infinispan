@@ -1,6 +1,7 @@
 package org.infinispan.commons.util;
 
 import static org.testng.AssertJUnit.assertEquals;
+
 import org.testng.annotations.Test;
 
 @Test(testName="commons.util.MemoryUnitTest", groups="functional")

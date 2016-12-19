@@ -1,17 +1,17 @@
 package org.infinispan.query.config;
 
-import org.junit.Assert;
+import static org.infinispan.test.TestingUtil.withCacheManager;
+
+import java.io.Serializable;
+
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.CacheManagerCallable;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
+import org.junit.Assert;
 import org.testng.annotations.Test;
-
-import java.io.Serializable;
-
-import static org.infinispan.test.TestingUtil.withCacheManager;
 
 /**
  * Tests verifying that the overriding of the configuration which is read from the configuration XML file is done

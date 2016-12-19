@@ -1,5 +1,7 @@
 package org.infinispan.demo.nearcache.client;
 
+import java.util.Properties;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -10,7 +12,6 @@ import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.Properties;
 
 /**
  * Testing client

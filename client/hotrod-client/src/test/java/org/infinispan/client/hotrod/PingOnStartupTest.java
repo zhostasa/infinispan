@@ -5,12 +5,9 @@ import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheCon
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 
-import java.util.Properties;
-
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory;
 import org.infinispan.client.hotrod.test.InternalRemoteCacheManager;
-import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory;
 import org.infinispan.client.hotrod.test.MultiHotRodServersTest;
 import org.infinispan.client.hotrod.test.RemoteCacheManagerCallable;
 import org.infinispan.configuration.cache.CacheMode;

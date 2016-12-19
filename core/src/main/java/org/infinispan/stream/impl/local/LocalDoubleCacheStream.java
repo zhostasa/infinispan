@@ -1,5 +1,21 @@
 package org.infinispan.stream.impl.local;
 
+import java.util.DoubleSummaryStatistics;
+import java.util.OptionalDouble;
+import java.util.PrimitiveIterator;
+import java.util.Spliterator;
+import java.util.function.BiConsumer;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleFunction;
+import java.util.function.DoublePredicate;
+import java.util.function.DoubleToIntFunction;
+import java.util.function.DoubleToLongFunction;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.ObjDoubleConsumer;
+import java.util.function.Supplier;
+import java.util.stream.DoubleStream;
+
 import org.infinispan.Cache;
 import org.infinispan.CacheStream;
 import org.infinispan.DoubleCacheStream;
@@ -18,6 +34,7 @@ import org.infinispan.stream.impl.intops.primitive.d.MapToObjDoubleOperation;
 import org.infinispan.stream.impl.intops.primitive.d.PeekDoubleOperation;
 import org.infinispan.stream.impl.intops.primitive.d.SkipDoubleOperation;
 import org.infinispan.stream.impl.intops.primitive.d.SortedDoubleOperation;
+import org.infinispan.util.function.SerializableBiConsumer;
 import org.infinispan.util.function.SerializableDoubleBinaryOperator;
 import org.infinispan.util.function.SerializableDoubleConsumer;
 import org.infinispan.util.function.SerializableDoubleFunction;
@@ -26,24 +43,7 @@ import org.infinispan.util.function.SerializableDoubleToIntFunction;
 import org.infinispan.util.function.SerializableDoubleToLongFunction;
 import org.infinispan.util.function.SerializableDoubleUnaryOperator;
 import org.infinispan.util.function.SerializableObjDoubleConsumer;
-import org.infinispan.util.function.SerializableBiConsumer;
 import org.infinispan.util.function.SerializableSupplier;
-
-import java.util.DoubleSummaryStatistics;
-import java.util.OptionalDouble;
-import java.util.PrimitiveIterator;
-import java.util.Spliterator;
-import java.util.function.BiConsumer;
-import java.util.function.DoubleBinaryOperator;
-import java.util.function.DoubleConsumer;
-import java.util.function.DoubleFunction;
-import java.util.function.DoublePredicate;
-import java.util.function.DoubleToIntFunction;
-import java.util.function.DoubleToLongFunction;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.ObjDoubleConsumer;
-import java.util.function.Supplier;
-import java.util.stream.DoubleStream;
 
 /**
  * DoubleStream that wraps a given stream to allow for additional functionality such as injection of values into

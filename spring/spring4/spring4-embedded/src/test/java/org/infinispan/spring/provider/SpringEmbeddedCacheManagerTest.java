@@ -1,17 +1,19 @@
 package org.infinispan.spring.provider;
 
+import static org.infinispan.test.TestingUtil.withCacheManager;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertSame;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.io.IOException;
+import java.util.Collection;
+
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.CacheManagerCallable;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.springframework.cache.Cache;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.util.Collection;
-
-import static org.infinispan.test.TestingUtil.withCacheManager;
-import static org.testng.AssertJUnit.*;
 
 /**
  * <p>

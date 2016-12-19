@@ -11,7 +11,6 @@ import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Either;
-import org.jboss.marshalling.Version;
 
 /**
  * A Hot Rod protocol encoder/decoder.

@@ -1,11 +1,11 @@
 package org.infinispan.cdi.remote;
 
-import org.infinispan.cdi.common.util.defaultbean.DefaultBean;
-import org.infinispan.client.hotrod.RemoteCacheManager;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
+
+import org.infinispan.cdi.common.util.defaultbean.DefaultBean;
+import org.infinispan.client.hotrod.RemoteCacheManager;
 
 /**
  * <p>The default {@link RemoteCacheManager} producer.</p>

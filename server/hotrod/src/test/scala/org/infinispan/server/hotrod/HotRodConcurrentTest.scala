@@ -1,8 +1,9 @@
 package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
-import java.util.concurrent.{Callable, Future, CyclicBarrier}
-import test.HotRodClient
+import java.util.concurrent.{Callable, CyclicBarrier, Future}
+
+import org.infinispan.server.hotrod.test.HotRodClient
 import org.testng.annotations.Test
 
 /**

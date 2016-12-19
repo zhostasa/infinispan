@@ -1,14 +1,15 @@
 package org.infinispan.cdi.common.util.defaultbean;
 
-import org.infinispan.cdi.common.util.InjectableMethod;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Set;
+
+import org.infinispan.cdi.common.util.InjectableMethod;
 
 // TODO Make this passivation capable
 class DefaultProducerMethod<T, X> extends AbstractDefaultProducerBean<T> {

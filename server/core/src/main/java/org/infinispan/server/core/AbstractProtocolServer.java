@@ -1,6 +1,7 @@
 package org.infinispan.server.core;
 
 import java.net.InetSocketAddress;
+
 import javax.management.DynamicMBean;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;

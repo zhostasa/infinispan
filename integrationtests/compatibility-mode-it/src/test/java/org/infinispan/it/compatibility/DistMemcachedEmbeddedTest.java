@@ -1,18 +1,17 @@
 package org.infinispan.it.compatibility;
 
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.it.compatibility.EmbeddedRestMemcachedHotRodTest.SpyMemcachedCompatibleMarshaller;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.assertArrayEquals;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.it.compatibility.EmbeddedRestMemcachedHotRodTest.SpyMemcachedCompatibleMarshaller;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * Tests embedded and Memcached compatibility in a distributed

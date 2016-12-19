@@ -1,5 +1,15 @@
 package org.infinispan.notifications.cachelistener.cluster;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.infinispan.Cache;
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.configuration.cache.CacheMode;
@@ -13,15 +23,6 @@ import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CheckPoint;
 import org.infinispan.util.concurrent.CommandAckCollector;
 import org.testng.annotations.Test;
-
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static org.testng.Assert.*;
 
 /**
  * Tests for cluster listeners that are specific to non tx

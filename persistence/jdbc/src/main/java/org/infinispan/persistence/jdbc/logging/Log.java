@@ -1,19 +1,20 @@
 package org.infinispan.persistence.jdbc.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.naming.NamingException;
+
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.persistence.support.Bucket;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import javax.naming.NamingException;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Log abstraction for the JDBC cache store. For this module, message ids

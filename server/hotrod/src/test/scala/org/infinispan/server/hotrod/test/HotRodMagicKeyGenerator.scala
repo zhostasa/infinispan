@@ -1,7 +1,8 @@
 package org.infinispan.server.hotrod.test
 
-import org.infinispan.Cache
 import java.util.Random
+
+import org.infinispan.Cache
 import org.infinispan.marshall.core.JBossMarshaller
 
 /**

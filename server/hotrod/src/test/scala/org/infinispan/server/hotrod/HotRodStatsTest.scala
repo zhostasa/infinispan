@@ -1,11 +1,12 @@
 package org.infinispan.server.hotrod
 
-import test.HotRodTestingUtil._
-import org.testng.annotations.Test
-import org.infinispan.test.fwk.TestCacheManagerFactory
 import java.lang.reflect.Method
-import org.testng.Assert._
+
 import org.infinispan.manager.EmbeddedCacheManager
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.test.fwk.TestCacheManagerFactory
+import org.testng.Assert._
+import org.testng.annotations.Test
 
 /**
  * Tests stats operation against a Hot Rod server.

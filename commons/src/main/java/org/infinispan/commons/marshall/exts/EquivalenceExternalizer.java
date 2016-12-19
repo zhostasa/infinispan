@@ -1,5 +1,10 @@
 package org.infinispan.commons.marshall.exts;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Set;
+
 import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.commons.equivalence.AnyServerEquivalence;
 import org.infinispan.commons.equivalence.ByteArrayEquivalence;
@@ -8,11 +13,6 @@ import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.Ids;
 import org.infinispan.commons.util.Util;
 import org.jboss.marshalling.util.IdentityIntMap;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Set;
 
 public final class EquivalenceExternalizer extends AbstractExternalizer<Equivalence> {
 

@@ -1,5 +1,11 @@
 package org.infinispan.server.rhq;
 
+import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rhq.core.domain.configuration.Configuration;
@@ -17,7 +23,6 @@ import org.rhq.core.domain.resource.CreateResourceStatus;
 import org.rhq.core.pluginapi.configuration.ConfigurationUpdateReport;
 import org.rhq.core.pluginapi.inventory.CreateChildResourceFacet;
 import org.rhq.core.pluginapi.inventory.CreateResourceReport;
-import org.rhq.core.pluginapi.inventory.InvalidPluginConfigurationException;
 import org.rhq.core.pluginapi.inventory.ResourceContext;
 import org.rhq.modules.plugins.wildfly10.ASConnection;
 import org.rhq.modules.plugins.wildfly10.BaseComponent;
@@ -25,12 +30,6 @@ import org.rhq.modules.plugins.wildfly10.ConfigurationLoadDelegate;
 import org.rhq.modules.plugins.wildfly10.ConfigurationWriteDelegate;
 import org.rhq.modules.plugins.wildfly10.CreateResourceDelegate;
 import org.rhq.modules.plugins.wildfly10.json.Address;
-
-import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *

@@ -22,18 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.CapacityFactor;
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**

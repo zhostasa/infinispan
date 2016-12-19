@@ -1,15 +1,15 @@
 package org.infinispan.distribution;
 
-import org.infinispan.Cache;
+import static org.infinispan.distribution.DistributionTestHelper.addressOf;
+import static org.infinispan.distribution.DistributionTestHelper.hasOwners;
+import static org.infinispan.distribution.DistributionTestHelper.isFirstOwner;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 
-import static org.infinispan.distribution.DistributionTestHelper.addressOf;
-import static org.infinispan.distribution.DistributionTestHelper.hasOwners;
-import static org.infinispan.distribution.DistributionTestHelper.isFirstOwner;
+import org.infinispan.Cache;
 
 /**
  * A special type of key that if passed a cache in its constructor, will ensure it will always be assigned to that cache

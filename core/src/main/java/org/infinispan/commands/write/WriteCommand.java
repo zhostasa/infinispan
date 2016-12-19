@@ -1,10 +1,10 @@
 package org.infinispan.commands.write;
 
+import java.util.Collection;
+
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
-
-import java.util.Collection;
 
 /**
  * A command that modifies the cache in some way

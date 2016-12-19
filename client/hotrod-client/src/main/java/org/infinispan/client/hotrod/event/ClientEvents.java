@@ -1,5 +1,9 @@
 package org.infinispan.client.hotrod.event;
 
+import static org.infinispan.client.hotrod.filter.Filters.makeFactoryParams;
+
+import java.io.IOException;
+
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
@@ -15,10 +19,6 @@ import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.remote.client.ContinuousQueryResult;
-
-import java.io.IOException;
-
-import static org.infinispan.client.hotrod.filter.Filters.makeFactoryParams;
 
 public class ClientEvents {
 

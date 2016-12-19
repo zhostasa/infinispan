@@ -1,14 +1,15 @@
 package org.infinispan.cdi.common.util.defaultbean;
 
-import org.infinispan.cdi.common.util.ForwardingBean;
-
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.PassivationCapable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.PassivationCapable;
+
+import org.infinispan.cdi.common.util.ForwardingBean;
 
 /**
  * A helper class for implementing default bean functionality

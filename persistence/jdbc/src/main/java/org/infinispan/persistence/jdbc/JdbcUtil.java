@@ -1,17 +1,17 @@
 package org.infinispan.persistence.jdbc;
 
-import org.infinispan.commons.io.ByteBuffer;
-import org.infinispan.persistence.spi.PersistenceException;
-import org.infinispan.commons.marshall.StreamingMarshaller;
-import org.infinispan.persistence.jdbc.logging.Log;
-import org.infinispan.util.logging.LogFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.infinispan.commons.io.ByteBuffer;
+import org.infinispan.commons.marshall.StreamingMarshaller;
+import org.infinispan.persistence.jdbc.logging.Log;
+import org.infinispan.persistence.spi.PersistenceException;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Contains common methods used by JDBC CacheStores.

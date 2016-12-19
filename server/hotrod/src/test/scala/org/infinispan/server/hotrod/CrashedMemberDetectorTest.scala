@@ -1,14 +1,15 @@
 package org.infinispan.server.hotrod
 
-import org.testng.annotations.Test
-import org.infinispan.test.fwk.TestCacheManagerFactory
-import org.infinispan.remoting.transport.Address
-import org.infinispan.notifications.cachemanagerlistener.event.Event.Type
-import org.infinispan.distribution.TestAddress
 import java.util.ArrayList
-import org.testng.AssertJUnit._
-import org.infinispan.test.SingleCacheManagerTest
+
+import org.infinispan.distribution.TestAddress
+import org.infinispan.notifications.cachemanagerlistener.event.Event.Type
 import org.infinispan.notifications.cachemanagerlistener.event.impl.EventImpl
+import org.infinispan.remoting.transport.Address
+import org.infinispan.test.SingleCacheManagerTest
+import org.infinispan.test.fwk.TestCacheManagerFactory
+import org.testng.AssertJUnit._
+import org.testng.annotations.Test
 
 /**
  * Tests crashed or stopped member logic.

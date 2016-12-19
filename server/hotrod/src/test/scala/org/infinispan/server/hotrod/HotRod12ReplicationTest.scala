@@ -2,9 +2,9 @@ package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
 
+import org.infinispan.server.hotrod.test.AbstractTestTopologyAwareResponse
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
 import org.testng.annotations.Test
-import test.HotRodTestingUtil._
-import test.AbstractTestTopologyAwareResponse
 
 /**
  * Test Hot Rod protocol version 1.2 with replicated caches.

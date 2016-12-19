@@ -1,5 +1,13 @@
 package org.infinispan.api.tree;
 
+import static org.infinispan.test.TestingUtil.withCacheManager;
+import static org.testng.AssertJUnit.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.transaction.TransactionManager;
+
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMap;
 import org.infinispan.atomic.AtomicMapLookup;
@@ -19,14 +27,6 @@ import org.infinispan.tree.impl.TreeCacheImpl;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.Test;
-
-import javax.transaction.TransactionManager;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.infinispan.test.TestingUtil.withCacheManager;
-import static org.testng.AssertJUnit.*;
 
 /**
  * Tests the {@link TreeCache} public API at a high level

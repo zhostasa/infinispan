@@ -7,8 +7,8 @@ import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
-import org.infinispan.persistence.jdbc.TableManipulation;
 import org.infinispan.configuration.serializing.SerializedWith;
+import org.infinispan.persistence.jdbc.TableManipulation;
 import org.infinispan.persistence.jdbc.mixed.JdbcMixedStore;
 import org.infinispan.persistence.keymappers.DefaultTwoWayKey2StringMapper;
 
