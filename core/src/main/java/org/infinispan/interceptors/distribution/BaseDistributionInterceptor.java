@@ -48,6 +48,8 @@ import org.infinispan.distribution.group.GroupManager;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.BasicInvocationStage;
+import org.infinispan.interceptors.InvocationComposeSuccessHandler;
+import org.infinispan.interceptors.InvocationReturnValueHandler;
 import org.infinispan.interceptors.InvocationStage;
 import org.infinispan.interceptors.impl.ClusteringInterceptor;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
@@ -78,15 +80,16 @@ import org.infinispan.util.logging.LogFactory;
  * @author Dan Berindei <dan@infinispan.org>
  */
 public abstract class BaseDistributionInterceptor extends ClusteringInterceptor {
-   protected DistributionManager dm;
+   private static final Log log = LogFactory.getLog(BaseDistributionInterceptor.class);
+   private static final boolean trace = log.isTraceEnabled();
 
+   protected DistributionManager dm;
    protected ClusteringDependentLogic cdl;
    protected RemoteValueRetrievedListener rvrl;
    protected boolean isL1Enabled;
    private GroupManager groupManager;
 
-   private static final Log log = LogFactory.getLog(BaseDistributionInterceptor.class);
-   private static final boolean trace = log.isTraceEnabled();
+   private final InvocationComposeSuccessHandler primaryReturnHandler = this::primaryReturnHandler;
 
    @Override
    protected Log getLog() {
@@ -231,7 +234,8 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
       } else {
          DistributionInfo info = new DistributionInfo(key, checkTopologyId(command).getWriteConsistentHash(), rpcManager.getAddress());
          if (info.isPrimary()) {
-            return invokeNext(ctx, command).thenCompose(this::primaryReturnHandler);
+            return invokeNext(ctx, command)
+                  .thenCompose(primaryReturnHandler);
          } else if (ctx.isOriginLocal()) {
             return invokeRemotely(command, info.primary());
          } else {

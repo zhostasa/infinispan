@@ -17,6 +17,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transaction;
 
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.equivalence.Equivalence;

@@ -1,5 +1,7 @@
 package org.infinispan.interceptors.locking;
 
+import java.util.function.Predicate;
+
 import org.infinispan.InvalidCacheUsageException;
 import org.infinispan.commands.DataCommand;
 import org.infinispan.commands.read.GetAllCommand;
@@ -17,8 +19,9 @@ import org.infinispan.util.logging.LogFactory;
  * @deprecated Since 9.0, no longer public API.
  */
 public class NonTransactionalLockingInterceptor extends AbstractLockingInterceptor {
-
    private static final Log log = LogFactory.getLog(NonTransactionalLockingInterceptor.class);
+
+   private final Predicate<Object> shouldLockKey = this::shouldLockKey;
 
    @Override
    protected Log getLog() {
@@ -50,7 +53,7 @@ public class NonTransactionalLockingInterceptor extends AbstractLockingIntercept
          return invokeNext(ctx, command);
       }
       try {
-         lockAllAndRecord(ctx, command.getMap().keySet().stream().filter(this::shouldLockKey), getLockTimeoutMillis(command));
+         lockAllAndRecord(ctx, command.getMap().keySet().stream().filter(shouldLockKey), getLockTimeoutMillis(command));
       } catch (Throwable t) {
          lockManager.unlockAll(ctx);
          throw t;
