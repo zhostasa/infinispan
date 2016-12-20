@@ -15,6 +15,9 @@ public class ModelFactoryHS implements ModelFactory {
 
    public static final ModelFactory INSTANCE = new ModelFactoryHS();
 
+   private ModelFactoryHS() {
+   }
+
    @Override
    public Account makeAccount() {
       return new AccountHS();
@@ -23,6 +26,11 @@ public class ModelFactoryHS implements ModelFactory {
    @Override
    public Class<AccountHS> getAccountImplClass() {
       return AccountHS.class;
+   }
+
+   @Override
+   public String getAccountTypeName() {
+      return getAccountImplClass().getName();
    }
 
    @Override
@@ -36,6 +44,11 @@ public class ModelFactoryHS implements ModelFactory {
    }
 
    @Override
+   public String getUserTypeName() {
+      return getUserImplClass().getName();
+   }
+
+   @Override
    public Transaction makeTransaction() {
       return new TransactionHS();
    }
@@ -46,6 +59,11 @@ public class ModelFactoryHS implements ModelFactory {
    }
 
    @Override
+   public String getTransactionTypeName() {
+      return getTransactionImplClass().getName();
+   }
+
+   @Override
    public Address makeAddress() {
       return new AddressHS();
    }
@@ -53,5 +71,10 @@ public class ModelFactoryHS implements ModelFactory {
    @Override
    public Class<AddressHS> getAddressImplClass() {
       return AddressHS.class;
+   }
+
+   @Override
+   public String getAddressTypeName() {
+      return getAddressImplClass().getName();
    }
 }
