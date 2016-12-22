@@ -366,7 +366,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    final int size(EnumSet<Flag> explicitFlags) {
       SizeCommand command = commandsFactory.buildSizeCommand(explicitFlags);
-      return (Integer) invoker.invoke(getInvocationContextForRead(UNBOUNDED), command);
+      return (Integer) invoker.invoke(invocationContextFactory.createInvocationContext(false, UNBOUNDED), command);
    }
 
    @Override
@@ -401,14 +401,14 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    @SuppressWarnings("unchecked")
    final V get(Object key, long explicitFlags) {
       assertKeyNotNull(key);
-      InvocationContext ctx = getInvocationContextForRead(1);
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, 1);
       GetKeyValueCommand command = commandsFactory.buildGetKeyValueCommand(key, explicitFlags);
       return (V) invoker.invoke(ctx, command);
    }
 
    final CacheEntry getCacheEntry(Object key, long explicitFlags) {
       assertKeyNotNull(key);
-      InvocationContext ctx = getInvocationContextForRead(1);
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, 1);
       GetCacheEntryCommand command = commandsFactory.buildGetCacheEntryCommand(key, explicitFlags);
       Object ret = invoker.invoke(ctx, command);
       return (CacheEntry) ret;
@@ -425,7 +425,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    final Map<K, V> getAll(Set<?> keys, long explicitFlags) {
-      InvocationContext ctx = getInvocationContextForRead(keys.size());
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, keys.size());
       GetAllCommand command = commandsFactory.buildGetAllCommand(keys, explicitFlags, false);
       Map<K, V> map = (Map<K, V>) invoker.invoke(ctx, command);
       Iterator<Map.Entry<K, V>> entryIterator = map.entrySet().iterator();
@@ -445,7 +445,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    public final Map<K, CacheEntry<K, V>> getAllCacheEntries(Set<?> keys,
          EnumSet<Flag> explicitFlags) {
-      InvocationContext ctx = getInvocationContextForRead(keys.size());
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, keys.size());
       GetAllCommand command = commandsFactory.buildGetAllCommand(keys, EnumUtil.bitSetOf(explicitFlags), true);
       Map<K, CacheEntry<K, V>> map = (Map<K, CacheEntry<K, V>>) invoker.invoke(ctx, command);
       Iterator<Map.Entry<K, CacheEntry<K, V>>> entryIterator = map.entrySet().iterator();
@@ -464,7 +464,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    final Map<K, V> getGroup(String groupName, long explicitFlags) {
-      InvocationContext ctx = getInvocationContextForRead(UNBOUNDED);
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, UNBOUNDED);
       return Collections.unmodifiableMap(internalGetGroup(groupName, explicitFlags, ctx));
    }
 
@@ -516,7 +516,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    private void nonTransactionalRemoveGroup(String groupName, long explicitFlags) {
-      InvocationContext context = getInvocationContextForRead(UNBOUNDED);
+      InvocationContext context = invocationContextFactory.createInvocationContext(false, UNBOUNDED);
       Map<K, V> keys = internalGetGroup(groupName, explicitFlags, context);
       long removeFlags = addIgnoreReturnValuesFlag(explicitFlags);
       for (K key : keys.keySet()) {
@@ -588,7 +588,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @SuppressWarnings("unchecked")
    CacheSet<K> keySet(EnumSet<Flag> explicitFlags) {
-      InvocationContext ctx = getInvocationContextForRead(UNBOUNDED);
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, UNBOUNDED);
       KeySetCommand command = commandsFactory.buildKeySetCommand(explicitFlags);
       return (CacheSet<K>) invoker.invoke(ctx, command);
    }
@@ -609,7 +609,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @SuppressWarnings("unchecked")
    CacheSet<CacheEntry<K, V>> cacheEntrySet(EnumSet<Flag> explicitFlags) {
-      InvocationContext ctx = getInvocationContextForRead(UNBOUNDED);
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, UNBOUNDED);
       EntrySetCommand command = commandsFactory.buildEntrySetCommand(explicitFlags);
       return (CacheSet<CacheEntry<K, V>>) invoker.invoke(ctx, command);
    }
@@ -621,7 +621,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @SuppressWarnings("unchecked")
    CacheSet<Map.Entry<K, V>> entrySet(EnumSet<Flag> explicitFlags) {
-      InvocationContext ctx = getInvocationContextForRead(UNBOUNDED);
+      InvocationContext ctx = invocationContextFactory.createInvocationContext(false, UNBOUNDED);
       EntrySetCommand command = commandsFactory.buildEntrySetCommand(explicitFlags);
       return (CacheSet<Map.Entry<K, V>>) invoker.invoke(ctx, command);
    }
@@ -713,10 +713,6 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    @Override
    public Set<Object> getListeners() {
       return notifier.getListeners();
-   }
-
-   private InvocationContext getInvocationContextForRead(int keyCount) {
-      return invocationContextFactory.createInvocationContext(false, keyCount);
    }
 
    private InvocationContext getInvocationContextWithImplicitTransactionForAsyncOps(boolean isPutForExternalRead, int keyCount) {

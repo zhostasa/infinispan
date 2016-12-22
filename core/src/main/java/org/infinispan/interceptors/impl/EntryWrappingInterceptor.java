@@ -116,10 +116,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    private final InvocationSuccessHandler dataReadReturnHandler = (rCtx, rCommand, rv) -> {
       AbstractDataCommand dataCommand = (AbstractDataCommand) rCommand;
 
-      // TODO needed because entries might be added in L1?
-      if (!rCtx.isInTxScope()) {
-         commitContextEntries(rCtx, dataCommand, null);
-      } else if (useRepeatableRead) {
+      if (rCtx.isInTxScope() && useRepeatableRead) {
          // The entry must be in the context
          CacheEntry cacheEntry = rCtx.lookupEntry(dataCommand.getKey());
          cacheEntry.setSkipLookup(true);
@@ -129,7 +126,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       }
 
       // Entry visit notifications used to happen in the CallInterceptor
-      // We do it after (maybe) committing the entries, to avoid adding another try/finally block
+      // We do it at the end to avoid adding another try/finally block around the notifications
       if (rv != null && !(rv instanceof Response)) {
          Object value = dataCommand instanceof GetCacheEntryCommand ? ((CacheEntry) rv).getValue() : rv;
          notifier.notifyCacheEntryVisited(dataCommand.getKey(), value, true, rCtx, dataCommand);
@@ -762,7 +759,8 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
     * @return true if the modification should be committed, false otherwise
     */
    protected boolean shouldCommitDuringPrepare(PrepareCommand command, TxInvocationContext ctx) {
-      return totalOrder ? command.isOnePhaseCommit() && (!ctx.isOriginLocal() || !command.hasModifications()) :
+      return totalOrder ?
+            command.isOnePhaseCommit() && (!ctx.isOriginLocal() || !command.hasModifications()) :
             command.isOnePhaseCommit();
    }
 

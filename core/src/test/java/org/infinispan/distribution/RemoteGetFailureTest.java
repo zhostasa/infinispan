@@ -25,7 +25,6 @@ import org.infinispan.commands.read.GetCacheEntryCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.commands.remote.ClusteredGetCommand;
 import org.infinispan.commons.CacheException;
-import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.InvocationContext;
@@ -225,7 +224,7 @@ public abstract class RemoteGetFailureTest extends MultipleCacheManagersTest {
       org.infinispan.remoting.transport.Address address2 = cache(2).getCacheManager().getAddress();
       List<org.infinispan.remoting.transport.Address> owners = Arrays.asList(address1, address2);
 
-      ClusteredGetCommand clusteredGet = new ClusteredGetCommand(key, ByteString.fromString(cache(0).getName()), 0, AnyEquivalence.getInstance());
+      ClusteredGetCommand clusteredGet = new ClusteredGetCommand(key, ByteString.fromString(cache(0).getName()), 0);
       final int timeout = 15;
       RpcOptions rpcOptions = new RpcOptions(timeout, TimeUnit.SECONDS, null, ResponseMode.WAIT_FOR_VALID_RESPONSE, DeliverOrder.NONE);
 

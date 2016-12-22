@@ -26,6 +26,7 @@ import org.infinispan.remoting.transport.Address;
  */
 @Deprecated
 public final class CommandInvocationId {
+   public static final CommandInvocationId DUMMY_INVOCATION_ID = new CommandInvocationId(null, 0);
 
    private static final AtomicLong nextId = new AtomicLong(0);
 

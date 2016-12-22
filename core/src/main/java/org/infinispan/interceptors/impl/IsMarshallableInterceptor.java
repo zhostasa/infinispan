@@ -30,6 +30,7 @@ import org.infinispan.interceptors.DDAsyncInterceptor;
 public class IsMarshallableInterceptor extends DDAsyncInterceptor {
 
    private StreamingMarshaller marshaller;
+   private boolean usingAsyncStore;
 
    @Inject
    protected void injectMarshaller(StreamingMarshaller marshaller) {
@@ -38,6 +39,7 @@ public class IsMarshallableInterceptor extends DDAsyncInterceptor {
 
    @Start
    protected void start() {
+      usingAsyncStore = cacheConfiguration.persistence().usingAsyncStore();
    }
 
    @Override
@@ -73,8 +75,7 @@ public class IsMarshallableInterceptor extends DDAsyncInterceptor {
    }
 
    private boolean isUsingAsyncStore(InvocationContext ctx, FlagAffectedCommand command) {
-      return ctx.isOriginLocal() && !cacheConfiguration.persistence().usingAsyncStore() &&
-            !command.hasAnyFlag(FlagBitSets.SKIP_CACHE_STORE);
+      return usingAsyncStore && ctx.isOriginLocal() && !command.hasAnyFlag(FlagBitSets.SKIP_CACHE_STORE);
    }
 
    private void checkMarshallable(Object o) throws NotSerializableException {

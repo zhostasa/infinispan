@@ -69,7 +69,6 @@ public class DeadlockDetectingInterceptor extends DDAsyncInterceptor {
          globalTransaction.setRemoteLockIntention(command.getKeys());
          //in the case of DIST we need to propagate the list of keys. In all other situations in can be determined
          // based on the actual command
-         CacheMode cacheMode = cacheConfiguration.clustering().cacheMode();
          if (distOrRepl) {
             if (trace) log.tracef("Locks as seen at origin are: %s", ctx.getLockedKeys());
             ((DldGlobalTransaction) ctx.getGlobalTransaction()).setLocksHeldAtOrigin(ctx.getLockedKeys());

@@ -11,7 +11,6 @@ import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.entries.MVCCEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
@@ -54,10 +53,10 @@ public class RemoveCommand extends AbstractDataWriteCommand {
       this.valueMatcher = value != null ? ValueMatcher.MATCH_EXPECTED : ValueMatcher.MATCH_ALWAYS;
    }
 
-   public void init(CacheNotifier notifier, Configuration configuration) {
+   public void init(CacheNotifier notifier, Equivalence<?> valueEquivalence) {
       //noinspection unchecked
       this.notifier = notifier;
-      this.valueEquivalence = configuration.dataContainer().valueEquivalence();
+      this.valueEquivalence = valueEquivalence;
    }
 
    public RemoveCommand() {

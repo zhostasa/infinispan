@@ -11,7 +11,6 @@ import org.infinispan.commands.MetadataAwareCommand;
 import org.infinispan.commands.Visitor;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.marshall.MarshallUtil;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.entries.MVCCEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
@@ -53,10 +52,10 @@ public class ReplaceCommand extends AbstractDataWriteCommand implements Metadata
       this.valueEquivalence = valueEquivalence;
    }
 
-   public void init(CacheNotifier notifier, Configuration cfg) {
+   public void init(CacheNotifier notifier, Equivalence<?> valueEquivalence) {
       //noinspection unchecked
       this.notifier = notifier;
-      this.valueEquivalence = cfg.dataContainer().valueEquivalence();
+      this.valueEquivalence = valueEquivalence;
    }
 
    @Override

@@ -65,7 +65,6 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
 
    private PartitionHandlingManager partitionHandlingManager;
 
-   private boolean syncCommitPhase;
    private boolean syncRollbackPhase;
 
    @Inject
@@ -75,7 +74,6 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
 
    @Start
    public void start() {
-      syncCommitPhase = cacheConfiguration.transaction().syncCommitPhase();
       syncRollbackPhase = cacheConfiguration.transaction().syncRollbackPhase();
    }
 
@@ -340,7 +338,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private RpcOptions createCommitRpcOptions() {
-      return createRpcOptionsFor2ndPhase(syncCommitPhase);
+      return createRpcOptionsFor2ndPhase(isSyncCommitPhase());
    }
 
    private RpcOptions createRollbackRpcOptions() {

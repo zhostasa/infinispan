@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.AdvancedCache;
 import org.infinispan.commands.remote.ClusteredGetCommand;
 import org.infinispan.commons.configuration.ConfiguredBy;
+import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
 import org.infinispan.container.entries.InternalCacheValue;
@@ -46,6 +47,7 @@ public class ClusterLoader implements CacheLoader, LocalOnlyCacheLoader {
    private ClusterLoaderConfiguration configuration;
    private InitializationContext ctx;
    private ByteString cacheName;
+   private Equivalence<Object> keyEquivalence;
 
    @Override
    public void init(InitializationContext ctx) {
@@ -53,7 +55,8 @@ public class ClusterLoader implements CacheLoader, LocalOnlyCacheLoader {
       cache = ctx.getCache().getAdvancedCache();
       cacheName = ByteString.fromString(cache.getName());
       rpcManager = cache.getRpcManager();
-      this.configuration = ctx.getConfiguration();
+      configuration = ctx.getConfiguration();
+      keyEquivalence = cache.getCacheConfiguration().dataContainer().keyEquivalence();
    }
 
    @Override
@@ -61,8 +64,7 @@ public class ClusterLoader implements CacheLoader, LocalOnlyCacheLoader {
       if (!isCacheReady()) return null;
 
       ClusteredGetCommand clusteredGetCommand = new ClusteredGetCommand(
-            key, cacheName, EnumUtil.bitSetOf(Flag.SKIP_OWNERSHIP_CHECK),
-         cache.getCacheConfiguration().dataContainer().keyEquivalence());
+            key, cacheName, EnumUtil.bitSetOf(Flag.SKIP_OWNERSHIP_CHECK));
 
       Collection<Response> responses = doRemoteCall(clusteredGetCommand);
       if (responses.isEmpty()) return null;

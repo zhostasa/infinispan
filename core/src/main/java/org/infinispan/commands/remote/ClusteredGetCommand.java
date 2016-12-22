@@ -43,7 +43,6 @@ public class ClusteredGetCommand extends BaseClusteredReadCommand {
    private AsyncInterceptorChain invoker;
 
    private InternalEntryFactory entryFactory;
-   private Equivalence keyEquivalence;
    //only used by extended statistics. this boolean is local.
    private boolean isWrite;
 
@@ -55,20 +54,18 @@ public class ClusteredGetCommand extends BaseClusteredReadCommand {
       super(cacheName, EnumUtil.EMPTY_BIT_SET);
    }
 
-   public ClusteredGetCommand(Object key, ByteString cacheName, long flags, Equivalence keyEquivalence) {
+   public ClusteredGetCommand(Object key, ByteString cacheName, long flags) {
       super(cacheName, flags);
       this.key = key;
-      this.keyEquivalence = keyEquivalence;
       this.isWrite = false;
    }
 
-   public void initialize(InvocationContextFactory icf, CommandsFactory commandsFactory, InternalEntryFactory entryFactory,
-                          AsyncInterceptorChain interceptorChain, Equivalence keyEquivalence) {
+   public void initialize(InvocationContextFactory icf, CommandsFactory commandsFactory,
+                          InternalEntryFactory entryFactory, AsyncInterceptorChain interceptorChain) {
       this.icf = icf;
       this.commandsFactory = commandsFactory;
       this.invoker = interceptorChain;
       this.entryFactory = entryFactory;
-      this.keyEquivalence = keyEquivalence;
    }
 
    /**
@@ -128,17 +125,13 @@ public class ClusteredGetCommand extends BaseClusteredReadCommand {
 
       ClusteredGetCommand that = (ClusteredGetCommand) o;
 
-      return !(key != null ?
-         !(keyEquivalence != null ? keyEquivalence.equals(key, that.key) : key.equals(that.key))
-         : that.key != null);
+      return key != null ? key.equals(that.key) : that.key == null;
    }
 
    @Override
    public int hashCode() {
       int result;
-      result = (key != null
-          ? (keyEquivalence != null ? keyEquivalence.hashCode(key) : key.hashCode())
-          : 0);
+      result = key != null ? key.hashCode() : 0;
       return result;
    }
 
