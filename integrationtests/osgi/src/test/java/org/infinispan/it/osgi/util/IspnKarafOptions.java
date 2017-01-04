@@ -41,6 +41,8 @@ public class IspnKarafOptions {
    private static final String PROP_VERSION_OBJENESIS = "version.mockito_dep.objenesis";
    private static final String PROP_VERBOSE_KARAF = "verbose.karaf";
    private static final String PROP_UBER_JAR = "uberjar";
+   private static final String PROP_EXECUTION_ENVIRONMENT = "org.osgi.framework.executionenvironment";
+   private static final String INFINISPAN_EXECUTION_ENVIRONMENT = "J2SE-1.8,JavaSE-1.8,J2SE-1.7,JavaSE-1.7,J2SE-1.6,JavaSE-1.6,J2SE-1.5,JavaSE-1.5,J2SE-1.4,JavaSE-1.4,J2SE-1.3,JavaSE-1.3,J2SE-1.2,,JavaSE-1.2,CDC-1.1/Foundation-1.1,CDC-1.0/Foundation-1.0,J2ME,OSGi/Minimum-1.1,OSGi/Minimum-1.0";
 
    private static Pattern PATTERN_HEADER = Pattern.compile("(.+)=(.+)");
 
@@ -141,7 +143,7 @@ public class IspnKarafOptions {
       String groupId = String.format("org.apache.karaf.%sfeatures", karafVersion.startsWith("2") ? "assemblies." : "");
 
       return features(maven().groupId(groupId).artifactId("enterprise").type("xml")
-                            .classifier("features").version(karafVersion), "jndi");
+                      .classifier("features").version(karafVersion), "jndi");
    }
 
    public static Option bundleH2Database() {
@@ -305,9 +307,14 @@ public class IspnKarafOptions {
                        verboseKaraf(),
                        junitBundles(),
                        keepRuntimeFolder(),
-            /* Required for the @Category(Per{Suite,Class,Method}) annotations. */
-            bundlePaxExamSpi(),
-            localRepoForPAXUrl());
+                       /* Required for the @Category(Per{Suite,Class,Method}) annotations. */
+                       bundlePaxExamSpi(),
+                       localRepoForPAXUrl(),
+                       setInfinispanExecutionEnvironment());
+   }
+
+   public static Option setInfinispanExecutionEnvironment() throws Exception {
+      return editConfigurationFilePut("etc/config.properties", PROP_EXECUTION_ENVIRONMENT, INFINISPAN_EXECUTION_ENVIRONMENT);
    }
 
    public static Option perSuiteOptions() throws Exception {
