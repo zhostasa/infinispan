@@ -170,7 +170,7 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
 
    @Override
    public BasicInvocationStage visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
-      command.setFlagsBitSet(command.getFlagsBitSet() | FlagBitSets.IGNORE_RETURN_VALUES);
+      command.setFlagsBitSet(command.getFlagsBitSet() & ~FlagBitSets.IGNORE_RETURN_VALUES);
       return invokeNext(ctx, command).thenAccept((rCtx, rCommand, rv) -> {
          Map<Object, Object> previousValues = (Map<Object, Object>) rv;
          processPutMapCommand(((PutMapCommand) rCommand), rCtx, previousValues, null);
