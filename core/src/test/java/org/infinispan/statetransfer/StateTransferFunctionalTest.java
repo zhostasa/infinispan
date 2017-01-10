@@ -69,8 +69,9 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       configurationBuilder.locking().useLockStriping(false); // reduces the odd chance of a key collision and deadlock
    }
 
-   protected EmbeddedCacheManager createCacheManager() {
+   protected EmbeddedCacheManager createCacheManager(String cacheName) {
       EmbeddedCacheManager cm = addClusterEnabledCacheManager(configurationBuilder, new TransportFlags().withMerge(true));
+      cm.defineConfiguration(cacheName, configurationBuilder.build());
       return cm;
    }
 
@@ -156,11 +157,11 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       testCount++;
       logTestStart(m);
       Cache<Object, Object> cache1, cache2;
-      EmbeddedCacheManager cm1 = createCacheManager();
+      EmbeddedCacheManager cm1 = createCacheManager(cacheName);
       cache1 = cm1.getCache(cacheName);
       writeInitialData(cache1);
 
-      EmbeddedCacheManager cm2 = createCacheManager();
+      EmbeddedCacheManager cm2 = createCacheManager(cacheName);
       cache2 = cm2.getCache(cacheName);
       TestingUtil.waitForNoRebalance(cache1, cache2);
       verifyInitialData(cache2);
@@ -172,11 +173,11 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       testCount++;
       logTestStart(m);
       Cache<Object, Object> cache1, cache2;
-      EmbeddedCacheManager cacheManager1 = createCacheManager();
+      EmbeddedCacheManager cacheManager1 = createCacheManager(cacheName);
       cache1 = cacheManager1.getCache(cacheName);
       writeInitialData(cache1);
 
-      EmbeddedCacheManager cm2 = createCacheManager();
+      EmbeddedCacheManager cm2 = createCacheManager(cacheName);
       cache2 = cm2.getCache(cacheName);
       TestingUtil.waitForNoRebalance(cache1, cache2);
       verifyInitialData(cache2);
@@ -190,10 +191,10 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       testCount++;
       logTestStart(m);
       Cache<Object, Object> cache1, cache2, cache3, cache4;
-      cache1 = createCacheManager().getCache(cacheName);
+      cache1 = createCacheManager(cacheName).getCache(cacheName);
       writeInitialData(cache1);
 
-      EmbeddedCacheManager cm2 = createCacheManager();
+      EmbeddedCacheManager cm2 = createCacheManager(cacheName);
       cache2 = cm2.getCache(cacheName);
 
       cache1.put("delay", new DelayTransfer());
@@ -201,8 +202,8 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       TestingUtil.waitForNoRebalance(cache1, cache2);
       verifyInitialData(cache2);
 
-      EmbeddedCacheManager cm3 = createCacheManager();
-      EmbeddedCacheManager cm4 = createCacheManager();
+      EmbeddedCacheManager cm3 = createCacheManager(cacheName);
+      EmbeddedCacheManager cm4 = createCacheManager(cacheName);
 
       Future<Cache> joinFuture1 = fork(() -> cm3.getCache(cacheName));
       Future<Cache> joinFuture2 = fork(() -> cm4.getCache(cacheName));
@@ -254,10 +255,10 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       testCount++;
       logTestStart(m);
       Cache<Object, Object> cache1, cache2;
-      cache1 = createCacheManager().getCache(cacheName);
+      cache1 = createCacheManager(cacheName).getCache(cacheName);
       writeInitialData(cache1);
 
-      EmbeddedCacheManager cm2 = createCacheManager();
+      EmbeddedCacheManager cm2 = createCacheManager(cacheName);
       cache2 = cm2.getCache(cacheName);
       TestingUtil.waitForNoRebalance(cache1, cache2);
       verifyInitialData(cache2);
@@ -283,8 +284,8 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
 
    private void thirdWritingCacheTest(boolean tx) throws Exception {
       Cache<Object, Object> cache1, cache2, cache3;
-      cache1 = createCacheManager().getCache(cacheName);
-      cache3 = createCacheManager().getCache(cacheName);
+      cache1 = createCacheManager(cacheName).getCache(cacheName);
+      cache3 = createCacheManager(cacheName).getCache(cacheName);
       TestingUtil.blockUntilViewsReceived(60000, cache1, cache3);
 
       writeInitialData(cache1);
@@ -297,7 +298,7 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       WritingTask writingTask = new WritingTask(cache3, tx);
       Future<Integer> future = fork(writingTask);
 
-      EmbeddedCacheManager cm2 = createCacheManager();
+      EmbeddedCacheManager cm2 = createCacheManager(cacheName);
       cache2 = cm2.getCache(cacheName);
 
       TestingUtil.waitForNoRebalance(cache1, cache2, cache3);
@@ -330,7 +331,7 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
 
    private void writingThreadTest(boolean tx) throws Exception {
       Cache<Object, Object> cache1, cache2;
-      cache1 = createCacheManager().getCache(cacheName);
+      cache1 = createCacheManager(cacheName).getCache(cacheName);
 
       assertEquals(0, cache1.getAdvancedCache().getDataContainer().size());
       writeInitialData(cache1);
@@ -343,7 +344,7 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       Future<Integer> future = fork(writingTask);
       verifyInitialData(cache1);
 
-      EmbeddedCacheManager cm2 = createCacheManager();
+      EmbeddedCacheManager cm2 = createCacheManager(cacheName);
       cache2 = cm2.getCache(cacheName);
       TestingUtil.waitForNoRebalance(cache1, cache2);
 

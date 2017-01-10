@@ -321,6 +321,7 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
          List<Cache<K, V>> currentCacheManagerCaches = new ArrayList<>(cacheNames.length);
 
          for (String cacheName : cacheNames) {
+            cm.defineConfiguration(cacheName, defaultConfigBuilder.build());
             Cache<K, V> cache = cm.getCache(cacheName);
             currentCacheManagerCaches.add(cache);
          }

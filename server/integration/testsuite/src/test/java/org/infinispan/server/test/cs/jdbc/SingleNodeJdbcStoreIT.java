@@ -27,7 +27,7 @@ import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
-import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.persistence.support.Bucket;
 import org.infinispan.server.test.category.CacheStore;
@@ -36,7 +36,6 @@ import org.infinispan.server.test.util.ITestUtils;
 import org.infinispan.server.test.util.RemoteCacheManagerFactory;
 import org.infinispan.server.test.util.RemoteInfinispanMBeans;
 import org.infinispan.server.test.util.jdbc.DBServer;
-import org.infinispan.test.TestingUtil;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -88,7 +87,7 @@ public class SingleNodeJdbcStoreIT {
     @BeforeClass
     public static void startup() {
         rcmFactory = new RemoteCacheManagerFactory();
-        globalMarshaller = TestingUtil.marshaller(new DefaultCacheManager().getCache());
+        globalMarshaller = new GenericJBossMarshaller();
     }
 
     @AfterClass

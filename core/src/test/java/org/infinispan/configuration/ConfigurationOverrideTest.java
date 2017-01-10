@@ -45,6 +45,7 @@ public class ConfigurationOverrideTest extends AbstractInfinispanTest {
             .hash().numOwners(3).numSegments(51);
 
       cm = TestCacheManagerFactory.createClusteredCacheManager(builder);
+      cm.defineConfiguration("my-cache", builder.build());
 
       Cache<?, ?> cache = cm.getCache("my-cache");
       // These are all overridden values

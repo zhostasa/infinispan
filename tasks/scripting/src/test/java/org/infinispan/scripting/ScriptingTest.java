@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.commons.CacheException;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.tasks.TaskContext;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;
@@ -31,6 +32,7 @@ public class ScriptingTest extends AbstractScriptingTest {
    @Override
    protected void setup() throws Exception {
       super.setup();
+      cacheManager.defineConfiguration(CACHE_NAME, new ConfigurationBuilder().build());
    }
 
    @Override

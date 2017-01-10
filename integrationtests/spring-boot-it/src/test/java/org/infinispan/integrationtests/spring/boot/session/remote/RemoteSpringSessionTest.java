@@ -34,7 +34,7 @@ public class RemoteSpringSessionTest extends AbstractSpringSessionTCK {
       serverCache.defineConfiguration("sessions", cacheConfiguration.build());
 
       HotRodServerConfigurationBuilder hotRodServerConfigurationBuilder = new HotRodServerConfigurationBuilder();
-      hotRodServerConfigurationBuilder.port(RemoteConfiguration.SERVER_PORT);
+      hotRodServerConfigurationBuilder.port(RemoteConfiguration.SERVER_PORT).defaultCacheName("sessions");
 
       server = new HotRodServer();
       server.start(hotRodServerConfigurationBuilder.build(), serverCache);

@@ -49,6 +49,7 @@ public class DistributedExecutorBadResponseFailoverTest extends MultipleCacheMan
 
       addClusterEnabledCacheManager(builder);
       addClusterEnabledCacheManager(builder);
+      defineConfigurationOnAllManagers(cacheName(), builder);
       waitForClusterToForm(cacheName());
    }
 

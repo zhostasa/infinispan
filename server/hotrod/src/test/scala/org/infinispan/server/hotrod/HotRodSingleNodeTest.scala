@@ -2,6 +2,7 @@ package org.infinispan.server.hotrod
 
 import io.netty.channel.ChannelFuture
 import org.infinispan.AdvancedCache
+import org.infinispan.configuration.global.GlobalConfigurationBuilder
 import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.server.core.test.ServerTestingUtil._
 import org.infinispan.server.hotrod.test.HotRodClient
@@ -22,7 +23,7 @@ abstract class HotRodSingleNodeTest extends SingleCacheManagerTest {
    implicit var hotRodClient: HotRodClient = _
    implicit var advancedCache: AdvancedCache[Bytes, Bytes] = _
    private val hotRodJmxDomain = getClass.getSimpleName
-   
+
    override def createCacheManager: EmbeddedCacheManager = {
       val cacheManager = createTestCacheManager
       advancedCache = cacheManager.getCache[Array[Byte], Array[Byte]](cacheName).getAdvancedCache
@@ -37,7 +38,9 @@ abstract class HotRodSingleNodeTest extends SingleCacheManagerTest {
    }
 
    protected def createTestCacheManager: EmbeddedCacheManager =
-      TestCacheManagerFactory.createCacheManager(hotRodCacheConfiguration())
+      TestCacheManagerFactory.createCacheManager(
+         new GlobalConfigurationBuilder().nonClusteredDefault().defaultCacheName(cacheName),
+         hotRodCacheConfiguration())
 
    protected def createStartHotRodServer(cacheManager: EmbeddedCacheManager) = startHotRodServer(cacheManager)
 

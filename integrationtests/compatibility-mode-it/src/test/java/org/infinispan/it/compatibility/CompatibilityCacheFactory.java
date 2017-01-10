@@ -156,6 +156,9 @@ public class CompatibilityCacheFactory<K, V> {
             ? TestCacheManagerFactory.createClusteredCacheManager(globalBuilder, builder)
             : TestCacheManagerFactory.createCacheManager(globalBuilder, builder);
 
+      if (!cacheName.isEmpty())
+         cacheManager.defineConfiguration(cacheName, builder.build());
+
       embeddedCache = cacheName.isEmpty()
             ? cacheManager.<K, V>getCache()
             : cacheManager.<K, V>getCache(cacheName);

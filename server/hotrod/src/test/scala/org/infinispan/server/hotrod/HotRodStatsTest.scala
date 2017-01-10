@@ -10,7 +10,7 @@ import org.testng.annotations.Test
 
 /**
  * Tests stats operation against a Hot Rod server.
- * 
+ *
  * @author Galder Zamarreño
  * @since 4.1
  */
@@ -20,7 +20,9 @@ class HotRodStatsTest extends HotRodSingleNodeTest {
    override def createTestCacheManager: EmbeddedCacheManager = {
       val cfg = hotRodCacheConfiguration()
       cfg.jmxStatistics().enable()
-      TestCacheManagerFactory.createClusteredCacheManagerEnforceJmxDomain(jmxDomain, cfg)
+      val cm = TestCacheManagerFactory.createClusteredCacheManagerEnforceJmxDomain(jmxDomain, cfg)
+      cm.defineConfiguration(cacheName, cm.getDefaultCacheConfiguration)
+      cm
    }
 
    def testStats(m: Method) {
