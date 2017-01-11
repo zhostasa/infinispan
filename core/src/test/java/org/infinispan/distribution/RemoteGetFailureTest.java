@@ -29,7 +29,6 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
-import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.DDAsyncInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.RemoteException;
@@ -275,8 +274,8 @@ public abstract class RemoteGetFailureTest extends MultipleCacheManagersTest {
 
    private void initAndCheck(Method m) {
       cache(0).put(key, m.getName());
-      assertEquals(cache(1).get(key), m.getName());
-      assertEquals(cache(2).get(key), m.getName());
+      assertEquals(m.getName(), cache(1).get(key));
+      assertEquals(m.getName(), cache(2).get(key));
    }
 
    private void installNewView(Cache installing, Cache... cachesInView) {
@@ -290,7 +289,7 @@ public abstract class RemoteGetFailureTest extends MultipleCacheManagersTest {
 
    private static class FailingInterceptor extends DDAsyncInterceptor {
       @Override
-      public BasicInvocationStage visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
+      public Object visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
          throw new CacheException("Injected");
       }
    }
@@ -305,7 +304,7 @@ public abstract class RemoteGetFailureTest extends MultipleCacheManagersTest {
       }
 
       @Override
-      public BasicInvocationStage visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
+      public Object visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
          if (arrival != null) arrival.countDown();
          // the timeout has to be longer than remoteTimeout!
          release.await(30, TimeUnit.SECONDS);
@@ -323,11 +322,11 @@ public abstract class RemoteGetFailureTest extends MultipleCacheManagersTest {
       }
 
       @Override
-      public BasicInvocationStage visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command) throws Throwable {
+      public Object visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command) throws Throwable {
          if (command.hasAnyFlag(FlagBitSets.COMMAND_RETRY)) {
             retried.incrementAndGet();
          }
-         return invokeNext(ctx, command).exceptionally((rCtx, rCommand, t) -> {
+         return invokeNextAndExceptionally(ctx, command, (rCtx, rCommand, t) -> {
             thrown.incrementAndGet();
             throw t;
          });

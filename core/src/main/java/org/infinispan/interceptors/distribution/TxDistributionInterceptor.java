@@ -36,7 +36,6 @@ import org.infinispan.context.impl.LocalTxInvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
-import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.partitionhandling.impl.PartitionHandlingManager;
 import org.infinispan.remoting.inboundhandler.DeliverOrder;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
@@ -78,7 +77,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
+   public Object visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
       return handleTxWriteCommand(ctx, command, command.getKey());
    }
 
@@ -89,12 +88,12 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
+   public Object visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
       return handleTxWriteCommand(ctx, command, command.getKey());
    }
 
    @Override
-   public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
+   public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
       if (command.hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ)) {
          return handleNonTxWriteCommand(ctx, command);
       }
@@ -103,13 +102,13 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
+   public Object visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
       return handleTxWriteManyEntriesCommand(ctx, command, command.getMap(),
             (c, entries) -> new PutMapCommand(c).withMap(entries));
    }
 
    @Override
-   public BasicInvocationStage visitLockControlCommand(TxInvocationContext ctx, LockControlCommand command)
+   public Object visitLockControlCommand(TxInvocationContext ctx, LockControlCommand command)
          throws Throwable {
       if (ctx.isOriginLocal()) {
          TxInvocationContext<LocalTransaction> localTxCtx = (TxInvocationContext<LocalTransaction>) ctx;
@@ -122,7 +121,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
                DeliverOrder.NONE).build();
          CompletableFuture<Map<Address, Response>>
                remoteInvocation = rpcManager.invokeRemotelyAsync(affectedNodes, command, rpcOptions);
-         return returnWithAsync(remoteInvocation.thenApply(responses -> {
+         return asyncValue(remoteInvocation.thenApply(responses -> {
             checkTxCommandResponses(responses, command, localTxCtx,
                   localTxCtx.getCacheTransaction().getRemoteLocksAcquired());
             return null;
@@ -133,12 +132,12 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
 
    // ---- TX boundary commands
    @Override
-   public BasicInvocationStage visitCommitCommand(TxInvocationContext ctx, CommitCommand command) throws Throwable {
+   public Object visitCommitCommand(TxInvocationContext ctx, CommitCommand command) throws Throwable {
       if (shouldInvokeRemoteTxCommand(ctx)) {
          Collection<Address> recipients = getCommitNodes(ctx);
          CompletableFuture<Map<Address, Response>>
                remoteInvocation = rpcManager.invokeRemotelyAsync(recipients, command, createCommitRpcOptions());
-         return returnWithAsync(remoteInvocation.thenApply(responses -> {
+         return asyncValue(remoteInvocation.thenApply(responses -> {
             checkTxCommandResponses(responses, command, ctx, recipients);
             return null;
          }));
@@ -147,20 +146,20 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command) throws Throwable {
+   public Object visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command) throws Throwable {
       if (!ctx.isOriginLocal()) {
          return invokeNext(ctx, command);
       }
-      return invokeNext(ctx, command).thenCompose((stage, rCtx, rCommand, rv) -> {
+      return invokeNextThenApply(ctx, command, (rCtx, rCommand, rv) -> {
          if (!shouldInvokeRemoteTxCommand(ctx)) {
-            return returnWith(null);
+            return null;
          }
 
          TxInvocationContext<LocalTransaction> localTxCtx = (TxInvocationContext<LocalTransaction>) rCtx;
          Collection<Address> recipients = cdl.getOwners(getAffectedKeysFromContext(localTxCtx));
          CompletableFuture<Object> remotePrepare =
                prepareOnAffectedNodes(localTxCtx, (PrepareCommand) rCommand, recipients);
-         return returnWithAsync(remotePrepare.thenApply(o -> {
+         return asyncValue(remotePrepare.thenApply(o -> {
             localTxCtx.getCacheTransaction().locksAcquired(
                   recipients == null ? dm.getWriteConsistentHash().getMembers() : recipients);
             return o;
@@ -188,12 +187,12 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitRollbackCommand(TxInvocationContext ctx, RollbackCommand command) throws Throwable {
+   public Object visitRollbackCommand(TxInvocationContext ctx, RollbackCommand command) throws Throwable {
       if (shouldInvokeRemoteTxCommand(ctx)) {
          Collection<Address> recipients = getCommitNodes(ctx);
          CompletableFuture<Map<Address, Response>>
                remoteInvocation = rpcManager.invokeRemotelyAsync(recipients, command, createRollbackRpcOptions());
-         return returnWithAsync(remoteInvocation.thenApply(responses -> {
+         return asyncValue(remoteInvocation.thenApply(responses -> {
             checkTxCommandResponses(responses, command, ctx, recipients);
             return null;
          }));
@@ -267,11 +266,11 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
     * If we are within one transaction we won't do any replication as replication would only be performed at commit
     * time. If the operation didn't originate locally we won't do any replication either.
     */
-   private BasicInvocationStage handleTxWriteCommand(InvocationContext ctx, AbstractDataWriteCommand command,
+   private Object handleTxWriteCommand(InvocationContext ctx, AbstractDataWriteCommand command,
          Object key) throws Throwable {
       try {
          if (!ctx.isOriginLocal() && !cdl.localNodeIsOwner(command.getKey())) {
-            return returnWith(null);
+            return null;
          }
          CacheEntry entry = ctx.lookupEntry(command.getKey());
          if (entry == null) {
@@ -282,19 +281,21 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
                // we need to retrieve the value locally regardless of load type; in transactional mode all operations
                // execute on origin
                // Also, operations that need value on backup [delta write] need to do the remote lookup even on non-origin
-               return invokeNextAsync(ctx, command, remoteGet(ctx, command, command.getKey(), true)).handle(
-                     (rCtx, rCommand, rv, t) -> updateMatcherForRetry((WriteCommand) rCommand));
+               Object result = asyncInvokeNext(ctx, command, remoteGet(ctx, command, command.getKey(), true));
+               return makeStage(result)
+                     .andFinally(ctx, command, (rCtx, rCommand, rv, t) ->
+                           updateMatcherForRetry((WriteCommand) rCommand));
             }
          }
          // already wrapped, we can continue
-         return invokeNext(ctx, command).handle((rCtx, rCommand, rv, t) -> updateMatcherForRetry((WriteCommand) rCommand));
+         return invokeNextAndFinally(ctx, command, (rCtx, rCommand, rv, t) -> updateMatcherForRetry((WriteCommand) rCommand));
       } catch (Throwable t) {
          updateMatcherForRetry(command);
          throw t;
       }
    }
 
-   protected <C extends AbstractTopologyAffectedCommand, K, V> BasicInvocationStage
+   protected <C extends AbstractTopologyAffectedCommand, K, V> Object
          handleTxWriteManyEntriesCommand(InvocationContext ctx,C command, Map<K, V> entries,
                                   BiFunction<C, Map<K, V>, C> copyCommand) {
       Map<K, V> filtered = new HashMap<>(entries.size());
@@ -317,7 +318,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
       }
       C narrowed = copyCommand.apply(command, filtered);
       if (remoteGets != null) {
-         return invokeNextAsync(ctx, narrowed, CompletableFuture.allOf(remoteGets.toArray(new CompletableFuture[remoteGets.size()])));
+         return asyncInvokeNext(ctx, narrowed, CompletableFuture.allOf(remoteGets.toArray(new CompletableFuture[remoteGets.size()])));
       } else {
          return invokeNext(ctx, narrowed);
       }

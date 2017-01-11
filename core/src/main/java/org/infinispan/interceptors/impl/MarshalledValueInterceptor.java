@@ -36,10 +36,9 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
-import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.DDAsyncInterceptor;
-import org.infinispan.interceptors.InvocationReturnValueHandler;
 import org.infinispan.interceptors.InvocationStage;
+import org.infinispan.interceptors.InvocationSuccessFunction;
 import org.infinispan.marshall.core.MarshalledValue;
 import org.infinispan.stream.impl.interceptor.AbstractDelegatingEntryCacheSet;
 import org.infinispan.stream.impl.interceptor.AbstractDelegatingKeyCacheSet;
@@ -71,7 +70,7 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
    private static final Log log = LogFactory.getLog(MarshalledValueInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
 
-   private final InvocationReturnValueHandler processRetValReturnHandler = new InvocationReturnValueHandler() {
+   private final InvocationSuccessFunction processRetValReturnHandler = new InvocationSuccessFunction() {
       @Override
       public Object apply(InvocationContext rCtx, VisitableCommand rCommand, Object rv) throws Throwable {
          return processRetVal(rv, rCtx);
@@ -93,7 +92,7 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitLockControlCommand(TxInvocationContext ctx, LockControlCommand command) throws Throwable {
+   public Object visitLockControlCommand(TxInvocationContext ctx, LockControlCommand command) throws Throwable {
       if (wrapKeys) {
          if (command.multipleKeys()) {
             Collection<Object> rawKeys = command.getKeys();
@@ -113,15 +112,15 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
+   public Object visitPutMapCommand(InvocationContext ctx, PutMapCommand command) throws Throwable {
       Set<MarshalledValue> marshalledValues = new HashSet<MarshalledValue>(command.getMap().size());
       Map<Object, Object> map = wrapMap(command.getMap(), marshalledValues, ctx);
       command.setMap(map);
-      return invokeNext(ctx, command).thenApply(processRetValReturnHandler);
+      return invokeNextThenApply(ctx, command, processRetValReturnHandler);
    }
 
    @Override
-   public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
+   public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
       MarshalledValue key;
       MarshalledValue value;
       if (wrapKeys) {
@@ -138,11 +137,11 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
          }
       }
 
-      return invokeNext(ctx, command).thenApply(processRetValReturnHandler);
+      return invokeNextThenApply(ctx, command, processRetValReturnHandler);
    }
 
    @Override
-   public BasicInvocationStage visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
+   public Object visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
       MarshalledValue value;
       if (wrapKeys) {
          if (!isTypeExcluded(command.getKey().getClass())) {
@@ -150,11 +149,11 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
             command.setKey(value);
          }
       }
-      return invokeNext(ctx, command).thenApply(processRetValReturnHandler);
+      return invokeNextThenApply(ctx, command, processRetValReturnHandler);
    }
 
    @Override
-   public BasicInvocationStage visitEvictCommand(InvocationContext ctx, org.infinispan.commands.write.EvictCommand command) throws Throwable {
+   public Object visitEvictCommand(InvocationContext ctx, org.infinispan.commands.write.EvictCommand command) throws Throwable {
       MarshalledValue value;
       if (wrapKeys) {
          if (!isTypeExcluded(command.getKey().getClass())) {
@@ -162,18 +161,18 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
             command.setKey(value);
          }
       }
-      return invokeNext(ctx, command).thenApply(processRetValReturnHandler);
+      return invokeNextThenApply(ctx, command, processRetValReturnHandler);
    }
 
    @Override
-   public final BasicInvocationStage visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command) throws Throwable {
+   public final Object visitGetKeyValueCommand(InvocationContext ctx, GetKeyValueCommand command) throws Throwable {
       return visitDataReadCommand(ctx, command);
    }
    @Override
-   public final BasicInvocationStage visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
+   public final Object visitGetCacheEntryCommand(InvocationContext ctx, GetCacheEntryCommand command) throws Throwable {
       return visitDataReadCommand(ctx, command);
    }
-   private InvocationStage visitDataReadCommand(InvocationContext ctx, AbstractDataCommand command) throws Throwable {
+   private Object visitDataReadCommand(InvocationContext ctx, AbstractDataCommand command) throws Throwable {
       MarshalledValue mv;
       if (wrapKeys) {
          if (!isTypeExcluded(command.getKey().getClass())) {
@@ -181,11 +180,11 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
             command.setKey(mv);
          }
       }
-      return invokeNext(ctx, command).thenApply(processRetValReturnHandler);
+      return invokeNextThenApply(ctx, command, processRetValReturnHandler);
    }
 
    @Override
-   public BasicInvocationStage visitGetAllCommand(InvocationContext ctx, GetAllCommand command) throws Throwable {
+   public Object visitGetAllCommand(InvocationContext ctx, GetAllCommand command) throws Throwable {
       if (wrapKeys) {
          Set<Object> marshalledKeys = new LinkedHashSet<>();
          for (Object key : command.getKeys()) {
@@ -198,7 +197,7 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
          }
          command.setKeys(marshalledKeys);
       }
-      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
+      return invokeNextThenApply(ctx, command, (rCtx, rCommand, rv) -> {
          Map<Object, Object> map = (Map<Object, Object>) rv;
          Map<Object, Object> unmarshalled = ((GetAllCommand) rCommand).createMap();
          for (Map.Entry<Object, Object> entry : map.entrySet()) {
@@ -210,7 +209,7 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
+   public Object visitReplaceCommand(InvocationContext ctx, ReplaceCommand command) throws Throwable {
       MarshalledValue key, newValue, oldValue;
       if (wrapKeys && !isTypeExcluded(command.getKey().getClass())) {
          key = createMarshalledValue(command.getKey(), ctx);
@@ -224,7 +223,7 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
          oldValue = createMarshalledValue(command.getOldValue(), ctx);
          command.setOldValue(oldValue);
       }
-      return invokeNext(ctx, command).thenApply(processRetValReturnHandler);
+      return invokeNextThenApply(ctx, command, processRetValReturnHandler);
    }
 
    protected <R> R processRetVal(R retVal, InvocationContext ctx) {
@@ -249,8 +248,8 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command) throws Throwable {
-      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
+   public Object visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command) throws Throwable {
+      return invokeNextThenApply(ctx, command, (rCtx, rCommand, rv) -> {
          CacheSet<CacheEntry<K, V>> set = (CacheSet<CacheEntry<K, V>>) rv;
 
          return new AbstractDelegatingEntryCacheSet<K, V>(Caches.getCacheWithFlags(cache,
@@ -276,8 +275,8 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
    }
 
    @Override
-   public BasicInvocationStage visitKeySetCommand(InvocationContext ctx, KeySetCommand command) throws Throwable {
-      return invokeNext(ctx, command).thenApply((rCtx, rCommand, rv) -> {
+   public Object visitKeySetCommand(InvocationContext ctx, KeySetCommand command) throws Throwable {
+      return invokeNextThenApply(ctx, command, (rCtx, rCommand, rv) -> {
          CacheSet<K> set = (CacheSet<K>) rv;
          return new AbstractDelegatingKeyCacheSet<K, V>(Caches.getCacheWithFlags(cache,
                ((KeySetCommand) rCommand)), set) {

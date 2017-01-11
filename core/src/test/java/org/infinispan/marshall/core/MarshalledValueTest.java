@@ -30,7 +30,6 @@ import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.AsyncInterceptorChain;
-import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.DDAsyncInterceptor;
 import org.infinispan.interceptors.impl.MarshalledValueInterceptor;
 import org.infinispan.notifications.Listener;
@@ -665,7 +664,7 @@ public class MarshalledValueTest extends MultipleCacheManagersTest {
       int invocationCount = 0;
 
       @Override
-      public BasicInvocationStage visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
+      public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
          invocationCount++;
          return invokeNext(ctx, command);
       }

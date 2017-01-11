@@ -25,6 +25,8 @@ import org.infinispan.commons.api.functional.FunctionalMap.WriteOnlyMap;
 import org.infinispan.commons.api.functional.Param;
 import org.infinispan.functional.impl.ReadWriteMapImpl;
 import org.infinispan.functional.impl.WriteOnlyMapImpl;
+import org.infinispan.interceptors.BaseCustomAsyncInterceptor;
+import org.infinispan.interceptors.impl.CallInterceptor;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.CountingCARD;
 import org.testng.annotations.BeforeMethod;

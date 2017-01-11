@@ -11,7 +11,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.InternalEntryFactoryImpl;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.interceptors.BasicInvocationStage;
 import org.infinispan.interceptors.impl.MarshalledValueInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledValue;
@@ -105,7 +104,7 @@ public class MarshalledValuesEvictionTest extends SingleCacheManagerTest {
       }
 
       @Override
-      public BasicInvocationStage visitEvictCommand(InvocationContext ctx, EvictCommand command) throws Throwable {
+      public Object visitEvictCommand(InvocationContext ctx, EvictCommand command) throws Throwable {
          // Reset value so that changes due to invocation can be asserted
          if (marshalledValueCreated) marshalledValueCreated = false;
          return super.visitEvictCommand(ctx, command);
