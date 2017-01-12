@@ -115,7 +115,6 @@ public class InternalCacheFactory<K, V> extends AbstractNamedCacheComponentFacto
             if (statisticsAvailable) {
                registerComponent(new StatsCollector.Factory(), StatsCollector.Factory.class);
             }
-            registerComponent(converter, TypeConverter.class);
             registerComponent(new ClusterEventManagerStub<K, V>(), ClusterEventManager.class);
             registerComponent(new PassivationManagerStub(), PassivationManager.class);
             registerComponent(new ActivationManagerStub(), ActivationManager.class);
@@ -140,16 +139,11 @@ public class InternalCacheFactory<K, V> extends AbstractNamedCacheComponentFacto
     * Bootstraps this factory with a Configuration and a ComponentRegistry.
     */
    private void bootstrap(String cacheName, AdvancedCache<?, ?> cache, Configuration configuration,
-                          GlobalComponentRegistry globalComponentRegistry, TypeConverter converter) {
+                          GlobalComponentRegistry globalComponentRegistry) {
       this.configuration = configuration;
 
       // injection bootstrap stuff
-      componentRegistry = new ComponentRegistry(cacheName, configuration, cache, globalComponentRegistry, globalComponentRegistry.getClassLoader()) {
-         @Override
-         protected void bootstrapComponents() {
-            registerComponent(converter, TypeConverter.class);
-         }
-      };
+      componentRegistry = new ComponentRegistry(cacheName, configuration, cache, globalComponentRegistry, globalComponentRegistry.getClassLoader());
 
       /*
          --------------------------------------------------------------------------------------------------------------
