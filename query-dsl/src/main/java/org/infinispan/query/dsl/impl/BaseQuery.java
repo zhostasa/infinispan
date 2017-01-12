@@ -145,6 +145,11 @@ public abstract class BaseQuery implements Query {
     */
    public abstract void resetQuery();
 
+
+   public Map<String, Object> getNamedParameters() {
+      return namedParameters;
+   }
+
    /**
     * Ensure all named parameters have non-null values.
     */
