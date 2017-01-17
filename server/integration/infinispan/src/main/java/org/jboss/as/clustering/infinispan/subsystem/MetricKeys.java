@@ -89,4 +89,7 @@ public class MetricKeys {
     public static final String SITES_ONLINE = "sites-online";
     public static final String SITES_OFFLINE = "sites-offline";
     public static final String SITES_MIXED = "sites-mixed";
+
+    public static final String SITES_VIEW = "sites-view";
+
 }

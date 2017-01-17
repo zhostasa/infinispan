@@ -16,6 +16,7 @@ import java.security.Permission;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -1456,4 +1457,9 @@ public interface Log extends BasicLogger {
 
    @Message(value="Duplicate id found! AdvancedExternalizer id=%d is shared by another externalizer (%s)", id = 424)
    CacheConfigurationException duplicateExternalizerIdFound(int externalizerId, String otherExternalizer);
+
+   @LogMessage(level = INFO)
+   @Message(value = "Received new x-site view: %s", id = 425)
+   void receivedXSiteClusterView(Set<String> view);
+
 }
