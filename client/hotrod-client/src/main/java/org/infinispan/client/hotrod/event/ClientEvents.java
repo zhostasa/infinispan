@@ -127,7 +127,7 @@ public class ClientEvents {
       @ClientCacheEntryExpired
       public void handleEvent(ClientCacheEntryCustomEvent<byte[]> event) throws IOException {
          byte[] eventData = event.getEventData();
-         ContinuousQueryResult cqr = (ContinuousQueryResult) ProtobufUtil.fromWrappedByteArray(serializationContext, eventData);
+         ContinuousQueryResult cqr = ProtobufUtil.fromWrappedByteArray(serializationContext, eventData);
          Object key = ProtobufUtil.fromWrappedByteArray(serializationContext, cqr.getKey());
          Object value = cqr.getValue() != null ? ProtobufUtil.fromWrappedByteArray(serializationContext, cqr.getValue()) : cqr.getProjection();
 
