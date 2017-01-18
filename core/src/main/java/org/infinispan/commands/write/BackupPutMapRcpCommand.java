@@ -13,6 +13,7 @@ import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.remote.BaseRpcCommand;
 import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
@@ -57,6 +58,10 @@ public class BackupPutMapRcpCommand extends BaseRpcCommand implements TopologyAf
 
    public BackupPutMapRcpCommand(ByteString cacheName) {
       super(cacheName);
+   }
+
+   public CommandInvocationId getCommandInvocationId() {
+      return commandInvocationId;
    }
 
    public void setMap(Map<Object, Object> map) {
@@ -127,5 +132,22 @@ public class BackupPutMapRcpCommand extends BaseRpcCommand implements TopologyAf
       InvocationContext invocationContext = invocationContextFactory
             .createRemoteInvocationContextForCommand(command, getOrigin());
       return interceptorChain.invokeAsync(invocationContext, command);
+   }
+
+   @Override
+   public boolean canBlock() {
+      return true;
+   }
+
+   @Override
+   public String toString() {
+      return "BackupPutMapRcpCommand{" +
+            "commandInvocationId=" + commandInvocationId +
+            ", map=" + map +
+            ", metadata=" + metadata +
+            ", flags=" + EnumUtil.prettyPrintBitSet(flags, Flag.class) +
+            ", topologyId=" + topologyId +
+            ", segmentsAndSequences=" + segmentsAndSequences +
+            '}';
    }
 }
