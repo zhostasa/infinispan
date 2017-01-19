@@ -170,6 +170,7 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
       useRepeatableRead = cacheConfiguration.transaction().transactionMode().isTransactional()
             && cacheConfiguration.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
       writeSkewCheck = cacheConfiguration.locking().writeSkewCheck();
+      totalOrder = cacheConfiguration.transaction().transactionProtocol().isTotalOrder();
    }
 
    private boolean ignoreOwnership(FlagAffectedCommand command) {
@@ -208,7 +209,8 @@ public class EntryWrappingInterceptor extends DDAsyncInterceptor {
    }
 
    private Object visitDataReadCommand(InvocationContext ctx, AbstractDataCommand command) {
-      entryFactory.wrapEntryForReading(ctx, command.getKey(), ignoreOwnership(command) || canRead(command.getKey()));
+      final Object key = command.getKey();
+      entryFactory.wrapEntryForReading(ctx, key, ignoreOwnership(command) || canRead(key));
       return invokeNextThenAccept(ctx, command, dataReadReturnHandler);
    }
 
