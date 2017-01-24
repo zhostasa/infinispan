@@ -42,6 +42,7 @@ import org.infinispan.interceptors.impl.InvocationContextInterceptor;
 import org.infinispan.interceptors.impl.IsMarshallableInterceptor;
 import org.infinispan.interceptors.impl.MarshalledValueInterceptor;
 import org.infinispan.interceptors.impl.NotificationInterceptor;
+import org.infinispan.interceptors.impl.PassivationWriterInterceptor;
 import org.infinispan.interceptors.impl.TxInterceptor;
 import org.infinispan.interceptors.impl.VersionedEntryWrappingInterceptor;
 import org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor;
@@ -252,7 +253,9 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
          } else {
             interceptorChain.appendInterceptor(createInterceptor(new CacheLoaderInterceptor(), CacheLoaderInterceptor.class), false);
          }
-         if (!configuration.persistence().passivation()) {
+         if (configuration.persistence().passivation()) {
+            interceptorChain.appendInterceptor(createInterceptor(new PassivationWriterInterceptor(), PassivationWriterInterceptor.class), false);
+         } else {
             switch (cacheMode) {
                case DIST_SYNC:
                case DIST_ASYNC:
