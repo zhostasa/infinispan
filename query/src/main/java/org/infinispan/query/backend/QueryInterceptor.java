@@ -427,8 +427,10 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
             if (shouldModifyIndexes(command, ctx)) {
                removeFromIndexes(previousValue, key, transactionContext);
             }
-            if (updateKnownTypesIfNeeded(value)) {
-               transactionContext = transactionContext == null ? makeTransactionalEventContext() : transactionContext;
+         }
+         if (updateKnownTypesIfNeeded(value)) {
+            transactionContext = transactionContext == null ? makeTransactionalEventContext() : transactionContext;
+            if (shouldModifyIndexes(command, ctx)) {
                updateIndexes(usingSkipIndexCleanupFlag, value, key, transactionContext);
             }
          }
