@@ -22,14 +22,14 @@ public class UnsafeWrapper {
 
    public void putLong(long var1, long var3) {
       if (trace) {
-         log.tracef("Wrote long value %d to address %d", var3, var1);
+         log.tracef("Wrote long value %d to address %d", (Long) var3, (Long) var1);
       }
       UNSAFE.putLong(var1, var3);
    }
 
    public void putInt(long var1, int var3) {
       if (trace) {
-         log.tracef("Wrote int value %d to address %d", var3, var1);
+         log.tracef("Wrote int value %d to address %d", (Integer) var3, (Long) var1);
       }
       UNSAFE.putInt(var1, var3);
    }
@@ -37,7 +37,7 @@ public class UnsafeWrapper {
    public long getLong(long var1) {
       long var3 = UNSAFE.getLong(var1);
       if (trace) {
-         log.tracef("Retrieved long value %d from address %d", var3, var1);
+         log.tracef("Retrieved long value %d from address %d", (Long) var3, (Long) var1);
       }
       return var3;
    }
@@ -45,7 +45,7 @@ public class UnsafeWrapper {
    public int getInt(long var1) {
       int var3 = UNSAFE.getInt(var1);
       if (trace) {
-         log.tracef("Retrieved int value %d from address %d", var3, var1);
+         log.tracef("Retrieved int value %d from address %d", (Integer) var3, (Long) var1);
       }
       return var3;
    }

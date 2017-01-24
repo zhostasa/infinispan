@@ -15,8 +15,8 @@ import org.infinispan.metadata.Metadata;
  * Data Container implementation that stores entries in native memory (off-heap) that is also bounded.  This
  * implementation uses a simple LRU doubly linked list off-heap guarded by a single lock.
  * <p>
- * The link list consists of 24 bytes (3 longs).  The first long is the actual entry address, the second is the
- * previous pointer and lastly the next pointer.
+ * The link list consists of 28 bytes (3 longs and 1 int).  The first long is the actual entry address, the second is the
+ * previous pointer, the third is the next pointer and lastly the int is the hashCode of the key to retrieve the lock.
  * @author wburns
  * @since 9.0
  */
@@ -35,8 +35,8 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
       if (type == EvictionType.COUNT) {
          sizeCalculator = i -> 1;
       } else {
-         // Use size of entry plus 24 for our LRU pointer node
-         sizeCalculator = i -> offHeapEntryFactory.determineSize(i) + 24;
+         // Use size of entry plus 28 for our LRU pointer node
+         sizeCalculator = i -> offHeapEntryFactory.determineSize(i) + 28;
       }
       this.lruLock = new ReentrantLock();
       firstAddress = 0;
@@ -70,7 +70,7 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
       try {
          long lruNode = UNSAFE.getLong(oldAddress);
          if (trace) {
-            log.tracef("Replacing LRU node: %d. OldValue: %d NewValue: %d", lruNode, oldAddress, newAddress);
+            log.tracef("Replacing LRU node: %d. OldValue: %d NewValue: %d", (Long) lruNode, (Long) oldAddress, (Long) newAddress);
          }
          // We have to update the lru node to point to the new address and vice versa
          UNSAFE.putLong(newAddress, lruNode);
@@ -110,7 +110,7 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
          currentSize -=  removedSize;
          if (lruNode == lastAddress) {
             if (trace) {
-               log.tracef("Removing last LRU node at %d", lruNode);
+               log.tracef("Removing last LRU node at %d", (Long) lruNode);
             }
             long previousLRUNode = UNSAFE.getLong(lruNode + 8);
             if (previousLRUNode != 0) {
@@ -119,7 +119,7 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
             lastAddress = previousLRUNode;
          } else if (lruNode == firstAddress) {
             if (trace) {
-               log.tracef("Removing first LRU node at %d", lruNode);
+               log.tracef("Removing first LRU node at %d", (Long) lruNode);
             }
             long nextLRUNode = UNSAFE.getLong(lruNode + 16);
             if (nextLRUNode != 0) {
@@ -128,7 +128,7 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
             firstAddress = nextLRUNode;
          } else {
             if (trace) {
-               log.tracef("Removing middle LRU node at %d", lruNode);
+               log.tracef("Removing middle LRU node at %d", (Long) lruNode);
             }
             // We are a middle pointer so both of these have to be non zero
             long previousLRUNode = UNSAFE.getLong(lruNode + 8);
@@ -151,7 +151,7 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
       try {
          long lruNode = UNSAFE.getLong(entryAddress);
          if (trace) {
-            log.tracef("Moving lruNode %d to the end which points at address %d", lruNode, entryAddress);
+            log.tracef("Moving lruNode %d to the end which points at address %d", (Long) lruNode, (Long) entryAddress);
          }
          moveToEnd(lruNode);
       } finally {
@@ -217,7 +217,7 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
          if (addressToRemove != 0) {
             if (trace) {
                log.tracef("Removing entry: %d due to eviction due to size %d being larger than maximum of %d",
-                     addressToRemove, currentSize, maxSize);
+                     (Long) addressToRemove, (Long) currentSize, (Long) maxSize);
             }
             try {
                performRemove(addressToRemove, offHeapEntryFactory.getKey(addressToRemove));
@@ -240,7 +240,7 @@ public class BoundedOffHeapDataContainer extends OffHeapDataContainer {
    private void addEntryAddressToEnd(long entryAddress, int hashCode) {
       long nodeAddress = allocator.allocate(28);
       if (trace) {
-         log.tracef("Creating LRU node %d for new entry %d", nodeAddress, entryAddress);
+         log.tracef("Creating LRU node %d for new entry %d", (Long) nodeAddress, (Long) entryAddress);
       }
       // First update the pointer to our new entry address
       UNSAFE.putLong(nodeAddress, entryAddress);

@@ -31,8 +31,8 @@ public class UnpooledOffHeapMemoryAllocator implements OffHeapMemoryAllocator {
       long memoryLocation = UNSAFE.allocateMemory(memoryLength);
       long currentSize = amountAllocated.addAndGet(memoryLength);
       if (trace) {
-         log.tracef("Allocated off heap memory at %d with %d bytes.  Total size: %d", memoryLocation, memoryLength,
-               currentSize);
+         log.tracef("Allocated off heap memory at %d with %d bytes.  Total size: %d", (Long) memoryLocation, (Long) memoryLength,
+               (Long) currentSize);
       }
       return memoryLocation;
    }
@@ -46,8 +46,8 @@ public class UnpooledOffHeapMemoryAllocator implements OffHeapMemoryAllocator {
    public void deallocate(long memoryAddress, long size) {
       long currentSize = amountAllocated.addAndGet(- size);
       if (trace) {
-         log.tracef("Deallocating off heap memory at %d with %d bytes.  Total size: %d", memoryAddress, size,
-               currentSize);
+         log.tracef("Deallocating off heap memory at %d with %d bytes.  Total size: %d", (Long) memoryAddress, (Long) size,
+               (Long) currentSize);
       }
       UNSAFE.freeMemory(memoryAddress);
    }
