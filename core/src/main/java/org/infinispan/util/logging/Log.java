@@ -30,6 +30,7 @@ import javax.transaction.xa.XAResource;
 import javax.xml.namespace.QName;
 
 import org.infinispan.IllegalLifecycleStateException;
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commons.CacheConfigurationException;
@@ -1445,11 +1446,10 @@ public interface Log extends BasicLogger {
    @Message(value = "Cannot enable '%s' in invalidation caches!", id = 420)
    CacheConfigurationException attributeNotAllowedInInvalidationMode(String attributeName);
 
-   @Message(value = "Timeout after %s waiting for acks. Missing acks are %s", id = 421)
-   TimeoutException timeoutWaitingForAcks(String timeout, String missingAcks);
+   //removed unused message (id=421)
 
-   @Message(value = "Timeout after %s waiting for acks", id = 422)
-   TimeoutException timeoutWaitingForAcks(String timeout);
+   @Message(value = "Timeout after %s waiting for acks. Id=%s", id = 422)
+   TimeoutException timeoutWaitingForAcks(String timeout, CommandInvocationId id);
 
    @Message(value = "Failed waiting for topology %d", id = 423)
    TimeoutException failedWaitingForTopology(int requestTopologyId);
