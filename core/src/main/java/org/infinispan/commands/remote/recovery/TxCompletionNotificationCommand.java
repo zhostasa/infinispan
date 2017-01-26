@@ -30,8 +30,8 @@ import org.infinispan.util.logging.LogFactory;
  */
 @Deprecated
 public class TxCompletionNotificationCommand  extends RecoveryCommand implements TopologyAffectedCommand {
-
-   private static Log log = LogFactory.getLog(TxCompletionNotificationCommand.class);
+   private static final Log log = LogFactory.getLog(TxCompletionNotificationCommand.class);
+   private static final boolean trace = log.isTraceEnabled();
 
    public static final int COMMAND_ID = 22;
 
@@ -87,7 +87,8 @@ public class TxCompletionNotificationCommand  extends RecoveryCommand implements
 
    @Override
    public CompletableFuture<Object> invokeAsync() throws Throwable {
-      log.tracef("Processing completed transaction %s", gtx);
+      if (trace)
+         log.tracef("Processing completed transaction %s", gtx);
       RemoteTransaction remoteTx = null;
       if (recoveryManager != null) { //recovery in use
          if (xid != null) {
@@ -121,7 +122,9 @@ public class TxCompletionNotificationCommand  extends RecoveryCommand implements
     */
    private void forwardCommandRemotely(RemoteTransaction remoteTx) {
       Set<Object> affectedKeys = remoteTx.getAffectedKeys();
-      log.tracef("Invoking forward of TxCompletionNotification for transaction %s. Affected keys: %s", gtx, toStr(affectedKeys));
+      if (trace)
+         log.tracef("Invoking forward of TxCompletionNotification for transaction %s. Affected keys: %s", gtx,
+               toStr(affectedKeys));
       stateTransferManager.forwardCommandIfNeeded(this, affectedKeys, remoteTx.getGlobalTransaction().getAddress());
    }
 
