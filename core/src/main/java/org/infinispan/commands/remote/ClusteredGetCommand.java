@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.read.GetCacheEntryCommand;
-import org.infinispan.commons.equivalence.Equivalence;
+import org.infinispan.commons.equivalence.AnyServerEquivalence;
 import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.entries.InternalCacheEntry;
@@ -125,8 +125,8 @@ public class ClusteredGetCommand extends BaseClusteredReadCommand {
       if (o == null || getClass() != o.getClass()) return false;
 
       ClusteredGetCommand that = (ClusteredGetCommand) o;
-
-      return key != null ? key.equals(that.key) : that.key == null;
+      // equals() is only used for testing, so it's ok to hard-code an equivalence here.
+      return key != null ? AnyServerEquivalence.INSTANCE.equals(key, that.key) : that.key == null;
    }
 
    @Override
