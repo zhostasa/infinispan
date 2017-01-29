@@ -27,13 +27,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * Tests for remote queries over HotRod but registering the proto file via JON/RHQ plugin.
+ * Tests for remote queries over HotRod but registering the proto file via DMR plugin.
  *
  * @author William Burns
  */
-@Category({ Queries.class })
+@Category(Queries.class)
 @RunWith(Arquillian.class)
-public class RemoteQueryJONRegisterIT extends RemoteQueryIT {
+public class RemoteQueryDMRRegisterIT extends RemoteQueryIT {
 
    @Before
    @Override
@@ -47,11 +47,11 @@ public class RemoteQueryJONRegisterIT extends RemoteQueryIT {
       remoteCacheManager = rcmFactory.createManager(clientBuilder);
       remoteCache = remoteCacheManager.getCache(cacheName);
 
-      //initialize server-side serialization context via JON/RHQ
+      //initialize server-side serialization context via DMR
       ModelNode nameList = new ModelNode()
-              .add("/sample_bank_account/bank.proto");
+            .add("/sample_bank_account/bank.proto");
       ModelNode urlList = new ModelNode()
-              .add(getClass().getResource("/sample_bank_account/bank.proto").toString());
+            .add(getClass().getResource("/sample_bank_account/bank.proto").toString());
 
       ModelControllerClient client = ModelControllerClient.Factory.create(
             getServer().getHotrodEndpoint().getInetAddress().getHostName(), SERVER1_MGMT_PORT);
@@ -70,16 +70,13 @@ public class RemoteQueryJONRegisterIT extends RemoteQueryIT {
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
    }
 
-   protected PathAddress getCacheContainerAddress(String containerName) {
-      return PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM,
-                                                             InfinispanExtension.SUBSYSTEM_NAME)).append("cache-container", containerName);
-   }
-
-   protected ModelNode getOperation(String containerName, String operationName, ModelNode nameList, ModelNode urlList) {
-      PathAddress cacheAddress = getCacheContainerAddress(containerName);
+   private ModelNode getOperation(String containerName, String operationName, ModelNode nameList, ModelNode urlList) {
+      PathAddress address = PathAddress.pathAddress(
+            PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME))
+            .append("cache-container", containerName);
       ModelNode op = new ModelNode();
       op.get(OP).set(operationName);
-      op.get(OP_ADDR).set(cacheAddress.toModelNode());
+      op.get(OP_ADDR).set(address.toModelNode());
       op.get("file-names").set(nameList);
       op.get("file-urls").set(urlList);
       return op;
