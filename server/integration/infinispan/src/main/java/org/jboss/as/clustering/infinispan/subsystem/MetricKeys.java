@@ -42,6 +42,7 @@ public class MetricKeys {
     public static final String CREATED_CACHE_COUNT = "created-cache-count";
     public static final String MEMBERS = "members";
     public static final String CLUSTER_SIZE = "cluster-size";
+    public static final String HEALTH = "health";
     // cache
     public static final String CACHE_STATUS = "cache-status";
     public static final String CACHE_NAME = "cache-name";
@@ -92,4 +93,11 @@ public class MetricKeys {
 
     public static final String SITES_VIEW = "sites-view";
 
+    public static final String NUMBER_OF_CPUS = "number-of-cpus";
+    public static final String TOTAL_MEMORY_KB = "total-memory";
+    public static final String FREE_MEMORY_KB = "free-memory";
+    public static final String CLUSTER_HEALTH = "cluster-health";
+    public static final String NUMBER_OF_NODES = "number-of-nodes";
+    public static final String CACHE_HEALTH = "cache-health";
+    public static final String LOG_TAIL = "log-tail";
 }
