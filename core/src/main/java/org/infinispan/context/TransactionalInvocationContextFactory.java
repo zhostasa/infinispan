@@ -112,14 +112,4 @@ public class TransactionalInvocationContextFactory extends AbstractInvocationCon
       NonTxInvocationContext ctx = new NonTxInvocationContext(origin, keyEq);
       return ctx;
    }
-
-   @Override
-   public InvocationContext createRemoteInvocationContextForCommand(VisitableCommand cacheCommand,
-         Address origin) {
-      if (cacheCommand instanceof DataCommand && !(cacheCommand instanceof InvalidateCommand)) {
-         return new SingleKeyNonTxInvocationContext(origin, keyEq);
-      } else {
-         return super.createRemoteInvocationContextForCommand(cacheCommand, origin);
-      }
-   }
 }

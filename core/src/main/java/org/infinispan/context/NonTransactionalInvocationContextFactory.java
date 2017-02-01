@@ -77,14 +77,4 @@ public class NonTransactionalInvocationContextFactory extends AbstractInvocation
    private IllegalStateException exception() {
       return new IllegalStateException("This is a non-transactional cache - why need to build a transactional context for it!");
    }
-
-   @Override
-   public InvocationContext createRemoteInvocationContextForCommand(VisitableCommand cacheCommand,
-                                                                          Address origin) {
-      if (cacheCommand instanceof DataCommand && !(cacheCommand instanceof InvalidateCommand)) {
-         return new SingleKeyNonTxInvocationContext(origin, keyEq);
-      } else {
-         return super.createRemoteInvocationContextForCommand(cacheCommand, origin);
-      }
-   }
 }
