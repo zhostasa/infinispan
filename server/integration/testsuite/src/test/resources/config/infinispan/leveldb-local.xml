@@ -1,10 +1,9 @@
-        <subsystem xmlns="urn:infinispan:server:core:8.0" >
+        <subsystem xmlns="urn:infinispan:server:core:8.4" >
             <cache-container 
                 name="local"
                 default-cache="testcache">
                 <local-cache
                     name="testcache"
-                    start="EAGER"
                     batching="false"
                     >
                     <transaction mode="NONE" />
@@ -19,10 +18,8 @@
                 <!-- to get a memcached module to work, there needs to be a named cache called "memcachedCache" -->
                 <local-cache
                     name="memcachedCache"
-                    start="EAGER"
                     batching="false"
                     >
-                    <transaction mode="NONE" />
                     <leveldb-store path="leveldb-mc" block-size="1024"
                         cache-size="50000" clear-threshold="100000" passivation="false"
                         purge="false" >
@@ -31,9 +28,7 @@
                         <implementation type="${leveldb.impl}" />
                     </leveldb-store>
                 </local-cache>
-                <local-cache
-                    name="namedCache"
-                    start="EAGER" />
+                <local-cache name="namedCache" />
             </cache-container>
             <cache-container name="security"/>
         </subsystem>

@@ -1,10 +1,8 @@
-<subsystem xmlns="urn:infinispan:server:core:8.0" >
+<subsystem xmlns="urn:infinispan:server:core:8.4" >
     <cache-container name="clustered" default-cache="default">
         <transport lock-timeout="240000"/>
         <distributed-cache
                 name="default"
-                start="EAGER"
-                mode="SYNC"
                 segments="1"
                 owners="2"
                 batching="false"
@@ -15,12 +13,11 @@
                     acquire-timeout="30000"
                     concurrency-level="1000"
                     striping="false"/>
-            <transaction mode="NONE"/>
             <state-transfer
                     enabled="true"
                     timeout="600000"/>
         </distributed-cache>
-        <distributed-cache name="memcachedCache" start="EAGER" mode="SYNC">
+        <distributed-cache name="memcachedCache">
             <eviction strategy="LRU" size="1" type="COUNT"/>
             <file-store passivation="true" path="dc" purge="true" shared="false"/>
         </distributed-cache>

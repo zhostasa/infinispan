@@ -1,9 +1,10 @@
-        <subsystem xmlns="urn:infinispan:server:core:8.0">
+        <subsystem xmlns="urn:infinispan:server:core:8.4">
             <cache-container name="default" default-cache="default">
                 <local-cache name="default" batching="false" />
             </cache-container>
-            <cache-container name="special-cache-container" start="EAGER" default-cache="special-cache">
+            <cache-container name="special-cache-container"  default-cache="special-cache">
                 <local-cache name="special-cache" />
                 <local-cache name="other-cache" />
             </cache-container>
         </subsystem>
+

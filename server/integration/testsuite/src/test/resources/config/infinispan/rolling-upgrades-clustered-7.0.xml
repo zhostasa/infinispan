@@ -1,8 +1,8 @@
-        <subsystem xmlns="urn:infinispan:server:core:8.0" default-cache-container="clustered-new">
+        <subsystem xmlns="urn:infinispan:server:core:8.4" default-cache-container="clustered-new">
             <cache-container name="clustered-new" default-cache="default">
                 <transport lock-timeout="240000"/>
                 <distributed-cache name="default"
-                                     start="EAGER"
+
                                      mode="SYNC"
                                      segments="1"
                                      owners="2"
