@@ -663,7 +663,6 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
                  }
              }
             case MODE: {
-                // note the use of ClusteredCacheAdd.MODE
                 ClusteredCacheConfigurationResource.MODE.parseAndSetParameter(value, cache, reader);
                 break;
             }
@@ -751,11 +750,21 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
         }
     }
 
+    private void validateClusteredCacheAttributes(XMLExtendedStreamReader reader, ModelNode cacheConfiguration) throws XMLStreamException {
+        if (!cacheConfiguration.hasDefined(ModelKeys.NAME)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
+        }
+        if (!namespace.since(Namespace.INFINISPAN_SERVER_9_0)) {
+            if (!cacheConfiguration.hasDefined(ModelKeys.MODE) && !cacheConfiguration.hasDefined(ModelKeys.CONFIGURATION)) {
+                throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
+            }
+        }
+    }
+
     private void parseDistributedCache(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations, boolean configurationOnly) throws XMLStreamException {
 
         // ModelNode for the cache add operation
         ModelNode cacheConfiguration = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        Map<PathAddress, ModelNode> additionalConfigurationOperations = new LinkedHashMap<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -783,16 +792,11 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
             }
         }
 
-        if (!cacheConfiguration.hasDefined(ModelKeys.NAME)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
-        }
-        if (!cacheConfiguration.hasDefined(ModelKeys.MODE) && !cacheConfiguration.hasDefined(ModelKeys.CONFIGURATION)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
-        }
+        validateClusteredCacheAttributes(reader, cacheConfiguration);
 
         // update the cache address with the cache name
         PathAddress cacheConfigurationAddress = addNameToAddress(cacheConfiguration, containerAddress, ModelKeys.DISTRIBUTED_CACHE) ;
-
+        Map<PathAddress, ModelNode> additionalConfigurationOperations = new LinkedHashMap<>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
@@ -822,7 +826,6 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
 
         // ModelNode for the cache add operation
         ModelNode cacheConfiguration = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        Map<PathAddress, ModelNode> additionalConfigurationOperations = new LinkedHashMap<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -830,16 +833,11 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
             this.parseClusteredCacheAttribute(reader, i, attribute, value, cacheConfiguration);
         }
 
-        if (!cacheConfiguration.hasDefined(ModelKeys.NAME)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
-        }
-        if (!cacheConfiguration.hasDefined(ModelKeys.MODE) && !cacheConfiguration.hasDefined(ModelKeys.CONFIGURATION)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
-        }
+        validateClusteredCacheAttributes(reader, cacheConfiguration);
 
         // update the cache address with the cache name
         PathAddress cacheConfigurationAddress = addNameToAddress(cacheConfiguration, containerAddress, ModelKeys.REPLICATED_CACHE) ;
-
+        Map<PathAddress, ModelNode> additionalConfigurationOperations = new LinkedHashMap<>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
@@ -865,7 +863,6 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
 
         // ModelNode for the cache add operation
         ModelNode cacheConfiguration = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        Map<PathAddress, ModelNode> additionalConfigurationOperations = new LinkedHashMap<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -873,16 +870,11 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
             this.parseClusteredCacheAttribute(reader, i, attribute, value, cacheConfiguration);
         }
 
-        if (!cacheConfiguration.hasDefined(ModelKeys.NAME)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
-        }
-        if (!cacheConfiguration.hasDefined(ModelKeys.MODE) && !cacheConfiguration.hasDefined(ModelKeys.CONFIGURATION)) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
-        }
+        validateClusteredCacheAttributes(reader, cacheConfiguration);
 
         // update the cache address with the cache name
         PathAddress cacheConfigurationAddress = addNameToAddress(cacheConfiguration, containerAddress, ModelKeys.INVALIDATION_CACHE) ;
-
+        Map<PathAddress, ModelNode> additionalConfigurationOperations = new LinkedHashMap<>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
