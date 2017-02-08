@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:infinispan:server:core:8.3">
+<subsystem xmlns="urn:infinispan:server:core:8.4">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
@@ -38,7 +38,7 @@
         </local-cache-configuration>
         <local-cache name="local-instance" configuration="local-template"/>
         <local-cache name="local-instance2" configuration="local-template"/>
-        <local-cache name="local" batching="false" start="EAGER" module="org.infinispan" statistics="false">
+        <local-cache name="local" batching="false" module="org.infinispan" statistics="false">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction size="20000" strategy="LIRS" type="COUNT"/>
@@ -49,7 +49,7 @@
             </file-store>
             <indexing index="LOCAL" auto-config="true"/>
         </local-cache>
-        <local-cache name="leveldb-stored" batching="false" start="EAGER" module="org.infinispan" statistics="true">
+        <local-cache name="leveldb-stored" batching="false" module="org.infinispan" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <leveldb-store path="leveldb-store" block-size="4096" cache-size="50000" clear-threshold="100000">
@@ -58,7 +58,7 @@
                 <compression type="SNAPPY"/>
             </leveldb-store>
         </local-cache>
-        <local-cache name="reststore-local" batching="false" start="EAGER" module="org.infinispan" statistics="false">
+        <local-cache name="reststore-local" batching="false" module="org.infinispan" statistics="false">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction size="20000" strategy="LIRS"/>
@@ -80,7 +80,7 @@
         <invalidation-cache-configuration name="invalidation-template" mode="ASYNC">
         </invalidation-cache-configuration>
         <invalidation-cache name="invalidation-instance" configuration="invalidation-template"/>
-        <invalidation-cache name="invalid" mode="ASYNC" batching="true" start="EAGER" statistics="true">
+        <invalidation-cache name="invalid" mode="ASYNC" batching="true" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction size="20000" strategy="LRU" type="MEMORY"/>
@@ -95,7 +95,7 @@
         <replicated-cache-configuration name="replicated-template" mode="ASYNC">
         </replicated-cache-configuration>
         <replicated-cache name="replicated-instance" configuration="replicated-template"/>
-        <replicated-cache name="repl" mode="ASYNC" batching="true" start="EAGER" statistics="false">
+        <replicated-cache name="repl" mode="ASYNC" batching="true" statistics="false">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction size="20000" strategy="FIFO"/>
@@ -109,7 +109,7 @@
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" await-initial-transfer="true"/>
             <partition-handling enabled="true"/>
         </replicated-cache>
-        <replicated-cache name="repl2" mode="ASYNC" batching="true" start="EAGER" statistics="true">
+        <replicated-cache name="repl2" mode="ASYNC" batching="true" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction size="20000" strategy="FIFO"/>
@@ -119,7 +119,7 @@
             <indexing index="LOCAL" auto-config="true"/>
             <state-transfer enabled="false" timeout="60000" chunk-size="10000" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="false" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="20" statistics="false">
+        <distributed-cache name="dist" batching="false" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="20" statistics="false">
             <backups>
                 <backup site="NYC" strategy="SYNC"/>
                 <backup site="SFO" strategy="ASYNC"/>
@@ -161,8 +161,8 @@
             <state-transfer enabled="true" timeout="60000" chunk-size="10000"  await-initial-transfer="false"/>
             <partition-handling enabled="true"/>
         </distributed-cache>
-        <distributed-cache name="dist2" mode="SYNC" batching="false" l1-lifespan="1200000" owners="4"
-                           remote-timeout="35000" start="EAGER" segments="20" capacity-factor="2.0"
+        <distributed-cache name="dist2" batching="false" l1-lifespan="1200000" owners="4"
+                           remote-timeout="35000" segments="20" capacity-factor="2.0"
                            statistics="true">
             <backups>
                 <backup site="NYC" strategy="SYNC"/>

@@ -73,7 +73,8 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                                          { Namespace.INFINISPAN_SERVER_8_0, 145, "schema/jboss-infinispan-core_8_0.xsd" },
                                          { Namespace.INFINISPAN_SERVER_8_1, 146, "schema/jboss-infinispan-core_8_1.xsd" },
                                          { Namespace.INFINISPAN_SERVER_8_2, 146, "schema/jboss-infinispan-core_8_2.xsd" },
-                                         { Namespace.INFINISPAN_SERVER_8_3, 146, "schema/jboss-infinispan-core_8_3.xsd"},
+                                         { Namespace.INFINISPAN_SERVER_8_3, 146, "schema/jboss-infinispan-core_8_3.xsd" },
+                                         { Namespace.INFINISPAN_SERVER_8_4, 146, "schema/jboss-infinispan-core_8_4.xsd"},
       };
       return Arrays.asList(data);
     }

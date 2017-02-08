@@ -153,7 +153,7 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(get);
         try {
-            assertEquals(uri.toString(), expectedCode, resp.getStatusLine().getStatusCode());
+            org.junit.Assert.assertEquals(uri.toString(), expectedCode, resp.getStatusLine().getStatusCode());
             if (expectedResponseBody != null) {
                 assertEquals(expectedResponseBody, EntityUtils.toString(resp.getEntity()));
             }

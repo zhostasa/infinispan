@@ -24,7 +24,6 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices
 @Namespaces({
    @Namespace(root = "leveldb-store"),
-   @Namespace(uri = "urn:infinispan:config:store:leveldb:9.0", root = "leveldb-store"),
    @Namespace(uri = "urn:infinispan:config:store:leveldb:8.0", root = "leveldb-store"),
    @Namespace(uri = "urn:infinispan:config:store:leveldb:7.2", root = "leveldb-store"),
    @Namespace(uri = "urn:infinispan:config:store:leveldb:7.1", root = "leveldb-store"),

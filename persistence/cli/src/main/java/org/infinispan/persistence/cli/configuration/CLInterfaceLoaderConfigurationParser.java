@@ -24,7 +24,6 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices
 @Namespaces({
    @Namespace(root = "cli-loader"),
-   @Namespace(uri = "urn:infinispan:config:store:cli:9.0", root = "cli-loader"),
    @Namespace(uri = "urn:infinispan:config:store:cli:8.0", root = "cli-loader"),
    @Namespace(uri = "urn:infinispan:config:store:cli:7.2", root = "cli-loader"),
    @Namespace(uri = "urn:infinispan:config:store:cli:7.1", root = "cli-loader"),

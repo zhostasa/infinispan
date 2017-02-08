@@ -754,7 +754,7 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
         if (!cacheConfiguration.hasDefined(ModelKeys.NAME)) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
         }
-        if (!namespace.since(Namespace.INFINISPAN_SERVER_9_0)) {
+        if (!namespace.since(Namespace.INFINISPAN_SERVER_8_4)) {
             if (!cacheConfiguration.hasDefined(ModelKeys.MODE) && !cacheConfiguration.hasDefined(ModelKeys.CONFIGURATION)) {
                 throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
             }

@@ -30,7 +30,6 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices
 @Namespaces({
    @Namespace(root = "remote-store"),
-   @Namespace(uri = "urn:infinispan:config:store:remote:9.0", root = "remote-store"),
    @Namespace(uri = "urn:infinispan:config:store:remote:8.0", root = "remote-store"),
    @Namespace(uri = "urn:infinispan:config:store:remote:7.2", root = "remote-store"),
    @Namespace(uri = "urn:infinispan:config:store:remote:7.1", root = "remote-store"),

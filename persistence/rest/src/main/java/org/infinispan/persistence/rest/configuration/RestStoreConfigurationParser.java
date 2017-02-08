@@ -27,7 +27,6 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices
 @Namespaces({
    @Namespace(root = "rest-store"),
-   @Namespace(uri = "urn:infinispan:config:store:rest:9.0", root = "rest-store"),
    @Namespace(uri = "urn:infinispan:config:store:rest:8.0", root = "rest-store"),
    @Namespace(uri = "urn:infinispan:config:store:rest:7.2", root = "rest-store"),
    @Namespace(uri = "urn:infinispan:config:store:rest:7.1", root = "rest-store"),

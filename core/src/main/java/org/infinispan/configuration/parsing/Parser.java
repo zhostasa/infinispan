@@ -96,6 +96,7 @@ import org.kohsuke.MetaInfServices;
       @Namespace(uri = "urn:infinispan:config:8.1", root = "infinispan"),
       @Namespace(uri = "urn:infinispan:config:8.2", root = "infinispan"),
       @Namespace(uri = "urn:infinispan:config:8.3", root = "infinispan"),
+      @Namespace(uri = "urn:infinispan:config:8.4", root = "infinispan"),
       @Namespace(root = "infinispan"),
 
       @Namespace(uri = "urn:infinispan:config:7.0", root = "infinispan"),
@@ -526,7 +527,7 @@ public class Parser implements ConfigurationParser {
                break;
             }
             case REPLICATION_QUEUE_EXECUTOR: {
-               if (reader.getSchema().since(9, 0)) {
+               if (reader.getSchema().since(8, 3)) {
                   throw ParseUtils.unexpectedAttribute(reader, attribute.getLocalName());
                } else {
                   log.ignoredReplicationQueueAttribute(attribute.getLocalName(), reader.getLocation().getLineNumber());
@@ -1825,7 +1826,7 @@ public class Parser implements ConfigurationParser {
          throws XMLStreamException {
       switch (attribute) {
          case ASYNC_MARSHALLING: {
-            if (reader.getSchema().since(9, 0)) {
+            if (reader.getSchema().since(8, 3)) {
                throw ParseUtils.unexpectedAttribute(reader, attribute.getLocalName());
             } else {
                log.ignoredReplicationQueueAttribute(attribute.getLocalName(), reader.getLocation().getLineNumber());
