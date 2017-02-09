@@ -116,6 +116,19 @@
                <systemPropertyVariables>
                   <infinispan.jcache.mgmt.lookup.skip>true</infinispan.jcache.mgmt.lookup.skip>
                </systemPropertyVariables>
+               <groups combine.self="override"/>
+               <excludedGroups combine.self="override"/>
+               <disableXmlReport>false</disableXmlReport>
+               <properties>
+                  <property>
+                     <name>usedefaultlisteners</name>
+                     <value>false</value>
+                  </property>
+                  <property>
+                     <name>listener</name>
+                     <value>${junitListener}</value>
+                  </property>
+               </properties>
             </configuration>
          </plugin>
       </plugins>

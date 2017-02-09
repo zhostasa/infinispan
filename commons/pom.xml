@@ -110,6 +110,7 @@
                      <value>true</value>
                   </property>
                </properties>
+               <disableXmlReport>false</disableXmlReport>
             </configuration>
             <dependencies>
                <dependency>
