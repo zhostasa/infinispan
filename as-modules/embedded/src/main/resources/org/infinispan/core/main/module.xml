@@ -11,6 +11,7 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.xml.bind.api"/>
+        <module name="com.github.ben-manes.caffeine" slot="${slot}"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.infinispan.commons" slot="${slot}" />
         <module name="org.jboss.jandex"/>
