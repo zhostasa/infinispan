@@ -122,7 +122,12 @@ public class RemoveExpiredCommand extends RemoveCommand {
       output.writeObject(key);
       output.writeObject(value);
       output.writeLong(FlagBitSets.copyWithoutRemotableFlags(getFlagsBitSet()));
-      output.writeLong(lifespan);
+      if (lifespan != null) {
+         output.writeBoolean(true);
+         output.writeLong(lifespan);
+      } else {
+         output.writeBoolean(false);
+      }
    }
 
    @Override
@@ -131,7 +136,12 @@ public class RemoveExpiredCommand extends RemoveCommand {
       key = input.readObject();
       value = input.readObject();
       setFlagsBitSet(input.readLong());
-      lifespan = input.readLong();
+      boolean lifespanProvided = input.readBoolean();
+      if (lifespanProvided) {
+         lifespan = input.readLong();
+      } else {
+         lifespan = null;
+      }
    }
 
    @Override
