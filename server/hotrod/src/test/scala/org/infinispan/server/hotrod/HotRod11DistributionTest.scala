@@ -93,7 +93,7 @@ class HotRod11DistributionTest extends HotRodMultiNodeTest {
          log.trace("Stopping new server")
          killClient(newClient)
          stopClusteredServer(newServer)
-         TestingUtil.waitForRehashToComplete(cache(0, cacheName), cache(1, cacheName))
+         TestingUtil.waitForNoRebalance(cache(0, cacheName), cache(1, cacheName))
          log.trace("New server stopped")
       }
 

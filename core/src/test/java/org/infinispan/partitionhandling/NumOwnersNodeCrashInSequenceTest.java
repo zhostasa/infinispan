@@ -183,8 +183,8 @@ public class NumOwnersNodeCrashInSequenceTest extends MultipleCacheManagersTest 
             new int[]{a0, a1}, new int[]{a1, a0});
       LocalTopologyManager ltm = TestingUtil.extractGlobalComponent(manager(a0), LocalTopologyManager.class);
       ltm.setCacheAvailability(CacheContainer.DEFAULT_CACHE_NAME, AvailabilityMode.AVAILABLE);
-      TestingUtil.waitForRehashToComplete(cache(a0), cache(a1));
-      eventually(() -> AvailabilityMode.AVAILABLE == phm0.getAvailabilityMode());
+      TestingUtil.waitForNoRebalance(cache(a0), cache(a1));
+      eventuallyEquals(AvailabilityMode.AVAILABLE, phm0::getAvailabilityMode);
    }
 
    private void installNewView(List<Address> members, Address missing, EmbeddedCacheManager... where) {

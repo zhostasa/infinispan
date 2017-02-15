@@ -60,6 +60,8 @@ public abstract class AbstractClusterListenerNonTxTest extends AbstractClusterLi
 
       future.get(10, TimeUnit.SECONDS);
 
+      TestingUtil.waitForNoRebalance(cache0, cache2);
+
       // The command is retried during rebalance, but there are two topologies - in the first (rebalancing) topology
       // one node can be primary owner and in the second (rebalanced) the other. In this case, it's possible that
       // the listener is fired both in the first topology and then after the response from primary owner arrives
@@ -77,7 +79,6 @@ public abstract class AbstractClusterListenerNonTxTest extends AbstractClusterLi
 
       checkEvent(clusterListener.events.get(1), key, false, true);
       if (clusterListener.events.size() == 3) {
-         assertTrue(cache0primary.equals(cache0.getCacheManager().getAddress()));
          checkEvent(clusterListener.events.get(2), key, false, true);
       }
    }

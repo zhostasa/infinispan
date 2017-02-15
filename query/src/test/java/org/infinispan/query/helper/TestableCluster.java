@@ -1,5 +1,7 @@
 package org.infinispan.query.helper;
 
+import static org.testng.AssertJUnit.assertTrue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +11,6 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.junit.Assert;
 
 public class TestableCluster<K, V> {
 
@@ -31,7 +32,7 @@ public class TestableCluster<K, V> {
       cacheManagers.add(cacheManager);
       Cache<K, V> cache = cacheManager.getCache();
       caches.add(cache);
-      waitForRehashToComplete(cache, caches);
+      waitForStableTopology(cache, caches);
       return cacheManager;
    }
 
@@ -52,14 +53,14 @@ public class TestableCluster<K, V> {
    public synchronized void killNode(Cache<K, V> cache) {
       EmbeddedCacheManager cacheManager = cache.getCacheManager();
       TestingUtil.killCacheManagers(cacheManager);
-      Assert.assertTrue(caches.remove(cache));
-      Assert.assertTrue(cacheManagers.remove(cacheManager));
-      waitForRehashToComplete(cache, caches);
+      assertTrue(caches.remove(cache));
+      assertTrue(cacheManagers.remove(cacheManager));
+      waitForStableTopology(cache, caches);
    }
 
-   private static <K, V> void waitForRehashToComplete(Cache<K, V> cache, List<Cache<K, V>> caches) {
+   private static <K, V> void waitForStableTopology(Cache<K, V> cache, List<Cache<K, V>> caches) {
       if (cache.getCacheConfiguration().clustering().cacheMode() != CacheMode.LOCAL) {
-         TestingUtil.waitForRehashToComplete(caches);
+         TestingUtil.waitForNoRebalance(caches);
       }
    }
 

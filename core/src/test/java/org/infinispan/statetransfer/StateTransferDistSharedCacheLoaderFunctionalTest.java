@@ -82,7 +82,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm2 = createCacheManager();
       cache2 = cm2.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2);
+      TestingUtil.waitForNoRebalance(cache1, cache2);
 
       assertEquals(INSERTION_COUNT, getDataContainerSize(cache1));
       assertEquals(INSERTION_COUNT, getDataContainerSize(cache2));
@@ -91,7 +91,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm3 = createCacheManager();
       cache3 = cm3.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2, cache3);
+      TestingUtil.waitForNoRebalance(cache1, cache2, cache3);
 
       // Need an additional wait for the non-owned entries to be deleted from the data containers
       eventually(() -> INSERTION_COUNT * 2 == getDataContainerSize(cache1, cache2, cache3));
@@ -115,7 +115,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm2 = createCacheManager();
       cache2 = cm2.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2);
+      TestingUtil.waitForNoRebalance(cache1, cache2);
 
       assertEquals(INSERTION_COUNT, getDataContainerSize(cache1));
       assertEquals(INSERTION_COUNT, getDataContainerSize(cache2));
@@ -124,7 +124,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm3 = createCacheManager();
       cache3 = cm3.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2, cache3);
+      TestingUtil.waitForNoRebalance(cache1, cache2, cache3);
 
       // Need an additional wait for the non-owned entries to be deleted from the data containers
       eventually(() -> INSERTION_COUNT * 2 == getDataContainerSize(cache1, cache2, cache3));
@@ -147,7 +147,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm2 = createCacheManager();
       cache2 = cm2.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2);
+      TestingUtil.waitForNoRebalance(cache1, cache2);
 
       assertEquals(INSERTION_COUNT, cache1.getAdvancedCache().getDataContainer().size());
       assertEquals(INSERTION_COUNT, cache2.getAdvancedCache().getDataContainer().size());
@@ -156,7 +156,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm3 = createCacheManager();
       cache3 = cm3.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2, cache3);
+      TestingUtil.waitForNoRebalance(cache1, cache2, cache3);
 
       // Need an additional wait for the non-owned entries to be deleted from the data containers
       eventually(() -> INSERTION_COUNT * 2 == getDataContainerSize(cache1, cache2, cache3));
@@ -179,7 +179,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm2 = createCacheManager();
       cache2 = cm2.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2);
+      TestingUtil.waitForNoRebalance(cache1, cache2);
 
       assertEquals(INSERTION_COUNT, cache1.getAdvancedCache().getDataContainer().size());
       assertEquals(INSERTION_COUNT, cache2.getAdvancedCache().getDataContainer().size());
@@ -188,7 +188,7 @@ public class StateTransferDistSharedCacheLoaderFunctionalTest extends StateTrans
 
       EmbeddedCacheManager cm3 = createCacheManager();
       cache3 = cm3.getCache(cacheName);
-      TestingUtil.waitForRehashToComplete(cache1, cache2, cache3);
+      TestingUtil.waitForNoRebalance(cache1, cache2, cache3);
       // Shared cache loader should have all the contents still
       verifyInitialDataOnLoader(cache3);
 

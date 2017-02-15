@@ -149,7 +149,7 @@ public class NonTxPartitionStressTest extends MultipleCacheManagersTest {
                      AvailabilityMode.AVAILABLE;
             }
          });
-         TestingUtil.waitForRehashToComplete(caches());
+         TestingUtil.waitForNoRebalance(caches());
 
          assertFuturesRunning(futures);
          splitIndex++;

@@ -163,7 +163,7 @@ public class PutMapCommandStressTest extends MultipleCacheManagersTest {
                      List<Cache<Object, Object>> caches = caches(CACHE_NAME);
                      if (caches.size() > 0) {
                         TestingUtil.blockUntilViewsReceived(60000, false, caches);
-                        TestingUtil.waitForRehashToComplete(caches);
+                        TestingUtil.waitForNoRebalance(caches);
                      }
                   } else {
                      throw new IllegalStateException("Cache Manager " + cacheToKill.getCacheManager() +

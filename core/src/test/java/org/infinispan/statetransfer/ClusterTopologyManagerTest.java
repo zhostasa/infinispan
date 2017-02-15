@@ -80,13 +80,13 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       long startTime = System.currentTimeMillis();
       TestingUtil.blockUntilViewsReceived(30000, false, c1, c2);
       TestingUtil.blockUntilViewsReceived(30000, false, c3);
-      TestingUtil.waitForRehashToComplete(c1, c2);
-      TestingUtil.waitForRehashToComplete(c3);
+      TestingUtil.waitForNoRebalance(c1, c2);
+      TestingUtil.waitForNoRebalance(c3);
 
-      TestingUtil.waitForRehashToComplete(cache(0, "cache2"), cache(1, "cache2"));
-      TestingUtil.waitForRehashToComplete(cache(0, "cache3"));
-      TestingUtil.waitForRehashToComplete(cache(1, "cache4"));
-      TestingUtil.waitForRehashToComplete(cache(0, "cache5"), cache(1, "cache5"));
+      TestingUtil.waitForNoRebalance(cache(0, "cache2"), cache(1, "cache2"));
+      TestingUtil.waitForNoRebalance(cache(0, "cache3"));
+      TestingUtil.waitForNoRebalance(cache(1, "cache4"));
+      TestingUtil.waitForNoRebalance(cache(0, "cache5"), cache(1, "cache5"));
 
       long endTime = System.currentTimeMillis();
       log.debugf("Recovery took %s", Util.prettyPrintTime(endTime - startTime));
@@ -97,16 +97,16 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       addClusterEnabledCacheManager(defaultConfig, new TransportFlags().withFD(true).withMerge(true));
       Cache<Object, Object> c4 = cache(3, CACHE_NAME);
       TestingUtil.blockUntilViewsReceived(30000, true, c1, c2, c4);
-      TestingUtil.waitForRehashToComplete(c1, c2, c4);
+      TestingUtil.waitForNoRebalance(c1, c2, c4);
 
       cache(3, "cache2");
       cache(3, "cache3");
       cache(3, "cache4");
       cache(3, "cache5");
-      TestingUtil.waitForRehashToComplete(cache(0, "cache2"), cache(1, "cache2"), cache(3, "cache2"));
-      TestingUtil.waitForRehashToComplete(cache(0, "cache3"), cache(3, "cache3"));
-      TestingUtil.waitForRehashToComplete(cache(1, "cache4"), cache(3, "cache4"));
-      TestingUtil.waitForRehashToComplete(cache(0, "cache5"), cache(1, "cache5"), cache(3, "cache5"));
+      TestingUtil.waitForNoRebalance(cache(0, "cache2"), cache(1, "cache2"), cache(3, "cache2"));
+      TestingUtil.waitForNoRebalance(cache(0, "cache3"), cache(3, "cache3"));
+      TestingUtil.waitForNoRebalance(cache(1, "cache4"), cache(3, "cache4"));
+      TestingUtil.waitForNoRebalance(cache(0, "cache5"), cache(1, "cache5"), cache(3, "cache5"));
    }
 
    public void testClusterRecoveryAfterCoordLeave() throws Exception {
@@ -118,8 +118,8 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       long startTime = System.currentTimeMillis();
       TestingUtil.blockUntilViewsReceived(30000, false, c1);
       TestingUtil.blockUntilViewsReceived(30000, false, c2, c3);
-      TestingUtil.waitForRehashToComplete(c1);
-      TestingUtil.waitForRehashToComplete(c2, c3);
+      TestingUtil.waitForNoRebalance(c1);
+      TestingUtil.waitForNoRebalance(c2, c3);
 
       long endTime = System.currentTimeMillis();
       log.debugf("Recovery took %s", Util.prettyPrintTime(endTime - startTime));
@@ -130,7 +130,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       addClusterEnabledCacheManager(defaultConfig, new TransportFlags().withFD(true).withMerge(true));
       Cache<Object, Object> c4 = cache(3, CACHE_NAME);
       TestingUtil.blockUntilViewsReceived(30000, true, c2, c3, c4);
-      TestingUtil.waitForRehashToComplete(c2, c3, c4);
+      TestingUtil.waitForNoRebalance(c2, c3, c4);
    }
 
    public void testClusterRecoveryAfterThreeWaySplit() throws Exception {
@@ -144,9 +144,9 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       TestingUtil.blockUntilViewsReceived(30000, false, c1);
       TestingUtil.blockUntilViewsReceived(30000, false, c2);
       TestingUtil.blockUntilViewsReceived(30000, false, c3);
-      TestingUtil.waitForRehashToComplete(c1);
-      TestingUtil.waitForRehashToComplete(c2);
-      TestingUtil.waitForRehashToComplete(c3);
+      TestingUtil.waitForNoRebalance(c1);
+      TestingUtil.waitForNoRebalance(c2);
+      TestingUtil.waitForNoRebalance(c3);
 
       // merge the remaining partitions
       log.debugf("Merging the cluster partitions");
@@ -157,7 +157,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       // wait for the merged cluster to form
       long startTime = System.currentTimeMillis();
       TestingUtil.blockUntilViewsReceived(60000, c1, c2, c3);
-      TestingUtil.waitForRehashToComplete(c1, c2, c3);
+      TestingUtil.waitForNoRebalance(c1, c2, c3);
 
       long endTime = System.currentTimeMillis();
       log.debugf("Merge took %s", Util.prettyPrintTime(endTime - startTime));
@@ -168,7 +168,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       addClusterEnabledCacheManager(defaultConfig, new TransportFlags().withFD(true).withMerge(true));
       Cache<Object, Object> c4 = cache(3, CACHE_NAME);
       TestingUtil.blockUntilViewsReceived(30000, true, c1, c2, c3, c4);
-      TestingUtil.waitForRehashToComplete(c1, c2, c3, c4);
+      TestingUtil.waitForNoRebalance(c1, c2, c3, c4);
    }
 
    public void testClusterRecoveryAfterSplitAndCoordLeave() throws Exception {
@@ -182,9 +182,9 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       TestingUtil.blockUntilViewsReceived(30000, false, c1);
       TestingUtil.blockUntilViewsReceived(30000, false, c2);
       TestingUtil.blockUntilViewsReceived(30000, false, c3);
-      TestingUtil.waitForRehashToComplete(c1);
-      TestingUtil.waitForRehashToComplete(c2);
-      TestingUtil.waitForRehashToComplete(c3);
+      TestingUtil.waitForNoRebalance(c1);
+      TestingUtil.waitForNoRebalance(c2);
+      TestingUtil.waitForNoRebalance(c3);
 
       // kill the coordinator
       manager(0).stop();
@@ -197,7 +197,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       // wait for the merged cluster to form
       long startTime = System.currentTimeMillis();
       TestingUtil.blockUntilViewsReceived(30000, c2, c3);
-      TestingUtil.waitForRehashToComplete(c2, c3);
+      TestingUtil.waitForNoRebalance(c2, c3);
 
       long endTime = System.currentTimeMillis();
       log.debugf("Merge took %s", Util.prettyPrintTime(endTime - startTime));
@@ -208,7 +208,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       addClusterEnabledCacheManager(defaultConfig, new TransportFlags().withFD(true).withMerge(true));
       Cache<Object, Object> c4 = cache(3, CACHE_NAME);
       TestingUtil.blockUntilViewsReceived(30000, true, c2, c3, c4);
-      TestingUtil.waitForRehashToComplete(c2, c3, c4);
+      TestingUtil.waitForNoRebalance(c2, c3, c4);
    }
 
    public void testClusterRecoveryWithRebalance() throws Exception {
@@ -230,9 +230,9 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       TestingUtil.blockUntilViewsReceived(30000, false, c1);
       TestingUtil.blockUntilViewsReceived(30000, false, c2);
       TestingUtil.blockUntilViewsReceived(30000, false, c3);
-      TestingUtil.waitForRehashToComplete(c1);
-      TestingUtil.waitForRehashToComplete(c2);
-      TestingUtil.waitForRehashToComplete(c3);
+      TestingUtil.waitForNoRebalance(c1);
+      TestingUtil.waitForNoRebalance(c2);
+      TestingUtil.waitForNoRebalance(c3);
 
       // Disable DISCARD *only* on the merge coordinator
       if (mergeCoordIndex == 0) d1.setDiscardAll(false);
@@ -267,7 +267,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       // wait for the JGroups merge
       long startTime = System.currentTimeMillis();
       TestingUtil.blockUntilViewsReceived(30000, cacheManagers);
-      TestingUtil.waitForRehashToComplete(caches(CACHE_NAME));
+      TestingUtil.waitForNoRebalance(caches(CACHE_NAME));
 
       // unblock the REBALANCE_START command
       log.debugf("Unblocking the REBALANCE_START command on the coordinator");
@@ -275,7 +275,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
 
       // wait for the 4th cache to finish joining
       Cache<Object, Object> c4 = cacheFuture.get(30, TimeUnit.SECONDS);
-      TestingUtil.waitForRehashToComplete(c1, c2, c3, c4);
+      TestingUtil.waitForNoRebalance(c1, c2, c3, c4);
 
       long endTime = System.currentTimeMillis();
       log.debugf("Merge took %s", Util.prettyPrintTime(endTime - startTime));
@@ -287,7 +287,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
             new TransportFlags().withFD(true).withMerge(true));
       Cache<Object, Object> c5 = cm5.getCache(CACHE_NAME);
       TestingUtil.blockUntilViewsReceived(30000, true, c1, c2, c3, c4, c5);
-      TestingUtil.waitForRehashToComplete(c1, c2, c3, c4, c5);
+      TestingUtil.waitForNoRebalance(c1, c2, c3, c4, c5);
    }
 
    protected void blockRebalanceStart(final EmbeddedCacheManager manager, final CheckPoint checkpoint, final int numMembers)
@@ -349,7 +349,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       checkpoint.triggerForever("3 left");
 
       // Wait for node 2 to install a view with only itself and unblock the GET_STATUS command
-      TestingUtil.waitForRehashToComplete(c2);
+      TestingUtil.waitForNoRebalance(c2);
    }
 
    /**
@@ -433,7 +433,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       checkpoint.triggerForever("3 left");
 
       // Wait for node 2 to install a view with only itself and unblock the GET_STATUS command
-      TestingUtil.waitForRehashToComplete(c2);
+      TestingUtil.waitForNoRebalance(c2);
    }
 
    public void testLeaveDuringGetTransactions() throws InterruptedException, TimeoutException {
@@ -460,7 +460,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       checkpoint.trigger("LEAVE");
 
       TestingUtil.blockUntilViewsReceived(30000, false, c1);
-      TestingUtil.waitForRehashToComplete(c1);
+      TestingUtil.waitForNoRebalance(c1);
       long endTime = System.currentTimeMillis();
       log.debugf("Recovery took %s", Util.prettyPrintTime(endTime - startTime));
       assert endTime - startTime < 30000 : "Recovery took too long: " + Util.prettyPrintTime(endTime - startTime);
@@ -478,6 +478,6 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
          }
       });
       TestingUtil.blockUntilViewsReceived(30000, false, manager(1));
-      TestingUtil.waitForRehashToComplete(cache(1, OTHER_CACHE_NAME));
+      TestingUtil.waitForNoRebalance(cache(1, OTHER_CACHE_NAME));
    }
 }

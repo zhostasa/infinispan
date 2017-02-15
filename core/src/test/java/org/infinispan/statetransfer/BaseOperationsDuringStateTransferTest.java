@@ -156,7 +156,7 @@ public abstract class BaseOperationsDuringStateTransferTest extends MultipleCach
       ctm0.setRebalancingEnabled(true);
 
       // wait for state transfer to end
-      TestingUtil.waitForRehashToComplete(cache(0), cache(1));
+      TestingUtil.waitForNoRebalance(cache(0), cache(1));
 
       // the state should be already transferred now
       assertEquals(1, cache(1).keySet().size());
@@ -239,7 +239,7 @@ public abstract class BaseOperationsDuringStateTransferTest extends MultipleCach
       ctm0.setRebalancingEnabled(true);
 
       // wait for state transfer to end
-      TestingUtil.waitForRehashToComplete(cache(0), cache(1));
+      TestingUtil.waitForNoRebalance(cache(0), cache(1));
 
       // the state should be already transferred now
       assertEquals(1, cache(1).keySet().size());
@@ -321,7 +321,7 @@ public abstract class BaseOperationsDuringStateTransferTest extends MultipleCach
       ctm0.setRebalancingEnabled(true);
 
       // wait for state transfer to end
-      TestingUtil.waitForRehashToComplete(cache(0), cache(1));
+      TestingUtil.waitForNoRebalance(cache(0), cache(1));
 
       // the state should be already transferred now
       assertEquals(1, cache(1).keySet().size());
@@ -411,7 +411,7 @@ public abstract class BaseOperationsDuringStateTransferTest extends MultipleCach
       applyStateProceedLatch.countDown();
 
       // wait for state transfer to end
-      TestingUtil.waitForRehashToComplete(cache(0), cache(1));
+      TestingUtil.waitForNoRebalance(cache(0), cache(1));
 
       assertEquals(1, cache(1).getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).keySet().size());
 
