@@ -1,5 +1,20 @@
 package org.infinispan.client.hotrod.impl.transport.tcp;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.pool.KeyedObjectPool;
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
 import org.infinispan.client.hotrod.CacheTopologyInfo;
@@ -28,17 +43,6 @@ import org.infinispan.commons.util.Util;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 /**
  * @author Mircea.Markus@jboss.com
  * @since 4.1
@@ -52,7 +56,7 @@ public class TcpTransportFactory implements TransportFactory {
 
    /**
     * We need synchronization as the thread that calls {@link TransportFactory#start(org.infinispan.client.hotrod.impl.protocol.Codec,
-    * might(and likely will) be different from the thread(s) that calls {@link TransportFactory#getTransport(Object, java.util.Set, byte[])} or other methods
+    * might (and likely will) be different from the thread(s) that calls {@link TransportFactory#getTransport(Object, java.util.Set, byte[])} or other methods
     * org.infinispan.client.hotrod.configuration.Configuration, java.util.concurrent.atomic.AtomicInteger,
     * org.infinispan.client.hotrod.event.ClientListenerNotifier)}
     * might(and likely will) be different from the thread(s) that calls {@link TransportFactory#getTransport(byte[],
