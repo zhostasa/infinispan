@@ -85,9 +85,22 @@
     </xs:complexType>
 
     <xs:complexType name="rest-connector">
+        <xs:all>
+            <xs:element name="encryption" type="tns:encryption" minOccurs="0" maxOccurs="1" />
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>The logical name to give to this connector. This attribute is required when there are more connectors of the same type defined.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="cache-container" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>The name of the cache container which will be exposed by this connector</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="socket-binding" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The socket on which this connector will bind itself. If missing, the server will not listen to TCP connections</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="virtual-host" type="xs:string" use="optional">
@@ -354,7 +367,7 @@
 
     <xs:complexType name="encryption">
         <xs:sequence>
-            <xs:element name="sni" type="tns:sni" minOccurs="0" />
+            <xs:element name="sni" type="tns:sni" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="require-ssl-client-auth" type="xs:boolean" use="optional" default="false">
             <xs:annotation>
