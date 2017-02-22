@@ -165,7 +165,8 @@ public class StateConsumerImpl implements StateConsumer {
 
    private volatile boolean ownsData = false;
 
-   private RpcOptions rpcOptions;
+   private RpcOptions synchronousRpcOptions;
+   private RpcOptions synchronousIgnoreLeaversRpcOptions;
 
    public StateConsumerImpl() {
    }
@@ -652,7 +653,9 @@ public class StateConsumerImpl implements StateConsumer {
       isFetchEnabled = (mode.isDistributed() || mode.isReplicated()) &&
               (configuration.clustering().stateTransfer().fetchInMemoryState() || configuration.persistence().fetchPersistentState());
       //rpc options does not changes in runtime. we can use always the same instance.
-      rpcOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.SYNCHRONOUS)
+      synchronousRpcOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.SYNCHRONOUS)
+            .timeout(timeout, TimeUnit.MILLISECONDS).build();
+      synchronousIgnoreLeaversRpcOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.SYNCHRONOUS_IGNORE_LEAVERS)
             .timeout(timeout, TimeUnit.MILLISECONDS).build();
 
       stateRequestExecutor = new LimitedExecutor("StateRequest-" + cacheName, stateTransferExecutor, 1);
@@ -817,7 +820,7 @@ public class StateConsumerImpl implements StateConsumer {
             try {
                StateRequestCommand cmd = commandsFactory.buildStateRequestCommand(StateRequestCommand.Type.GET_CACHE_LISTENERS,
                                                                                   rpcManager.getAddress(), topology.getTopologyId(), null);
-               Map<Address, Response> responses = rpcManager.invokeRemotely(Collections.singleton(source), cmd, rpcOptions);
+               Map<Address, Response> responses = rpcManager.invokeRemotely(Collections.singleton(source), cmd, synchronousIgnoreLeaversRpcOptions);
                Response response = responses.get(source);
                if (response instanceof SuccessfulResponse) {
                   return (Collection<DistributedCallable>) ((SuccessfulResponse) response).getResponseValue();
@@ -839,7 +842,7 @@ public class StateConsumerImpl implements StateConsumer {
       }
       // get transactions and locks
       StateRequestCommand cmd = commandsFactory.buildStateRequestCommand(StateRequestCommand.Type.GET_TRANSACTIONS, rpcManager.getAddress(), topologyId, segments);
-      Map<Address, Response> responses = rpcManager.invokeRemotely(Collections.singleton(source), cmd, rpcOptions);
+      Map<Address, Response> responses = rpcManager.invokeRemotely(Collections.singleton(source), cmd, synchronousRpcOptions);
       return responses.get(source);
    }
 
