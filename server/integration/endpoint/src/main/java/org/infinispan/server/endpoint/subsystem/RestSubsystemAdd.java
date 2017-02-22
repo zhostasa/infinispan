@@ -104,6 +104,4 @@ class RestSubsystemAdd extends AbstractAddStepHandler {
    protected boolean requiresRuntimeVerification() {
       return false;
    }
-
-
 }
