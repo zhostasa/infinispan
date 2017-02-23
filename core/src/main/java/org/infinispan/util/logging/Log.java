@@ -1273,9 +1273,9 @@ public interface Log extends BasicLogger {
    @Message(value = "Unable to add a 'null' Custom Cache Store", id = 366)
    IllegalArgumentException unableToAddNullCustomStore();
 
-   @LogMessage(level = ERROR)
-   @Message(value = "There was an issue with topology update for topology: %s", id = 367)
-   void topologyUpdateError(int topologyId, @Cause Throwable t);
+//   @LogMessage(level = ERROR)
+//   @Message(value = "There was an issue with topology update for topology: %s", id = 367)
+//   void topologyUpdateError(int topologyId, @Cause Throwable t);
 
    @LogMessage(level = WARN)
    @Message(value = "Memory approximation calculation for eviction is unsupported for the '%s' Java VM", id = 368)
@@ -1386,8 +1386,8 @@ public interface Log extends BasicLogger {
    TimeoutException remoteNodeTimedOut(Address address, long time, TimeUnit unit);
 
    @Message(value = "Timeout waiting for view %d. Current view is %d, current status is %s", id = 402)
-   TimeoutException timeoutWaitingForView(int expectedViewId, int currentViewId,
-         Object clusterManagerStatus);
+   TimeoutException coordinatorTimeoutWaitingForView(int expectedViewId, int currentViewId,
+                                                     Object clusterManagerStatus);
 
    @LogMessage(level = WARN)
    @Message(value = "No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 10.0).", id = 403)
@@ -1483,4 +1483,11 @@ public interface Log extends BasicLogger {
    @LogMessage(level = ERROR)
    @Message(value = "Failure during leaver transactions cleanup", id = 431)
    void transactionCleanupError(@Cause Throwable e);
+
+   @Message(value = "Timed out waiting for view %d, current view is %d", id = 432)
+   TimeoutException timeoutWaitingForView(int expectedViewId, int currentViewId);
+
+   @LogMessage(level = ERROR)
+   @Message(value = "Failed to update topology for cache %s", id = 433)
+   void topologyUpdateError(String cacheName, @Cause Throwable cause);
 }

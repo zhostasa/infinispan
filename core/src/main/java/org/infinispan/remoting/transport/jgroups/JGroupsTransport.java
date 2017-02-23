@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.infinispan.IllegalLifecycleStateException;
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
@@ -136,6 +137,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    protected volatile boolean isCoordinator = false;
    private final Lock viewUpdateLock = new ReentrantLock();
    private final Condition viewUpdateCondition = viewUpdateLock.newCondition();
+   private CompletableFuture<Void> nextViewFuture = new CompletableFuture<>();
 
    /**
     * This form is used when the transport is created by an external source and passed in to the
@@ -238,6 +240,29 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    }
 
    @Override
+   public CompletableFuture<Void> withView(int expectedViewId) {
+      if (viewId >= expectedViewId)
+         return CompletableFutures.completedNull();
+
+      if (trace) {
+         log.tracef("Waiting for transaction data for view %d, current view is %d", (Integer)expectedViewId,
+               (Integer)viewId);
+      }
+      viewUpdateLock.lock();
+      try {
+         if (viewId >= expectedViewId) {
+            return CompletableFutures.completedNull();
+         } else if (viewId < 0) {
+            throw new IllegalLifecycleStateException();
+         } else {
+            return nextViewFuture.thenCompose(nil -> withView(expectedViewId));
+         }
+      } finally {
+         viewUpdateLock.unlock();
+      }
+   }
+
+   @Override
    public void waitForView(int viewId) throws InterruptedException {
       if (channel == null)
          return;
@@ -295,14 +320,23 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       isCoordinator = false;
       dispatcher = null;
 
-      // Wake up any view waiters
+      CompletableFuture<Void> oldFuture = null;
       viewUpdateLock.lock();
       try {
+         // Create a completable future for the new view
+         oldFuture = nextViewFuture;
+         nextViewFuture = new CompletableFuture<>();
+
+         // Wake up any threads blocked in waitForView()
          viewUpdateCondition.signalAll();
       } finally {
          viewUpdateLock.unlock();
-      }
 
+         // And finally, complete the future for the old view
+         if (oldFuture != null) {
+            oldFuture.complete(null);
+         }
+      }
    }
 
    protected void initChannel() {
@@ -951,6 +985,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
       // Update every view-related field while holding the lock so that waitForView only returns
       // after everything was updated.
+      CompletableFuture<Void> oldFuture = null;
       viewUpdateLock.lock();
       try {
          viewId = (int) newView.getViewId().getId();
@@ -976,11 +1011,20 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
          coordinator = fromJGroupsAddress(newView.getCreator());
          isCoordinator = coordinator != null && coordinator.equals(address);
 
+         // Create a completable future for the new view
+         oldFuture = nextViewFuture;
+         nextViewFuture = new CompletableFuture<>();
+
          // Wake up any threads that are waiting to know about who the isCoordinator is
          // do it before the notifications, so if a listener throws an exception we can still start
          viewUpdateCondition.signalAll();
       } finally {
          viewUpdateLock.unlock();
+
+         // And finally, complete the future for the old view
+         if (oldFuture != null) {
+            oldFuture.complete(null);
+         }
       }
 
       // now notify listeners - *after* updating the isCoordinator. - JBCACHE-662
