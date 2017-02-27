@@ -39,10 +39,10 @@ import org.infinispan.util.logging.Log;
  * @since 9.0
  */
 public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
-   private final static ResponseFilter VALID_OR_EXCEPTIONAL = new ResponseFilter() {
+   private final static ResponseFilter SUCCESSFUL_OR_EXCEPTIONAL = new ResponseFilter() {
       @Override
       public boolean isAcceptable(Response response, Address sender) {
-         return response.isValid() || response instanceof ExceptionResponse;
+         return response.isSuccessful() || response instanceof ExceptionResponse;
       }
 
       @Override
@@ -56,7 +56,8 @@ public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
    protected RpcManager rpcManager;
 
    protected boolean defaultSynchronous;
-   protected RpcOptions staggeredOptions;
+   protected volatile RpcOptions singleTargetStaggeredOptions;
+   protected volatile RpcOptions multiTargetStaggeredOptions;
    protected RpcOptions defaultSyncOptions;
    protected RpcOptions defaultAsyncOptions;
    private boolean syncCommitPhase;
@@ -80,10 +81,23 @@ public abstract class BaseRpcInterceptor extends DDAsyncInterceptor {
    }
 
    private void initRpcOptions() {
-      // This is a simplified state-less version of ClusteredGetResponseValidityFilter
-      staggeredOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.WAIT_FOR_VALID_RESPONSE, DeliverOrder.NONE)
-            .responseFilter(VALID_OR_EXCEPTIONAL).build();
+      singleTargetStaggeredOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.SYNCHRONOUS_IGNORE_LEAVERS).build();
+      multiTargetStaggeredOptions = rpcManager.getRpcOptionsBuilder(ResponseMode.WAIT_FOR_VALID_RESPONSE)
+            .responseFilter(SUCCESSFUL_OR_EXCEPTIONAL).build();
       defaultSyncOptions = rpcManager.getDefaultRpcOptions(true);
+   }
+
+   protected RpcOptions getStaggeredOptions(int numTargets) {
+      // TODO: handle better when dropping MessageDispatcher-based RPC
+      // This is somwhat a hack to the way staggered reads are implemented: what we intend is to keep
+      // the sender waiting until it receives successful response. If it did not receive any successful
+      // response, just return those unsuccessful ones.
+      // Staggered gets use the filter but add non-accepted responses to Responses anyway. JGroupsTransport
+      // later won't filter those unaccepted values and we'll get the unsuccesful ones, too.
+      // When there's only single target, the processing uses GroupRequest and that wouldn't return
+      // filtered values add all, therefore we'll omit the filter in there.
+      // Regrettably this cannot be handled properly by current filtering options.
+      return numTargets == 1 ? singleTargetStaggeredOptions : multiTargetStaggeredOptions;
    }
 
    protected final boolean isSynchronous(FlagAffectedCommand command) {

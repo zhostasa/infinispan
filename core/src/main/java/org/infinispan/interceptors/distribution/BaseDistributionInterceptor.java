@@ -171,7 +171,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
       getCommand.setTopologyId(topologyId);
       getCommand.setWrite(isWrite);
 
-      return rpcManager.invokeRemotelyAsync(info.readOwners(), getCommand, staggeredOptions).thenAccept(responses -> {
+      return rpcManager.invokeRemotelyAsync(info.readOwners(), getCommand, getStaggeredOptions(info.readOwners().size())).thenAccept(responses -> {
          for (Response r : responses.values()) {
             if (r instanceof SuccessfulResponse) {
                SuccessfulResponse response = (SuccessfulResponse) r;
@@ -693,19 +693,15 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
          // make sure that the command topology is set to the value according which we route it
          command.setTopologyId(cacheTopology.getTopologyId());
 
-         CompletableFuture<Map<Address, Response>> rpc = rpcManager.invokeRemotelyAsync(owners, command,
-               staggeredOptions);
-         return asyncValue(rpc.thenApply((responseMap) -> {
-                  for (Response rsp : responseMap.values()) {
-                     if (rsp.isSuccessful()) {
-                        return ((SuccessfulResponse) rsp).getResponseValue();
-                     }
+         CompletableFuture<Map<Address, Response>> rpc = rpcManager.invokeRemotelyAsync(owners, command, getStaggeredOptions(owners.size()));
+         return asyncValue(rpc.thenApply(responses -> {
+               for (Response rsp : responses.values()) {
+                  if (rsp.isSuccessful()) {
+                     return ((SuccessfulResponse) rsp).getResponseValue();
                   }
-                  // On receiver side the command topology id is checked and if it's too new, the command is delayed.
-                  // We can assume that we miss successful response only because the owners already have new topology
-                  // in which they're not owners - we'll wait for this topology, then.
-                  throw new OutdatedTopologyException("We haven't found an owner");
-               }));
+               }
+               throw handleMissingSuccessfulResponse(responses);
+            }));
       } else {
          // This has LOCAL flags, just wrap NullCacheEntry and let the command run
          entryFactory.wrapExternalEntry(ctx, key, NullCacheEntry.getInstance(), false);
