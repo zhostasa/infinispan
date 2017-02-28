@@ -108,7 +108,7 @@ public class RESTHelper {
             head.setHeader(eachHeader[0], eachHeader[1]);
         }
         HttpResponse resp = client.execute(head);
-        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -123,7 +123,7 @@ public class RESTHelper {
         } finally {
             EntityUtils.consume(resp.getEntity());
         }
-        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -160,9 +160,9 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(get);
         try {
-            org.junit.Assert.assertEquals(uri.toString(), expectedCode, resp.getStatusLine().getStatusCode());
+            assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
             if (expectedResponseBody != null) {
-                assertEquals(expectedResponseBody, EntityUtils.toString(resp.getEntity()));
+                assertEquals(resp, expectedResponseBody, EntityUtils.toString(resp.getEntity()));
             }
         } finally {
             if (closeConnection) {
@@ -226,7 +226,7 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(put);
         EntityUtils.consume(resp.getEntity());
-        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -282,7 +282,7 @@ public class RESTHelper {
         HttpResponse resp = client.execute(post);
         EntityUtils.consume(resp.getEntity());
         int statusCode = resp.getStatusLine().getStatusCode();
-        assertEquals(expectedCode, statusCode);
+        assertEquals(resp, expectedCode, statusCode);
         return resp;
     }
 
@@ -302,7 +302,7 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(delete);
         EntityUtils.consume(resp.getEntity());
-        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -362,33 +362,26 @@ public class RESTHelper {
         return servers;
     }
 
-    private static void printOutDebuggingInformation() throws Exception {
-        logger.error("Testsuite is about to fail, printing out debugging information");
-        logger.error("Servers: " + servers);
-        logger.error("Port: " + port);
+    private static String printOutDebuggingInformation(HttpResponse resp) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Testsuite is about to fail, printing out debugging information").append("\n");
+        sb.append("Full HTTP Response: " + resp).append("\n");
+        sb.append("Servers: " + servers).append("\n");
+        sb.append("Port: " + port).append("\n");
         for(int i = 0; i < servers.size(); ++i) {
-            logger.error("Server: " + i + " Key: " + KEY_A + " Value: " + get(fullPathKey(i, KEY_A)));
-            logger.error("Server: " + i + " Key: " + KEY_B + " Value: " + get(fullPathKey(i, KEY_C)));
-            logger.error("Server: " + i + " Key: " + KEY_C + " Value: " + get(fullPathKey(i, KEY_C)));
+            sb.append("Server: " + i + " Key: " + KEY_A + " Present: " + getWithoutAssert(fullPathKey(i, KEY_A), null, 200, true)).append("\n");
+            sb.append("Server: " + i + " Key: " + KEY_B + " Present: " + getWithoutAssert(fullPathKey(i, KEY_B), null, 200, true)).append("\n");
+            sb.append("Server: " + i + " Key: " + KEY_C + " Present: " + getWithoutAssert(fullPathKey(i, KEY_C), null, 200, true)).append("\n");
         }
+        return sb.toString();
     }
 
-    private static void assertEquals(int a, int b) throws Exception {
-        try {
-            Assert.assertEquals(a, b);
-        } catch (Exception e) {
-            printOutDebuggingInformation();
-            throw e;
-        }
+    private static void assertEquals(HttpResponse resp, int a, int b) throws Exception {
+        Assert.assertEquals(printOutDebuggingInformation(resp), a, b);
     }
 
-    private static void assertEquals(String a, String b) throws Exception {
-        try {
-            Assert.assertEquals(a, b);
-        } catch (Exception e) {
-            printOutDebuggingInformation();
-            throw e;
-        }
+    private static void assertEquals(HttpResponse resp, String a, String b) throws Exception {
+        Assert.assertEquals(printOutDebuggingInformation(resp), a, b);
     }
 
     public static class Server {
