@@ -229,7 +229,7 @@ final class InternalExternalizers {
       addInternalExternalizer(new UnsureResponse.Externalizer(), exts);
       addInternalExternalizer(new UuidExternalizer(), exts);
       addInternalExternalizer(new XSiteState.XSiteStateExternalizer(), exts);
-      addInternalExternalizer(new TriangleAckExternalizer(cmdFactory), exts);
+      addInternalExternalizer(new TriangleAckExternalizer(), exts);
 
       return exts;
    }

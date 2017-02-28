@@ -31,7 +31,6 @@ import javax.transaction.xa.XAResource;
 import javax.xml.namespace.QName;
 
 import org.infinispan.IllegalLifecycleStateException;
-import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commons.CacheConfigurationException;
@@ -1450,7 +1449,7 @@ public interface Log extends BasicLogger {
    //removed unused message (id=421)
 
    @Message(value = "Timeout after %s waiting for acks. Id=%s", id = 422)
-   TimeoutException timeoutWaitingForAcks(String timeout, CommandInvocationId id);
+   TimeoutException timeoutWaitingForAcks(String timeout, long id);
 
    @Message(value = "Failed waiting for topology %d", id = 423)
    TimeoutException failedWaitingForTopology(int requestTopologyId);

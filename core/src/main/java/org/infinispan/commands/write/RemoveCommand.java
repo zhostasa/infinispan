@@ -142,6 +142,7 @@ public class RemoveCommand extends AbstractDataWriteCommand {
          .append(", value=").append(toStr(value))
          .append(", flags=").append(printFlags())
          .append(", valueMatcher=").append(valueMatcher)
+         .append(", topologyId=").append(getTopologyId())
          .append("}")
          .toString();
    }
@@ -227,7 +228,7 @@ public class RemoveCommand extends AbstractDataWriteCommand {
 
    @Override
    public void initPrimaryAck(PrimaryAckCommand command, Object localReturnValue) {
-      command.initCommandInvocationIdAndTopologyId(commandInvocationId, getTopologyId());
+      command.initCommandInvocationIdAndTopologyId(commandInvocationId.getId(), getTopologyId());
       if (isConditional()) {
          command.initWithBoolReturnValue(successful);
       } else if (isReturnValueExpected()) {

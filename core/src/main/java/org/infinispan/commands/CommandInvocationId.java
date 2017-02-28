@@ -14,9 +14,9 @@ import org.infinispan.remoting.transport.Address;
 
 /**
  * Represents an unique identified for non-transaction write commands.
- *
+ * <p>
  * It is used to lock the key for a specific command.
- *
+ * <p>
  * This class is final to prevent issues as it is usually not marshalled
  * as polymorphic object but directly using {@link #writeTo(ObjectOutput, CommandInvocationId)}
  * and {@link #readFrom(ObjectInput)}.
@@ -46,6 +46,9 @@ public final class CommandInvocationId {
       return new CommandInvocationId(commandInvocationId.address, nextId.getAndIncrement());
    }
 
+   public long getId() {
+      return id;
+   }
 
    @Override
    public boolean equals(Object o) {

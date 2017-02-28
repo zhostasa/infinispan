@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.infinispan.Cache;
-import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
@@ -51,12 +50,7 @@ public abstract class AbstractClusterListenerNonTxTest extends AbstractClusterLi
       checkPoint.triggerForever("pre_raise_notification_release");
 
       final MagicKey key = new MagicKey(cache1, cache2);
-      Future<String> future = fork(new Callable<String>() {
-         @Override
-         public String call() throws Exception {
-            return cache0.put(key, FIRST_VALUE);
-         }
-      });
+      Future<String> future = fork(() -> cache0.put(key, FIRST_VALUE));
 
       checkPoint.awaitStrict("post_raise_notification_invoked", 10, TimeUnit.SECONDS);
       awaitForBackups(cache0);
@@ -106,7 +100,7 @@ public abstract class AbstractClusterListenerNonTxTest extends AbstractClusterLi
    protected void awaitForBackups(Cache<?, ?> cache) {
       if (TestingUtil.isTriangleAlgorithm(cacheMode, tx)) {
          CommandAckCollector collector = TestingUtil.extractComponent(cache, CommandAckCollector.class);
-         List<CommandInvocationId> pendingCommands = collector.getPendingCommands();
+         List<Long> pendingCommands = collector.getPendingCommands();
          //only 1 put is waiting (it may receive the backup ack, but not the primary ack since it is blocked!)
          assertEquals(1, pendingCommands.size());
          //make sure that the backup received the update
