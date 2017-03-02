@@ -85,6 +85,7 @@ import org.infinispan.remoting.responses.ExceptionResponse;
 import org.infinispan.remoting.responses.SuccessfulResponse;
 import org.infinispan.remoting.responses.UnsuccessfulResponse;
 import org.infinispan.remoting.responses.UnsureResponse;
+import org.infinispan.remoting.responses.WriteResponse;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsTopologyAwareAddress;
 import org.infinispan.statetransfer.StateChunk;
@@ -230,6 +231,7 @@ final class InternalExternalizers {
       addInternalExternalizer(new UuidExternalizer(), exts);
       addInternalExternalizer(new XSiteState.XSiteStateExternalizer(), exts);
       addInternalExternalizer(new TriangleAckExternalizer(), exts);
+      addInternalExternalizer(WriteResponse.EXTERNALIZER, exts);
 
       return exts;
    }

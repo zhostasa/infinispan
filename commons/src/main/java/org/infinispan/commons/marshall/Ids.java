@@ -169,4 +169,5 @@ public interface Ids {
    int COMMAND_INVOCATION_ID = 111;
 
    int TRIANGLE_ACK_EXTERNALIZER = 114;
+   int WRITE_RESPONSE = 115;
 }

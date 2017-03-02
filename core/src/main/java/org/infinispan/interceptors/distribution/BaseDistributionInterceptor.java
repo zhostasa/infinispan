@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.commands.AbstractTopologyAffectedCommand;
+import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.functional.ReadOnlyKeyCommand;
@@ -118,8 +119,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
          return invokeNext(ctx, command);
       }
       CompletableFuture<Map<Address, Response>> future = rpcManager.invokeRemotelyAsync(
-            Collections.singleton(groupManager.getPrimaryOwner(groupName)), command,
-            rpcManager.getDefaultRpcOptions(true));
+            Collections.singleton(groupManager.getPrimaryOwner(groupName)), command, defaultSyncOptions);
       return asyncInvokeNext(ctx, command, future.thenAccept(responses -> {
          if (!responses.isEmpty()) {
             Response response = responses.values().iterator().next();
@@ -144,7 +144,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
       return invokeNext(ctx, command);
    }
 
-   protected final CompletableFuture<Void> remoteGet(InvocationContext ctx, AbstractTopologyAffectedCommand command,
+   protected final <C extends FlagAffectedCommand & TopologyAffectedCommand> CompletableFuture<Void> remoteGet(InvocationContext ctx, C command,
                                                      Object key, boolean isWrite) {
       CacheTopology cacheTopology = checkTopologyId(command);
       int topologyId = cacheTopology.getTopologyId();
@@ -274,7 +274,7 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
       CompletableFuture<Map<Address, Response>> remoteInvocation;
       try {
          remoteInvocation = rpcManager.invokeRemotelyAsync(Collections.singletonList(primaryOwner), command,
-               rpcManager.getDefaultRpcOptions(isSyncForwarding));
+               isSyncForwarding ? defaultSyncOptions : defaultAsyncOptions);
       } catch (Throwable t) {
          command.setValueMatcher(command.getValueMatcher().matcherForRetry());
          throw t;
@@ -323,18 +323,14 @@ public abstract class BaseDistributionInterceptor extends ClusteringInterceptor 
    }
 
    private RpcOptions determineRpcOptionsForBackupReplication(RpcManager rpc, boolean isSync, List<Address> recipients) {
-      RpcOptions options;
       if (isSync) {
          // If no recipients, means a broadcast, so we can ignore leavers
-         if (recipients == null) {
-            options = rpc.getRpcOptionsBuilder(ResponseMode.SYNCHRONOUS_IGNORE_LEAVERS).build();
-         } else {
-            options = rpc.getDefaultRpcOptions(true);
-         }
+         return recipients == null ?
+               rpc.getRpcOptionsBuilder(ResponseMode.SYNCHRONOUS_IGNORE_LEAVERS).build() :
+               defaultSyncOptions;
       } else {
-         options = rpc.getDefaultRpcOptions(false);
+         return defaultAsyncOptions;
       }
-      return options;
    }
 
    private Object getResponseFromPrimaryOwner(Address primaryOwner, Map<Address, Response> addressResponseMap) {

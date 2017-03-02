@@ -48,6 +48,7 @@ public abstract class BaseBlockingRunnable implements BlockingRunnable {
          if (beforeFuture != null) {
             response = beforeFuture.join();
             if (response != null) {
+               afterInvoke();
                return;
             }
          }
@@ -70,6 +71,7 @@ public abstract class BaseBlockingRunnable implements BlockingRunnable {
          beforeFuture.whenComplete((rsp, throwable) -> {
             if (rsp != null) {
                response = rsp;
+               afterInvoke();
                reply.reply(rsp);
                onFinally();
             } else if (throwable != null) {
