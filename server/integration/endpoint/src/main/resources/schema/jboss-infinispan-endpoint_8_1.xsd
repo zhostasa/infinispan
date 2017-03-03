@@ -137,6 +137,7 @@
 
     <xs:complexType name="rest-connector">
         <xs:all>
+            <xs:element name="authentication" type="tns:rest-authentication" minOccurs="0" maxOccurs="1" />
             <xs:element name="encryption" type="tns:encryption" minOccurs="0" maxOccurs="1" />
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="optional">
@@ -421,6 +422,19 @@
             </xs:simpleType>
         </xs:list>
     </xs:simpleType>
+
+    <xs:complexType name="rest-authentication">
+        <xs:attribute name="security-realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>The security realm to use for authentication/authorization purposes. Defaults to none (no authentication)</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="auth-method" type="tns:auth-method" use="optional" default="NONE">
+            <xs:annotation>
+                <xs:documentation>The authentication method to require. Can be NONE, BASIC, DIGEST, CLIENT_CERT, SPNEGO. Defaults to NONE. Setting it to a different value requires enabling a security-realm.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:complexType name="encryption">
         <xs:sequence>

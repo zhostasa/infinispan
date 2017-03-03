@@ -32,6 +32,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
@@ -54,6 +55,7 @@ public class RESTHelper {
     public static final String KEY_C = "c";
 
     private static final String DATE_PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    public static final String DEFAULTCACHE = "testCache";
 
     private static int port = 8080;
     private static List<Server> servers = new ArrayList<Server>();
@@ -229,12 +231,11 @@ public class RESTHelper {
 
     public static void setCredentials(String username, String password) {
         Credentials credentials = new UsernamePasswordCredentials(username, password);
-        credsProvider.setCredentials(
-                new AuthScope(servers.get(0).getHostname(), port), credentials);
+        credsProvider.setCredentials(AuthScope.ANY, credentials);
     }
 
     public static void setSni(SSLContext sslContext, java.util.Optional<String> sniHostName) {
-        client = HttpClients.custom().setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER) {
+        client = HttpClients.custom().setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE) {
             @Override
             protected void prepareSocket(SSLSocket socket) throws IOException {
                 if(sniHostName.isPresent()) {
@@ -336,11 +337,11 @@ public class RESTHelper {
     }
 
     public static URI fullPathKey(int server, String key) {
-        return fullPathKey(server, "___defaultcache", key, 0);
+        return fullPathKey(server, DEFAULTCACHE, key, 0);
     }
 
     public static URI fullPathKey(int server, String key, int portOffset) {
-        return fullPathKey(server, "___defaultcache", key, portOffset);
+        return fullPathKey(server, DEFAULTCACHE, key, portOffset);
     }
 
     public static URI fullPathKey(String key) {

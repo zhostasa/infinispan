@@ -9,6 +9,7 @@ import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.rest.configuration.RestServerConfiguration;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
+import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.test.AbstractInfinispanTest;
 
 /**
@@ -56,7 +57,7 @@ public class RestServerTestBase extends AbstractInfinispanTest {
       if (ctx == null) {
          return null;
       }
-      return ctx.cacheManager;
+      return ctx.getCacheManager();
    }
 
    public void startServers() throws Exception {
