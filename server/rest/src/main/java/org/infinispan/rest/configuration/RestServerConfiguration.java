@@ -26,4 +26,8 @@ public class RestServerConfiguration extends ProtocolServerConfiguration {
    public Set<String> getIgnoredCaches() {
       return ignoredCaches();
    }
+
+   public boolean startTransport() {
+      return true;
+   }
 }
