@@ -1,5 +1,7 @@
 package org.infinispan.server.test.client.rest;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -18,9 +20,9 @@ import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -37,8 +39,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
-import org.junit.Assert;
 
 
 /**
@@ -49,14 +49,11 @@ import org.junit.Assert;
  */
 public class RESTHelper {
 
-    private static final Logger logger = Logger.getLogger(RESTHelper.class);
-
     public static final String KEY_A = "a";
     public static final String KEY_B = "b";
     public static final String KEY_C = "c";
 
     private static final String DATE_PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
-    private static final String TEST_CACHE_NANE = "testCache";
 
     private static int port = 8080;
     private static List<Server> servers = new ArrayList<Server>();
@@ -87,11 +84,11 @@ public class RESTHelper {
     }
 
     public static HttpResponse head(URI uri) throws Exception {
-        return head(uri, HttpServletResponse.SC_OK);
+        return head(uri, HttpStatus.SC_OK);
     }
 
     public static HttpResponse headWithoutClose(URI uri) throws Exception {
-        return head(uri, HttpServletResponse.SC_OK);
+        return head(uri, HttpStatus.SC_OK);
     }
 
     public static HttpResponse head(URI uri, int expectedCode) throws Exception {
@@ -108,7 +105,7 @@ public class RESTHelper {
             head.setHeader(eachHeader[0], eachHeader[1]);
         }
         HttpResponse resp = client.execute(head);
-        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -123,24 +120,24 @@ public class RESTHelper {
         } finally {
             EntityUtils.consume(resp.getEntity());
         }
-        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
     public static HttpResponse get(URI uri) throws Exception {
-        return get(uri, HttpServletResponse.SC_OK);
+        return get(uri, HttpStatus.SC_OK);
     }
 
     public static HttpResponse getWithoutClose(URI uri) throws Exception {
-        return getWithoutClose(uri, HttpServletResponse.SC_OK);
+        return getWithoutClose(uri, HttpStatus.SC_OK);
     }
 
     public static HttpResponse get(URI uri, String expectedResponseBody) throws Exception {
-        return get(uri, expectedResponseBody, HttpServletResponse.SC_OK, true);
+        return get(uri, expectedResponseBody, HttpStatus.SC_OK, true);
     }
 
     public static HttpResponse getWithoutClose(URI uri, String expectedResponseBody) throws Exception {
-        return get(uri, expectedResponseBody, HttpServletResponse.SC_OK, false);
+        return get(uri, expectedResponseBody, HttpStatus.SC_OK, false);
     }
 
     public static HttpResponse get(URI uri, int expectedCode) throws Exception {
@@ -160,9 +157,9 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(get);
         try {
-            assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
+            assertEquals(uri.toString(), expectedCode, resp.getStatusLine().getStatusCode());
             if (expectedResponseBody != null) {
-                assertEquals(resp, expectedResponseBody, EntityUtils.toString(resp.getEntity()));
+                assertEquals(expectedResponseBody, EntityUtils.toString(resp.getEntity()));
             }
         } finally {
             if (closeConnection) {
@@ -199,7 +196,7 @@ public class RESTHelper {
     }
 
     public static HttpResponse put(URI uri, Object data, String contentType) throws Exception {
-        return put(uri, data, contentType, HttpServletResponse.SC_OK);
+        return put(uri, data, contentType, HttpStatus.SC_OK);
     }
 
     public static HttpResponse put(URI uri, Object data, String contentType, int expectedCode) throws Exception {
@@ -226,7 +223,7 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(put);
         EntityUtils.consume(resp.getEntity());
-        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -241,9 +238,9 @@ public class RESTHelper {
             @Override
             protected void prepareSocket(SSLSocket socket) throws IOException {
                 if(sniHostName.isPresent()) {
-                SSLParameters sslParameters = socket.getSSLParameters();
-                sslParameters.setServerNames(Arrays.asList(new SNIHostName(sniHostName.get())));
-                socket.setSSLParameters(sslParameters);
+                    SSLParameters sslParameters = socket.getSSLParameters();
+                    sslParameters.setServerNames(Arrays.asList(new SNIHostName(sniHostName.get())));
+                    socket.setSSLParameters(sslParameters);
                 }
             }
         }).build();
@@ -254,7 +251,7 @@ public class RESTHelper {
     }
 
     public static HttpResponse post(URI uri, Object data, String contentType) throws Exception {
-        return post(uri, data, contentType, HttpServletResponse.SC_OK);
+        return post(uri, data, contentType, HttpStatus.SC_OK);
     }
 
     public static HttpResponse post(URI uri, Object data, String contentType, int expectedCode) throws Exception {
@@ -282,7 +279,7 @@ public class RESTHelper {
         HttpResponse resp = client.execute(post);
         EntityUtils.consume(resp.getEntity());
         int statusCode = resp.getStatusLine().getStatusCode();
-        assertEquals(resp, expectedCode, statusCode);
+        assertEquals("URI=" + uri, expectedCode, statusCode);
         return resp;
     }
 
@@ -302,7 +299,7 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(delete);
         EntityUtils.consume(resp.getEntity());
-        assertEquals(resp, expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -339,11 +336,11 @@ public class RESTHelper {
     }
 
     public static URI fullPathKey(int server, String key) {
-        return fullPathKey(server, TEST_CACHE_NANE, key, 0);
+        return fullPathKey(server, "___defaultcache", key, 0);
     }
 
     public static URI fullPathKey(int server, String key, int portOffset) {
-        return fullPathKey(server, TEST_CACHE_NANE, key, portOffset);
+        return fullPathKey(server, "___defaultcache", key, portOffset);
     }
 
     public static URI fullPathKey(String key) {
@@ -362,28 +359,6 @@ public class RESTHelper {
         return servers;
     }
 
-    private static String printOutDebuggingInformation(HttpResponse resp) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Testsuite is about to fail, printing out debugging information").append("\n");
-        sb.append("Full HTTP Response: " + resp).append("\n");
-        sb.append("Servers: " + servers).append("\n");
-        sb.append("Port: " + port).append("\n");
-        for(int i = 0; i < servers.size(); ++i) {
-            sb.append("Server: " + i + " Key: " + KEY_A + " Present: " + getWithoutAssert(fullPathKey(i, KEY_A), null, 200, true)).append("\n");
-            sb.append("Server: " + i + " Key: " + KEY_B + " Present: " + getWithoutAssert(fullPathKey(i, KEY_B), null, 200, true)).append("\n");
-            sb.append("Server: " + i + " Key: " + KEY_C + " Present: " + getWithoutAssert(fullPathKey(i, KEY_C), null, 200, true)).append("\n");
-        }
-        return sb.toString();
-    }
-
-    private static void assertEquals(HttpResponse resp, int a, int b) throws Exception {
-        Assert.assertEquals(printOutDebuggingInformation(resp), a, b);
-    }
-
-    private static void assertEquals(HttpResponse resp, String a, String b) throws Exception {
-        Assert.assertEquals(printOutDebuggingInformation(resp), a, b);
-    }
-
     public static class Server {
         private String hostname;
         private String restServerPath;
@@ -399,14 +374,6 @@ public class RESTHelper {
 
         public String getRestServerPath() {
             return restServerPath;
-        }
-
-        @Override
-        public String toString() {
-            return "Server{" +
-                    "hostname='" + hostname + '\'' +
-                    ", restServerPath='" + restServerPath + '\'' +
-                    '}';
         }
     }
 }
