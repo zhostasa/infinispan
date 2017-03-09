@@ -65,7 +65,7 @@
 
       <version.maven-compiler-plugin>3.1</version.maven-compiler-plugin>
 
-      <version.protostream>4.0.0.Alpha7</version.protostream>
+      <version.protostream>4.0.0.Alpha9</version.protostream>
       <version.aesh>0.66.12.redhat-1</version.aesh>
       <version.antlr>3.5.2</version.antlr>
       <version.c3p0>0.9.5</version.c3p0>
@@ -78,9 +78,9 @@
       <version.cdi>1.2.0.redhat-2</version.cdi>
       <version.jboss.marshalling>1.4.10.Final-redhat-3</version.jboss.marshalling>
       <version.jboss.logging>3.3.0.Final-redhat-1</version.jboss.logging>
-      <version.jgroups>4.0.0.CR2-redhat1</version.jgroups>
+      <version.jgroups>4.0.1.Final-redhat-1</version.jgroups>
       <version.jta>1.0.1.Final-redhat-2</version.jta>
-      <version.netty>4.1.5.Final-redhat-1</version.netty>
+      <version.netty>4.1.8.Final</version.netty>
       <version.osgi>4.3.1</version.osgi>
       <version.rhq>4.12.0.JON330GA</version.rhq>
       <version.scala.major>2.11</version.scala.major>
