@@ -61,6 +61,7 @@
                         <configuration>
                             <target>
                                 <ant antfile="build.xml" inheritRefs="true">
+                                    <target name="fix-permissions" />
                                     <target name="trim-server" />
                                     <target name="server-version" />
                                 </ant>
