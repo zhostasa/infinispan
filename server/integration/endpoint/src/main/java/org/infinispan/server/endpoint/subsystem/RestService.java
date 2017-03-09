@@ -24,13 +24,12 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.rest.configuration.ExtendedHeaders;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
+import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.rest.embedded.netty4.security.Authenticator;
 import org.infinispan.rest.embedded.netty4.security.BasicAuthenticator;
 import org.infinispan.rest.embedded.netty4.security.ClientCertAuthenticator;
@@ -39,7 +38,6 @@ import org.infinispan.server.endpoint.subsystem.security.ClientCertRestSecurityD
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -54,7 +52,7 @@ import org.jboss.resteasy.plugins.server.embedded.SecurityDomain;
  * @since 6.0
  */
 public class RestService implements Service<Lifecycle>, EncryptableService {
-   private static final String DEFAULT_CONTEXT_PATH = "";
+
    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<>();
    private final InjectedValue<EmbeddedCacheManager> cacheManagerInjector = new InjectedValue<>();
    private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<>();
@@ -63,40 +61,26 @@ public class RestService implements Service<Lifecycle>, EncryptableService {
    private final Map<String, InjectedValue<SecurityRealm>> sniDomains = new HashMap<>();
 
    private final RestAuthMethod authMethod;
-   private final ModelNode config;
    private final String serverName;
    private Lifecycle restServer;
+   private final String contextPath;
+   private final ExtendedHeaders extendedHeaders;
+   private final Set<String> ignoredCaches;
    private boolean clientAuth;
 
-   public RestService(String serverName, ModelNode config, RestAuthMethod authMethod) {
+   public RestService(String serverName, RestAuthMethod authMethod, String contextPath, ExtendedHeaders extendedHeaders, Set<String> ignoredCaches) {
       this.serverName = serverName;
-      this.config = config.clone();
       this.authMethod = authMethod;
-   }
-
-   private String cleanContextPath(String s) {
-      if (s.endsWith("/")) {
-         return s.substring(0, s.length() - 1);
-      } else {
-         return s;
-      }
+      this.contextPath = contextPath;
+      this.extendedHeaders = extendedHeaders;
+      this.ignoredCaches = ignoredCaches;
    }
 
    /** {@inheritDoc} */
    @Override
    public synchronized void start(StartContext startContext) throws StartException {
-      String path = this.config.hasDefined(ModelKeys.CONTEXT_PATH) ? cleanContextPath(this.config.get(ModelKeys.CONTEXT_PATH).asString()) : DEFAULT_CONTEXT_PATH;
-
       RestServerConfigurationBuilder builder = new RestServerConfigurationBuilder();
-      builder.name(serverName);
-      if (config.hasDefined(ModelKeys.IGNORED_CACHES)) {
-         Set<String> ignoredCaches = config.get(ModelKeys.IGNORED_CACHES).asList()
-               .stream().map(ModelNode::asString).collect(Collectors.toSet());
-         builder.ignoredCaches(ignoredCaches);
-      }
-      builder.extendedHeaders(config.hasDefined(ModelKeys.EXTENDED_HEADERS)
-            ? ExtendedHeaders.valueOf(config.get(ModelKeys.EXTENDED_HEADERS).asString())
-            : ExtendedHeaders.ON_DEMAND);
+      builder.name(serverName).extendedHeaders(extendedHeaders).ignoredCaches(ignoredCaches).contextPath(contextPath);
 
       EncryptableServiceHelper.fillSecurityConfiguration(this, builder.ssl());
 
@@ -142,7 +126,7 @@ public class RestService implements Service<Lifecycle>, EncryptableService {
 
       try {
          restServer.start();
-         ROOT_LOGGER.httpEndpointStarted(protocolName, path, "rest");
+         ROOT_LOGGER.httpEndpointStarted(protocolName, contextPath, "rest");
       } catch (Exception e) {
          throw ROOT_LOGGER.restContextStartFailed(e);
       }
