@@ -30,7 +30,7 @@ import org.infinispan.util.logging.LogFactory;
 public class HotRodMigratorHelper {
 
    static final String MIGRATION_MANAGER_HOT_ROD_KNOWN_KEYS = "___MigrationManager_HotRod_KnownKeys___";
-   static final String ITERATOR_MINIMUM_VERSION = "2.5";
+   static final String ITERATOR_MINIMUM_VERSION = "2.4";
    static final int DEFAULT_READ_BATCH_SIZE = 10000;
 
    private static final Log log = LogFactory.getLog(HotRodMigratorHelper.class, Log.class);
