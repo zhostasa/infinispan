@@ -1,5 +1,6 @@
 package org.infinispan.distexec;
 
+import static org.infinispan.test.Exceptions.expectException;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -55,7 +56,6 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       return cache(0, cacheName());
    }
 
-   @Test(expectedExceptions = ExecutionException.class)
    public void testBasicTargetLocalDistributedCallableWithTimeout() throws Exception {
       Cache<Object, Object> cache1 = getCache();
       Cache<Object, Object> cache2 = cache(1, cacheName());
@@ -70,10 +70,9 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       builder.timeout(1000, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      future.get();
+      expectException(ExecutionException.class, () -> future.get());
    }
 
-   @Test(expectedExceptions = ExecutionException.class)
    public void testBasicTargetRemoteDistributedCallableWithException() throws Exception {
       Cache<Object, Object> cache1 = cache(0, cacheName());
       Cache<Object, Object> cache2 = cache(1, cacheName());
@@ -86,10 +85,9 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
             .createDistributedTaskBuilder(new ExceptionThrowingCallable());
 
       Future<Integer> future = des.submit(target, builder.build());
-      future.get();
+      expectException(ExecutionException.class, () -> future.get());
    }
 
-   @Test(expectedExceptions = TimeoutException.class)
    public void testBasicTargetLocalDistributedCallableWithHighFutureAndLowTaskTimeout() throws Exception {
       Cache<Object, Object> cache1 = cache(0, cacheName());
 
@@ -102,10 +100,9 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       builder.timeout(1000, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      future.get(10000, TimeUnit.MILLISECONDS);
+      expectException(TimeoutException.class, () -> future.get(10000, TimeUnit.MILLISECONDS));
    }
 
-   @Test(expectedExceptions = TimeoutException.class)
    public void testBasicTargetLocalDistributedCallableWithLowFutureAndHighTaskTimeout() throws Exception {
       Cache<Object, Object> cache1 = cache(0, cacheName());
 
@@ -118,10 +115,9 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       builder.timeout(10000, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      future.get(1000, TimeUnit.MILLISECONDS);
+      expectException(TimeoutException.class, () -> future.get(1000, TimeUnit.MILLISECONDS));
    }
 
-   @Test(expectedExceptions = TimeoutException.class)
    public void testBasicTargetRemoteDistributedCallableWithHighFutureAndLowTaskTimeout() throws Exception {
       Cache<Object, Object> cache1 = cache(0, cacheName());
       Cache<Object, Object> cache2 = cache(1, cacheName());
@@ -135,10 +131,9 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       builder.timeout(1000, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      future.get(10000, TimeUnit.MILLISECONDS);
+      expectException(TimeoutException.class, () -> future.get(10000, TimeUnit.MILLISECONDS));
    }
 
-   @Test(expectedExceptions = TimeoutException.class)
    public void testBasicTargetRemoteDistributedCallableWithLowFutureAndHighTaskTimeout() throws Exception {
       Cache<Object, Object> cache1 = cache(0, cacheName());
       Cache<Object, Object> cache2 = cache(1, cacheName());
@@ -152,7 +147,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       builder.timeout(10000, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      future.get(1000, TimeUnit.MILLISECONDS);
+      expectException(TimeoutException.class, () -> future.get(1000, TimeUnit.MILLISECONDS));
    }
 
    public void testBasicTargetLocalDistributedCallableWithoutSpecTimeout() throws Exception {
@@ -200,11 +195,10 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       assert !isCanceled;
    }
 
-   @Test(expectedExceptions = CancellationException.class)
    public void testCancelAndGet() throws Exception {
       DistributedExecutorService des = createDES(getCache());
       List<Address> cacheMembers = getCache().getAdvancedCache().getRpcManager().getMembers();
-      List<Address> members = new ArrayList<Address>(cacheMembers);
+      List<Address> members = new ArrayList<>(cacheMembers);
       assertEquals(caches(cacheName()).size(), members.size());
       members.remove(getCache().getAdvancedCache().getRpcManager().getAddress());
 
@@ -212,15 +206,14 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       final Future<Integer> future = des.submit(members.get(0),tb.build());
 
       future.cancel(true);
-      future.get();
+      expectException(CancellationException.class, () -> future.get());
    }
 
-   @Test(expectedExceptions = TimeoutException.class)
    public void testTimeoutOnLocalNode() throws Exception {
       AdvancedCache<Object, Object> localCache = getCache().getAdvancedCache();
       DistributedExecutorService des = createDES(localCache);
       Future<Integer> future = des.submit(localCache.getRpcManager().getAddress(), new SleepingSimpleCallable());
-      future.get(1000, TimeUnit.MILLISECONDS);
+      expectException(TimeoutException.class, () -> future.get(1000, TimeUnit.MILLISECONDS));
    }
 
    public void testBasicTargetDistributedCallableTargetSameNode() throws Exception {
@@ -261,7 +254,6 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       assert r;
    }
 
-   @Test(expectedExceptions = ExecutionException.class)
    public void testBasicTargetDistributedCallableWithTimeout() throws Exception {
       Cache<Object, Object> cache1 = getCache();
 
@@ -273,25 +265,23 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       builder.timeout(10, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      future.get();
+      expectException(ExecutionException.class, () -> future.get());
    }
 
-   @Test(expectedExceptions = IllegalArgumentException.class)
    public void testBasicTargetCallableWithNullTask() {
       Cache<Object, Object> cache1 = getCache();
 
       DistributedExecutorService des = createDES(cache1);
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
-      des.submit(target, (Callable) null);
+      expectException(IllegalArgumentException.class, () -> des.submit(target, (Callable) null));
    }
 
-   @Test(expectedExceptions = NullPointerException.class)
    public void testBasicTargetDistributedTaskWithNullTask() {
       Cache<Object, Object> cache1 = getCache();
 
       DistributedExecutorService des = createDES(cache1);
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
-      des.submit(target, (DistributedTask) null);
+      expectException(NullPointerException.class, () -> des.submit(target, (DistributedTask) null));
    }
 
    public void testDistributedCallableEverywhereWithKeysOnBothNodes() throws Exception {
@@ -308,7 +298,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(getCache());
 
       List<CompletableFuture<Boolean>> list = des.submitEverywhere(new SimpleDistributedCallable(true),
-                                                        new String[] { "key1", "key2", "key5", "key6" });
+                                                                   "key1", "key2", "key5", "key6");
       assertTrue(list != null && !list.isEmpty());
       for (Future<Boolean> f : list) {
          assert f.get();
@@ -319,7 +309,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       //the same using DistributedTask API
       DistributedTaskBuilder<Boolean> taskBuilder = des.createDistributedTaskBuilder(new SimpleDistributedCallable(true));
       DistributedTask<Boolean> distributedTask = taskBuilder.build();
-      list = des.submitEverywhere(distributedTask,new String[] {"key1", "key2" });
+      list = des.submitEverywhere(distributedTask, "key1", "key2");
       assert list != null && !list.isEmpty();
       for (Future<Boolean> f : list) {
          assert f.get();

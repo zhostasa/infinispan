@@ -21,8 +21,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -134,16 +133,10 @@ public class StateConsumerTest extends AbstractInfinispanTest {
       Cache cache = mock(Cache.class);
       when(cache.getName()).thenReturn("testCache");
 
-      ThreadFactory threadFactory = new ThreadFactory() {
-         @Override
-         public Thread newThread(Runnable r) {
-            String name = "PooledExecutorThread-" + StateConsumerTest.class.getSimpleName() + "-" + r.hashCode();
-            return new Thread(r, name);
-         }
-      };
-
-      pooledExecutorService = new ThreadPoolExecutor(10, 20, 0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingDeque<Runnable>(), threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+      pooledExecutorService = new ThreadPoolExecutor(0, 20, 0L,
+                                                     TimeUnit.MILLISECONDS, new SynchronousQueue<>(),
+                                                     getTestThreadFactory("Worker"),
+                                                     new ThreadPoolExecutor.CallerRunsPolicy());
 
       StateTransferManager stateTransferManager = mock(StateTransferManager.class);
       CacheNotifier cacheNotifier = mock(CacheNotifier.class);

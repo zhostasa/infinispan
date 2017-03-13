@@ -1,5 +1,9 @@
 package org.infinispan.executors;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -22,9 +26,9 @@ public class ExecutorAllCompletionServiceTest {
       service.submit(new WaitRunnable(500), null);
       service.waitUntilAllCompleted();
       long after = System.currentTimeMillis();
-      assert after - before >= 1000;
-      assert service.isAllCompleted();
-      assert !service.isExceptionThrown();
+      assertTrue(after - before >= 1000);
+      assertTrue(service.isAllCompleted());
+      assertFalse(service.isExceptionThrown());
    }
 
    public void testExceptions() {
@@ -34,9 +38,9 @@ public class ExecutorAllCompletionServiceTest {
       service.submit(new WaitRunnable(1), null);
       service.submit(new ExceptionRunnable("third"), null);
       service.waitUntilAllCompleted();
-      assert service.isAllCompleted();
-      assert service.isExceptionThrown();
-      assert "second".equals(findCause(service.getFirstException()).getMessage());
+      assertTrue(service.isAllCompleted());
+      assertTrue(service.isExceptionThrown());
+      assertEquals("second", findCause(service.getFirstException()).getMessage());
    }
 
    public void testParallelWait() throws InterruptedException {
@@ -46,22 +50,19 @@ public class ExecutorAllCompletionServiceTest {
       }
       List<Thread> threads = new ArrayList<Thread>(10);
       for (int i = 0; i < 10; ++i) {
-         Thread t = new Thread() {
-            @Override
-            public void run() {
-               service.waitUntilAllCompleted();
-               assert service.isAllCompleted();
-               assert !service.isExceptionThrown();
-            }
-         };
+         Thread t = new Thread(() -> {
+            service.waitUntilAllCompleted();
+            assertTrue(service.isAllCompleted());
+            assertFalse(service.isExceptionThrown());
+         });
          threads.add(t);
          t.start();
       }
       for (Thread t : threads) {
          t.join();
       }
-      assert service.isAllCompleted();
-      assert !service.isExceptionThrown();
+      assertTrue(service.isAllCompleted());
+      assertFalse(service.isExceptionThrown());
    }
 
    public void testParallelException() throws InterruptedException {
@@ -75,22 +76,19 @@ public class ExecutorAllCompletionServiceTest {
       }
       List<Thread> threads = new ArrayList<Thread>(10);
       for (int i = 0; i < 10; ++i) {
-         Thread t = new Thread() {
-            @Override
-            public void run() {
-               service.waitUntilAllCompleted();
-               assert service.isAllCompleted();
-               assert service.isExceptionThrown();
-            }
-         };
+         Thread t = new Thread(() -> {
+            service.waitUntilAllCompleted();
+            assertTrue(service.isAllCompleted());
+            assertTrue(service.isExceptionThrown());
+         });
          threads.add(t);
          t.start();
       }
       for (Thread t : threads) {
          t.join();
       }
-      assert service.isAllCompleted();
-      assert service.isExceptionThrown();
+      assertTrue(service.isAllCompleted());
+      assertTrue(service.isExceptionThrown());
    }
 
    private Throwable findCause(ExecutionException e) {

@@ -30,7 +30,7 @@ public abstract class BaseBackupFailureTest extends AbstractTwoSitesTest {
    protected void createSites() {
       super.createSites();
       failureInterceptor = new FailureInterceptor();
-      backup("LON").getAdvancedCache().addInterceptor(failureInterceptor, 1);
+      backup("LON").getAdvancedCache().getAsyncInterceptorChain().addInterceptor(failureInterceptor, 1);
    }
 
    @BeforeMethod
@@ -40,7 +40,7 @@ public abstract class BaseBackupFailureTest extends AbstractTwoSitesTest {
 
    public static class FailureInterceptor extends CommandInterceptor {
 
-      protected volatile boolean isFailing = true;
+      protected volatile boolean isFailing = false;
 
       protected volatile boolean rollbackFailed;
       protected volatile boolean commitFailed;
@@ -51,8 +51,6 @@ public abstract class BaseBackupFailureTest extends AbstractTwoSitesTest {
       protected volatile boolean clearFailed;
       protected volatile boolean putMapFailed;
 
-      protected volatile boolean dontFailPrepare;
-
       public void reset() {
          rollbackFailed = false;
          commitFailed = false;
@@ -62,8 +60,7 @@ public abstract class BaseBackupFailureTest extends AbstractTwoSitesTest {
          replaceFailed = false;
          clearFailed = false;
          putMapFailed = false;
-         dontFailPrepare = false;
-         isFailing = true;
+         isFailing = false;
       }
 
       @Override
@@ -88,7 +85,7 @@ public abstract class BaseBackupFailureTest extends AbstractTwoSitesTest {
 
       @Override
       public Object visitPrepareCommand(TxInvocationContext ctx, PrepareCommand command) throws Throwable {
-         if (isFailing && !dontFailPrepare) {
+         if (isFailing) {
             prepareFailed = true;
             throw new CacheException("Induced failure");
          } else {
@@ -152,10 +149,6 @@ public abstract class BaseBackupFailureTest extends AbstractTwoSitesTest {
 
       public void enable() {
          isFailing = true;
-      }
-
-      public void dontFailPrepare() {
-         dontFailPrepare = true;
       }
    }
 
