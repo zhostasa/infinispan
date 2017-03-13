@@ -9,6 +9,7 @@ import static org.testng.Assert.assertTrue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +45,7 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
 
    protected AdvancedCacheLoader loader;
    protected AdvancedCacheWriter writer;
-   protected Executor executor;
+   protected ExecutorService executor;
    protected StreamingMarshaller sm;
 
    @Override
@@ -61,6 +62,14 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
             new SynchronousQueue<>(), getTestThreadFactory("iteration"),
             new ThreadPoolExecutor.CallerRunsPolicy());
       return manager;
+   }
+
+   @Override
+   protected void teardown() {
+      super.teardown();
+      if (executor != null) {
+         executor.shutdownNow();
+      }
    }
 
    protected abstract void configurePersistence(ConfigurationBuilder cb);
