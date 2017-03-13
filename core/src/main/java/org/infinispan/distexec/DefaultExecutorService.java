@@ -44,6 +44,7 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.distexec.spi.DistributedTaskLifecycleService;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.ComponentRegistry;
+import org.infinispan.factories.threads.DefaultThreadFactory;
 import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
@@ -134,7 +135,14 @@ public class DefaultExecutorService extends AbstractExecutorService implements D
     *           Cache node initiating distributed task
     */
    public DefaultExecutorService(Cache<?, ?> masterCacheNode) {
-      this(masterCacheNode, Executors.newSingleThreadExecutor(), true);
+      this(masterCacheNode, createLocalExecutor(masterCacheNode), true);
+   }
+
+   public static ExecutorService createLocalExecutor(Cache<?, ?> masterCacheNode) {
+      String nodeName = masterCacheNode != null ? SecurityActions.getConfiguredNodeName(masterCacheNode) : null;
+      return Executors.newSingleThreadExecutor(
+            new DefaultThreadFactory(null, Thread.NORM_PRIORITY, DefaultThreadFactory.DEFAULT_PATTERN, nodeName,
+                                     "DefaultExecutorService"));
    }
 
    /**
