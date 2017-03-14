@@ -82,7 +82,11 @@
       <version.jta>1.0.1.Final-redhat-2</version.jta>
       <version.netty>4.1.8.Final</version.netty>
       <version.osgi>4.3.1</version.osgi>
-      <version.rhq>4.12.0.JON330GA</version.rhq>
+      <version.rhq-jmx>4.12.0.JON330GA</version.rhq-jmx>
+      <version.rhq-core>4.12.0.JON330GA</version.rhq-core>
+      <version.rhq-wfly>4.12.0.JON330GA</version.rhq-wfly>
+      <version.rhq-core-domain>4.12.0.JON330GA</version.rhq-core-domain>
+      <version.rhq-core-native-system>4.12.0.JON330GA</version.rhq-core-native-system>
       <version.scala.major>2.11</version.scala.major>
       <version.scala>${version.scala.major}.7</version.scala>
       <version.scala.xml>1.0.2</version.scala.xml>
@@ -399,12 +403,12 @@
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-core-domain</artifactId>
-            <version>${version.rhq}</version>
+            <version>${version.rhq-core-domain}</version>
          </dependency>
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-core-plugin-api</artifactId>
-            <version>${version.rhq}</version>
+            <version>${version.rhq-core}</version>
             <exclusions>
                <exclusion>
                   <groupId>com.sun.xml.bind</groupId>
@@ -415,17 +419,17 @@
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-jmx-plugin</artifactId>
-            <version>${version.rhq}</version>
+            <version>${version.rhq-jmx}</version>
          </dependency>
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-wfly-10-plugin</artifactId>
-            <version>${version.rhq}</version>
+            <version>${version.rhq-wfly}</version>
          </dependency>
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-core-native-system</artifactId>
-            <version>${version.rhq}</version>
+            <version>${version.rhq-core-native-system}</version>
          </dependency>
 
          <dependency>
