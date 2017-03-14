@@ -98,10 +98,9 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
    }
 
    /**
-    *
-    * @return
-    * @deprecated Use {@link ConfigurationBuilder#memory()} instead
+    * @deprecated Since 8.4, Use {@link ConfigurationBuilder#memory()} instead
     */
+   @Deprecated
    @Override
    public EvictionConfigurationBuilder eviction() {
       return eviction;
@@ -127,7 +126,11 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
       return jmxStatistics;
    }
 
+   @Deprecated
    @Override
+   /**
+    * Deprecated since 8.4, please use {@link ConfigurationBuilder#memory()} instead.
+    */
    public StoreAsBinaryConfigurationBuilder storeAsBinary() {
       return storeAsBinary;
    }
