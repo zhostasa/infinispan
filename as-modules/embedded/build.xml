@@ -143,9 +143,7 @@
         </module-def>
 
         <module-def name="org.infinispan.hibernate-search.directory-provider" slot="${hibernate-search-directory-eap-ref}" module.src="org.infinispan.for-hibernatesearch-eap">
-            <maven-resource group="org.infinispan" artifact="infinispan-core"/>
             <maven-resource group="org.infinispan" artifact="infinispan-lucene-directory"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-commons"/>
             <maven-resource group="org.infinispan" artifact="infinispan-directory-provider" />
         </module-def>
 

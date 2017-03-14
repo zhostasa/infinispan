@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan>
+
+    <jgroups>
+        <stack-file name="default-jgroups-tcp" path="default-configs/default-jgroups-tcp.xml"/>
+    </jgroups>
+
+    <cache-container name="HibernateSearch" default-cache="default" statistics="false" shutdown-hook="DONT_REGISTER">
+        <transport stack="default-jgroups-tcp"/>
+        <jmx duplicate-domains="true"/>
+
+        <replicated-cache name="LuceneIndexesMetadata" mode="SYNC" remote-timeout="25000">
+            <persistence passivation="false">
+                <string-keyed-jdbc-store preload="true" key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper" shared="true">
+                    <string-keyed-table prefix="IndexMeta">
+                        <id-column name="K" type="VARCHAR(255)"/>
+                        <data-column name="V" type="BLOB"/>
+                        <timestamp-column name="T" type="BIGINT"/>
+                    </string-keyed-table>
+                    <data-source jndi-url="java:jboss/datasources/ExampleDS"/>
+                </string-keyed-jdbc-store>
+            </persistence>
+            <indexing index="NONE"/>
+        </replicated-cache>
+
+        <distributed-cache name="LuceneIndexesData" mode="SYNC" remote-timeout="25000">
+            <persistence passivation="false">
+                <string-keyed-jdbc-store key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper" shared="true">
+                    <string-keyed-table prefix="IndexData">
+                        <id-column name="K" type="VARCHAR(255)"/>
+                        <data-column name="V" type="BLOB"/>
+                        <timestamp-column name="T" type="BIGINT"/>
+                    </string-keyed-table>
+                    <data-source jndi-url="java:jboss/datasources/ExampleDS"/>
+                </string-keyed-jdbc-store>
+            </persistence>
+            <indexing index="NONE"/>
+        </distributed-cache>
+
+        <replicated-cache name="LuceneIndexesLocking" mode="SYNC" remote-timeout="25000">
+            <indexing index="NONE"/>
+        </replicated-cache>
+    </cache-container>
+
+</infinispan>
