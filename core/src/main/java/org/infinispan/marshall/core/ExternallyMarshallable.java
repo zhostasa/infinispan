@@ -179,6 +179,7 @@ final class ExternallyMarshallable {
             || className.equals("java.lang.Double") // test
             || className.equals("java.lang.Short") // test
             || className.equals("java.lang.Long") // test
+            || className.startsWith("org.infinispan.query.api") // test
             || className.startsWith("org.infinispan.test")
             || className.startsWith("org.infinispan.server.test")
             || className.startsWith("org.infinispan.it")
