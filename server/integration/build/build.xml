@@ -16,7 +16,7 @@
         <echo>Changing permissions of ${output.dir}/bin/standalone.bat to u=rwx,g=rx,o=rx</echo>
         <chmod perm="u=rwx,g=rx,o=rx">
             <fileset dir="${output.dir}/bin">
-                <include name="standalone.bat"/>
+                <include name="*.bat"/>
             </fileset>
         </chmod>
     </target>
