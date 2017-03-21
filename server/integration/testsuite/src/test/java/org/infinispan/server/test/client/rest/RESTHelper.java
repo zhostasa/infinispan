@@ -55,7 +55,7 @@ public class RESTHelper {
     public static final String KEY_C = "c";
 
     private static final String DATE_PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
-    public static final String DEFAULTCACHE = "testCache";
+    public static final String DEFAULT_CACHE = "default";
 
     private int port = 8080;
     private List<Server> servers = new ArrayList<Server>();
@@ -224,7 +224,7 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(put);
         EntityUtils.consume(resp.getEntity());
-        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals("URI=" + uri, expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -238,9 +238,9 @@ public class RESTHelper {
             @Override
             protected void prepareSocket(SSLSocket socket) throws IOException {
                 if(sniHostName.isPresent()) {
-                    SSLParameters sslParameters = socket.getSSLParameters();
-                    sslParameters.setServerNames(Arrays.asList(new SNIHostName(sniHostName.get())));
-                    socket.setSSLParameters(sslParameters);
+                SSLParameters sslParameters = socket.getSSLParameters();
+                sslParameters.setServerNames(Arrays.asList(new SNIHostName(sniHostName.get())));
+                socket.setSSLParameters(sslParameters);
                 }
             }
         }).build();
@@ -299,7 +299,7 @@ public class RESTHelper {
         }
         HttpResponse resp = client.execute(delete);
         EntityUtils.consume(resp.getEntity());
-        assertEquals(expectedCode, resp.getStatusLine().getStatusCode());
+        assertEquals("URI=" + uri, expectedCode, resp.getStatusLine().getStatusCode());
         return resp;
     }
 
@@ -336,11 +336,11 @@ public class RESTHelper {
     }
 
     public URI fullPathKey(int server, String key) {
-        return fullPathKey(server, DEFAULTCACHE, key, 0);
+        return fullPathKey(server, DEFAULT_CACHE, key, 0);
     }
 
     public URI fullPathKey(int server, String key, int portOffset) {
-        return fullPathKey(server, DEFAULTCACHE, key, portOffset);
+        return fullPathKey(server, DEFAULT_CACHE, key, portOffset);
     }
 
     public URI fullPathKey(String key) {
