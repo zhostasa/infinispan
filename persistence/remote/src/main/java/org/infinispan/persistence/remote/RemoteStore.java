@@ -14,9 +14,11 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.versioning.NumericVersion;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.filter.KeyFilter;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.EmbeddedMetadata;
@@ -30,6 +32,7 @@ import org.infinispan.persistence.remote.configuration.RemoteStoreConfiguration;
 import org.infinispan.persistence.remote.logging.Log;
 import org.infinispan.persistence.remote.wrapper.HotRodEntryMarshaller;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
+import org.infinispan.persistence.spi.FlagAffectedStore;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.util.logging.LogFactory;
@@ -53,7 +56,7 @@ import net.jcip.annotations.ThreadSafe;
  */
 @ThreadSafe
 @ConfiguredBy(RemoteStoreConfiguration.class)
-public class RemoteStore implements AdvancedLoadWriteStore {
+public class RemoteStore implements AdvancedLoadWriteStore, FlagAffectedStore {
 
    private static final Log log = LogFactory.getLog(RemoteStore.class, Log.class);
    private static final boolean trace = log.isTraceEnabled();
@@ -249,5 +252,10 @@ public class RemoteStore implements AdvancedLoadWriteStore {
 
    public RemoteStoreConfiguration getConfiguration() {
       return configuration;
+   }
+
+   @Override
+   public boolean shouldWrite(long commandFlags) {
+      return !EnumUtil.containsAny(FlagBitSets.ROLLING_UPGRADE, commandFlags);
    }
 }

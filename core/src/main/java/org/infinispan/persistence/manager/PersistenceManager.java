@@ -58,6 +58,8 @@ public interface PersistenceManager extends Lifecycle {
 
    void writeToAllStores(MarshalledEntry marshalledEntry, AccessMode modes);
 
+   void writeToAllStores(MarshalledEntry marshalledEntry, AccessMode modes, long flags);
+
    /**
     * Returns the store one configured with fetch persistent state, or null if none exist.
     */

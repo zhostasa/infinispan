@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -43,13 +44,17 @@ class TestCluster {
    }
 
    void destroy() {
-      embeddedCacheManagers.forEach(TestingUtil::killCacheManagers);
-      hotRodServers.forEach(HotRodClientTestingUtil::killServers);
       HotRodClientTestingUtil.killRemoteCacheManagers(remoteCacheManager);
+      hotRodServers.forEach(HotRodClientTestingUtil::killServers);
+      embeddedCacheManagers.forEach(TestingUtil::killCacheManagers);
    }
 
-   Cache<String, String> getEmbeddedCache(String name) {
+   Cache<Object, Object> getEmbeddedCache(String name) {
       return embeddedCacheManagers.get(0).getCache(name);
+   }
+
+   List<Cache<String, String>> getEmbeddedCaches(String name) {
+      return embeddedCacheManagers.stream().map(cm -> cm.<String, String>getCache(name)).collect(Collectors.toList());
    }
 
 
@@ -130,7 +135,7 @@ class TestCluster {
                configurationBuilder = getDefaultClusteredCacheConfig(CacheMode.DIST_SYNC);
             if (remotePort != null) {
                configurationBuilder.persistence().addStore(RemoteStoreConfigurationBuilder.class).hotRodWrapping(true)
-                     .remoteCacheName(name).ignoreModifications(true).protocolVersion(protocolVersion)
+                     .remoteCacheName(name).protocolVersion(protocolVersion).shared(true)
                      .addServer().host("localhost").port(remotePort);
             }
             builder.addCache(name, configurationBuilder);
