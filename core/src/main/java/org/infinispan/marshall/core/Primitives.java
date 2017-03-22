@@ -83,10 +83,10 @@ final class Primitives {
             out.writeBoolean((boolean) obj);
             break;
          case ID_BYTE_OBJ:
-            out.writeByte((int) obj);
+            out.writeByte((byte) obj);
             break;
          case ID_CHAR_OBJ:
-            out.writeChar((int) obj);
+            out.writeChar((char) obj);
             break;
          case ID_DOUBLE_OBJ:
             out.writeDouble((double) obj);
@@ -101,7 +101,7 @@ final class Primitives {
             out.writeLong((long) obj);
             break;
          case ID_SHORT_OBJ:
-            out.writeShort((int) obj);
+            out.writeShort((short) obj);
             break;
          case ID_BOOLEAN_ARRAY:
             Primitives.writeBooleanArray((boolean[]) obj, out);
