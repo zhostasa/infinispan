@@ -10,7 +10,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.infinispan.AdvancedCache;
 import org.infinispan.objectfilter.impl.ProtobufMatcher;
-import org.infinispan.objectfilter.impl.syntax.parser.FilterParsingResult;
+import org.infinispan.objectfilter.impl.syntax.parser.IckleParsingResult;
 import org.infinispan.query.dsl.embedded.impl.JPAFilterAndConverter;
 import org.infinispan.query.dsl.embedded.impl.RowProcessor;
 import org.infinispan.query.remote.impl.filter.JPAProtobufFilterAndConverter;
@@ -67,7 +67,7 @@ final class RemoteQueryEngine extends BaseRemoteQueryEngine {
    }
 
    @Override
-   protected Class<?> getTargetedClass(FilterParsingResult<?> parsingResult) {
+   protected Class<?> getTargetedClass(IckleParsingResult<?> parsingResult) {
       return ProtobufValueWrapper.class;
    }
 }
