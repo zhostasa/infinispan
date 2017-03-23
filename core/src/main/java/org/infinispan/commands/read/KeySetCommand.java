@@ -79,7 +79,7 @@ public class KeySetCommand<K, V> extends AbstractLocalCommand implements Visitab
 
       @Override
       public CloseableSpliterator<K> spliterator() {
-         return Closeables.spliterator(iterator(), cache.getAdvancedCache().getDataContainer().size(),
+         return Closeables.spliterator(iterator(), cache.getAdvancedCache().getDataContainer().sizeIncludingExpired(),
                  Spliterator.CONCURRENT | Spliterator.DISTINCT | Spliterator.NONNULL);
       }
 
