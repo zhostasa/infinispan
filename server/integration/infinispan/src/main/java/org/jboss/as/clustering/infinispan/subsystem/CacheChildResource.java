@@ -22,10 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.server.infinispan.spi.service.CacheServiceName;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -45,8 +47,17 @@ abstract class CacheChildResource extends SimpleResourceDefinition {
     CacheChildResource(PathElement path, String resourceKey, RestartableResourceDefinition resource,
             AttributeDefinition[] attributes) {
         super(path, new InfinispanResourceDescriptionResolver(resourceKey),
-                new RestartCacheResourceAdd(resource.getPathElement().getKey(), resource.getServiceInstaller(), attributes),
+                new RestartCacheResourceAdd(resource.getPathElement().getKey(), resource.getServiceInstaller(), CacheServiceName.CACHE, attributes),
                 new RestartCacheResourceRemove(resource.getPathElement().getKey(), resource.getServiceInstaller()));
+        this.resource = resource;
+        this.attributes = attributes;
+    }
+
+    CacheChildResource(PathElement path, ResourceDescriptionResolver resolver, RestartableResourceDefinition resource,
+                       AttributeDefinition[] attributes) {
+        super(path, resolver,
+              new RestartCacheResourceAdd(resource.getPathElement().getKey(), resource.getServiceInstaller(), CacheServiceName.CACHE, attributes),
+              new RestartCacheResourceRemove(resource.getPathElement().getKey(), resource.getServiceInstaller()));
         this.resource = resource;
         this.attributes = attributes;
     }
@@ -54,8 +65,8 @@ abstract class CacheChildResource extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         if (attributes != null) {
-            final OperationStepHandler restartCacheWriteHandler = new RestartCacheWriteAttributeHandler(resource
-                    .getPathElement().getKey(), resource.getServiceInstaller(), attributes);
+            final OperationStepHandler restartCacheWriteHandler = new RestartServiceWriteAttributeHandler(resource
+                    .getPathElement().getKey(), resource.getServiceInstaller(), CacheServiceName.CACHE, attributes);
             for (AttributeDefinition attr : attributes) {
                 resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, restartCacheWriteHandler);
             }

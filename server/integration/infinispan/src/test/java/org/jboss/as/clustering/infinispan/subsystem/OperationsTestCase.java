@@ -151,5 +151,4 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         return stringKeyedTable;
     }
-
 }
