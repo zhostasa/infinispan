@@ -84,6 +84,7 @@
             <executions>
                <execution>
                   <id>antlr3</id>
+                  <phase>generate-sources</phase>
                   <goals>
                      <goal>antlr</goal>
                   </goals>
