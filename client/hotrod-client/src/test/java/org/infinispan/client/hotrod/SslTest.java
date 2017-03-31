@@ -1,6 +1,6 @@
 package org.infinispan.client.hotrod;
 
-import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
+import static org.infinispan.server.hotrod.test.HotRodTestingUtils.hotRodCacheConfiguration;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
@@ -12,7 +12,7 @@ import org.infinispan.client.hotrod.test.HotRodClientTestingUtil;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
-import org.infinispan.server.hotrod.test.HotRodTestingUtil;
+import org.infinispan.server.hotrod.test.HotRodTestingUtils;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
 public class SslTest extends SingleCacheManagerTest {
 
    private static final Log log = LogFactory.getLog(SslTest.class);
+   public static final char[] STORE_PASSWORD = "secret".toCharArray();
 
    RemoteCache<String, String> defaultRemote;
    protected RemoteCacheManager remoteCacheManager;
@@ -47,20 +48,20 @@ public class SslTest extends SingleCacheManagerTest {
 
    protected void initServerAndClient(boolean sslServer, boolean sslClient) {
       hotrodServer = new HotRodServer();
-      HotRodServerConfigurationBuilder serverBuilder = HotRodTestingUtil.getDefaultHotRodConfiguration();
+      HotRodServerConfigurationBuilder serverBuilder = HotRodTestingUtils.getDefaultHotRodConfiguration();
 
       ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-      String keyStoreFileName = tccl.getResource("keystore.jks").getPath();
-      String trustStoreFileName = tccl.getResource("truststore.jks").getPath();
-      serverBuilder.ssl()
-         .enabled(sslServer)
-         .keyStoreFileName(keyStoreFileName)
-         .keyStorePassword("secret".toCharArray())
-         .trustStoreFileName(trustStoreFileName)
-         .trustStorePassword("secret".toCharArray());
+      String serverKeyStore = tccl.getResource("keystore_server.jks").getPath();
+      String serverTrustStore = tccl.getResource("ca.jks").getPath();
+      org.infinispan.server.core.configuration.SslConfigurationBuilder serverSSLConfig = serverBuilder.ssl()
+            .enabled(sslServer)
+            .keyStoreFileName(serverKeyStore)
+            .keyStorePassword(STORE_PASSWORD);
       hotrodServer.start(serverBuilder.build(), cacheManager);
       log.info("Started server on port: " + hotrodServer.getPort());
 
+      String clientKeyStore = tccl.getResource("keystore_client.jks").getPath();
+      String clientTrustStore = tccl.getResource("ca.jks").getPath();
       ConfigurationBuilder clientBuilder = new ConfigurationBuilder();
       clientBuilder
          .addServer()
@@ -74,9 +75,9 @@ public class SslTest extends SingleCacheManagerTest {
                .disable()
             .ssl()
                .enabled(sslClient)
-               .keyStoreFileName(keyStoreFileName)
+               .keyStoreFileName(clientKeyStore)
                .keyStorePassword("secret".toCharArray())
-               .trustStoreFileName(trustStoreFileName)
+               .trustStoreFileName(clientTrustStore)
                .trustStorePassword("secret".toCharArray())
           .connectionPool()
              .timeBetweenEvictionRuns(2000);

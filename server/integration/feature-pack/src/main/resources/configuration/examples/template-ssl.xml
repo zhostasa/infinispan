@@ -26,6 +26,7 @@
                 <authentication>
                     <truststore path="ca.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
                     <local default-user="$local" allowed-users="*" skip-group-loading="true" />
+                    <truststore path="ca.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
                     <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
                 <authorization>

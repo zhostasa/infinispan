@@ -107,6 +107,7 @@
         <copy todir="${server1.dist}/standalone/configuration/examples">
             <fileset dir="${server1.dist}/docs/examples/configs" />
         </copy>
+
         <copy todir="${server1.dist}/standalone/configuration" overwrite="true">
             <fileset dir="${resources.dir}">
                 <include name="*.jks" />
@@ -116,10 +117,20 @@
                 <include name="*.conf"/>
             </fileset>
         </copy>
+
+        <vault alias="ispn-vault" block="keystore" attribute="password" secret="secret"/>
+        <vault alias="ispn-vault" block="node0_md5" attribute="passwd_hash" secret="9833a158b3d5b5d729e0942422a699e8"/>
+        <vault alias="ispn-vault" block="node1_md5" attribute="passwd_hash" secret="192f232a72633ebb5ce2156fa787417d"/>
+        <vault alias="ispn-vault" block="krb_admin" attribute="password" secret="strongPassword"/>
+
         <copy todir="${server1.dist}/standalone/configuration/vault" overwrite="true">
             <fileset dir="${resources.dir}/vault">
                 <include name="*" />
             </fileset>
+        </copy>
+
+        <copy todir="${server1.dist}/domain/configuration/examples">
+            <fileset dir="${server1.dist}/docs/examples/configs" includes="domain*" />
         </copy>
     </target>
 
@@ -321,11 +332,11 @@
         <transform in="clustered.xml" out="testsuite/clustered-with-sasl-md5-0.xml"
                    modifyInfinispan="${infinispan.parts}/default-repl.xml"
                    addJGroupsSasl="${other.parts}/jgroups-sasl-md5-0.xml"
-                  addVault="${other.parts}/vault.xml"/>
+                   addVault="${other.parts}/vault.xml"/>
         <transform in="clustered.xml" out="testsuite/clustered-with-sasl-md5-1.xml"
                    modifyInfinispan="${infinispan.parts}/default-repl.xml"
                    addJGroupsSasl="${other.parts}/jgroups-sasl-md5-1.xml"
-                  addVault="${other.parts}/vault.xml"/>
+                   addVault="${other.parts}/vault.xml"/>
         <transform in="clustered.xml" out="testsuite/clustered-with-sasl-krb-0.xml"
                    modifyInfinispan="${infinispan.parts}/default-repl.xml"
                   addJGroupsSasl="${other.parts}/jgroups-sasl-krb-0.xml"
@@ -351,6 +362,14 @@
                    addSecRealm="${other.parts}/hotrod-ssl-realm-with-sni1.xml"
                    addSecRealm2="${other.parts}/hotrod-ssl-realm-with-sni2.xml"
                    addVault="${other.parts}/vault.xml" />
+        <transform in="clustered.xml" out="testsuite/clustered-hotrod-rolling-upgrade.xml"
+                   modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml"
+                   modifyInfinispan="${infinispan.parts}/rolling-upgrades-clustered-${new.server.schema.version}.xml"
+                   infinispanServerEndpoint="${other.parts}/rolling-upgrades-server-endpoint-${new.server.schema.version}.xml"
+                   modifyMulticastAddress="${other.parts}/switch-multicast-address.xml"/>
+        <!-- add hotrod protocol version into remote cache store -->
+        <transform in="examples/standalone-hotrod-rolling-upgrade.xml" out="testsuite/standalone-hotrod-rolling-upgrade.xml"/>
+        <transform in="testsuite/clustered-hotrod-rolling-upgrade.xml" out="testsuite/clustered-hotrod-rolling-upgrade.xml"/>
     </target>
 
     <macrodef name="transform">
@@ -474,4 +493,44 @@
             <move file="@{transformDir}/@{in}-transformed-jdbc" tofile="@{transformDir}/@{in}-transformed"/>
         </sequential>
     </macrodef>
+
+    <macrodef name="vault" description="create/modify vault">
+        <attribute name="keystore" default="${resources.dir}/vault/vault.keystore" />
+        <attribute name="storepass" default="secret" />
+        <attribute name="alias" />
+        <attribute name="block" />
+        <attribute name="attribute"/>
+        <attribute name="secret"/>
+        <attribute name="iteration" default="23"/>
+        <attribute name="salt" default="12345678"/>
+        <sequential>
+            <echo message="Updating vault '@{keystore}' entry '@{attribute}'..."/>
+            <dirname property="vault.dir" file="@{keystore}"/>
+            <mkdir dir="${vault.dir}" />
+            <java jar="${server1.dist}/jboss-modules.jar" fork="true" failonerror="true">
+                <arg value="-mp"/>
+                <arg value="${server1.dist}/modules"/>
+                <arg value="org.jboss.as.vault-tool"/>
+                <arg value="--keystore"/>
+                <arg value="@{keystore}"/>
+                <arg value="--keystore-password"/>
+                <arg value="@{storepass}"/>
+                <arg value="--alias"/>
+                <arg value="@{alias}"/>
+                <arg value="--vault-block"/>
+                <arg value="@{block}"/>
+                <arg value="--attribute"/>
+                <arg value="@{attribute}"/>
+                <arg value="--sec-attr"/>
+                <arg value="@{secret}"/>
+                <arg value="--enc-dir"/>
+                <arg value="${resources.dir}/vault"/>
+                <arg value="--iteration"/>
+                <arg value="@{iteration}"/>
+                <arg value="--salt"/>
+                <arg value="@{salt}"/>
+            </java>
+        </sequential>
+    </macrodef>
+
 </project>
