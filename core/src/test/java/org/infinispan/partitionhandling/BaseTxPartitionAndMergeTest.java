@@ -2,8 +2,8 @@ package org.infinispan.partitionhandling;
 
 import static org.infinispan.test.TestingUtil.extractComponent;
 import static org.infinispan.test.TestingUtil.extractLockManager;
+import static org.infinispan.test.TestingUtil.wrapInboundInvocationHandler;
 import static org.infinispan.test.TestingUtil.waitForNoRebalance;
-import static org.infinispan.test.TestingUtil.wrapPerCacheInboundInvocationHandler;
 
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public abstract class BaseTxPartitionAndMergeTest extends BasePartitionHandlingT
    }
 
    private static void wrapAndApplyFilter(Cache<?, ?> cache, Filter filter) {
-      ControlledInboundHandler controlledInboundHandler = wrapPerCacheInboundInvocationHandler(cache, (wrapOn, current) -> new ControlledInboundHandler(current), true);
+      ControlledInboundHandler controlledInboundHandler = wrapInboundInvocationHandler(cache, ControlledInboundHandler::new);
       controlledInboundHandler.filter = filter;
    }
 
