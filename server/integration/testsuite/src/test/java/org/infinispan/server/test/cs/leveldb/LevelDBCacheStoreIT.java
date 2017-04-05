@@ -21,6 +21,7 @@ import org.infinispan.commons.io.ByteBufferImpl;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.AbstractMarshaller;
+import org.infinispan.commons.test.skip.SkipOnOs;
 import org.infinispan.commons.util.Util;
 import org.infinispan.server.test.category.CacheStore;
 import org.infinispan.server.test.util.ITestUtils;
@@ -42,6 +43,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(CacheStore.class)
+@SkipOnOs({SkipOnOs.OS.SOLARIS, SkipOnOs.OS.WINDOWS})
 public class LevelDBCacheStoreIT {
     private static final Log log = LogFactory.getLog(LevelDBCacheStoreIT.class);
 
