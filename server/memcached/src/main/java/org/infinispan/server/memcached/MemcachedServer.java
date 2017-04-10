@@ -64,7 +64,7 @@ public class MemcachedServer extends AbstractProtocolServer<MemcachedServerConfi
 
    @Override
    public ChannelInitializer<Channel> getInitializer() {
-      return new NettyInitializers(new NettyChannelInitializer<>(this, transport, getEncoder()));
+      return new NettyInitializers(new NettyChannelInitializer<>(this, transport, getEncoder(), getDecoder()));
    }
 
    @Override

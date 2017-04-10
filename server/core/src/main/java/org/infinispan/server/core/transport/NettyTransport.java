@@ -197,8 +197,8 @@ public class NettyTransport implements Transport {
    }
 
    @Override
-   public String getPort() {
-      return Integer.toString(address.getPort());
+   public Integer getPort() {
+      return address.getPort();
    }
 
    @Override

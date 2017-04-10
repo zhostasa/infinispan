@@ -148,7 +148,7 @@
       <version.jsap>2.1</version.jsap>
       <version.jstl>1.2</version.jstl>
       <version.junit>4.11</version.junit>
-      <version.fest.assertions>1.4</version.fest.assertions>
+      <version.assertj>3.4.1</version.assertj>
       <version.leveldb>0.7</version.leveldb>
       <version.leveldbjni>1.7</version.leveldbjni>
       <version.log4j>2.5</version.log4j>
@@ -174,6 +174,7 @@
       <version.webdav.servlet>2.0.1</version.webdav.servlet>
       <version.weld>2.3.3.Final-redhat-1</version.weld>
       <version.weld-se>2.2.0.SP1</version.weld-se>
+      <version.jmh>1.12</version.jmh>
       <version.jgroups.kubernetes>1.0.0.Beta1-redhat-1</version.jgroups.kubernetes>
       <version.oauth.core>20100527</version.oauth.core>
 
@@ -548,10 +549,9 @@
             <version>${version.junit}</version>
          </dependency>
          <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert</artifactId>
-            <version>${version.fest.assertions}</version>
-            <scope>test</scope>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${version.assertj}</version>
          </dependency>
          <dependency>
             <groupId>net.sf.webdav-servlet</groupId>
@@ -1131,7 +1131,16 @@
             <groupId>org.jgroups.kubernetes</groupId>
             <artifactId>jgroups-kubernetes</artifactId>
             <version>${version.jgroups.kubernetes}</version>
-
+         </dependency>
+         <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${version.jmh}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${version.jmh}</version>
          </dependency>
          <dependency>
             <groupId>net.oauth.core</groupId>
