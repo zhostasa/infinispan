@@ -1101,7 +1101,7 @@
                      <!-- -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=1044-->
                 <!--</property>-->
                 <property name="managementPort">9990</property>
-                <property name="waitForPorts">11211 11222 8080</property>
+                <property name="waitForPorts">8443</property>
                 <property name="jmxDomain">${server.jmx.domain}</property>
             </configuration>
         </container>
