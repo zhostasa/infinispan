@@ -11,9 +11,9 @@ import org.apache.lucene.search.TermQuery;
 import org.infinispan.AdvancedCache;
 import org.infinispan.objectfilter.impl.ProtobufMatcher;
 import org.infinispan.objectfilter.impl.syntax.parser.IckleParsingResult;
-import org.infinispan.query.dsl.embedded.impl.JPAFilterAndConverter;
+import org.infinispan.query.dsl.embedded.impl.IckleFilterAndConverter;
 import org.infinispan.query.dsl.embedded.impl.RowProcessor;
-import org.infinispan.query.remote.impl.filter.JPAProtobufFilterAndConverter;
+import org.infinispan.query.remote.impl.filter.IckleProtobufFilterAndConverter;
 import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapper;
 
 /**
@@ -61,8 +61,8 @@ final class RemoteQueryEngine extends BaseRemoteQueryEngine {
    }
 
    @Override
-   protected JPAFilterAndConverter createFilter(String queryString, Map<String, Object> namedParameters) {
-      return isIndexed ? new JPAProtobufFilterAndConverter(queryString, namedParameters) :
+   protected IckleFilterAndConverter createFilter(String queryString, Map<String, Object> namedParameters) {
+      return isIndexed ? new IckleProtobufFilterAndConverter(queryString, namedParameters) :
             super.createFilter(queryString, namedParameters);
    }
 
