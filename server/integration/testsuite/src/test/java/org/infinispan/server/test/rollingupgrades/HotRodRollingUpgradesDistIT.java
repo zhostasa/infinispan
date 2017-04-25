@@ -62,7 +62,7 @@ public class HotRodRollingUpgradesDistIT extends AbstractHotRodRollingUpgradesIT
             builder3.addServer()
                     .host("127.0.0.1")
                     .port(11422)
-                    .version(ProtocolVersion.PROTOCOL_VERSION_12);
+                    .version(ProtocolVersion.PROTOCOL_VERSION_23);
 
             RemoteCacheManager rcm3 = new RemoteCacheManager(builder3.build());
             final RemoteCache<String, String> c3 = rcm3.getCache("default");
@@ -71,7 +71,7 @@ public class HotRodRollingUpgradesDistIT extends AbstractHotRodRollingUpgradesIT
             builder4.addServer()
                     .host("127.0.0.1")
                     .port(11522)
-                    .version(ProtocolVersion.PROTOCOL_VERSION_12);
+                    .version(ProtocolVersion.PROTOCOL_VERSION_23);
 
             RemoteCacheManager rcm4 = new RemoteCacheManager(builder4.build());
             final RemoteCache<String, String> c4 = rcm4.getCache("default");
