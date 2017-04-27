@@ -301,7 +301,7 @@
         <old.server.schema.version>8.0</old.server.schema.version>
         <new.server.schema.version>8.0</new.server.schema.version>
 
-        <start.jboss.as.manually>false</start.jboss.as.manually>
+        <test.with.jdg6>false</test.with.jdg6>
 
         <server.jvm>${env.JAVA_HOME}</server.jvm>
         <resources.dir>${project.build.testOutputDirectory}</resources.dir>
@@ -822,7 +822,7 @@
                         <server3.old.dist>${server3.old.dist}</server3.old.dist>
                         <old.server.schema.version>${old.server.schema.version}</old.server.schema.version>
                         <new.server.schema.version>${new.server.schema.version}</new.server.schema.version>
-                        <start.jboss.as.manually>${start.jboss.as.manually}</start.jboss.as.manually>
+                        <test.with.jdg6>${test.with.jdg6}</test.with.jdg6>
                         <server.jvm>${server.jvm}</server.jvm>
                         <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <hotrod.protocol.version>${hotrod.protocol.version}</hotrod.protocol.version>
@@ -1153,14 +1153,14 @@
             </properties>
         </profile>
         <profile>
-            <id>suite.rolling.upgrades.jbossas</id>
+            <id>suite.rolling.upgrades.jdg6</id>
             <properties>
                 <suite.manual.phase>integration-test</suite.manual.phase>
                 <suite.queries.phase>none</suite.queries.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
-                <start.jboss.as.manually>true</start.jboss.as.manually>
+                <test.with.jdg6>true</test.with.jdg6>
             </properties>
             <build>
                 <plugins>
@@ -1176,7 +1176,10 @@
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
-                                        <ant antfile="${basedir}/src/test/resources/ant/infinispan-server.xml" target="start-server">
+                                    	<ant antfile="../src/main/ant/infinispan-server.xml" target="remove-rest-auth">
+                                    		<property name="server.dist" value="${server.old.dist}" />
+                                    	</ant>
+                                        <ant antfile="../src/main/ant/infinispan-server.xml" target="start-server">
                                             <property name="server.dist" value="${server.old.dist}" />
                                             <property name="port.offset" value="100" />
                                             <property name="management.port" value="10090" />
@@ -1196,7 +1199,7 @@
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
-                                        <ant antfile="${basedir}/src/test/resources/ant/infinispan-server.xml" target="kill-server">
+                                        <ant antfile="../src/main/ant/infinispan-server.xml" target="kill-server">
                                             <property name="hotrod.port" value="11322" />
                                         </ant>
                                     </target>
@@ -1208,14 +1211,14 @@
             </build>
         </profile>
         <profile>
-            <id>suite.rolling.upgrades.dist.jbossas</id>
+            <id>suite.rolling.upgrades.dist.jdg6</id>
             <properties>
                 <suite.manual.phase>integration-test</suite.manual.phase>
                 <suite.queries.phase>none</suite.queries.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
-                <start.jboss.as.manually>true</start.jboss.as.manually>
+                <test.with.jdg6>true</test.with.jdg6>
             </properties>
             <build>
                 <plugins>
@@ -1231,6 +1234,9 @@
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
+                                    	<ant antfile="../src/main/ant/infinispan-server.xml" target="remove-rest-auth">
+                                    		<property name="server.dist" value="${server2.old.dist}" />
+                                    	</ant>
                                         <ant antfile="../src/main/ant/infinispan-server.xml" target="start-server">
                                             <property name="server.dist" value="${server2.old.dist}" />
                                             <property name="port.offset" value="200" />
@@ -1251,6 +1257,9 @@
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
+                                    	<ant antfile="../src/main/ant/infinispan-server.xml" target="remove-rest-auth">
+                                    		<property name="server.dist" value="${server3.old.dist}" />
+                                    	</ant>
                                         <ant antfile="../src/main/ant/infinispan-server.xml" target="start-server">
                                             <property name="server.dist" value="${server3.old.dist}" />
                                             <property name="port.offset" value="300" />
@@ -1418,9 +1427,6 @@
                     <name>!zip.dist.old</name>
                 </property>
             </activation>
-            <properties>
-                <hotrod.protocol.version>2.3</hotrod.protocol.version>
-            </properties>
             <build>
                 <plugins>
                     <plugin>

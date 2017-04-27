@@ -26,6 +26,15 @@
         </replace>
     </target>
 
+    <target name="remove-rest-auth">
+        <!-- turn off REST endpoint authentication to simplify REST tests -->
+        <echo>Removing REST endpoint authentication</echo>
+	<replace dir="${server.dist}" value="">
+            <include name="standalone/configuration/**/*.xml"/>
+            <replacetoken><![CDATA[security-domain="other" auth-method="BASIC"]]></replacetoken>
+        </replace>
+    </target>
+
     <target name="start-server" depends="-check.skipped" unless="tests.skipped">
         <echo>Starting Infinispan server from ${server.dist}</echo>
         <exec dir="${server.dist}/bin" executable="chmod" osfamily="unix">

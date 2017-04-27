@@ -5,22 +5,14 @@ import static org.junit.Assert.assertEquals;
 
 import javax.management.ObjectName;
 
-import org.infinispan.arquillian.core.InfinispanResource;
-import org.infinispan.arquillian.core.RemoteInfinispanServers;
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.infinispan.server.infinispan.spi.InfinispanSubsystem;
 import org.infinispan.server.test.category.RollingUpgrades;
-import org.infinispan.server.test.util.RemoteCacheManagerFactory;
 import org.infinispan.server.test.util.RemoteInfinispanMBeans;
-import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -39,23 +31,30 @@ public class HotRodRollingUpgradesIT extends AbstractHotRodRollingUpgradesIT {
         // Target node
         final int managementPortServer1 = 9990;
         MBeanServerConnectionProvider provider1;
+        final String subsystemName1 = JDG_SUBSYSTEM_NAME;
         // Source node
-        int managementPortServer2 = 10099; //jboss-as mgmt port
+        int managementPortServer2 = 10090; //jboss-as mgmt port
+        String remotingProtocol2 = JDG_REMOTING_PROTOCOL;
         MBeanServerConnectionProvider provider2;
+        String subsystemName2 = JDG_SUBSYSTEM_NAME;
 
         try {
 
-            if (!Boolean.parseBoolean(System.getProperty("start.jboss.as.manually"))) {
-                // start it by Arquillian
-                controller.start("hotrod-rolling-upgrade-2-old");
-                managementPortServer2 = 10090;
+            if (IS_JDG6) { 
+                // server already started by Ant task
+                managementPortServer2 = 10099;
+                remotingProtocol2 = JDG6_REMOTING_PROTOCOL;
+                subsystemName2 = JDG6_SUBSYSTEM_NAME;
+            } else {
+               // start it by Arquillian
+               controller.start("hotrod-rolling-upgrade-2-old");
             }
 
             ConfigurationBuilder builder = new ConfigurationBuilder();
             builder.addServer()
                     .host("127.0.0.1")
                     .port(11322)
-                    .version(ProtocolVersion.PROTOCOL_VERSION_23);
+                    .version(HR_VERSION);
 
             RemoteCacheManager rcm = new RemoteCacheManager(builder.build());
             final RemoteCache<String, String> c2 = rcm.getCache("default");
@@ -75,20 +74,23 @@ public class HotRodRollingUpgradesIT extends AbstractHotRodRollingUpgradesIT {
 
             assertEquals("Can't access entries stored in source node (target's RemoteCacheStore).", "value1", c1.get("key1"));
 
-            provider2 = new MBeanServerConnectionProvider("127.0.0.1", managementPortServer2);
+            provider2 = new MBeanServerConnectionProvider("127.0.0.1", managementPortServer2, remotingProtocol2);
 
-            final ObjectName rollMan = new ObjectName("jboss." + InfinispanSubsystem.SUBSYSTEM_NAME + ":type=Cache," + "name=\"default(local)\","
+            final ObjectName rollMan1 = new ObjectName("jboss." + subsystemName1 + ":type=Cache," + "name=\"default(local)\","
                     + "manager=\"local\"," + "component=RollingUpgradeManager");
+            
+            final ObjectName rollMan2 = new ObjectName("jboss." + subsystemName2 + ":type=Cache," + "name=\"default(local)\","
+                  + "manager=\"local\"," + "component=RollingUpgradeManager");
 
-            invokeOperation(provider2, rollMan.toString(), "recordKnownGlobalKeyset", new Object[]{}, new String[]{});
+            invokeOperation(provider2, rollMan2.toString(), "recordKnownGlobalKeyset", new Object[]{}, new String[]{});
 
             provider1 = new MBeanServerConnectionProvider(s1.server.getHotrodEndpoint().getInetAddress().getHostName(),
                     managementPortServer1);
 
-            invokeOperation(provider1, rollMan.toString(), "synchronizeData", new Object[]{"hotrod"},
+            invokeOperation(provider1, rollMan1.toString(), "synchronizeData", new Object[]{"hotrod"},
                     new String[]{"java.lang.String"});
 
-            invokeOperation(provider1, rollMan.toString(), "disconnectSource", new Object[]{"hotrod"},
+            invokeOperation(provider1, rollMan1.toString(), "disconnectSource", new Object[]{"hotrod"},
                     new String[]{"java.lang.String"});
 
             // is source (RemoteCacheStore) really disconnected?

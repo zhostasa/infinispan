@@ -39,22 +39,27 @@ public class HotRodRollingUpgradesDistIT extends AbstractHotRodRollingUpgradesIT
         // Target nodes
         final int managementPortServer1 = 9990;
         MBeanServerConnectionProvider provider1;
-
+        final String subsystemName1 = JDG_SUBSYSTEM_NAME;
+        
         // Target nodes
         final int managementPortServer2 = 10090;
         MBeanServerConnectionProvider provider2;
-
+        
         // Source node
-        int managementPortServer3 = 10199;
+        int managementPortServer3 = 10190; //jboss-as mgmt port
+        String remotingProtocol3 = JDG_REMOTING_PROTOCOL;
         MBeanServerConnectionProvider provider3;
+        String subsystemName3 = JDG_SUBSYSTEM_NAME;
 
         try {
-
-            if (!Boolean.parseBoolean(System.getProperty("start.jboss.as.manually"))) {
-                // start it by Arquillian
-                controller.start("hotrod-rolling-upgrade-3-old-dist");
-                controller.start("hotrod-rolling-upgrade-4-old-dist");
-                managementPortServer3 = 10190;
+            if (IS_JDG6) {   
+                managementPortServer3 = 10199;
+                remotingProtocol3 = JDG6_REMOTING_PROTOCOL;
+                subsystemName3 = JDG6_SUBSYSTEM_NAME;
+            } else {
+               // start it by Arquillian
+               controller.start("hotrod-rolling-upgrade-3-old-dist");
+               controller.start("hotrod-rolling-upgrade-4-old-dist");
             }
 
             // we use PROTOCOL_VERSION_12 here because older servers does not support higher versions
@@ -62,19 +67,19 @@ public class HotRodRollingUpgradesDistIT extends AbstractHotRodRollingUpgradesIT
             builder3.addServer()
                     .host("127.0.0.1")
                     .port(11422)
-                    .version(ProtocolVersion.PROTOCOL_VERSION_23);
+                    .version(HR_VERSION);
 
             RemoteCacheManager rcm3 = new RemoteCacheManager(builder3.build());
-            final RemoteCache<String, String> c3 = rcm3.getCache("default");
+            final RemoteCache<String, String> c3 = rcm3.getCache(DEFAULT_CACHE_NAME);
 
             ConfigurationBuilder builder4 = new ConfigurationBuilder();
             builder4.addServer()
                     .host("127.0.0.1")
                     .port(11522)
-                    .version(ProtocolVersion.PROTOCOL_VERSION_23);
+                    .version(HR_VERSION);
 
             RemoteCacheManager rcm4 = new RemoteCacheManager(builder4.build());
-            final RemoteCache<String, String> c4 = rcm4.getCache("default");
+            final RemoteCache<String, String> c4 = rcm4.getCache(DEFAULT_CACHE_NAME);
 
             c3.put("key1", "value1");
             assertEquals("value1", c3.get("key1"));
@@ -108,14 +113,14 @@ public class HotRodRollingUpgradesDistIT extends AbstractHotRodRollingUpgradesIT
             provider2 = new MBeanServerConnectionProvider(s2.server.getHotrodEndpoint().getInetAddress().getHostName(),
                   managementPortServer2);
 
-            provider3 = new MBeanServerConnectionProvider("127.0.0.1", managementPortServer3);
+            provider3 = new MBeanServerConnectionProvider("127.0.0.1", managementPortServer3, remotingProtocol3);
 
-            final ObjectName rollMan3 = new ObjectName("jboss." + InfinispanSubsystem.SUBSYSTEM_NAME + ":type=Cache," + "name=\"default(dist_sync)\","
+            final ObjectName rollMan3 = new ObjectName("jboss." + subsystemName3 + ":type=Cache," + "name=\"default(dist_sync)\","
                     + "manager=\"clustered\"," + "component=RollingUpgradeManager");
 
             invokeOperation(provider3, rollMan3.toString(), "recordKnownGlobalKeyset", new Object[]{}, new String[]{});
 
-            final ObjectName rollManTarget = new ObjectName("jboss." + InfinispanSubsystem.SUBSYSTEM_NAME + ":type=Cache," + "name=\"default(dist_sync)\","
+            final ObjectName rollManTarget = new ObjectName("jboss." + subsystemName1 + ":type=Cache," + "name=\"default(dist_sync)\","
                     + "manager=\"clustered-new\"," + "component=RollingUpgradeManager");
 
             invokeOperation(provider1, rollManTarget.toString(), "synchronizeData", new Object[]{"hotrod"},

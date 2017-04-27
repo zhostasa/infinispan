@@ -7,6 +7,7 @@ import org.infinispan.arquillian.core.RemoteInfinispanServers;
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.server.infinispan.spi.InfinispanSubsystem;
 import org.infinispan.server.test.util.RemoteCacheManagerFactory;
 import org.infinispan.server.test.util.RemoteInfinispanMBeans;
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -22,6 +23,13 @@ import org.junit.Before;
  */
 public class AbstractHotRodRollingUpgradesIT {
 
+   static final boolean IS_JDG6 = Boolean.parseBoolean(System.getProperty("test.with.jdg6"));
+   static final ProtocolVersion HR_VERSION = ProtocolVersion.parseVersion(System.getProperty("hotrod.protocol.version", "2.3"));
+   
+   static final String JDG_REMOTING_PROTOCOL = "http-remoting-jmx";
+	static final String JDG6_REMOTING_PROTOCOL = "remoting-jmx";
+	static final String JDG_SUBSYSTEM_NAME = InfinispanSubsystem.SUBSYSTEM_NAME;
+	static final String JDG6_SUBSYSTEM_NAME = "infinispan";
    static final String DEFAULT_CACHE_NAME = "default";
 
    @InfinispanResource

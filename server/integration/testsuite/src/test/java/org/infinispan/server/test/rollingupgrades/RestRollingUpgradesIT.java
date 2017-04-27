@@ -32,8 +32,14 @@ public class RestRollingUpgradesIT {
     @InfinispanResource
     RemoteInfinispanServers serverManager;
 
+    static final boolean IS_JDG6 = Boolean.parseBoolean(System.getProperty("test.with.jdg6"));
+    
     static final String DEFAULT_CACHE_NAME = "default";
     static final int PORT_OFFSET = 100;
+    static final String JDG_REMOTING_PROTOCOL = "http-remoting-jmx";
+    static final String JDG6_REMOTING_PROTOCOL = "remoting-jmx";
+    static final String JDG_SUBSYSTEM_NAME = InfinispanSubsystem.SUBSYSTEM_NAME;
+    static final String JDG6_SUBSYSTEM_NAME = "infinispan";
 
     @ArquillianResource
     ContainerController controller;
@@ -43,18 +49,23 @@ public class RestRollingUpgradesIT {
         // target node
         final int managementPortServer1 = 9990;
         MBeanServerConnectionProvider provider1;
+        final String subsystemName1 = JDG_SUBSYSTEM_NAME;
         // Source node
-        int managementPortServer2 = 10099;
+        int managementPortServer2 = 10090;
         MBeanServerConnectionProvider provider2;
+        String remotingProtocol2 = JDG_REMOTING_PROTOCOL;
+        String subsystemName2 = JDG_SUBSYSTEM_NAME;
 
         RESTHelper rest = new RESTHelper();
 
         try {
-
-            if (!Boolean.parseBoolean(System.getProperty("start.jboss.as.manually"))) {
+            if (IS_JDG6) {
+               managementPortServer2 = 10099;
+               remotingProtocol2 = JDG6_REMOTING_PROTOCOL;
+               subsystemName2 = JDG6_SUBSYSTEM_NAME;
+            } else {
                 // start it by Arquillian
                 controller.start("rest-rolling-upgrade-2-old");
-                managementPortServer2 = 10090;
             }
 
             rest.addServer("127.0.0.1", "/rest");
@@ -76,17 +87,20 @@ public class RestRollingUpgradesIT {
             provider1 = new MBeanServerConnectionProvider(s1.server.getRESTEndpoint().getInetAddress().getHostName(),
                     managementPortServer1);
 
-            provider2 = new MBeanServerConnectionProvider("127.0.0.1", managementPortServer2);
+            provider2 = new MBeanServerConnectionProvider("127.0.0.1", managementPortServer2, remotingProtocol2);
 
-            final ObjectName rollMan = new ObjectName("jboss." + InfinispanSubsystem.SUBSYSTEM_NAME + ":type=Cache," + "name=\"default(local)\","
+            final ObjectName rollMan1 = new ObjectName("jboss." + subsystemName1 + ":type=Cache," + "name=\"default(local)\","
                     + "manager=\"local\"," + "component=RollingUpgradeManager");
+            
+            final ObjectName rollMan2 = new ObjectName("jboss." + subsystemName2 + ":type=Cache," + "name=\"default(local)\","
+                  + "manager=\"local\"," + "component=RollingUpgradeManager");
 
-            invokeOperation(provider2, rollMan.toString(), "recordKnownGlobalKeyset", new Object[]{}, new String[]{});
+            invokeOperation(provider2, rollMan2.toString(), "recordKnownGlobalKeyset", new Object[]{}, new String[]{});
 
-            invokeOperation(provider1, rollMan.toString(), "synchronizeData", new Object[]{"rest"},
+            invokeOperation(provider1, rollMan1.toString(), "synchronizeData", new Object[]{"rest"},
                     new String[]{"java.lang.String"});
 
-            invokeOperation(provider1, rollMan.toString(), "disconnectSource", new Object[]{"rest"},
+            invokeOperation(provider1, rollMan1.toString(), "disconnectSource", new Object[]{"rest"},
                     new String[]{"java.lang.String"});
 
             rest.post(rest.fullPathKey(0, DEFAULT_CACHE_NAME, "disconnected", PORT_OFFSET), "source", "application/text");
