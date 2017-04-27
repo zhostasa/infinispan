@@ -118,10 +118,16 @@ public interface Log extends org.infinispan.util.logging.Log {
    @Message(value = "Using Netty EventLoop %s for %s", id = 5026)
    void createdNettyEventLoop(String eventLoopClassName, String configuration);
 
+   @Message(value = "SSL Enabled but no SNI domain configured", id = 5027)
+   CacheConfigurationException noSniDomainConfigured();
+
    @LogMessage(level = WARN)
    @Message(value = "Native Epoll transport not available, using NIO instead: %s", id = 5028)
    void epollNotAvailable(String message);
 
-   @Message(value = "SSL Enabled but no SNI domain configured", id = 5029)
-   CacheConfigurationException noSniDomainConfigured();
+   @Message(value = "No task manager available to register the admin operations handler", id = 5029)
+   CacheConfigurationException cannotRegisterAdminOperationsHandler();
+
+   @Message(value = "Administration task '%s' invoked without required parameter '%s'", id = 5030)
+   NullPointerException missingRequiredAdminTaskParameter(String name, String parameter);
 }

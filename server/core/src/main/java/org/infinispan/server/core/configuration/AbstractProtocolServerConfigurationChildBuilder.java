@@ -2,6 +2,8 @@ package org.infinispan.server.core.configuration;
 
 import java.util.Set;
 
+import org.infinispan.server.core.admin.AdminOperationsHandler;
+
 /**
  * Helper
  *
@@ -79,6 +81,18 @@ public abstract class AbstractProtocolServerConfigurationChildBuilder<T extends 
    @Override
    public S ignoredCaches(Set<String> ignoredCaches) {
       builder.ignoredCaches(ignoredCaches);
+      return self();
+   }
+
+   @Override
+   public S startTransport(boolean startTransport) {
+      builder.startTransport(startTransport);
+      return self();
+   }
+
+   @Override
+   public S adminOperationsHandler(AdminOperationsHandler handler) {
+      builder.adminOperationsHandler(handler);
       return self();
    }
 

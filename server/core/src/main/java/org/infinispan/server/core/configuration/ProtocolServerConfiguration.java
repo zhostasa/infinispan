@@ -2,6 +2,8 @@ package org.infinispan.server.core.configuration;
 
 import java.util.Set;
 
+import org.infinispan.server.core.admin.AdminOperationsHandler;
+
 /**
  * ServerConfiguration.
  *
@@ -20,8 +22,13 @@ public abstract class ProtocolServerConfiguration {
    private final boolean tcpNoDelay;
    private final int workerThreads;
    private final Set<String> ignoredCaches;
+   private final boolean startTransport;
+   private AdminOperationsHandler adminOperationsHandler;
 
-   protected ProtocolServerConfiguration(String defaultCacheName, String name, String host, int port, int idleTimeout, int recvBufSize, int sendBufSize, SslConfiguration ssl, boolean tcpNoDelay, int workerThreads, Set<String> ignoredCaches) {
+   protected ProtocolServerConfiguration(String defaultCacheName, String name, String host, int port, int idleTimeout,
+                                         int recvBufSize, int sendBufSize, SslConfiguration ssl, boolean tcpNoDelay,
+                                         int workerThreads, Set<String> ignoredCaches, boolean startTransport,
+                                         AdminOperationsHandler adminOperationsHandler) {
       this.defaultCacheName = defaultCacheName;
       this.name = name;
       this.host = host;
@@ -33,6 +40,8 @@ public abstract class ProtocolServerConfiguration {
       this.tcpNoDelay = tcpNoDelay;
       this.workerThreads = workerThreads;
       this.ignoredCaches = ignoredCaches;
+      this.startTransport = startTransport;
+      this.adminOperationsHandler = adminOperationsHandler;
    }
 
    public String defaultCacheName() {
@@ -79,10 +88,30 @@ public abstract class ProtocolServerConfiguration {
       return ignoredCaches;
    }
 
-   @Override
-   public String toString() {
-      return "ProtocolServerConfiguration [defaultCacheName=" + defaultCacheName +", name=" + name + ", host=" + host + ", port=" + port + ", idleTimeout=" + idleTimeout + ", recvBufSize=" + recvBufSize + ", sendBufSize="
-            + sendBufSize + ", ssl=" + ssl + ", tcpNoDelay=" + tcpNoDelay + ", workerThreads=" + workerThreads + ", ignoredCaches=" + ignoredCaches + "]";
+   public boolean startTransport() {
+      return startTransport;
    }
 
+   public AdminOperationsHandler adminOperationsHandler() {
+      return adminOperationsHandler;
+   }
+
+   @Override
+   public String toString() {
+      return "ProtocolServerConfiguration[" +
+            "defaultCacheName='" + defaultCacheName + '\'' +
+            ", name='" + name + '\'' +
+            ", host='" + host + '\'' +
+            ", port=" + port +
+            ", idleTimeout=" + idleTimeout +
+            ", recvBufSize=" + recvBufSize +
+            ", sendBufSize=" + sendBufSize +
+            ", ssl=" + ssl +
+            ", tcpNoDelay=" + tcpNoDelay +
+            ", workerThreads=" + workerThreads +
+            ", ignoredCaches=" + ignoredCaches +
+            ", startTransport=" + startTransport +
+            ", adminOperationsHandler=" + adminOperationsHandler +
+            ']';
+   }
 }

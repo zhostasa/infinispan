@@ -3,14 +3,19 @@ package org.infinispan.server.core.configuration;
 import java.util.Set;
 
 import org.infinispan.commons.configuration.Self;
+import org.infinispan.server.core.admin.AdminOperationsHandler;
 
 /**
  * ProtocolServerConfigurationChildBuilder.
  *
+ * @param <T> the root configuration object returned by the builder. Must extend {@link ProtocolServerConfiguration}
+ * @param <S> the sub-builder this is an implementation of. Must extend ProtocolServerConfigurationChildBuilder
+ *
  * @author Tristan Tarrant
  * @since 5.3
  */
-public interface ProtocolServerConfigurationChildBuilder<T extends ProtocolServerConfiguration, S extends ProtocolServerConfigurationChildBuilder<T,S>> extends Self<S> {
+public interface ProtocolServerConfigurationChildBuilder<T extends ProtocolServerConfiguration, S extends ProtocolServerConfigurationChildBuilder<T,S>>
+      extends Self<S> {
    /**
     * Specifies the cache to use as a default cache for the protocol
     */
@@ -53,7 +58,7 @@ public interface ProtocolServerConfigurationChildBuilder<T extends ProtocolServe
    /**
     * Configures SSL
     */
-   SslConfigurationBuilder ssl();
+   SslConfigurationBuilder<T, S> ssl();
 
    /**
     * Sets the number of worker threads
@@ -64,6 +69,16 @@ public interface ProtocolServerConfigurationChildBuilder<T extends ProtocolServe
     * Sets the caches to be ignored
     */
    S ignoredCaches(Set<String> ignoredCaches);
+
+   /**
+    * Indicates whether transport implementation should or should not be started.
+    */
+   S startTransport(boolean startTransport);
+
+   /**
+    * Indicates the {@link AdminOperationsHandler} which will be used to handle admin operations
+    */
+   S adminOperationsHandler(AdminOperationsHandler handler);
 
    /**
     * Builds a configuration object

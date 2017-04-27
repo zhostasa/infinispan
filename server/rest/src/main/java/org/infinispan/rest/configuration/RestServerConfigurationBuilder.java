@@ -55,7 +55,8 @@ public class RestServerConfigurationBuilder extends ProtocolServerConfigurationB
 
    @Override
    public RestServerConfiguration create() {
-      return new RestServerConfiguration(defaultCacheName, name, extendedHeaders, host, port, ignoredCaches, ssl.create(), contextPath, maxContentLength);
+      return new RestServerConfiguration(defaultCacheName, name, extendedHeaders, host, port, ignoredCaches, ssl.create(),
+            startTransport, contextPath, maxContentLength, adminOperationsHandler);
    }
 
    @Override

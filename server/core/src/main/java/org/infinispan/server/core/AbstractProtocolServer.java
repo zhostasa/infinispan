@@ -16,6 +16,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.core.configuration.ProtocolServerConfiguration;
 import org.infinispan.server.core.logging.Log;
 import org.infinispan.server.core.transport.NettyTransport;
+import org.infinispan.tasks.TaskManager;
 
 import io.netty.channel.epoll.Epoll;
 
@@ -52,10 +53,23 @@ public abstract class AbstractProtocolServer<A extends ProtocolServerConfigurati
          log.debugf("Starting server with configuration: %s", configuration);
       }
 
+      registerAdminOperationsHandler();
+
       // Start default cache
       startDefaultCache();
 
       startTransport();
+   }
+
+   private void registerAdminOperationsHandler() {
+      if (configuration.adminOperationsHandler() != null) {
+         TaskManager taskManager = SecurityActions.getGlobalComponentRegistry(cacheManager).getComponent(TaskManager.class);
+         if (taskManager != null) {
+            taskManager.registerTaskEngine(configuration.adminOperationsHandler());
+         } else {
+            throw log.cannotRegisterAdminOperationsHandler();
+         }
+      }
    }
 
    @Override
