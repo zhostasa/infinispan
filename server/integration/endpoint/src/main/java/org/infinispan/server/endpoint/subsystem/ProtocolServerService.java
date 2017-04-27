@@ -32,6 +32,7 @@ import org.infinispan.commons.util.ReflectionUtil;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.core.ProtocolServer;
+import org.infinispan.server.core.admin.embeddedserver.EmbeddedServerAdminOperationHandler;
 import org.infinispan.server.core.configuration.ProtocolServerConfiguration;
 import org.infinispan.server.core.configuration.ProtocolServerConfigurationBuilder;
 import org.infinispan.server.core.transport.Transport;
@@ -115,6 +116,9 @@ class ProtocolServerService implements Service<ProtocolServer>, EncryptableServi
          InetSocketAddress socketAddress = socketBinding.getSocketAddress();
          configurationBuilder.host(socketAddress.getAddress().getHostAddress());
          configurationBuilder.port(socketAddress.getPort());
+
+         // FIXME: replace with a more appropriate operation handler once we have one that integrates with the DMR server
+         configurationBuilder.adminOperationsHandler(new EmbeddedServerAdminOperationHandler());
 
          SecurityRealm encryptionRealm = encryptionSecurityRealm.getOptionalValue();
 
