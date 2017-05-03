@@ -1,9 +1,11 @@
 package org.infinispan.client.hotrod.impl.operations;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
+import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.impl.VersionedValueImpl;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
 import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
@@ -31,8 +33,8 @@ public class GetWithVersionOperation<V> extends AbstractKeyOperation<VersionedVa
 
    public GetWithVersionOperation(Codec codec, TransportFactory transportFactory, Object key, byte[] keyBytes,
                                   byte[] cacheName, AtomicInteger topologyId, int flags,
-                                  ClientIntelligence clientIntelligence) {
-      super(codec, transportFactory, key, keyBytes, cacheName, topologyId, flags, clientIntelligence);
+                                  Configuration cfg) {
+      super(codec, transportFactory, key, keyBytes, cacheName, topologyId, flags, cfg);
    }
 
    @Override
@@ -46,7 +48,7 @@ public class GetWithVersionOperation<V> extends AbstractKeyOperation<VersionedVa
          if (trace) {
             log.tracef("Received version: %d", (Long) version);
          }
-         V value = codec.readUnmarshallByteArray(transport, status);
+         V value = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
          result = new VersionedValueImpl<V>(version, value);
       }
       return result;

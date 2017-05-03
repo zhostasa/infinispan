@@ -71,18 +71,21 @@ public class ClientListenerNotifier {
    private final Marshaller marshaller;
    private final TransportFactory transportFactory;
 
+   private final List<String> whitelist;
+
    protected ClientListenerNotifier(
-         ExecutorService executor, Codec codec,
-         Marshaller marshaller, TransportFactory transportFactory) {
+      ExecutorService executor, Codec codec,
+      Marshaller marshaller, TransportFactory transportFactory, List<String> whitelist) {
       this.executor = executor;
       this.codec = codec;
       this.marshaller = marshaller;
       this.transportFactory = transportFactory;
+      this.whitelist = whitelist;
    }
 
-   public static ClientListenerNotifier create(Codec codec, Marshaller marshaller, TransportFactory transportFactory) {
+   public static ClientListenerNotifier create(Codec codec, Marshaller marshaller, TransportFactory transportFactory, List<String> whitelist) {
       ExecutorService executor = Executors.newCachedThreadPool(getRestoreThreadNameThreadFactory());
-      return new ClientListenerNotifier(executor, codec, marshaller, transportFactory);
+      return new ClientListenerNotifier(executor, codec, marshaller, transportFactory, whitelist);
    }
 
    private static ThreadFactory getRestoreThreadNameThreadFactory() {
@@ -275,7 +278,7 @@ public class ClientListenerNotifier {
          while (!Thread.currentThread().isInterrupted()) {
             ClientEvent clientEvent = null;
             try {
-               clientEvent = codec.readEvent(transport, op.listenerId, marshaller);
+               clientEvent = codec.readEvent(transport, op.listenerId, marshaller, whitelist);
                invokeClientEvent(clientEvent);
                // Nullify event, makes it easier to identify network vs invocation error messages
                clientEvent = null;
