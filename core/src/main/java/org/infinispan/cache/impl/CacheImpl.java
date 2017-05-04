@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.transaction.InvalidTransactionException;
+import javax.security.auth.Subject;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -79,7 +80,6 @@ import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.encoding.DataConversion;
 import org.infinispan.eviction.EvictionManager;
-import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.PassivationManager;
 import org.infinispan.expiration.ExpirationManager;
 import org.infinispan.factories.ComponentRegistry;
@@ -1553,6 +1553,11 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
          return this;
       else
          return new DecoratedCache<>(this, flags);
+   }
+
+   @Override
+   public AdvancedCache<K, V> withSubject(Subject subject) {
+      return this; // NO-OP
    }
 
    private Transaction getOngoingTransaction() {
