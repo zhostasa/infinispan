@@ -2,6 +2,8 @@ package org.infinispan.scripting.impl;
 
 import java.util.Optional;
 
+import javax.security.auth.Subject;
+
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.dataconversion.Encoder;
@@ -23,13 +25,15 @@ public final class DataTypedCacheManager extends AbstractDelegatingEmbeddedCache
    final DataType dataType;
    final Optional<Marshaller> marshaller;
    private final Class<? extends Encoder> encoderClass;
+   final Subject subject;
 
-   public DataTypedCacheManager(DataType dataType, Optional<Marshaller> marshaller, EmbeddedCacheManager cm) {
+   public DataTypedCacheManager(DataType dataType, Optional<Marshaller> marshaller, EmbeddedCacheManager cm, Subject subject) {
       super(cm);
       this.dataType = dataType;
       this.marshaller = marshaller;
       this.encoderClass = dataType == DataType.UTF8 ? UTF8Encoder.class :
             marshaller.isPresent() ? GenericJbossMarshallerEncoder.class : IdentityEncoder.class;
+      this.subject = subject;
    }
 
    @Override
@@ -42,9 +46,9 @@ public final class DataTypedCacheManager extends AbstractDelegatingEmbeddedCache
       Cache<K, V> cache = super.getCache(cacheName);
       MemoryConfiguration memory = SecurityActions.getCacheConfiguration(cache).memory();
       if (memory.storageType() == StorageType.OBJECT) {
-         return (AdvancedCache<K, V>) cache.getAdvancedCache().withEncoding(encoderClass);
+         return (AdvancedCache<K, V>) cache.getAdvancedCache().withEncoding(encoderClass).withSubject(subject);
       }
-      return cache.getAdvancedCache();
+      return cache.getAdvancedCache().withSubject(subject);
    }
 
 }

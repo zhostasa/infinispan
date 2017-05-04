@@ -41,7 +41,7 @@ class DistributedScript<T> implements DistributedCallable<Object, Object, T>, Se
       bindings = new SimpleBindings();
       bindings.put("inputKeys", inputKeys);
       DataType dataType = metadata.dataType();
-      DataTypedCacheManager dataTypedCacheManager = new DataTypedCacheManager(dataType, Optional.empty(), cache.getCacheManager());
+      DataTypedCacheManager dataTypedCacheManager = new DataTypedCacheManager(dataType, Optional.empty(), cache.getCacheManager(), null);
       bindings.put("cacheManager", dataTypedCacheManager);
       if (dataType == DataType.UTF8) {
          cache = (Cache<Object, Object>) cache.getAdvancedCache().withEncoding(UTF8Encoder.class);
