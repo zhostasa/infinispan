@@ -62,8 +62,6 @@ import org.infinispan.query.impl.CacheQueryImpl;
 import org.infinispan.query.impl.ComponentRegistryUtils;
 import org.infinispan.query.logging.Log;
 import org.infinispan.query.spi.SearchManagerImplementor;
-import org.infinispan.security.AuthorizationManager;
-import org.infinispan.security.AuthorizationPermission;
 import org.infinispan.util.logging.LogFactory;
 
 /**
@@ -75,8 +73,6 @@ public class QueryEngine<TypeMetadata> {
    private static final Log log = LogFactory.getLog(QueryEngine.class, Log.class);
 
    private static final int MAX_EXPANSION_COFACTORS = 16;
-
-   private final AuthorizationManager authorizationManager;
 
    protected final AdvancedCache<?, ?> cache;
 
@@ -115,7 +111,6 @@ public class QueryEngine<TypeMetadata> {
       this.isIndexed = isIndexed;
       this.matcherImplClass = matcherImplClass;
       this.queryCache = ComponentRegistryUtils.getQueryCache(cache);
-      this.authorizationManager = SecurityActions.getCacheAuthorizationManager(cache);
       this.matcher = SecurityActions.getCacheComponentRegistry(cache).getComponent(matcherImplClass);
       propertyHelper = ((BaseMatcher<TypeMetadata, ?, ?>) matcher).getPropertyHelper();
       if (fieldBridgeAndAnalyzerProvider == null && propertyHelper instanceof HibernateSearchPropertyHelper) {
@@ -138,7 +133,7 @@ public class QueryEngine<TypeMetadata> {
          throw new IllegalStateException("Cache is not indexed");
       }
       if (searchManager == null) {
-         searchManager = Search.getSearchManager(cache).unwrap(SearchManagerImplementor.class);
+         searchManager = SecurityActions.getCacheSearchManager(cache).unwrap(SearchManagerImplementor.class);
       }
       return searchManager;
    }
@@ -157,9 +152,6 @@ public class QueryEngine<TypeMetadata> {
    protected BaseQuery buildQuery(QueryFactory queryFactory, IckleParsingResult<TypeMetadata> parsingResult, Map<String, Object> namedParameters, long startOffset, int maxResults, IndexedQueryMode queryMode) {
       if (log.isDebugEnabled()) {
          log.debugf("Building query '%s' with parameters %s", parsingResult.getQueryString(), namedParameters);
-      }
-      if (authorizationManager != null) {
-         authorizationManager.checkPermission(AuthorizationPermission.BULK_READ);
       }
       BaseQuery query = parsingResult.hasGroupingOrAggregations() ?
             buildQueryWithAggregations(queryFactory, parsingResult.getQueryString(), namedParameters, startOffset, maxResults, parsingResult, queryMode) :
