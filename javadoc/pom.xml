@@ -139,11 +139,6 @@
          <artifactId>infinispan-spring4-remote</artifactId>
       </dependency>
 
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>infinispan-tasks-api</artifactId>
-      </dependency>
-
       <!-- <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-tree</artifactId>
