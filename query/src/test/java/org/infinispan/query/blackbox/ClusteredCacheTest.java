@@ -1,25 +1,37 @@
 package org.infinispan.query.blackbox;
 
-import static org.infinispan.query.helper.TestQueryHelperFactory.createCacheQuery;
+import static org.infinispan.query.blackbox.ClusteredCacheTest.Ownership.BACKUP;
+import static org.infinispan.query.blackbox.ClusteredCacheTest.Ownership.NON_OWNER;
+import static org.infinispan.query.blackbox.ClusteredCacheTest.Ownership.PRIMARY;
 import static org.infinispan.query.helper.TestQueryHelperFactory.createQueryParser;
+import static org.testng.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 
 import javax.transaction.TransactionManager;
 
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.filter.FullTextFilter;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.engine.spi.HSQuery;
+import org.hibernate.search.spi.SearchIntegrator;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
+import org.infinispan.interceptors.locking.ClusteringDependentLogic;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.FetchOptions;
 import org.infinispan.query.ResultIterator;
@@ -31,6 +43,8 @@ import org.infinispan.query.spi.SearchManagerImplementor;
 import org.infinispan.query.test.CustomKey3;
 import org.infinispan.query.test.CustomKey3Transformer;
 import org.infinispan.query.test.Person;
+import org.infinispan.remoting.rpc.RpcManager;
+import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.AssertJUnit;
@@ -56,6 +70,8 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
    final String key2 = "BigGoat";
    final String key3 = "MiniGoat";
 
+   enum Ownership {PRIMARY, NON_OWNER, BACKUP}
+
    public ClusteredCacheTest() {
       cleanup = CleanupPhase.AFTER_METHOD;
    }
@@ -68,11 +84,11 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
    protected void createCacheManagers() throws Throwable {
       ConfigurationBuilder cacheCfg = getDefaultClusteredCacheConfig(CacheMode.REPL_SYNC, transactionsEnabled());
       cacheCfg.indexing()
-         .index(Index.ALL)
-         .addIndexedEntity(Person.class)
-         .addProperty("default.directory_provider", "ram")
-         .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
-         .addProperty("lucene_version", "LUCENE_CURRENT");
+            .index(Index.ALL)
+            .addIndexedEntity(Person.class)
+            .addProperty("default.directory_provider", "ram")
+            .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
+            .addProperty("lucene_version", "LUCENE_CURRENT");
       enhanceConfig(cacheCfg);
       List<Cache<String, Person>> caches = createClusteredCaches(2, cacheCfg);
       cache1 = caches.get(0);
@@ -117,7 +133,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
 
    public void testSimple() throws Exception {
       prepareTestData();
-      cacheQuery = createCacheQuery(cache2, "blurb", "playing");
+      cacheQuery = createCacheQuery("blurb:playing");
 
       List<Person> found = cacheQuery.list();
 
@@ -217,6 +233,121 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       assert found.size() == 1;
       assert found.contains(person2);
       assert !found.contains(person3) : "This should not contain object person3 anymore";
+      assert countIndex(cache1) == 2 : "Two documents should remain in the index";
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
+   }
+
+   protected int queryIndex(Cache<?, ?> cache, String query) throws ParseException {
+      QueryParser qp = createQueryParser("blurb");
+      Query q = qp.parse(query);
+      HSQuery hsQuery = Search.getSearchManager(cache).unwrap(SearchIntegrator.class).createHSQuery(q, Person.class);
+      return hsQuery.queryResultSize();
+   }
+
+   protected int countIndex(Cache<?, ?> cache) throws ParseException {
+      return queryIndex(cache, "*:*");
+   }
+
+   private Optional<Cache<Object, Person>> findCache(Ownership ownership, Object key) {
+      List<Cache<Object, Person>> caches = Arrays.asList(cache1, cache2);
+      ClusteringDependentLogic cdl = cache1.getAdvancedCache().getComponentRegistry().getComponent(ClusteringDependentLogic.class);
+      Predicate<Cache<?, ?>> predicate = null;
+
+      switch (ownership) {
+         case PRIMARY:
+            predicate = c -> {
+               RpcManager rpcManager = c.getAdvancedCache().getRpcManager();
+               return rpcManager == null || rpcManager.getAddress().equals(cdl.getPrimaryOwner(key));
+            };
+            break;
+         case BACKUP:
+            predicate = c -> {
+               List<Address> owners = cdl.getOwners(key);
+               return owners != null && owners.indexOf(c.getAdvancedCache().getRpcManager().getAddress()) > 0;
+            };
+            break;
+         case NON_OWNER:
+            predicate = c -> {
+               List<Address> owners = cdl.getOwners(key);
+               return owners == null || !owners.contains(c.getAdvancedCache().getRpcManager().getAddress());
+            };
+      }
+
+      return caches.stream().filter(predicate).findFirst();
+   }
+
+
+   public void testConditionalRemoveFromPrimary() throws Exception {
+      testConditionalRemoveFrom(PRIMARY);
+   }
+
+   public void testConditionalRemoveFromBackup() throws Exception {
+      testConditionalRemoveFrom(BACKUP);
+   }
+
+   public void testConditionalRemoveFromNonOwner() throws Exception {
+      testConditionalRemoveFrom(NON_OWNER);
+   }
+
+   public void testConditionalReplaceFromPrimary() throws Exception {
+      testConditionalReplaceFrom(PRIMARY);
+   }
+
+   public void testConditionalReplaceFromBackup() throws Exception {
+      testConditionalReplaceFrom(BACKUP);
+   }
+
+   public void testConditionalReplaceFromNonOwner() throws Exception {
+      testConditionalReplaceFrom(NON_OWNER);
+   }
+
+   private CacheQuery createCacheQuery(String query) throws ParseException {
+      Query q = queryParser.parse(query);
+      return Search.getSearchManager(cache1).getQuery(q);
+   }
+
+   private void testConditionalReplaceFrom(Ownership memberType) throws Exception {
+      prepareTestData();
+
+      Cache<Object, Person> cache = findCache(memberType, key1).orElse(cache2);
+
+      assertEquals(createCacheQuery("blurb:wow").list().size(), 1);
+
+      boolean replaced = cache.replace(key1, person1, person2);
+
+      assertTrue(replaced);
+      assertEquals(createCacheQuery("blurb:wow").list().size(), 0);
+      assertEquals(queryIndex(cache, "blurb:wow"), 0);
+   }
+
+   private void testConditionalRemoveFrom(Ownership ownership) throws Exception {
+      prepareTestData();
+
+      CacheQuery query = Search.getSearchManager(cache2).getQuery(new MatchAllDocsQuery());
+
+      Cache<Object, Person> cache = findCache(ownership, key1).orElse(cache2);
+
+      cache.remove(key1, person1);
+
+      assertEquals(query.list().size(), 2);
+      assertEquals(countIndex(cache), 2);
+
+      cache.remove(key1, person1);
+
+      assertEquals(query.list().size(), 2);
+      assertEquals(countIndex(cache), 2);
+
+      cache = findCache(ownership, key3).orElse(cache2);
+
+      cache.remove(key3);
+
+      assertEquals(query.list().size(), 1);
+      assertEquals(countIndex(cache), 1);
+
+      cache.remove("nonExistent");
+
+      cache.remove("nonExistentConditional", person2);
+
       StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
@@ -240,7 +371,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       Query allQuery = queryBuilder.all().createQuery();
       assert searchManager.getQuery(allQuery, Person.class).list().size() == 3;
 
-      Map<String,Person> allWrites = new HashMap<>();
+      Map<String, Person> allWrites = new HashMap<>();
       allWrites.put(key1, person1);
       allWrites.put(key2, person2);
       allWrites.put(key3, person3);
@@ -268,7 +399,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       person4.setName("New Goat");
       person4.setBlurb("Also eats grass");
 
-      Map<String,Person> allWrites = new HashMap<>();
+      Map<String, Person> allWrites = new HashMap<>();
       allWrites.put(key1, person1);
       allWrites.put(key2, person2);
       allWrites.put(key3, person3);
@@ -509,15 +640,15 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
 
       TransactionManager transactionManager = cache1.getAdvancedCache().getTransactionManager();
 
-      CustomKey3 customeKey1 = new CustomKey3(key1);
-      CustomKey3 customeKey2 = new CustomKey3(key2);
-      CustomKey3 customeKey3 = new CustomKey3(key3);
+      CustomKey3 customKey1 = new CustomKey3(key1);
+      CustomKey3 customKey2 = new CustomKey3(key2);
+      CustomKey3 customKey3 = new CustomKey3(key3);
 
       // Put the 3 created objects in the cache1.
       if (transactionsEnabled()) transactionManager.begin();
-      cache1.put(customeKey1, person1);
-      cache1.put(customeKey2, person2);
-      cache1.put(customeKey3, person3);
+      cache1.put(customKey1, person1);
+      cache1.put(customKey2, person2);
+      cache1.put(customKey3, person3);
       if (transactionsEnabled()) transactionManager.commit();
 
       queryParser = createQueryParser("blurb");
