@@ -158,24 +158,17 @@ public class TcpTransport extends AbstractTransport {
 
    @Override
    protected void writeBytes(byte[] toAppend) {
-      try {
-         socketOutputStream.write(toAppend);
-         if (trace) {
-            log.tracef("Wrote %d bytes", (Integer) toAppend.length);
-         }
-      } catch (IOException e) {
-         invalid = true;
-         throw new TransportException(
-               "Problems writing data to stream", e, serverAddress);
-      }
+      writeBytes(toAppend, 0, (Integer) toAppend.length);
    }
 
    @Override
    protected void writeBytes(byte[] toAppend, int offset, int count) {
       try {
-         socketOutputStream.write(toAppend, offset, count);
+         for (int o = offset; o < offset + count; o += SOCKET_STREAM_BUFFER) {
+            socketOutputStream.write(toAppend, o, Math.min(offset + count - o, SOCKET_STREAM_BUFFER));
+         }
          if (trace) {
-            log.tracef("Wrote %d bytes", Integer.toString(toAppend.length));
+            log.tracef("Wrote %d bytes", (Integer) count);
          }
       } catch (IOException e) {
          invalid = true;
@@ -242,7 +235,7 @@ public class TcpTransport extends AbstractTransport {
       do {
          int read;
          try {
-            int len = size - offset;
+            int len = Math.min(size - offset, SOCKET_STREAM_BUFFER);
             if (trace) {
                log.tracef("Offset: %d, len=%d, size=%d", (Integer) offset, (Integer) len, (Integer) size);
             }
