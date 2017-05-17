@@ -38,7 +38,6 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.interceptors.DDAsyncInterceptor;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledValue;
 import org.infinispan.query.Transformer;
 import org.infinispan.query.impl.DefaultSearchWorkCreator;
@@ -79,6 +78,8 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    private DistributionManager distributionManager;
    private RpcManager rpcManager;
    protected ExecutorService asyncExecutor;
+   protected Cache<?, ?> cache;
+   protected InternalCacheRegistry internalCacheRegistry;
 
    private static final Log log = LogFactory.getLog(QueryInterceptor.class, Log.class);
 
@@ -98,7 +99,6 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    protected void injectDependencies(TransactionManager transactionManager,
                                      TransactionSynchronizationRegistry transactionSynchronizationRegistry,
                                      Cache cache,
-                                     EmbeddedCacheManager cacheManager,
                                      InternalCacheRegistry internalCacheRegistry,
                                      DistributionManager distributionManager,
                                      RpcManager rpcManager,
@@ -110,15 +110,17 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
       this.rpcManager = rpcManager;
       this.asyncExecutor = e;
       this.dataContainer = dataContainer;
-      Set<Class<?>> indexedEntities = cache.getCacheConfiguration().indexing().indexedEntities();
-      this.indexedEntities = indexedEntities.isEmpty() ? null : indexedEntities.toArray(new Class<?>[indexedEntities.size()]);
-      this.queryKnownClasses = indexedEntities.isEmpty() ? new QueryKnownClasses(cache.getName(), cacheManager, internalCacheRegistry) : new QueryKnownClasses(indexedEntities);
-      this.searchFactoryHandler = new SearchFactoryHandler(this.searchFactory, this.queryKnownClasses, new TransactionHelper(transactionManager));
+      this.cache = cache;
+      this.internalCacheRegistry = internalCacheRegistry;
    }
 
    @Start
    protected void start() {
-      if (indexedEntities == null) {
+      Set<Class<?>> indexedEntities = cache.getCacheConfiguration().indexing().indexedEntities();
+      this.indexedEntities = indexedEntities.isEmpty() ? null : indexedEntities.toArray(new Class<?>[indexedEntities.size()]);
+      queryKnownClasses = indexedEntities.isEmpty() ? new QueryKnownClasses(cache.getName(), cache.getCacheManager(), internalCacheRegistry) : new QueryKnownClasses(indexedEntities);
+      searchFactoryHandler = new SearchFactoryHandler(searchFactory, queryKnownClasses, new TransactionHelper(transactionManager));
+      if (this.indexedEntities == null) {
          queryKnownClasses.start(searchFactoryHandler);
          Set<Class<?>> classes = queryKnownClasses.keys();
          Class<?>[] classesArray = classes.toArray(new Class<?>[classes.size()]);
