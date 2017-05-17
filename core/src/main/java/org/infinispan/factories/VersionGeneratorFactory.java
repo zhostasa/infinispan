@@ -1,6 +1,7 @@
 package org.infinispan.factories;
 
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.container.versioning.NumericVersionGenerator;
 import org.infinispan.container.versioning.SimpleClusteredVersionGenerator;
 import org.infinispan.container.versioning.VersionGenerator;
@@ -29,17 +30,12 @@ public class VersionGeneratorFactory extends NamedComponentFactory implements Au
          //noinspection unchecked
          return (T) new NumericVersionGenerator();
       }
-      // TODO: Eventually, NumericVersionGenerator and SimpleClusteredVersionGenerator should be merged into one...
-      switch (configuration.versioning().scheme()) {
-         case SIMPLE: {
-            //noinspection unchecked
-            return configuration.clustering().cacheMode().isClustered() ?
-                  (T) new SimpleClusteredVersionGenerator() :
-                  (T) new NumericVersionGenerator();
-         }
-         default:
-            //noinspection unchecked
-            return (T) new NumericVersionGenerator();
+      if (Configurations.isTxVersioned(configuration)) {
+         return configuration.clustering().cacheMode().isClustered() ?
+               componentType.cast(new SimpleClusteredVersionGenerator()) :
+               componentType.cast(new NumericVersionGenerator());
+      } else {
+         return componentType.cast(new NumericVersionGenerator());
       }
    }
 

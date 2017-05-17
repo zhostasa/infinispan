@@ -18,6 +18,7 @@ import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.impl.InvalidatedNearRemoteCache;
 import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
+import org.infinispan.client.hotrod.impl.RemoteCacheManagerAdminImpl;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.client.hotrod.impl.operations.PingOperation.PingResult;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
@@ -73,9 +74,8 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    private final RemoteCounterManager counterManager;
 
    /**
-    *
-    * Create a new RemoteCacheManager using the supplied {@link Configuration}.
-    * The RemoteCacheManager will be started automatically
+    * Create a new RemoteCacheManager using the supplied {@link Configuration}. The RemoteCacheManager will be started
+    * automatically
     *
     * @param configuration the configuration to use for this RemoteCacheManager
     * @since 5.3
@@ -85,12 +85,11 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    }
 
    /**
-    *
-    * Create a new RemoteCacheManager using the supplied {@link Configuration}.
-    * The RemoteCacheManager will be started automatically only if the start parameter is true
+    * Create a new RemoteCacheManager using the supplied {@link Configuration}. The RemoteCacheManager will be started
+    * automatically only if the start parameter is true
     *
     * @param configuration the configuration to use for this RemoteCacheManager
-    * @param start whether or not to start the manager on return from the constructor.
+    * @param start         whether or not to start the manager on return from the constructor.
     * @since 5.3
     */
    public RemoteCacheManager(Configuration configuration, boolean start) {
@@ -151,12 +150,11 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    }
 
    /**
-    * Retrieves a named cache from the remote server if the cache has been
-    * defined, otherwise if the cache name is undefined, it will return null.
+    * Retrieves a named cache from the remote server if the cache has been defined, otherwise if the cache name is
+    * undefined, it will return null.
     *
     * @param cacheName name of cache to retrieve
-    * @return a cache instance identified by cacheName or null if the cache
-    *         name has not been defined
+    * @return a cache instance identified by cacheName or null if the cache name has not been defined
     */
    @Override
    public <K, V> RemoteCache<K, V> getCache(String cacheName) {
@@ -171,8 +169,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    /**
     * Retrieves the default cache from the remote server.
     *
-    * @return a remote cache instance that can be used to send requests to the
-    *         default cache in the server
+    * @return a remote cache instance that can be used to send requests to the default cache in the server
     */
    @Override
    public <K, V> RemoteCache<K, V> getCache() {
@@ -227,9 +224,8 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    }
 
    /**
-    * Stop the remote cache manager, disconnecting all existing connections.
-    * As part of the disconnection, all registered client cache listeners will
-    * be removed since client no longer can receive callbacks.
+    * Stop the remote cache manager, disconnecting all existing connections. As part of the disconnection, all
+    * registered client cache listeners will be removed since client no longer can receive callbacks.
     */
    @Override
    public void stop() {
@@ -298,7 +294,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
       switch (configuration.nearCache().mode()) {
          case INVALIDATED:
             return new InvalidatedNearRemoteCache<>(this, cacheName,
-               createNearCacheService(configuration.nearCache()));
+                  createNearCacheService(configuration.nearCache()));
          case DISABLED:
          default:
             return new RemoteCacheImpl<>(this, cacheName);
@@ -312,7 +308,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    private void startRemoteCache(RemoteCacheHolder remoteCacheHolder) {
       RemoteCacheImpl<?, ?> remoteCache = remoteCacheHolder.remoteCache;
       OperationsFactory operationsFactory = new OperationsFactory(
-              transportFactory, remoteCache.getName(), remoteCacheHolder.forceReturnValue, codec, listenerNotifier,
+            transportFactory, remoteCache.getName(), remoteCacheHolder.forceReturnValue, codec, listenerNotifier,
             asyncExecutorService, configuration);
       remoteCache.init(marshaller, asyncExecutorService, operationsFactory, configuration.keySizeEstimate(), configuration.valueSizeEstimate());
    }
@@ -336,43 +332,48 @@ public class RemoteCacheManager implements RemoteCacheContainer {
       return counterManager;
    }
 
-}
-
-class RemoteCacheKey {
-
-   final String cacheName;
-   final boolean forceReturnValue;
-
-   RemoteCacheKey(String cacheName, boolean forceReturnValue) {
-      this.cacheName = cacheName;
-      this.forceReturnValue = forceReturnValue;
+   public RemoteCacheManagerAdmin administration() {
+      OperationsFactory operationsFactory = new OperationsFactory(transportFactory, codec, asyncExecutorService, configuration);
+      return new RemoteCacheManagerAdminImpl(operationsFactory);
    }
 
-   @Override
-   public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof RemoteCacheKey)) return false;
+   private static class RemoteCacheKey {
 
-      RemoteCacheKey that = (RemoteCacheKey) o;
 
-      if (forceReturnValue != that.forceReturnValue) return false;
-      return !(cacheName != null ? !cacheName.equals(that.cacheName) : that.cacheName != null);
+      final String cacheName;
+      final boolean forceReturnValue;
+
+      RemoteCacheKey(String cacheName, boolean forceReturnValue) {
+         this.cacheName = cacheName;
+         this.forceReturnValue = forceReturnValue;
+      }
+
+      @Override
+      public boolean equals(Object o) {
+         if (this == o) return true;
+         if (!(o instanceof RemoteCacheKey)) return false;
+
+         RemoteCacheKey that = (RemoteCacheKey) o;
+
+         if (forceReturnValue != that.forceReturnValue) return false;
+         return !(cacheName != null ? !cacheName.equals(that.cacheName) : that.cacheName != null);
+      }
+
+      @Override
+      public int hashCode() {
+         int result = cacheName != null ? cacheName.hashCode() : 0;
+         result = 31 * result + (forceReturnValue ? 1 : 0);
+         return result;
+      }
    }
 
-   @Override
-   public int hashCode() {
-      int result = cacheName != null ? cacheName.hashCode() : 0;
-      result = 31 * result + (forceReturnValue ? 1 : 0);
-      return result;
-   }
-}
+   class RemoteCacheHolder {
+      final RemoteCacheImpl<?, ?> remoteCache;
+      final boolean forceReturnValue;
 
-class RemoteCacheHolder {
-   final RemoteCacheImpl<?, ?> remoteCache;
-   final boolean forceReturnValue;
-
-   RemoteCacheHolder(RemoteCacheImpl<?, ?> remoteCache, boolean forceReturnValue) {
-      this.remoteCache = remoteCache;
-      this.forceReturnValue = forceReturnValue;
+      RemoteCacheHolder(RemoteCacheImpl<?, ?> remoteCache, boolean forceReturnValue) {
+         this.remoteCache = remoteCache;
+         this.forceReturnValue = forceReturnValue;
+      }
    }
 }
