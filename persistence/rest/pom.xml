@@ -11,7 +11,7 @@
    <packaging>bundle</packaging>
    <name>Infinispan REST CacheStore</name>
    <description>Infinispan REST CacheStore</description>
-   
+
    <dependencies>
       <dependency>
          <groupId>${project.groupId}</groupId>
@@ -24,7 +24,6 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-server-rest</artifactId>
-         <classifier>classes</classifier>
          <optional>true</optional>
       </dependency>
       <dependency>
@@ -42,6 +41,10 @@
          <groupId>org.kohsuke.metainf-services</groupId>
          <artifactId>metainf-services</artifactId>
          <optional>true</optional>
+      </dependency>
+      <dependency>
+         <groupId>commons-codec</groupId>
+         <artifactId>commons-codec</artifactId>
       </dependency>
    </dependencies>
 

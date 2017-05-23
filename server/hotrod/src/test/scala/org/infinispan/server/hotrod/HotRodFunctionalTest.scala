@@ -464,24 +464,6 @@ class HotRodFunctionalTest extends HotRodSingleNodeTest {
       assertStatus(client.put(k(m), 0, 0, value), Success)
    }
 
-   def testStoreAsBinaryOverrideOnNamedCache(m: Method) {
-      Stoppable.useCacheManager(createTestCacheManager, new Consumer[EmbeddedCacheManager] {
-         override def accept(cm: EmbeddedCacheManager): Unit = {
-            Stoppable.useServer(startHotRodServer(cm, server.getPort + 33), new Consumer[HotRodServer] {
-               override def accept(server: HotRodServer): Unit = {
-                  val cacheName = "cache-" + m.getName
-                  val namedBuilder = TestCacheManagerFactory.getDefaultCacheConfiguration(false)
-                     .storeAsBinary.enable
-                  val namedCfg = namedBuilder.build
-                  assertTrue(namedCfg.storeAsBinary().enabled())
-                  cm.defineConfiguration(cacheName, namedCfg)
-                  assertFalse(cm.getCache(cacheName).getCacheConfiguration.storeAsBinary().enabled())
-               }
-            })
-         }
-      })
-   }
-
    def testQuery() {
       val query = Array[Byte](1, 2, 3, 4, 5)
       val resp = client.query(query)

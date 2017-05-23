@@ -111,7 +111,6 @@
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-server-rest</artifactId>
-         <classifier>classes</classifier>
       </dependency>
 
       <dependency>
@@ -176,11 +175,6 @@
          <artifactId>jboss-marshalling-osgi</artifactId>
       </dependency>
       
-      <dependency>
-         <groupId>org.jboss.resteasy</groupId>
-         <artifactId>resteasy-netty4</artifactId>
-      </dependency>
-
       <dependency>
          <groupId>org.apache.lucene</groupId>
          <artifactId>lucene-queryparser</artifactId>

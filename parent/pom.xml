@@ -160,7 +160,6 @@
       <version.org.jboss.naming>5.0.6.CR1</version.org.jboss.naming>
       <version.org.picketbox>4.0.20.Final</version.org.picketbox>
       <version.postgresql.driver>9.3-1101-jdbc41</version.postgresql.driver>
-      <version.resteasy>3.1.0.Final-redhat-1</version.resteasy>
       <version.shrinkwrapResolver>2.1.0</version.shrinkwrapResolver>
       <version.slf4j>1.7.5</version.slf4j>
       <version.snappy>1.0.5</version.snappy>
@@ -504,11 +503,6 @@
             <version>${version.jstl}</version>
          </dependency>
          <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>${version.javax.servlet}</version>
-         </dependency>
-         <dependency>
             <groupId>com.jgoodies</groupId>
             <artifactId>forms</artifactId>
             <version>${version.jgoodies.forms}</version>
@@ -689,16 +683,6 @@
             <artifactId>jboss-logmanager</artifactId>
             <version>${version.jboss.logmanager}</version>
             <scope>test</scope>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <version>${version.resteasy}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-netty4</artifactId>
-            <version>${version.resteasy}</version>
          </dependency>
          <dependency>
             <groupId>org.jboss.solder</groupId>

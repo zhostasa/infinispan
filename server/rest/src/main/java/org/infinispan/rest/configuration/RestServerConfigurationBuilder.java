@@ -17,8 +17,7 @@ public class RestServerConfigurationBuilder extends ProtocolServerConfigurationB
    private final static Log logger = LogFactory.getLog(RestServerConfigurationBuilder.class, Log.class);
 
    public static final String DEFAULT_CONTEXT_PATH = "rest";
-   private boolean startTransport = true;
-   public static final String DEFAILT_NAME = "rest";
+   public static final String DEFAULT_NAME = "rest";
 
    private static final int DEFAULT_PORT = 8080;
 
@@ -27,7 +26,7 @@ public class RestServerConfigurationBuilder extends ProtocolServerConfigurationB
 
    public RestServerConfigurationBuilder() {
       super(DEFAULT_PORT);
-      name(DEFAILT_NAME);
+      name(DEFAULT_NAME);
    }
 
    public RestServerConfigurationBuilder extendedHeaders(ExtendedHeaders extendedHeaders) {

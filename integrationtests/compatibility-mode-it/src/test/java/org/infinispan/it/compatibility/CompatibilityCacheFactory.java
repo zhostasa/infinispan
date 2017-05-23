@@ -20,7 +20,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.api.BasicCacheContainer;
-import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.commons.dataconversion.Encoder;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.marshall.Marshaller;
@@ -29,8 +28,8 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.EncoderRegistry;
+import org.infinispan.rest.RestServer;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
-import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.memcached.MemcachedServer;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -55,7 +54,7 @@ public class CompatibilityCacheFactory<K, V> {
    private EmbeddedCacheManager cacheManager;
    private HotRodServer hotrod;
    private RemoteCacheManager hotrodClient;
-   private NettyRestServer rest;
+   private RestServer rest;
    private MemcachedServer memcached;
 
    private Cache<K, V> embeddedCache;
@@ -187,8 +186,8 @@ public class CompatibilityCacheFactory<K, V> {
          try {
             RestServerConfigurationBuilder builder = new RestServerConfigurationBuilder();
             builder.port(initialPort);
-            rest = NettyRestServer.createServer(builder.build(), cacheManager);
-            rest.start();
+            rest = new RestServer();
+            rest.start(builder.build(), cacheManager);
          } catch (Throwable t) {
             if (!isBindException(t)) {
                throw t;
@@ -231,7 +230,7 @@ public class CompatibilityCacheFactory<K, V> {
       killCacheManagers(cacheManager);
    }
 
-   void killRestServer(Lifecycle rest) {
+   void killRestServer(RestServer rest) {
       if (rest != null) {
          try {
             rest.stop();

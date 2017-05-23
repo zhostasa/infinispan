@@ -7,10 +7,9 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -65,8 +64,8 @@ public class EmbeddedRestMemcachedHotRodTest extends AbstractInfinispanTest {
       // 3. Get with REST
       HttpMethod get = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       cacheFactory.getRestClient().executeMethod(get);
-      assertEquals(HttpServletResponse.SC_OK, get.getStatusCode());
-      assertEquals("text/plain", get.getResponseHeader("Content-Type").getValue());
+      assertEquals(HttpStatus.SC_OK, get.getStatusCode());
+      assertEquals("text/plain;charset=UTF-8", get.getResponseHeader("Content-Type").getValue());
       assertEquals("v1", get.getResponseBodyAsString());
 
       // 4. Get with Hot Rod
@@ -85,7 +84,7 @@ public class EmbeddedRestMemcachedHotRodTest extends AbstractInfinispanTest {
       // 3. Get with REST
       HttpMethod get = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       cacheFactory.getRestClient().executeMethod(get);
-      assertEquals(HttpServletResponse.SC_OK, get.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get.getStatusCode());
       assertEquals("v1", get.getResponseBodyAsString());
 
       // 4. Get with Hot Rod
@@ -101,7 +100,7 @@ public class EmbeddedRestMemcachedHotRodTest extends AbstractInfinispanTest {
             "<hey>ho</hey>".getBytes(), "application/octet-stream"));
       HttpClient restClient = cacheFactory.getRestClient();
       restClient.executeMethod(put);
-      assertEquals(HttpServletResponse.SC_OK, put.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, put.getStatusCode());
       assertEquals("", put.getResponseBodyAsString().trim());
 
       // 2. Get with Embedded (given a marshaller, it can unmarshall the result)
@@ -133,7 +132,7 @@ public class EmbeddedRestMemcachedHotRodTest extends AbstractInfinispanTest {
       // 4. Get with REST
       HttpMethod get = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       cacheFactory.getRestClient().executeMethod(get);
-      assertEquals(HttpServletResponse.SC_OK, get.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get.getStatusCode());
       assertEquals("v1", get.getResponseBodyAsString());
    }
 

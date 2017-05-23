@@ -69,7 +69,7 @@ public class SslConfigurationBuilder<T extends ProtocolServerConfiguration, S ex
     * @param domain A domain which will hold configuration details. It is also possible to specify <code>*</code>
     *               for all domains.
     * @return {@link SslConfigurationBuilder} instance associated with specified domain.
-    */
+     */
    public SslEngineConfigurationBuilder sniHostName(String domain) {
       return sniDomains.computeIfAbsent(domain, (v) -> new SslEngineConfigurationBuilder(this));
    }
@@ -178,9 +178,9 @@ public class SslConfigurationBuilder<T extends ProtocolServerConfiguration, S ex
    @Override
    public SslConfiguration create() {
       Map<String, SslEngineConfiguration> producedSniConfigurations = sniDomains.entrySet()
-            .stream()
-            .collect(Collectors.toMap(Map.Entry::getKey,
-                  e -> e.getValue().create()));
+              .stream()
+              .collect(Collectors.toMap(Map.Entry::getKey,
+                      e -> e.getValue().create()));
       return new SslConfiguration(enabled, requireClientAuth, producedSniConfigurations);
    }
 
@@ -191,10 +191,10 @@ public class SslConfigurationBuilder<T extends ProtocolServerConfiguration, S ex
 
       this.sniDomains = new HashMap<>();
       template.sniDomainsConfiguration().entrySet()
-            .forEach(e -> sniDomains.put(e.getKey(), new SslEngineConfigurationBuilder(this).read(e.getValue())));
+              .forEach(e -> sniDomains.put(e.getKey(), new SslEngineConfigurationBuilder(this).read(e.getValue())));
 
       this.defaultDomainConfigurationBuilder = sniDomains
-            .computeIfAbsent(SslConfiguration.DEFAULT_SNI_DOMAIN, (v) -> new SslEngineConfigurationBuilder(this));
+              .computeIfAbsent(SslConfiguration.DEFAULT_SNI_DOMAIN, (v) -> new SslEngineConfigurationBuilder(this));
       return this;
    }
 

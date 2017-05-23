@@ -48,7 +48,6 @@
       <version.org.wildfly.arquillian>1.1.0.Beta1</version.org.wildfly.arquillian>
       <version.org.wildfly.build-tools>1.1.6.Final</version.org.wildfly.build-tools>
       <version.remoting.jmx.wildfly>2.0.1.Final-redhat-1</version.remoting.jmx.wildfly>
-      <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
       <version.org.wildfly.extras.creaper>0.9.5</version.org.wildfly.extras.creaper>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.antrun.maven.plugin>1.8</version.antrun.maven.plugin>
@@ -397,19 +396,6 @@
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-server-rest</artifactId>
             <version>${version.org.infinispan}</version>
-            <classifier>classes</classifier>
-         </dependency>
-
-         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <version>${version.resteasy}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>jaxrs-api</artifactId>
-            <version>${version.resteasy}</version>
          </dependency>
 
          <!--<dependency>

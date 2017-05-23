@@ -18,11 +18,10 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -72,7 +71,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
             "<hey>ho</hey>".getBytes(), "application/octet-stream"));
       HttpClient restClient = cacheFactory.getRestClient();
       restClient.executeMethod(put);
-      assertEquals(HttpServletResponse.SC_OK, put.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, put.getStatusCode());
       assertEquals("", put.getResponseBodyAsString().trim());
 
       // 2. Get with Embedded
@@ -96,7 +95,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       // 3. Get with REST
       HttpMethod get = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       cacheFactory.getRestClient().executeMethod(get);
-      assertEquals(HttpServletResponse.SC_OK, get.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get.getStatusCode());
       assertEquals("v1", get.getResponseBodyAsString());
    }
 
@@ -113,7 +112,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       // 3. Get with REST
       HttpMethod get = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       cacheFactory.getRestClient().executeMethod(get);
-      assertEquals(HttpServletResponse.SC_OK, get.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get.getStatusCode());
       assertEquals("v1", get.getResponseBodyAsString());
    }
 
@@ -132,7 +131,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       HttpMethod get = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       get.setRequestHeader("Accept", "application/x-java-serialized-object");
       cacheFactory.getRestClient().executeMethod(get);
-      assertEquals(get.getStatusText(), HttpServletResponse.SC_OK, get.getStatusCode());
+      assertEquals(get.getStatusText(), HttpStatus.SC_OK, get.getStatusCode());
       // REST finds the Java POJO in-memory and returns the Java serialized version
       assertEquals(p, new ObjectInputStream(get.getResponseBodyAsStream()).readObject());
    }
@@ -153,7 +152,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
 
       cacheFactory.getRestClient().executeMethod(get);
       assertEquals("application/x-java-serialized-object", get.getResponseHeader("Content-Type").getValue());
-      assertEquals(get.getStatusText(), HttpServletResponse.SC_OK, get.getStatusCode());
+      assertEquals(get.getStatusText(), HttpStatus.SC_OK, get.getStatusCode());
       // REST finds the Java POJO in-memory and returns the Java serialized version
       assertEquals(p, new ObjectInputStream(get.getResponseBodyAsStream()).readObject());
    }
@@ -169,14 +168,14 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       HttpMethod getJson = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       getJson.setRequestHeader("Accept", "application/json");
       cacheFactory.getRestClient().executeMethod(getJson);
-      assertEquals(getJson.getStatusText(), HttpServletResponse.SC_OK, getJson.getStatusCode());
+      assertEquals(getJson.getStatusText(), HttpStatus.SC_OK, getJson.getStatusCode());
       assertEquals("{\"name\":\"Anna\"}", getJson.getResponseBodyAsString());
 
       // 3. Get with REST (accept application/xml)
       HttpMethod getXml = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       getXml.setRequestHeader("Accept", "application/xml");
       cacheFactory.getRestClient().executeMethod(getXml);
-      assertEquals(getXml.getStatusText(), HttpServletResponse.SC_OK, getXml.getStatusCode());
+      assertEquals(getXml.getStatusText(), HttpStatus.SC_OK, getXml.getStatusCode());
       assertTrue(getXml.getResponseBodyAsString().contains("<name>Anna</name>"));
    }
 
@@ -192,14 +191,14 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       HttpMethod getJson = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       getJson.setRequestHeader("Accept", "application/json");
       cacheFactory.getRestClient().executeMethod(getJson);
-      assertEquals(getJson.getStatusText(), HttpServletResponse.SC_OK, getJson.getStatusCode());
+      assertEquals(getJson.getStatusText(), HttpStatus.SC_OK, getJson.getStatusCode());
       assertEquals("{\"name\":\"Jakub\"}", getJson.getResponseBodyAsString());
 
       // 3. Get with REST (accept application/xml)
       HttpMethod getXml = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       getXml.setRequestHeader("Accept", "application/xml");
       cacheFactory.getRestClient().executeMethod(getXml);
-      assertEquals(getXml.getStatusText(), HttpServletResponse.SC_OK, getXml.getStatusCode());
+      assertEquals(getXml.getStatusText(), HttpStatus.SC_OK, getXml.getStatusCode());
       assertTrue(getXml.getResponseBodyAsString().contains("<name>Jakub</name>"));
    }
 
@@ -238,7 +237,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       // 3. HEAD with REST key1
       HttpMethod headKey1 = new HeadMethod(cacheFactory.getRestUrl() + "/" + key1);
       cacheFactory.getRestClient().executeMethod(headKey1);
-      assertEquals(HttpServletResponse.SC_OK, headKey1.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, headKey1.getStatusCode());
       Header expires = headKey1.getResponseHeader("Expires");
       assertNotNull(expires);
       assertTrue(dateFormat.parse(expires.getValue()).after(new GregorianCalendar(2013, 1, 1).getTime()));
@@ -246,7 +245,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       // 4. HEAD with REST key2
       HttpMethod headKey2 = new HeadMethod(cacheFactory.getRestUrl() + "/" + key2);
       cacheFactory.getRestClient().executeMethod(headKey2);
-      assertEquals(HttpServletResponse.SC_OK, headKey2.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, headKey2.getStatusCode());
       assertNotNull(headKey2.getResponseHeader("Expires"));
    }
 
@@ -263,13 +262,13 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       // 3. Get with REST key
       HttpMethod get1 = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       cacheFactory.getRestClient().executeMethod(get1);
-      assertEquals(HttpServletResponse.SC_OK, get1.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get1.getStatusCode());
       assertDate(get1, "Expires");
 
       // 4. Get with REST key2
       HttpMethod get2 = new GetMethod(cacheFactory.getRestUrl() + "/" + key2);
       cacheFactory.getRestClient().executeMethod(get2);
-      assertEquals(HttpServletResponse.SC_OK, get2.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get2.getStatusCode());
       assertDate(get2, "Expires");
    }
 
@@ -286,13 +285,13 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       // 3. Get with REST key
       HttpMethod get1 = new GetMethod(cacheFactory.getRestUrl() + "/" + key);
       cacheFactory.getRestClient().executeMethod(get1);
-      assertEquals(HttpServletResponse.SC_OK, get1.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get1.getStatusCode());
       assertDate(get1, "Last-Modified");
 
       // 4. Get with REST key2
       HttpMethod get2 = new GetMethod(cacheFactory.getRestUrl() + "/" + key2);
       cacheFactory.getRestClient().executeMethod(get2);
-      assertEquals(HttpServletResponse.SC_OK, get2.getStatusCode());
+      assertEquals(HttpStatus.SC_OK, get2.getStatusCode());
       assertDate(get2, "Last-Modified");
    }
 
@@ -317,15 +316,17 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
 
       // 3. Get with REST key1
       HttpMethod getHotRodValue = new GetMethod(cacheFactory.getRestUrl() + "/" + key1);
+      getHotRodValue.setRequestHeader("Accept", "application/octet-stream");
       cacheFactory.getRestClient().executeMethod(getHotRodValue);
-      assertEquals(getHotRodValue.getStatusText(), HttpServletResponse.SC_OK, getHotRodValue.getStatusCode());
+      assertEquals(getHotRodValue.getStatusText(), HttpStatus.SC_OK, getHotRodValue.getStatusCode());
       assertEquals("application/octet-stream", getHotRodValue.getResponseHeader("Content-Type").getValue());
       assertArrayEquals("v1".getBytes(), getHotRodValue.getResponseBody());
 
       // 4. Get with REST key2
       HttpMethod getEmbeddedValue = new GetMethod(cacheFactory.getRestUrl() + "/" + key2);
+      getEmbeddedValue.setRequestHeader("Accept", "application/octet-stream");
       cacheFactory.getRestClient().executeMethod(getEmbeddedValue);
-      assertEquals(getEmbeddedValue.getStatusText(), HttpServletResponse.SC_OK, getEmbeddedValue.getStatusCode());
+      assertEquals(getEmbeddedValue.getStatusText(), HttpStatus.SC_OK, getEmbeddedValue.getStatusCode());
       assertEquals("application/octet-stream", getEmbeddedValue.getResponseHeader("Content-Type").getValue());
       assertArrayEquals("v2".getBytes(), getEmbeddedValue.getResponseBody());
    }
@@ -344,13 +345,13 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       HttpMethod getKey1 = new HeadMethod(cacheFactory.getRestUrl() + "/" + key1);
       getKey1.setRequestHeader("Accept", "unknown-media-type");
       cacheFactory.getRestClient().executeMethod(getKey1);
-      assertEquals(getKey1.getStatusText(), HttpServletResponse.SC_BAD_REQUEST, getKey1.getStatusCode());
+      assertEquals(getKey1.getStatusText(), HttpStatus.SC_NOT_ACCEPTABLE, getKey1.getStatusCode());
 
       // 4. GET with REST key2
       HttpMethod getKey2 = new HeadMethod(cacheFactory.getRestUrl() + "/" + key2);
       getKey2.setRequestHeader("Accept", "unknown-media-type");
       cacheFactory.getRestClient().executeMethod(getKey2);
-      assertEquals(getKey2.getStatusText(), HttpServletResponse.SC_BAD_REQUEST, getKey2.getStatusCode());
+      assertEquals(getKey2.getStatusText(), HttpStatus.SC_NOT_ACCEPTABLE, getKey2.getStatusCode());
    }
 
    public void testHotRodEmbeddedPutRestGetCacheControlHeader() throws Exception {
@@ -367,13 +368,13 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       HttpMethod getKey1 = new GetMethod(cacheFactory.getRestUrl() + "/" + key1);
       getKey1.setRequestHeader("Cache-Control", "min-fresh=20");
       cacheFactory.getRestClient().executeMethod(getKey1);
-      assertEquals(getKey1.getStatusText(), HttpServletResponse.SC_NOT_FOUND, getKey1.getStatusCode());
+      assertEquals(getKey1.getStatusText(), HttpStatus.SC_NOT_FOUND, getKey1.getStatusCode());
 
       // 4. GET with REST key2, long min-fresh
       HttpMethod getKey2 = new GetMethod(cacheFactory.getRestUrl() + "/" + key2);
       getKey2.setRequestHeader("Cache-Control", "min-fresh=20");
       cacheFactory.getRestClient().executeMethod(getKey2);
-      assertEquals(getKey2.getStatusText(), HttpServletResponse.SC_NOT_FOUND, getKey2.getStatusCode());
+      assertEquals(getKey2.getStatusText(), HttpStatus.SC_NOT_FOUND, getKey2.getStatusCode());
 
       // 5. GET with REST key1, short min-fresh
       getKey1 = new GetMethod(cacheFactory.getRestUrl() + "/" + key1);
@@ -381,7 +382,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       cacheFactory.getRestClient().executeMethod(getKey1);
       assertNotNull(getKey1.getResponseHeader("Cache-Control"));
       assertTrue(getKey1.getResponseHeader("Cache-Control").getValue().contains("max-age"));
-      assertEquals(getKey1.getStatusText(), HttpServletResponse.SC_OK, getKey1.getStatusCode());
+      assertEquals(getKey1.getStatusText(), HttpStatus.SC_OK, getKey1.getStatusCode());
       assertEquals("v1", getKey1.getResponseBodyAsString());
 
       // 6. GET with REST key2, short min-fresh
@@ -389,7 +390,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
       getKey2.setRequestHeader("Cache-Control", "min-fresh=3");
       cacheFactory.getRestClient().executeMethod(getKey2);
       assertTrue(getKey2.getResponseHeader("Cache-Control").getValue().contains("max-age"));
-      assertEquals(getKey2.getStatusText(), HttpServletResponse.SC_OK, getKey2.getStatusCode());
+      assertEquals(getKey2.getStatusText(), HttpStatus.SC_OK, getKey2.getStatusCode());
       assertEquals("v2", getKey2.getResponseBodyAsString());
    }
 

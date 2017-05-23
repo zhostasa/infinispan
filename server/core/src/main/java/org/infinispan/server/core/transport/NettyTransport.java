@@ -3,6 +3,7 @@ package org.infinispan.server.core.transport;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -96,8 +97,8 @@ public class NettyTransport implements Transport {
       this.cacheManager = cacheManager;
 
       // Need to initialize these in constructor since they require configuration
-      masterGroup = buildEventLoop(1, new DefaultThreadFactory(threadNamePrefix + "ServerMaster"));
-      workerGroup = buildEventLoop(0, new DefaultThreadFactory(threadNamePrefix + "ServerWorker"));
+      masterGroup = buildEventLoop(1, new DefaultThreadFactory(threadNamePrefix + "-ServerMaster"));
+      workerGroup = buildEventLoop(0, new DefaultThreadFactory(threadNamePrefix + "-ServerWorker"));
 
       isGlobalStatsEnabled = cacheManager.getCacheManagerConfiguration().globalJmxStatistics().enabled();
       serverChannels = new DefaultChannelGroup(threadNamePrefix + "-Channels", ImmediateEventExecutor.INSTANCE);
@@ -124,6 +125,8 @@ public class NettyTransport implements Transport {
    private final AtomicLong totalBytesRead = new AtomicLong();
    private final boolean isGlobalStatsEnabled;
 
+   private Optional<Integer> nettyPort = Optional.empty();
+
    @Override
    public void start() {
       // Make netty use log4j, otherwise it goes to JDK logging.
@@ -144,6 +147,7 @@ public class NettyTransport implements Transport {
       Channel ch;
       try {
          ch = bootstrap.bind(address).sync().channel();
+         nettyPort = Optional.of(((InetSocketAddress)ch.localAddress()).getPort());
       } catch (InterruptedException e) {
          throw new CacheException(e);
       }
@@ -179,6 +183,7 @@ public class NettyTransport implements Transport {
          log.debug("Channel group completely closed, release external resources");
       masterGroup.shutdownGracefully();
       workerGroup.shutdownGracefully();
+      nettyPort = Optional.empty();
    }
 
    @Override
@@ -198,7 +203,7 @@ public class NettyTransport implements Transport {
 
    @Override
    public Integer getPort() {
-      return address.getPort();
+      return nettyPort.orElse(address.getPort());
    }
 
    @Override
