@@ -20,6 +20,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
+import org.infinispan.util.concurrent.IsolationLevel;
 import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.Test;
 
@@ -31,8 +32,9 @@ public class InterpreterTest extends SingleCacheManagerTest {
       GlobalConfigurationBuilder gcb = new GlobalConfigurationBuilder();
       gcb.defaultCacheName("default");
       ConfigurationBuilder c = getDefaultStandaloneCacheConfig(true);
-      c.jmxStatistics().enable().dataContainer().invocationBatching().enable();
-      return TestCacheManagerFactory.createCacheManager(gcb, c);
+      c.jmxStatistics().enable().dataContainer().invocationBatching().enable().locking().isolationLevel(IsolationLevel.READ_COMMITTED);
+      EmbeddedCacheManager cm = TestCacheManagerFactory.createCacheManager(gcb, c);
+      return cm;
    }
 
    private Interpreter getInterpreter() {
