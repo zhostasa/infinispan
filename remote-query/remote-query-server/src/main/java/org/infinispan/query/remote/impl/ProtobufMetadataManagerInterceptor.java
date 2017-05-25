@@ -210,11 +210,11 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomAsyncIntercepto
 
       return invokeNextThenAccept(ctx, command, (rCtx, rCommand, rv) -> {
          PutKeyValueCommand putKeyValueCommand = (PutKeyValueCommand) rCommand;
-         long flagsBitSet = copyFlags(putKeyValueCommand);
          if (putKeyValueCommand.isSuccessful()) {
-            FileDescriptorSource source =
-                  new FileDescriptorSource().addProtoFile((String) key, (String) value);
+            FileDescriptorSource source = new FileDescriptorSource()
+                  .addProtoFile((String) key, (String) value);
 
+            long flagsBitSet = copyFlags(putKeyValueCommand);
             ProgressCallback progressCallback = null;
             if (rCtx.isOriginLocal() && !putKeyValueCommand.hasAnyFlag(FlagBitSets.PUT_FOR_STATE_TRANSFER)) {
                progressCallback = new ProgressCallback(rCtx, flagsBitSet);
@@ -367,8 +367,8 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomAsyncIntercepto
 
       return invokeNextThenAccept(ctx, command, (rCtx, rCommand, rv) -> {
          if (((WriteCommand) rCommand).isSuccessful()) {
-            FileDescriptorSource source =
-                  new FileDescriptorSource().addProtoFile((String) key, (String) value);
+            FileDescriptorSource source = new FileDescriptorSource()
+                        .addProtoFile((String) key, (String) value);
 
             long flagsBitSet = copyFlags(((WriteCommand) rCommand));
             ProgressCallback progressCallback = null;
