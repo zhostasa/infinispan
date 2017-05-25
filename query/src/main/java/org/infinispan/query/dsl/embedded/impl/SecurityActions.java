@@ -7,8 +7,6 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.security.AuthorizationManager;
 import org.infinispan.security.Security;
-import org.infinispan.security.actions.GetCacheAuthorizationManagerAction;
-import org.infinispan.security.actions.GetCacheComponentRegistryAction;
 
 /**
  * SecurityActions for the org.infinispan.query.dsl.embedded.impl package. Do not move and do not change class and
@@ -28,10 +26,10 @@ final class SecurityActions {
    }
 
    static AuthorizationManager getCacheAuthorizationManager(AdvancedCache<?, ?> cache) {
-      return doPrivileged(new GetCacheAuthorizationManagerAction(cache));
+      return doPrivileged(cache::getAuthorizationManager);
    }
 
    static ComponentRegistry getCacheComponentRegistry(AdvancedCache<?, ?> cache) {
-      return doPrivileged(new GetCacheComponentRegistryAction(cache));
+      return doPrivileged(cache::getComponentRegistry);
    }
 }

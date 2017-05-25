@@ -674,12 +674,7 @@ public class QueryEngine<TypeMetadata> {
 
    protected final IckleFilterAndConverter createAndWireFilter(String queryString, Map<String, Object> namedParameters) {
       IckleFilterAndConverter filter = createFilter(queryString, namedParameters);
-
-      SecurityActions.doPrivileged(() -> {
-         cache.getComponentRegistry().wireDependencies(filter);
-         return null;
-      });
-
+      SecurityActions.getCacheComponentRegistry(cache).wireDependencies(filter);
       return filter;
    }
 
