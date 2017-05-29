@@ -21,6 +21,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import org.junit.runner.RunWith;
  *
  * @author Tomas Sykora (tsykora@redhat.com)
  */
+@Ignore("Disabled until JDG-991 is fixed")
 @RunWith(Arquillian.class)
 @Category({RollingUpgradesDist.class})
 public class HotRodRollingUpgradesDistIT extends AbstractHotRodRollingUpgradesIT {
