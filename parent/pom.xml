@@ -132,6 +132,8 @@
       <version.httpclient>4.5.0.redhat-1</version.httpclient>
       <version.howl>1.0.1-1</version.howl>
       <version.jackson>1.9.13.redhat-3</version.jackson>
+      <version.netty.tcp.native>2.0.0.Final</version.netty.tcp.native>
+      <version.jetty.http.client>9.4.5.v20170502</version.jetty.http.client>
       <version.javax.cache.cache-tests>1.0.0</version.javax.cache.cache-tests>
       <version.javax.servlet>2.5</version.javax.servlet>
       <version.jbossjta>5.2.21.Final-redhat-1</version.jbossjta>
@@ -959,6 +961,16 @@
             <artifactId>jbosssx-bare</artifactId>
             <version>${version.org.picketbox}</version>
             <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-tcnative-boringssl-static</artifactId>
+            <version>${version.netty.tcp.native}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
+            <version>${version.jetty.http.client}</version>
          </dependency>
          <dependency>
             <groupId>org.apache.karaf</groupId>

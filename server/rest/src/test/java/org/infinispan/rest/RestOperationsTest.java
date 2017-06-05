@@ -17,13 +17,10 @@ import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.rest.assertion.ResponseAssertion;
-import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
+import org.infinispan.rest.helper.RestServerHelper;
 import org.infinispan.rest.operations.CacheOperationsHelper;
 import org.infinispan.rest.operations.mime.MimeMetadata;
 import org.infinispan.test.AbstractInfinispanTest;
@@ -35,43 +32,30 @@ import org.testng.annotations.Test;
 @Test(groups = "functional", testName = "rest.RestOperationsTest")
 public class RestOperationsTest extends AbstractInfinispanTest {
 
-   private EmbeddedCacheManager cacheManager;
    private HttpClient client;
-   private RestServer restServer;
-   private RestServerConfigurationBuilder restServerConfiguration;
+   private RestServerHelper restServer;
 
    @BeforeSuite
    public void beforeSuite() throws Exception {
-      GlobalConfigurationBuilder globalConfiguration = new GlobalConfigurationBuilder().nonClusteredDefault();
-      globalConfiguration.globalJmxStatistics().allowDuplicateDomains(true);
+      restServer = RestServerHelper.defaultRestServer("default");
       ConfigurationBuilder configuration = new ConfigurationBuilder();
-      cacheManager = new DefaultCacheManager(globalConfiguration.build(), configuration.build());
-      cacheManager.defineConfiguration("default", configuration.build());
-
       configuration.expiration().lifespan(100).maxIdle(100);
-      cacheManager.defineConfiguration("expiration", configuration.build());
+      restServer.defineCache("expiration", configuration);
+      restServer.start();
 
       client = new HttpClient();
       client.start();
-
-      restServerConfiguration = new RestServerConfigurationBuilder();
-      restServerConfiguration.host("localhost").port(0);
-      restServer = new RestServer();
-
-      restServer.start(restServerConfiguration.build(), cacheManager);
    }
 
    @AfterSuite
    public void afterSuite() throws Exception {
       client.stop();
       restServer.stop();
-      cacheManager.stop();
    }
 
    @AfterMethod
    public void afterMethod() {
-      cacheManager.getCache("default").clear();
-      cacheManager.getCache("expiration").clear();
+      restServer.clear();
    }
 
    @Test
@@ -327,8 +311,8 @@ public class RestOperationsTest extends AbstractInfinispanTest {
    }
 
    private void putValueWithMetadataInCache(String cacheName, String key, String testValue, String dataType, Optional<Long> ttl, Optional<Long> idleTime) {
-      Metadata metadata = CacheOperationsHelper.createMetadata(cacheManager.getCacheConfiguration(cacheName), dataType, ttl, idleTime);
-      cacheManager.getCache(cacheName).getAdvancedCache().put(key, testValue.getBytes(), metadata);
+      Metadata metadata = CacheOperationsHelper.createMetadata(restServer.getCacheManager().getCacheConfiguration(cacheName), dataType, ttl, idleTime);
+      restServer.getCacheManager().getCache(cacheName).getAdvancedCache().put(key, testValue.getBytes(), metadata);
    }
 
    private void putValueWithMetadataInCache(String cacheName, String key, String testValue) {
@@ -336,7 +320,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
    }
 
    private void putValueInCache(String cacheName, String key, Object testValue) {
-      cacheManager.getCache(cacheName).getAdvancedCache().put(key, testValue);
+      restServer.getCacheManager().getCache(cacheName).getAdvancedCache().put(key, testValue);
    }
 
    private byte[] convertToBytes(Object object) throws IOException {
@@ -366,7 +350,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
 
       //then
       ResponseAssertion.assertThat(response).isOk();
-      Assertions.assertThat(cacheManager.getCache("default")).isEmpty();
+      Assertions.assertThat(restServer.getCacheManager().getCache("default")).isEmpty();
    }
 
    @Test
@@ -395,7 +379,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
 
       //then
       ResponseAssertion.assertThat(response).isOk();
-      Assertions.assertThat(cacheManager.getCache("default")).isEmpty();
+      Assertions.assertThat(restServer.getCacheManager().getCache("default")).isEmpty();
    }
 
    @Test
@@ -602,7 +586,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .header("Content-type", "text/plain;charset=UTF-8")
             .send();
 
-      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) cacheManager
+      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) restServer.getCacheManager()
             .<String, byte[]>getCache("default", false)
             .getAdvancedCache()
             .getCacheEntry("test");
@@ -624,7 +608,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .header("Content-type", "application/unknown")
             .send();
 
-      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) cacheManager
+      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) restServer.getCacheManager()
             .<String, byte[]>getCache("default", false)
             .getAdvancedCache()
             .getCacheEntry("test");
@@ -649,7 +633,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .header("Content-type", "application/octet-stream")
             .send();
 
-      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) cacheManager
+      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) restServer.getCacheManager()
             .<String, byte[]>getCache("default", false)
             .getAdvancedCache()
             .getCacheEntry("test");
@@ -692,7 +676,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .header("Content-type", "text/plain;charset=UTF-8")
             .method(HttpMethod.PUT)
             .send();
-      String valueFromCache = new String(cacheManager
+      String valueFromCache = new String(restServer.getCacheManager()
             .<String, byte[]>getCache("default", false)
             .getAdvancedCache()
             .getCacheEntry("test").getValue());
@@ -736,7 +720,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
       TestClass testClass = new TestClass();
       testClass.setName("test");
 
-      cacheManager.getCache("default").getAdvancedCache().put("test", testClass);
+      restServer.getCacheManager().getCache("default").getAdvancedCache().put("test", testClass);
 
       //when
       ContentResponse response = client
@@ -754,7 +738,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
    @Test
    public void shouldSupportCompatibilityWithStrings() throws Exception {
       //given
-      cacheManager.getCache("default").getAdvancedCache().put("test", "test");
+      restServer.getCacheManager().getCache("default").getAdvancedCache().put("test", "test");
 
       //when
       ContentResponse response = client
@@ -777,7 +761,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .content(new StringContentProvider("test"))
             .send();
 
-      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) cacheManager
+      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) restServer.getCacheManager()
             .<String, byte[]>getCache("expiration", false)
             .getAdvancedCache()
             .getCacheEntry("test");
@@ -799,7 +783,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .header("maxIdleTimeSeconds", "-1")
             .send();
 
-      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) cacheManager
+      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) restServer.getCacheManager()
             .<String, byte[]>getCache("expiration", false)
             .getAdvancedCache()
             .getCacheEntry("test");
@@ -821,7 +805,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .header("maxIdleTimeSeconds", "0")
             .send();
 
-      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) cacheManager
+      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) restServer.getCacheManager()
             .<String, byte[]>getCache("expiration", false)
             .getAdvancedCache()
             .getCacheEntry("test");
@@ -843,7 +827,7 @@ public class RestOperationsTest extends AbstractInfinispanTest {
             .header("maxIdleTimeSeconds", "50")
             .send();
 
-      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) cacheManager
+      InternalCacheEntry<String, byte[]> cacheEntry = (InternalCacheEntry<String, byte[]>) restServer.getCacheManager()
             .<String, byte[]>getCache("expiration", false)
             .getAdvancedCache()
             .getCacheEntry("test");
