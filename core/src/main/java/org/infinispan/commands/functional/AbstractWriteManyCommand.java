@@ -11,7 +11,7 @@ import org.infinispan.lifecycle.ComponentStatus;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, ParamsCommand {
+public abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, ParamsCommand {
 
    boolean isForwarded = false;
    int topologyId = -1;

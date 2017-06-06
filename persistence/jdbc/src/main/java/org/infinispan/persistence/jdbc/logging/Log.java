@@ -157,4 +157,10 @@ public interface Log extends org.infinispan.util.logging.Log {
 
    @Message(value = "Exception encountered when preparing JDBC store Tx", id = 8033)
    PersistenceException prepareTxFailure(@Cause Throwable e);
+
+   @Message(value = "Error while writing entries in batch to the database:", id = 8034)
+   PersistenceException sqlFailureWritingBatch(@Cause Exception e);
+
+   @Message(value = "Error whilst removing keys in batch from the database. Keys: %s", id = 8035)
+   PersistenceException sqlFailureDeletingBatch(Iterable<Object> keys, @Cause Exception e);
 }

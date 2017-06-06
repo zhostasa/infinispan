@@ -41,6 +41,7 @@ public enum Namespace {
     INFINISPAN_SERVER_8_2("infinispan:server:core", 8, 2),
     INFINISPAN_SERVER_8_3("infinispan:server:core", 8, 3),
     INFINISPAN_SERVER_8_4("infinispan:server:core", 8, 4),
+    INFINISPAN_SERVER_8_5("infinispan:server:core", 8, 5),
     ;
     private static final String URN_PATTERN = "urn:%s:%d.%d";
 

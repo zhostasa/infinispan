@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.commons.util.Util;
+import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
@@ -63,7 +64,8 @@ public class BaseJDBCStoreConfigurationResource extends BaseStoreConfigurationRe
                     .setXmlName(Attribute.BATCH_SIZE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode().set(TableManipulationConfiguration.BATCH_SIZE.getDefaultValue()))
+                    .setDeprecated(Namespace.INFINISPAN_SERVER_8_5.getVersion())
+                    .setDefaultValue(new ModelNode().set(AbstractStoreConfiguration.MAX_BATCH_SIZE.getDefaultValue()))
                     .build();
     static final SimpleAttributeDefinition FETCH_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_SIZE, ModelType.INT, true)
@@ -128,18 +130,6 @@ public class BaseJDBCStoreConfigurationResource extends BaseStoreConfigurationRe
             setSuffix("column").
             build();
 
-    static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of("entry-table", PREFIX, BATCH_SIZE, FETCH_SIZE, CREATE_ON_START, DROP_ON_EXIT, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
-            setAllowNull(true).
-            setSuffix("table").
-            build();
-
-    static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of("bucket-table", PREFIX, BATCH_SIZE, FETCH_SIZE, CREATE_ON_START, DROP_ON_EXIT, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
-            setAllowNull(true).
-            setSuffix("table").
-            build();
-
     static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.
             Builder.of(ModelKeys.STRING_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, CREATE_ON_START, DROP_ON_EXIT, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
             setAllowNull(true).
@@ -154,7 +144,7 @@ public class BaseJDBCStoreConfigurationResource extends BaseStoreConfigurationRe
 
     static final AttributeDefinition[] COMMON_JDBC_STORE_TABLE_ATTRIBUTES = {PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, CREATE_ON_START, DROP_ON_EXIT};
     static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = {DATA_SOURCE, DIALECT, BATCH_SIZE, FETCH_SIZE, PREFIX,
-    COLUMN_NAME, COLUMN_TYPE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE, CREATE_ON_START, DROP_ON_EXIT};
+    COLUMN_NAME, COLUMN_TYPE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, STRING_KEYED_TABLE, BINARY_KEYED_TABLE, CREATE_ON_START, DROP_ON_EXIT};
 
 
     public BaseJDBCStoreConfigurationResource(PathElement path, String resourceKey, CacheConfigurationResource parent, AttributeDefinition[] attributes) {

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.util.IteratorMapper;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
@@ -99,13 +100,12 @@ public class PassivationManagerImpl implements PassivationManager {
       if (enabled && !skipOnStop) {
          long start = timeService.time();
          log.passivatingAllEntries();
-         for (InternalCacheEntry e : container) {
-            if (trace) log.tracef("Passivating %s", e.getKey());
-            persistenceManager.writeToAllNonTxStores(marshalledEntryFactory.newMarshalledEntry(e.getKey(), e.getValue(),
-                                                                                               internalMetadata(e)), BOTH);
-         }
-         log.passivatedEntries(container.size(),
-                               Util.prettyPrintTime(timeService.timeDuration(start, TimeUnit.MILLISECONDS)));
+
+         int count = container.sizeIncludingExpired();
+         Iterable<MarshalledEntry> iterable = () -> new IteratorMapper<>(container.iterator(), e ->
+            marshalledEntryFactory.newMarshalledEntry(e.getKey(), e.getValue(), internalMetadata(e)));
+         persistenceManager.writeBatchToAllNonTxStores(iterable, BOTH, 0);
+         log.passivatedEntries(count, Util.prettyPrintTime(timeService.timeDuration(start, TimeUnit.MILLISECONDS)));
       }
    }
 

@@ -1,5 +1,7 @@
 package org.infinispan.persistence.remote;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +15,7 @@ import org.infinispan.client.hotrod.configuration.ExhaustedAction;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.commons.persistence.Store;
 import org.infinispan.commons.util.EnumUtil;
@@ -58,7 +61,7 @@ import net.jcip.annotations.ThreadSafe;
 @Store(shared = true)
 @ThreadSafe
 @ConfiguredBy(RemoteStoreConfiguration.class)
-public class RemoteStore implements AdvancedLoadWriteStore, FlagAffectedStore {
+public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffectedStore<K, V> {
 
    private static final Log log = LogFactory.getLog(RemoteStore.class, Log.class);
    private static final boolean trace = log.isTraceEnabled();
@@ -172,7 +175,30 @@ public class RemoteStore implements AdvancedLoadWriteStore, FlagAffectedStore {
       InternalMetadata metadata = entry.getMetadata();
       long lifespan = metadata != null ? metadata.lifespan() : -1;
       long maxIdle = metadata != null ? metadata.maxIdle() : -1;
-      remoteCache.put(entry.getKey(), configuration.rawValues() ? entry.getValue() : entry, toSeconds(lifespan, entry.getKey(), LIFESPAN), TimeUnit.SECONDS, toSeconds(maxIdle, entry.getKey(), MAXIDLE), TimeUnit.SECONDS);
+      remoteCache.put(entry.getKey(), getValue(entry), toSeconds(lifespan, entry.getKey(), LIFESPAN), TimeUnit.SECONDS, toSeconds(maxIdle, entry.getKey(), MAXIDLE), TimeUnit.SECONDS);
+   }
+
+   private Object getValue(MarshalledEntry entry) {
+      if (configuration.rawValues()) {
+         Object value = entry.getValue();
+         return value instanceof  WrappedByteArray ? ((WrappedByteArray) value).getBytes() : value;
+      }
+      return entry;
+   }
+
+   @Override
+   public void writeBatch(Iterable<MarshalledEntry<? extends K, ? extends V>> marshalledEntries) {
+      Map<Object, Object> batch = new HashMap<>();
+      for (MarshalledEntry entry : marshalledEntries) {
+         batch.put(entry.getKey(), getValue(entry));
+         if (batch.size() == configuration.maxBatchSize()) {
+            remoteCache.putAll(batch);
+            batch.clear();
+         }
+      }
+
+      if (!batch.isEmpty())
+         remoteCache.putAll(batch);
    }
 
    @Override

@@ -193,6 +193,72 @@ public class JdbcStringBasedStore<K,V> extends AbstractJdbcStore<K,V> {
    }
 
    @Override
+   public void writeBatch(Iterable<MarshalledEntry<? extends K, ? extends V>> marshalledEntries) {
+      // If upsert is not supported, then we must execute the legacy write for each entry; i.e. read then update/insert
+      if (!tableManager.isUpsertSupported()) {
+         marshalledEntries.forEach(this::write);
+         return;
+      }
+
+      Connection connection = null;
+      try {
+         connection = connectionFactory.getConnection();
+         try (PreparedStatement upsertBatch = connection.prepareStatement(tableManager.getUpsertRowSql())) {
+            int batchSize = 0;
+            for (MarshalledEntry entry : marshalledEntries) {
+               String keyStr = key2Str(entry.getKey());
+               prepareUpdateStatement(entry, keyStr, upsertBatch);
+               upsertBatch.addBatch();
+               batchSize++;
+
+               if (batchSize == configuration.maxBatchSize()) {
+                  batchSize = 0;
+                  upsertBatch.executeBatch();
+                  upsertBatch.clearBatch();
+               }
+            }
+
+            if (batchSize != 0)
+               upsertBatch.executeBatch();
+         }
+      } catch (SQLException | InterruptedException e) {
+         throw log.sqlFailureWritingBatch(e);
+      } finally {
+         connectionFactory.releaseConnection(connection);
+      }
+   }
+
+   @Override
+   public void deleteBatch(Iterable<Object> keys) {
+      Connection connection = null;
+      try {
+         connection = connectionFactory.getConnection();
+         try (PreparedStatement deleteBatch = connection.prepareStatement(tableManager.getDeleteRowSql())) {
+            int batchSize = 0;
+            for (Object key : keys) {
+               String keyStr = key2Str(key);
+               deleteBatch.setString(1, keyStr);
+               deleteBatch.addBatch();
+               batchSize++;
+
+               if (batchSize == configuration.maxBatchSize()) {
+                  batchSize = 0;
+                  deleteBatch.executeBatch();
+                  deleteBatch.clearBatch();
+               }
+            }
+
+            if (batchSize != 0)
+               deleteBatch.executeBatch();
+         }
+      } catch (SQLException e) {
+         throw log.sqlFailureDeletingBatch(keys, e);
+      } finally {
+         connectionFactory.releaseConnection(connection);
+      }
+   }
+
+   @Override
    public MarshalledEntry load(Object key) {
       String lockingKey = key2Str(key);
       Connection conn = null;

@@ -29,6 +29,10 @@ public interface TableManager {
 
    int getFetchSize();
 
+   /**
+    * @deprecated Please use {@link AbstractStoreConfiguration#maxBatchSize()} instead.
+    */
+   @Deprecated
    int getBatchSize();
 
    boolean isUpsertSupported();
