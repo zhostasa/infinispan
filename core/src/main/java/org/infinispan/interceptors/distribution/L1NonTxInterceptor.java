@@ -14,6 +14,8 @@ import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.DataCommand;
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commands.functional.ReadWriteKeyCommand;
+import org.infinispan.commands.functional.ReadWriteKeyValueCommand;
 import org.infinispan.commands.read.AbstractDataCommand;
 import org.infinispan.commands.read.GetCacheEntryCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
@@ -230,6 +232,16 @@ public class L1NonTxInterceptor extends BaseRpcInterceptor {
          processInvalidationResult(putMapCommand, invalidationFuture);
          return MultiSubCommandInvoker.invokeEach(rCtx, subCommands, this, rv);
       });
+   }
+
+   @Override
+   public Object visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command) throws Throwable {
+      return handleDataWriteCommand(ctx, command, false);
+   }
+
+   @Override
+   public Object visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command) throws Throwable {
+      return handleDataWriteCommand(ctx, command, false);
    }
 
    @Override

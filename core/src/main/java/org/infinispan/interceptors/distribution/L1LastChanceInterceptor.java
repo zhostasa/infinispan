@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.infinispan.commands.functional.ReadWriteKeyCommand;
+import org.infinispan.commands.functional.ReadWriteKeyValueCommand;
 import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.write.DataWriteCommand;
@@ -36,7 +38,7 @@ import org.infinispan.util.logging.LogFactory;
  */
 public class L1LastChanceInterceptor extends BaseRpcInterceptor {
 
-   private static final Log log = LogFactory.getLog(L1NonTxInterceptor.class);
+   private static final Log log = LogFactory.getLog(L1LastChanceInterceptor.class);
    private static final boolean trace = log.isTraceEnabled();
 
    private L1Manager l1Manager;
@@ -67,6 +69,16 @@ public class L1LastChanceInterceptor extends BaseRpcInterceptor {
 
    @Override
    public Object visitRemoveCommand(InvocationContext ctx, RemoveCommand command) throws Throwable {
+      return visitDataWriteCommand(ctx, command, false);
+   }
+
+   @Override
+   public Object visitReadWriteKeyValueCommand(InvocationContext ctx, ReadWriteKeyValueCommand command) throws Throwable {
+      return visitDataWriteCommand(ctx, command, false);
+   }
+
+   @Override
+   public Object visitReadWriteKeyCommand(InvocationContext ctx, ReadWriteKeyCommand command) throws Throwable {
       return visitDataWriteCommand(ctx, command, false);
    }
 
