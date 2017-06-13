@@ -10,11 +10,11 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.AbstractDelegatingCache;
 import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.RemovableCloseableIterator;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.encoding.DataConversion;
-import org.infinispan.stream.impl.RemovableCloseableIterator;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
