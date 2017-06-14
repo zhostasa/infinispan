@@ -61,6 +61,6 @@ public class KeyStreamSupplier<K, V> implements AbstractLocalCacheStream.StreamS
 
    @Override
    public CloseableIterator<K> removableIterator(CloseableIterator<K> realIterator) {
-      return new RemovableCloseableIterator<>(realIterator, cache, Function.identity());
+      return new RemovableCloseableIterator<>(realIterator, cache::remove);
    }
 }
