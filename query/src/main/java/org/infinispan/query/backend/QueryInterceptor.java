@@ -1,5 +1,7 @@
 package org.infinispan.query.backend;
 
+import static org.infinispan.commons.dataconversion.EncodingUtils.fromStorage;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,8 +42,6 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.interceptors.DDAsyncInterceptor;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.query.Transformer;
 import org.infinispan.query.impl.DefaultSearchWorkCreator;
 import org.infinispan.query.logging.Log;
@@ -259,8 +259,8 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
       return queryKnownClasses.keys();
    }
 
-   private Object extractValue(Object wrappedValue) {
-      return valueEncoder.fromStorage(valueWrapper.unwrap(wrappedValue));
+   private Object extractValue(Object storedValue) {
+      return fromStorage(storedValue, valueEncoder, valueWrapper);
    }
 
    public void enableClasses(Class[] classes) {

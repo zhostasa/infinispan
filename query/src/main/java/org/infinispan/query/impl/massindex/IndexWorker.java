@@ -1,5 +1,7 @@
 package org.infinispan.query.impl.massindex;
 
+import static org.infinispan.commons.dataconversion.EncodingUtils.fromStorage;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -9,8 +11,8 @@ import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.dataconversion.Encoder;
+import org.infinispan.commons.dataconversion.Wrapper;
 import org.infinispan.commons.marshall.AbstractExternalizer;
-import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
@@ -40,6 +42,7 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
 
    private ClusteringDependentLogic clusteringDependentLogic;
    private Encoder valueEncoder;
+   private Wrapper valueWrapper;
 
    public IndexWorker(Class<?> entity, boolean flush, boolean clean, boolean primaryOwner) {
       this.entity = entity;
@@ -55,7 +58,7 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
       ComponentRegistry componentRegistry = cache.getAdvancedCache().getComponentRegistry();
       this.clusteringDependentLogic = componentRegistry.getComponent(ClusteringDependentLogic.class);
       valueEncoder = cache.getAdvancedCache().getValueEncoder();
-
+      valueWrapper = cache.getAdvancedCache().getValueWrapper();
    }
 
    protected void preIndex() {
@@ -70,8 +73,8 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
       return primaryOwner ? new PrimaryOwnersKeyValueFilter() : AcceptAllKeyValueFilter.getInstance();
    }
 
-   private Object extractValue(Object wrappedValue) {
-      return valueEncoder.fromStorage(wrappedValue);
+   private Object extractValue(Object storageValue) {
+      return fromStorage(storageValue, valueEncoder, valueWrapper);
    }
 
    @Override
