@@ -395,7 +395,7 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
     */
    private void processRemoveCommand(final RemoveCommand command, final InvocationContext ctx, final Object valueRemoved, TransactionContext transactionContext) {
       if (command.isSuccessful() && !command.isNonExistent() && shouldModifyIndexes(command, ctx)) {
-         final Object value = extractValue(valueRemoved);
+         final Object value = extractValue(command.isConditional() ? command.getValue() : valueRemoved);
          if (updateKnownTypesIfNeeded(value)) {
             transactionContext = transactionContext == null ? makeTransactionalEventContext() : transactionContext;
             removeFromIndexes(value, extractValue(command.getKey()), transactionContext);
