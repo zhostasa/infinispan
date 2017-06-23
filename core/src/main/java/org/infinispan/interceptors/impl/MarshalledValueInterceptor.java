@@ -37,7 +37,6 @@ import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.DDAsyncInterceptor;
-import org.infinispan.interceptors.InvocationStage;
 import org.infinispan.interceptors.InvocationSuccessFunction;
 import org.infinispan.marshall.core.MarshalledValue;
 import org.infinispan.stream.impl.interceptor.AbstractDelegatingEntryCacheSet;
@@ -148,6 +147,9 @@ public class MarshalledValueInterceptor<K, V> extends DDAsyncInterceptor {
             value = createMarshalledValue(command.getKey(), ctx);
             command.setKey(value);
          }
+      }
+      if (wrapValues && command.getValue() != null && !isTypeExcluded(command.getValue().getClass())) {
+         command.setValue(createMarshalledValue(command.getValue(), ctx));
       }
       return invokeNextThenApply(ctx, command, processRetValReturnHandler);
    }
