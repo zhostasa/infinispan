@@ -244,10 +244,6 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
       }
    }
 
-   public boolean hasIndex(final Class<?> c) {
-      return searchFactoryHandler.hasIndex(c);
-   }
-
    private Object extractValue(Object wrappedValue) {
       if (wrappedValue instanceof MarshalledValue)
          return ((MarshalledValue) wrappedValue).get();
