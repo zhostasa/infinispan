@@ -1,5 +1,6 @@
 package org.infinispan.marshall;
 
+import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
@@ -93,5 +94,29 @@ public class MarshalledValuesFineGrainedTest extends AbstractInfinispanTest {
 
       assert value.equals(dc.get(key).getValue());
    }
+
+   public void testConditionalRemoveWithStoreAsBinaryOnBoth() {
+      testConditionalRemove(true, true);
+   }
+
+   public void testConditionalRemoveWithStoreAsBinaryOnKeys() {
+      testConditionalRemove(true, false);
+   }
+
+   public void testConditionalRemoveWithStoreAsBinaryOnValues() {
+      testConditionalRemove(false, true);
+   }
+
+   private void testConditionalRemove(boolean binaryKeys, boolean binaryValues) {
+      ConfigurationBuilder c = new ConfigurationBuilder();
+      c.storeAsBinary().enable().storeKeysAsBinary(binaryKeys).storeValuesAsBinary(binaryValues).build();
+      ecm = TestCacheManagerFactory.createCacheManager(c);
+      Cache<Object, Object> cache = ecm.getCache();
+
+      cache.put(key, value);
+      cache.remove(key, value);
+      assert cache.get(key) == null;
+   }
+
 
 }
