@@ -114,7 +114,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
             map.put(member, segments);
          }
          map.remove(rpcManager.getAddress());
-      } else if (ch.getNumOwners() > 1) {
+      } else {
          for (Integer segment : segments) {
             List<Address> owners = ch.locateOwnersForSegment(segment);
             for (int i = 1; i < owners.size(); ++i) {
@@ -255,7 +255,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          }
       }
 
-      if (helper.shouldRegisterRemoteCallback(command, null)) {
+      if (helper.shouldRegisterRemoteCallback(command)) {
          return invokeNextThenApply(ctx, command, helper);
       } else {
          return invokeNext(ctx, command);
@@ -311,7 +311,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          }
          return asyncValue(allFuture);
       } else { // origin is not local
-         return handleRemoteReadWriteManyCommand(ctx, command, helper, ch);
+         return handleRemoteReadWriteManyCommand(ctx, command, helper);
       }
    }
 
@@ -382,7 +382,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Item> Object handleRemoteReadWriteManyCommand(
-         InvocationContext ctx, C command, WriteManyCommandHelper<C, ?, Item> helper, ConsistentHash ch) throws Exception {
+         InvocationContext ctx, C command, WriteManyCommandHelper<C, ?, Item> helper) throws Exception {
       List<CompletableFuture<?>> retrievals = null;
       // check that we have all the data we need
       for (Item item : helper.getItems(command)) {
@@ -397,7 +397,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
          delay = CompletableFutures.completedNull();
       }
       Object result = asyncInvokeNext(ctx, command, delay);
-      if (helper.shouldRegisterRemoteCallback(command, ch)) {
+      if (helper.shouldRegisterRemoteCallback(command)) {
          return makeStage(result).thenApply(ctx, command, helper);
       } else {
          return result;
@@ -494,7 +494,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
 
       public abstract int containerSize(Container container);
 
-      public abstract boolean shouldRegisterRemoteCallback(C cmd, ConsistentHash ch);
+      public abstract boolean shouldRegisterRemoteCallback(C cmd);
 
       public abstract Object transformResult(Object[] results);
 
@@ -566,8 +566,8 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
 
       @Override
-      public boolean shouldRegisterRemoteCallback(PutMapCommand cmd, ConsistentHash ch) {
-         return !(cmd.isForwarded() || ch.getNumOwners() <= 1);
+      public boolean shouldRegisterRemoteCallback(PutMapCommand cmd) {
+         return !cmd.isForwarded();
       }
 
       @Override
@@ -628,8 +628,8 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
 
       @Override
-      public boolean shouldRegisterRemoteCallback(ReadWriteManyEntriesCommand cmd, ConsistentHash ch) {
-         return !(cmd.isForwarded() || ch.getNumOwners() <= 1);
+      public boolean shouldRegisterRemoteCallback(ReadWriteManyEntriesCommand cmd) {
+         return !cmd.isForwarded();
       }
 
       @Override
@@ -683,8 +683,8 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
 
       @Override
-      public boolean shouldRegisterRemoteCallback(ReadWriteManyCommand cmd, ConsistentHash ch) {
-         return !(cmd.isForwarded() || ch.getNumOwners() <= 1);
+      public boolean shouldRegisterRemoteCallback(ReadWriteManyCommand cmd) {
+         return !cmd.isForwarded();
       }
 
       @Override
@@ -740,7 +740,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
 
       @Override
-      public boolean shouldRegisterRemoteCallback(WriteOnlyManyEntriesCommand cmd, ConsistentHash ch) {
+      public boolean shouldRegisterRemoteCallback(WriteOnlyManyEntriesCommand cmd) {
          return !cmd.isForwarded();
       }
 
@@ -796,7 +796,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
 
       @Override
-      public boolean shouldRegisterRemoteCallback(WriteOnlyManyCommand cmd, ConsistentHash ch) {
+      public boolean shouldRegisterRemoteCallback(WriteOnlyManyCommand cmd) {
          return !cmd.isForwarded();
       }
 

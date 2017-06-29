@@ -31,6 +31,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
+import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
 import org.infinispan.configuration.cache.StorageType;
 
@@ -270,26 +271,18 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
    private Optional<Cache<Object, Person>> findCache(Ownership ownership, Object key) {
       List<Cache<Object, Person>> caches = Arrays.asList(cache1, cache2);
       ClusteringDependentLogic cdl = cache1.getAdvancedCache().getComponentRegistry().getComponent(ClusteringDependentLogic.class);
-      Predicate<Cache<?, ?>> predicate = null;
+      DistributionInfo distribution = cdl.getCacheTopology().getDistribution(key);
 
+      Predicate<Cache<?, ?>> predicate = null;
       switch (ownership) {
          case PRIMARY:
-            predicate = c -> {
-               RpcManager rpcManager = c.getAdvancedCache().getRpcManager();
-               return rpcManager == null || rpcManager.getAddress().equals(cdl.getPrimaryOwner(key));
-            };
+            predicate = c -> c.getAdvancedCache().getRpcManager().getAddress().equals(distribution.primary());
             break;
          case BACKUP:
-            predicate = c -> {
-               List<Address> owners = cdl.getOwners(key);
-               return owners != null && owners.indexOf(c.getAdvancedCache().getRpcManager().getAddress()) > 0;
-            };
+            predicate = c -> distribution.writeBackups().contains(c.getAdvancedCache().getRpcManager().getAddress());
             break;
          case NON_OWNER:
-            predicate = c -> {
-               List<Address> owners = cdl.getOwners(key);
-               return owners == null || !owners.contains(c.getAdvancedCache().getRpcManager().getAddress());
-            };
+            predicate = c -> !distribution.writeOwners().contains(c.getAdvancedCache().getRpcManager().getAddress());
       }
 
       return caches.stream().filter(predicate).findFirst();
