@@ -1,5 +1,6 @@
 package org.infinispan.persistence.jdbc.table.management;
 
+import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.persistence.jdbc.JdbcUtil;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
@@ -7,8 +8,10 @@ import org.infinispan.persistence.jdbc.logging.Log;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.util.logging.LogFactory;
 
+import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
@@ -43,6 +46,15 @@ class OracleTableManager extends AbstractTableManager {
    }
 
    @Override
+   public String getInsertRowSql() {
+      if (insertRowSql == null) {
+         insertRowSql = String.format("INSERT INTO %s (%s,%s,%s) VALUES (?,?,?)", getTableName(),
+               config.idColumnName(), config.timestampColumnName(), config.dataColumnName());
+      }
+      return insertRowSql;
+   }
+
+   @Override
    public String getUpsertRowSql() {
       if (upsertRowSql == null) {
          upsertRowSql = String.format("MERGE INTO %1$s t " +
@@ -52,5 +64,13 @@ class OracleTableManager extends AbstractTableManager {
                this.getTableName(), config.dataColumnName(), config.timestampColumnName(), config.idColumnName());
       }
       return upsertRowSql;
+   }
+
+   @Override
+   public void prepareUpdateStatement(PreparedStatement ps, String key, long timestamp, ByteBuffer byteBuffer) throws SQLException {
+      ps.setString(1, key);
+      ps.setLong(2, timestamp);
+      // We must use BLOB here to avoid ORA-01461 caused by implicit casts on dual
+      ps.setBlob(3, new ByteArrayInputStream(byteBuffer.getBuf(), byteBuffer.getOffset(), byteBuffer.getLength()), byteBuffer.getLength());
    }
 }

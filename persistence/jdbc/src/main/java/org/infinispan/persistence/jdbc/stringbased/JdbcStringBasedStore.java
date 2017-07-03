@@ -2,7 +2,6 @@ package org.infinispan.persistence.jdbc.stringbased;
 
 import static org.infinispan.persistence.PersistenceUtil.getExpiryTime;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -463,9 +462,8 @@ public class JdbcStringBasedStore<K,V> extends AbstractJdbcStore<K,V> {
 
    private void prepareUpdateStatement(MarshalledEntry entry, String key, PreparedStatement ps) throws InterruptedException, SQLException {
       ByteBuffer byteBuffer = marshall(new KeyValuePair(entry.getValueBytes(), entry.getMetadataBytes()));
-      ps.setBinaryStream(1, new ByteArrayInputStream(byteBuffer.getBuf(), byteBuffer.getOffset(), byteBuffer.getLength()), byteBuffer.getLength());
-      ps.setLong(2, getExpiryTime(entry.getMetadata()));
-      ps.setString(3, key);
+      long expiryTime = getExpiryTime(entry.getMetadata());
+      tableManager.prepareUpdateStatement(ps, key, expiryTime, byteBuffer);
    }
 
    private String key2Str(Object key) throws PersistenceException {
