@@ -33,6 +33,9 @@
                 <include name="jboss-cli.sh"/>
                 <include name="jboss-cli.ps1"/>
             </fileset>
+            <fileset dir="${output.dir}/bin/init.d">
+                <include name="jboss-eap*"/>
+            </fileset>
         </delete>
         <delete dir="${output.dir}/appclient"/>
         <delete dir="${output.dir}/welcome-content"/>
