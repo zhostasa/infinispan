@@ -126,11 +126,11 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
       return jmxStatistics;
    }
 
-   @Deprecated
-   @Override
    /**
     * Deprecated since 8.4, please use {@link ConfigurationBuilder#memory()} instead.
     */
+   @Deprecated
+   @Override
    public StoreAsBinaryConfigurationBuilder storeAsBinary() {
       return storeAsBinary;
    }
