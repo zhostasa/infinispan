@@ -5,8 +5,8 @@ import org.infinispan.hibernate.search.spi.CacheManagerService;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
- * Simple wrapper to make the Cache ComponentRegistry and the CacheManager available to the
- * services managed by Hibernate Search.
+ * Simple wrapper to make the Cache's ComponentRegistry, the CacheManager and the LuceneAnalysisDefinitionProvider
+ * available to the services managed by Hibernate Search.
  *
  * @author Sanne Grinovero
  * @since 7.0
@@ -14,11 +14,11 @@ import org.infinispan.manager.EmbeddedCacheManager;
 final class InfinispanLoopbackService implements CacheManagerService, ComponentRegistryService {
 
    private final ComponentRegistry componentRegistry;
-   private EmbeddedCacheManager cacheManager;
+   private final EmbeddedCacheManager cacheManager;
 
-   public InfinispanLoopbackService(ComponentRegistry cr, EmbeddedCacheManager uninitializedCacheManager) {
-      this.componentRegistry = cr;
-      this.cacheManager = uninitializedCacheManager;
+   InfinispanLoopbackService(ComponentRegistry componentRegistry, EmbeddedCacheManager cacheManager) {
+      this.componentRegistry = componentRegistry;
+      this.cacheManager = cacheManager;
    }
 
    @Override
@@ -26,8 +26,8 @@ final class InfinispanLoopbackService implements CacheManagerService, ComponentR
       return componentRegistry;
    }
 
+   @Override
    public EmbeddedCacheManager getEmbeddedCacheManager() {
       return cacheManager;
    }
-
 }
