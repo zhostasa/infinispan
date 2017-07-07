@@ -657,6 +657,37 @@
             <artifactId>lucene-facet</artifactId>
             <version>${version.lucene}</version>
          </dependency>
+
+         <dependency>
+            <groupId>io.searchbox</groupId>
+            <artifactId>jest</artifactId>
+            <version>${version.jest}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>io.searchbox</groupId>
+            <artifactId>jest-common</artifactId>
+            <version>${version.jest}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${version.gson}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${version.commonslang3}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>agent-bond-agent</artifactId>
+            <version>${version.agent-bond}</version>
+         </dependency>
+
       </dependencies>
 
    </dependencyManagement>
