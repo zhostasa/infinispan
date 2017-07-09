@@ -23,6 +23,7 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
+import org.infinispan.test.fwk.TestResourceTracker;
 import org.infinispan.test.fwk.TransportFlags;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.util.concurrent.locks.LockManager;
@@ -99,7 +100,8 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
             throw new IllegalStateException("No caches registered! Use registerCacheManager(Cache... caches) to do that!");
          TestingUtil.clearContent(cacheManagers);
       } else {
-         TestingUtil.killCacheManagers(true, cacheManagers.toArray(new EmbeddedCacheManager[cacheManagers.size()]));
+         TestingUtil.clearContent(cacheManagers);
+         TestingUtil.killCacheManagers(cacheManagers);
          cacheManagers.clear();
       }
    }
