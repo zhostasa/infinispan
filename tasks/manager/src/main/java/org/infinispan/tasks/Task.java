@@ -1,10 +1,15 @@
 package org.infinispan.tasks;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 public interface Task {
    /**
-    * Returns the name of the task
+    * Provides a name for the task. This is the name by which the task will be executed.
+    * Make sure the name is unique for task.
+    *
+    * @return name of the server task
     */
    String getName();
 
@@ -14,13 +19,34 @@ public interface Task {
    String getType();
 
    /**
-    * Returns the execution mode in which this task can be executed
+    * Provides info whether the task execution should be local - on one node or distributed - on all nodes.
+    *
+    * ONE_NODE execution is the default.
+    *
+    * @return {@link TaskExecutionMode#ONE_NODE} for single node execution, {@link TaskExecutionMode#ALL_NODES} for distributed execution,
     */
-   TaskExecutionMode getExecutionMode();
+   default TaskExecutionMode getExecutionMode() {
+      return TaskExecutionMode.ONE_NODE;
+   }
 
    /**
-    * Returns the list of named parameters for this task
+    * The named parameters accepted by this task
+    *
+    * @return a java.util.Set of parameter names
     */
-   Set<String> getParameters();
+   default Set<String> getParameters() {
+      return Collections.emptySet();
+   }
 
+   /**
+    * An optional role, for which the task is accessible.
+    * If the task executor has the role in the set, the task will be executed.
+    *
+    * If the role is not provided - all users can invoke the task
+    *
+    * @return a user role, for which the task can be executed
+    */
+   default Optional<String> getAllowedRole() {
+      return Optional.empty();
+   }
 }
