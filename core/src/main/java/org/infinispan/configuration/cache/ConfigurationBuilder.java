@@ -35,7 +35,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
    private final TransactionConfigurationBuilder transaction;
    private final VersioningConfigurationBuilder versioning;
    private final UnsafeConfigurationBuilder unsafe;
-   private final List<Builder<?>> modules = new ArrayList<Builder<?>>();
+   private final List<Builder<?>> modules = new ArrayList<>();
    private final SitesConfigurationBuilder sites;
    private final CompatibilityModeConfigurationBuilder compatibility;
    private final AttributeSet attributes;
@@ -245,7 +245,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
       if (validate) {
          validate();
       }
-      List<Object> modulesConfig = new LinkedList<Object>();
+      List<Object> modulesConfig = new LinkedList<>();
       for (Builder<?> module : modules)
          modulesConfig.add(module.create());
       return new Configuration(template, attributes.protect(), clustering.create(), customInterceptors.create(),

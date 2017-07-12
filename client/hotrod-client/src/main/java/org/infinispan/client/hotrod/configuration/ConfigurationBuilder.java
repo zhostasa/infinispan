@@ -59,7 +59,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    private Class<? extends Marshaller> marshallerClass;
    private Marshaller marshaller;
    private ProtocolVersion protocolVersion = ProtocolVersion.DEFAULT_PROTOCOL_VERSION;
-   private final List<ServerConfigurationBuilder> servers = new ArrayList<ServerConfigurationBuilder>();
+   private final List<ServerConfigurationBuilder> servers = new ArrayList<>();
    private int socketTimeout = ConfigurationProperties.DEFAULT_SO_TIMEOUT;
    private final SecurityConfigurationBuilder security;
    private boolean tcpNoDelay = true;
@@ -69,10 +69,10 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    private int maxRetries = ConfigurationProperties.DEFAULT_MAX_RETRIES;
    private final NearCacheConfigurationBuilder nearCache;
 
-   private final List<ClusterConfigurationBuilder> clusters = new ArrayList<ClusterConfigurationBuilder>();
+   private final List<ClusterConfigurationBuilder> clusters = new ArrayList<>();
 
    public ConfigurationBuilder() {
-      this.classLoader = new WeakReference<ClassLoader>(Thread.currentThread().getContextClassLoader());
+      this.classLoader = new WeakReference<>(Thread.currentThread().getContextClassLoader());
       this.connectionPool = new ConnectionPoolConfigurationBuilder(this);
       this.asyncExecutorFactory = new ExecutorFactoryConfigurationBuilder(this);
       this.security = new SecurityConfigurationBuilder(this);
@@ -139,7 +139,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ConfigurationBuilder classLoader(ClassLoader cl) {
-      this.classLoader = new WeakReference<ClassLoader>(cl);
+      this.classLoader = new WeakReference<>(cl);
       return this;
    }
 
@@ -147,6 +147,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       return classLoader != null ? classLoader.get() : null;
    }
 
+   @Override
    public ConfigurationBuilder clientIntelligence(ClientIntelligence clientIntelligence) {
       this.clientIntelligence = clientIntelligence;
       return this;
@@ -333,7 +334,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       if (maxRetries < 0) {
          throw log.invalidMaxRetries(maxRetries);
       }
-      Set<String> clusterNameSet = new HashSet<String>(clusters.size());
+      Set<String> clusterNameSet = new HashSet<>(clusters.size());
       for (ClusterConfigurationBuilder clusterConfigBuilder : clusters) {
          if (!clusterNameSet.add(clusterConfigBuilder.getClusterName())) {
             throw log.duplicateClusterDefinition(clusterConfigBuilder.getClusterName());
@@ -344,7 +345,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public Configuration create() {
-      List<ServerConfiguration> servers = new ArrayList<ServerConfiguration>();
+      List<ServerConfiguration> servers = new ArrayList<>();
       if (this.servers.size() > 0)
          for (ServerConfigurationBuilder server : this.servers) {
             servers.add(server.create());
@@ -378,7 +379,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ConfigurationBuilder read(Configuration template) {
-      this.classLoader = new WeakReference<ClassLoader>(template.classLoader());
+      this.classLoader = new WeakReference<>(template.classLoader());
       this.asyncExecutorFactory.read(template.asyncExecutorFactory());
       this.balancingStrategyClass = template.balancingStrategyClass();
       this.balancingStrategy = template.balancingStrategy();

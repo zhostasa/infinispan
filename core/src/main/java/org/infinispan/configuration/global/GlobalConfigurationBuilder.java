@@ -27,14 +27,14 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
    private final ThreadPoolConfigurationBuilder asyncThreadPool;
    private final ShutdownConfigurationBuilder shutdown;
    private final GlobalStateConfigurationBuilder globalState;
-   private final List<Builder<?>> modules = new ArrayList<Builder<?>>();
+   private final List<Builder<?>> modules = new ArrayList<>();
    private final SiteConfigurationBuilder site;
 
 
    public GlobalConfigurationBuilder() {
       // In OSGi contexts the TCCL should not be used. Use the infinispan-core bundle as default instead.
       ClassLoader defaultCL = Util.isOSGiContext() ? GlobalConfigurationBuilder.class.getClassLoader() : Thread.currentThread().getContextClassLoader();
-      this.cl = new WeakReference<ClassLoader>(defaultCL);
+      this.cl = new WeakReference<>(defaultCL);
       this.transport = new TransportConfigurationBuilder(this);
       this.globalJmxStatistics = new GlobalJmxStatisticsConfigurationBuilder(this);
       this.serialization = new SerializationConfigurationBuilder(this);
@@ -80,7 +80,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
    }
 
    public GlobalConfigurationBuilder classLoader(ClassLoader cl) {
-      this.cl = new WeakReference<ClassLoader>(cl);
+      this.cl = new WeakReference<>(cl);
       return this;
    }
 
@@ -209,7 +209,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
    @Override
    public GlobalConfiguration build() {
       validate();
-      List<Object> modulesConfig = new LinkedList<Object>();
+      List<Object> modulesConfig = new LinkedList<>();
       for (Builder<?> module : modules)
          modulesConfig.add(module.create());
       return new GlobalConfiguration(
@@ -231,7 +231,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
    }
 
    public GlobalConfigurationBuilder read(GlobalConfiguration template) {
-      this.cl = new WeakReference<ClassLoader>(template.classLoader());
+      this.cl = new WeakReference<>(template.classLoader());
 
       for (Object c : template.modules().values()) {
          BuiltBy builtBy = c.getClass().getAnnotation(BuiltBy.class);
