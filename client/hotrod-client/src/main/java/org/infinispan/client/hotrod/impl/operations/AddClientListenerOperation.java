@@ -10,7 +10,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.event.ClientEvent;
-import org.infinispan.client.hotrod.event.ClientListenerNotifier;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
 import org.infinispan.client.hotrod.impl.protocol.HeaderParams;
 import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;

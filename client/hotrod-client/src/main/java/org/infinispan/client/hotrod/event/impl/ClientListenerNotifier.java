@@ -1,4 +1,4 @@
-package org.infinispan.client.hotrod.event;
+package org.infinispan.client.hotrod.event.impl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -18,13 +18,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryModified;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryRemoved;
 import org.infinispan.client.hotrod.annotation.ClientCacheFailover;
+import org.infinispan.client.hotrod.event.ClientCacheEntryCreatedEvent;
+import org.infinispan.client.hotrod.event.ClientCacheEntryCustomEvent;
+import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
+import org.infinispan.client.hotrod.event.ClientCacheEntryModifiedEvent;
+import org.infinispan.client.hotrod.event.ClientCacheEntryRemovedEvent;
+import org.infinispan.client.hotrod.event.ClientCacheFailoverEvent;
+import org.infinispan.client.hotrod.event.ClientEvent;
+import org.infinispan.client.hotrod.event.ClientEvents;
 import org.infinispan.client.hotrod.exceptions.TransportException;
 import org.infinispan.client.hotrod.impl.operations.AddClientListenerOperation;
 import org.infinispan.client.hotrod.impl.protocol.Codec;

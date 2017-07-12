@@ -10,7 +10,7 @@ import javax.net.ssl.SSLContext;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.event.ClientListenerNotifier;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHashFactory;
 import org.infinispan.client.hotrod.impl.protocol.Codec;

@@ -24,7 +24,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
-import org.infinispan.client.hotrod.event.ClientListenerNotifier;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.exceptions.RemoteCacheManagerNotStartedException;
 import org.infinispan.client.hotrod.filter.Filters;

@@ -22,7 +22,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ServerConfiguration;
 import org.infinispan.client.hotrod.configuration.SslConfiguration;
-import org.infinispan.client.hotrod.event.ClientListenerNotifier;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.TransportException;
 import org.infinispan.client.hotrod.impl.TopologyInfo;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
@@ -58,7 +58,7 @@ public class TcpTransportFactory implements TransportFactory {
     * We need synchronization as the thread that calls {@link TransportFactory#start(org.infinispan.client.hotrod.impl.protocol.Codec,
     * might (and likely will) be different from the thread(s) that calls {@link TransportFactory#getTransport(Object, java.util.Set, byte[])} or other methods
     * org.infinispan.client.hotrod.configuration.Configuration, java.util.concurrent.atomic.AtomicInteger,
-    * org.infinispan.client.hotrod.event.ClientListenerNotifier)}
+    * org.infinispan.client.hotrod.event.impl.ClientListenerNotifier)}
     * might(and likely will) be different from the thread(s) that calls {@link TransportFactory#getTransport(byte[],
     * java.util.Set, byte[])} or other methods
     */

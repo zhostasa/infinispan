@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
-import org.infinispan.client.hotrod.event.ClientListenerNotifier;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.impl.InvalidatedNearRemoteCache;
 import org.infinispan.client.hotrod.impl.RemoteCacheImpl;

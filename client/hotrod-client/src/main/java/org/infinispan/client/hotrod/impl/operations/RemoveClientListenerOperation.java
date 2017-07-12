@@ -4,7 +4,7 @@ import java.net.SocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
-import org.infinispan.client.hotrod.event.ClientListenerNotifier;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
 import org.infinispan.client.hotrod.impl.protocol.HeaderParams;
 import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
