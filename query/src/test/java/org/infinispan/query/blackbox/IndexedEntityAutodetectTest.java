@@ -24,6 +24,8 @@ import org.testng.annotations.Test;
 /**
  * Tests that undeclared indexed entities are autodetected.
  *
+ * TODO [anistor] remove this test in Infinispan 10.0
+ *
  * @author anistor@redhat.com
  * @since 8.2
  */
