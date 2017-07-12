@@ -14,6 +14,7 @@
         <module name="org.infinispan.query" optional="true" services="import"/>
         <module name="org.infinispan.persistence.cassandra" optional="true" services="import" />
         <module name="org.infinispan.remote-query.server" optional="true"/>
+        <module name="org.infinispan.remote-query.client" optional="true"/>
         <module name="org.infinispan.lucene-directory" optional="true" export="true" services="export" />
         <module name="org.jboss.marshalling" services="import"/>
         <module name="org.jgroups"/>
