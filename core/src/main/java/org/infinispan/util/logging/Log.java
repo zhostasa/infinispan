@@ -1510,4 +1510,7 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Class %s should be a subclass of %s", id = 439)
    CacheException invalidEncodingClass(Class<?> configured, Class<?> required);
+
+   @Message(value = "Class %s not found", id = 483)
+   CacheConfigurationException classNotFound(String name);
 }

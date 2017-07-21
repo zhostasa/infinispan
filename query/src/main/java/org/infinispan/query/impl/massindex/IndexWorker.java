@@ -1,7 +1,5 @@
 package org.infinispan.query.impl.massindex;
 
-import static org.infinispan.commons.dataconversion.EncodingUtils.fromStorage;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -10,13 +8,12 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.dataconversion.Encoder;
-import org.infinispan.commons.dataconversion.Wrapper;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distexec.DistributedCallable;
+import org.infinispan.encoding.DataConversion;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.filter.AcceptAllKeyValueFilter;
 import org.infinispan.filter.CacheFilters;
@@ -41,8 +38,7 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
    protected IndexUpdater indexUpdater;
 
    private ClusteringDependentLogic clusteringDependentLogic;
-   private Encoder valueEncoder;
-   private Wrapper valueWrapper;
+   private DataConversion valueDataConversion;
 
    public IndexWorker(Class<?> entity, boolean flush, boolean clean, boolean primaryOwner) {
       this.entity = entity;
@@ -57,8 +53,7 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
       this.indexUpdater = new IndexUpdater(cache);
       ComponentRegistry componentRegistry = cache.getAdvancedCache().getComponentRegistry();
       this.clusteringDependentLogic = componentRegistry.getComponent(ClusteringDependentLogic.class);
-      valueEncoder = cache.getAdvancedCache().getValueEncoder();
-      valueWrapper = cache.getAdvancedCache().getValueWrapper();
+      valueDataConversion = cache.getAdvancedCache().getValueDataConversion();
    }
 
    protected void preIndex() {
@@ -74,7 +69,7 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
    }
 
    private Object extractValue(Object storageValue) {
-      return fromStorage(storageValue, valueEncoder, valueWrapper);
+      return valueDataConversion.fromStorage(storageValue);
    }
 
    @Override

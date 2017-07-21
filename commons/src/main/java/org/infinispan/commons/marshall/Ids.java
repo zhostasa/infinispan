@@ -177,4 +177,6 @@ public interface Ids {
    int ENCODER_KEY_MAPPER = 122;
    int ENCODER_VALUE_MAPPER = 123;
    int ENCODER_ENTRY_MAPPER = 124;
+
+   int DATA_CONVERSION = 131;
 }

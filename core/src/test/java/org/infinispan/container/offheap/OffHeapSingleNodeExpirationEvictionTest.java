@@ -6,12 +6,10 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 
-import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.commons.dataconversion.Encoder;
-import org.infinispan.commons.dataconversion.Wrapper;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.encoding.DataConversion;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.testng.annotations.Factory;
@@ -81,11 +79,11 @@ public class OffHeapSingleNodeExpirationEvictionTest extends OffHeapSingleNodeTe
       cache.put("k", "v");
       long afterInsert = System.currentTimeMillis();
 
-      AdvancedCache<String, String> advancedCache = cache.getAdvancedCache();
-      Encoder encoder = advancedCache.getKeyEncoder();
-      Wrapper wrapper = advancedCache.getKeyWrapper();
+      DataConversion dataConversion = cache.getAdvancedCache().getKeyDataConversion();
 
-      CacheEntry<String, String> entry = cache.getAdvancedCache().getDataContainer().get(wrapper.wrap(encoder.toStorage("k")));
+      CacheEntry<String, String> entry = cache.getAdvancedCache().getDataContainer().get(
+            dataConversion.toStorage("k"));
+
       assertNotNull(entry);
       long storedTime = TimeUnit.MINUTES.toMillis(10);
       switch (expirationType) {
