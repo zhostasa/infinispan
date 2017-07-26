@@ -25,6 +25,7 @@ import org.infinispan.commons.dataconversion.Encoder;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.marshall.core.EncoderRegistry;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
 import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.server.hotrod.HotRodServer;
@@ -260,4 +261,9 @@ public class CompatibilityCacheFactory<K, V> {
       return hotrod;
    }
 
+   public void registerEncoder(Encoder encoder) {
+      EncoderRegistry encoderRegistry = embeddedCache.getAdvancedCache().getComponentRegistry()
+            .getGlobalComponentRegistry().getComponent(EncoderRegistry.class);
+      encoderRegistry.registerEncoder(encoder);
+   }
 }
