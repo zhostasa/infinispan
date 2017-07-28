@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<infinispan xmlns="urn:infinispan:config:6.0" xmlns:jdbc="urn:infinispan:config:jdbc:6.0" xmlns:remote="urn:infinispan:config:remote:6.0"
-            xmlns:leveldb="urn:infinispan:config:store:leveldb:6.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd
+<infinispan xmlns="urn:infinispan:config:6.1" xmlns:jdbc="urn:infinispan:config:jdbc:6.0" xmlns:remote="urn:infinispan:config:remote:6.0"
+            xmlns:leveldb="urn:infinispan:config:leveldb:6.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.1.xsd
                         urn:infinispan:config:jpa:6.0 http://www.infinispan.org/schemas/infinispan-cachestore-jpa-config-6.0.xsd
                         urn:infinispan:config:jdbc:6.0 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-6.0.xsd
                         urn:infinispan:config:remote:6.0 http://www.infinispan.org/schemas/infinispan-cachestore-remote-config-6.0.xsd
@@ -10,6 +10,16 @@
 
 
     <global>
+
+        <security>
+            <authorization auditLogger="org.infinispan.security.impl.NullAuditLogger">
+                <identity-role-mapper />
+                <role name="peasant" permissions="READ" />
+                <role name="vavasour" permissions="READ WRITE" />
+                <role name="vassal" permissions="READ WRITE LISTEN" />
+                <role name="king" permissions="ALL" />
+            </authorization>
+        </security>
 
         <asyncListenerExecutor factory="org.infinispan.executors.DefaultExecutorFactory">
             <properties>
@@ -603,6 +613,12 @@
             <recovery enabled="false"/>
         </transaction>
         <invocationBatching enabled="false"/>
+    </namedCache>
+
+    <namedCache name="secureCache">
+        <security>
+            <authorization enabled="true" roles="peasant vavasour vassal king" />
+        </security>
     </namedCache>
 
 </infinispan>

@@ -175,6 +175,11 @@ public final class XMLExtendedStreamWriterImpl implements XMLExtendedStreamWrite
    }
 
    @Override
+   public void writeEmptyElement(Enum<?> localNameEnum) throws XMLStreamException {
+      writeEmptyElement(localNameEnum.toString());
+   }
+
+   @Override
    public void writeEndElement() throws XMLStreamException {
       level--;
       if (state != START_ELEMENT) {

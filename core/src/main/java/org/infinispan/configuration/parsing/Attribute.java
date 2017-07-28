@@ -107,6 +107,7 @@ public enum Attribute {
     REMOTE_TIMEOUT("remote-timeout"),
     @Deprecated
     REPLICATION_QUEUE_EXECUTOR("replication-queue-executor"),
+    ROLE("role"),
     ROLES("roles"),
     SEGMENTS("segments"),
     SHARED("shared"),

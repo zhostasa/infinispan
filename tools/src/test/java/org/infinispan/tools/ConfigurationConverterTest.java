@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.infinispan.Version;
@@ -19,12 +20,15 @@ import org.infinispan.commons.equivalence.ByteArrayEquivalence;
 import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.commons.util.TypedProperties;
+import org.infinispan.configuration.cache.AuthorizationConfiguration;
 import org.infinispan.configuration.cache.BackupConfiguration;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
+import org.infinispan.configuration.global.GlobalAuthorizationConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalSecurityConfiguration;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.factories.threads.DefaultThreadFactory;
 import org.infinispan.interceptors.FooInterceptor;
@@ -40,12 +44,16 @@ import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguratio
 import org.infinispan.persistence.remote.configuration.ConnectionPoolConfiguration;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfiguration;
 import org.infinispan.persistence.rest.configuration.RestStoreConfiguration;
+import org.infinispan.security.AuthorizationPermission;
+import org.infinispan.security.impl.IdentityRoleMapper;
+import org.infinispan.security.impl.NullAuditLogger;
 import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.CacheManagerCallable;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.tools.config.ConfigurationConverter;
 import org.infinispan.tools.customs.CustomDataContainer;
 import org.infinispan.tools.customs.CustomTransport;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @Test(testName = "tools.ConfigurationConverterTest", groups = "functional")
@@ -53,16 +61,33 @@ public class ConfigurationConverterTest extends AbstractInfinispanTest {
 
    public static final String SERIALIZED_CONFIG_FILE_NAME = "target/serialized_config.xml";
 
-   public void testConversionFrom60() throws Exception {
+   public enum Features {
+      SECURITY,
+      GLOBAL_STATE
+   }
+
+   @DataProvider(name = "configurationFiles")
+   public static Object[][] configurationFiles() {
+      return new Object[][] {
+            {"6.0.xml", EnumSet.noneOf(Features.class)},
+            {"6.1.xml", EnumSet.of(Features.SECURITY)},
+            {"6.2.xml", EnumSet.of(Features.SECURITY)},
+            {"6.4.xml", EnumSet.of(Features.SECURITY, Features.GLOBAL_STATE)}};
+   }
+
+
+   @Test(dataProvider = "configurationFiles")
+   public void testConversion(String configurationFile, EnumSet<Features> features) throws Exception {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ConfigurationConverter.convert(ConfigurationConverterTest.class.getResourceAsStream("/6.0.xml"), baos);
+      ConfigurationConverter.convert(ConfigurationConverterTest.class.getResourceAsStream("/" + configurationFile), baos);
       ParserRegistry pr = new ParserRegistry();
       pr.parse(new ByteArrayInputStream(baos.toByteArray()));
    }
 
-   public void testConversionAndSerializationFrom60() throws Exception {
+   @Test(dataProvider = "configurationFiles")
+   public void testConversionAndSerialization(String configurationFile, EnumSet<Features> features) throws Exception {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ConfigurationConverter.convert(ConfigurationConverterTest.class.getResourceAsStream("/6.0.xml"), baos);
+      ConfigurationConverter.convert(ConfigurationConverterTest.class.getResourceAsStream("/" + configurationFile), baos);
 
       try(OutputStream outputStream = new FileOutputStream(SERIALIZED_CONFIG_FILE_NAME)) {
          baos.writeTo(outputStream);
@@ -89,9 +114,42 @@ public class ConfigurationConverterTest extends AbstractInfinispanTest {
             assertClusteringConverted(cm);
             assertPersistenceConverted(cm);
             assertUnsafeConverted(cm);
+            if (features.contains(Features.SECURITY))
+               assertSecurity(cm);
+            if (features.contains(Features.GLOBAL_STATE))
+               assertGlobalState(cm);
          }
 
       });
+   }
+
+   private void assertGlobalState(EmbeddedCacheManager cm) {
+      GlobalConfiguration globalConfiguration = cm.getCacheManagerConfiguration();
+      assertTrue(globalConfiguration.globalState().enabled());
+      assertEquals("/tmp/persistent", globalConfiguration.globalState().persistentLocation());
+   }
+
+   private void assertSecurity(EmbeddedCacheManager cm) {
+      GlobalConfiguration globalConfiguration = cm.getCacheManagerConfiguration();
+      GlobalSecurityConfiguration security = globalConfiguration.security();
+      GlobalAuthorizationConfiguration globalAuthz = security.authorization();
+      assertTrue(globalAuthz.enabled());
+      assertTrue(globalAuthz.auditLogger() instanceof NullAuditLogger);
+      assertTrue(globalAuthz.principalRoleMapper() instanceof IdentityRoleMapper);
+      assertEquals(4, globalAuthz.roles().size());
+      assertTrue(globalAuthz.roles().get("peasant").getPermissions().contains(AuthorizationPermission.READ));
+      assertTrue(globalAuthz.roles().get("vavasour").getPermissions().contains(AuthorizationPermission.WRITE));
+      assertTrue(globalAuthz.roles().get("vassal").getPermissions().contains(AuthorizationPermission.LISTEN));
+      assertTrue(globalAuthz.roles().get("king").getPermissions().contains(AuthorizationPermission.ALL));
+
+      Configuration secureCache = cm.getCacheConfiguration("secureCache");
+      assertNotNull(secureCache);
+      AuthorizationConfiguration cacheAuthz = secureCache.security().authorization();
+      assertTrue(cacheAuthz.enabled());
+      assertTrue(cacheAuthz.roles().contains("peasant"));
+      assertTrue(cacheAuthz.roles().contains("vavasour"));
+      assertTrue(cacheAuthz.roles().contains("vassal"));
+      assertTrue(cacheAuthz.roles().contains("king"));
    }
 
    //@TODO Uncomment line 100 when JDG-411 is fixed

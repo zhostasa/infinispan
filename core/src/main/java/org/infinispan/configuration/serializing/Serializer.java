@@ -44,8 +44,10 @@ import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.configuration.cache.TakeOfflineConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.cache.XSiteStateTransferConfiguration;
+import org.infinispan.configuration.global.GlobalAuthorizationConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalJmxStatisticsConfiguration;
+import org.infinispan.configuration.global.GlobalStateConfiguration;
 import org.infinispan.configuration.global.SerializationConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
@@ -55,6 +57,11 @@ import org.infinispan.configuration.parsing.Element;
 import org.infinispan.configuration.parsing.Parser.TransactionMode;
 import org.infinispan.distribution.group.Grouper;
 import org.infinispan.factories.threads.DefaultThreadFactory;
+import org.infinispan.security.PrincipalRoleMapper;
+import org.infinispan.security.Role;
+import org.infinispan.security.impl.ClusterRoleMapper;
+import org.infinispan.security.impl.CommonNameRoleMapper;
+import org.infinispan.security.impl.IdentityRoleMapper;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -183,6 +190,8 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
       writeTransport(writer, globalConfiguration);
       writeSerialization(writer, globalConfiguration);
       writeJMX(writer, globalConfiguration);
+      writeGlobalState(writer, globalConfiguration);
+      writeSecurity(writer, globalConfiguration);
       for (Entry<String, Configuration> configuration : holder.getConfigurations().entrySet()) {
          Configuration config = configuration.getValue();
          switch (config.clustering().cacheMode()) {
@@ -204,6 +213,25 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
          default:
             break;
          }
+      }
+   }
+
+   private void writeGlobalState(XMLExtendedStreamWriter writer, GlobalConfiguration globalConfiguration)
+         throws XMLStreamException {
+      GlobalStateConfiguration configuration = globalConfiguration.globalState();
+      if (configuration.enabled()) {
+         writer.writeStartElement(Element.GLOBAL_STATE);
+         if (configuration.attributes().attribute(GlobalStateConfiguration.PERSISTENT_LOCATION).isModified()) {
+            writer.writeStartElement(Element.PERSISTENT_LOCATION);
+            writer.writeAttribute(Attribute.PATH, configuration.persistentLocation());
+            writer.writeEndElement();
+         }
+         if (configuration.attributes().attribute(GlobalStateConfiguration.TEMPORARY_LOCATION).isModified()) {
+            writer.writeStartElement(Element.TEMPORARY_LOCATION);
+            writer.writeAttribute(Attribute.PATH, configuration.temporaryLocation());
+            writer.writeEndElement();
+         }
+         writer.writeEndElement();
       }
    }
 
@@ -324,6 +352,39 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
          }
          if (transaction.recovery().enabled())
             transaction.recovery().attributes().write(writer, RecoveryConfiguration.RECOVERY_INFO_CACHE_NAME, Attribute.RECOVERY_INFO_CACHE_NAME);
+         writer.writeEndElement();
+      }
+   }
+
+   private void writeSecurity(XMLExtendedStreamWriter writer, GlobalConfiguration configuration) throws XMLStreamException {
+      GlobalAuthorizationConfiguration authorization = configuration.security().authorization();
+      AttributeSet attributes = authorization.attributes();
+      if (attributes.isModified() && authorization.enabled()) {
+         writer.writeStartElement(Element.SECURITY);
+         writer.writeStartElement(Element.AUTHORIZATION);
+         attributes.write(writer, GlobalAuthorizationConfiguration.AUDIT_LOGGER, Attribute.AUDIT_LOGGER);
+         PrincipalRoleMapper mapper = authorization.principalRoleMapper();
+         if (mapper != null) {
+            if (mapper instanceof IdentityRoleMapper) {
+               writer.writeEmptyElement(Element.IDENTITY_ROLE_MAPPER);
+            } else if (mapper instanceof CommonNameRoleMapper) {
+               writer.writeEmptyElement(Element.COMMON_NAME_ROLE_MAPPER);
+            } else if (mapper instanceof ClusterRoleMapper) {
+               writer.writeEmptyElement(Element.CLUSTER_ROLE_MAPPER);
+            } else {
+               writer.writeStartElement(Element.CUSTOM_ROLE_MAPPER);
+               writer.writeAttribute(Attribute.CLASS, mapper.getClass().getName());
+               writer.writeEndElement();
+            }
+         }
+
+         for(Role role : authorization.roles().values()) {
+            writer.writeStartElement(Element.ROLE);
+            writer.writeAttribute(Attribute.NAME, role.getName());
+            writeCollectionAsAttribute(writer, Attribute.PERMISSIONS, role.getPermissions());
+            writer.writeEndElement();
+         }
+         writer.writeEndElement();
          writer.writeEndElement();
       }
    }
@@ -490,11 +551,11 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
       }
    }
 
-   private void writeCollectionAsAttribute(XMLExtendedStreamWriter writer, Attribute attribute, Collection<String> collection) throws XMLStreamException {
+   private void writeCollectionAsAttribute(XMLExtendedStreamWriter writer, Attribute attribute, Collection<?> collection) throws XMLStreamException {
       if (!collection.isEmpty()) {
          StringBuilder result = new StringBuilder();
          boolean separator = false;
-         for (String item : collection) {
+         for (Object item : collection) {
             if (separator)
                result.append(" ");
             result.append(item);
