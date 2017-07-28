@@ -1,6 +1,7 @@
 package org.infinispan.query.remote.impl;
 
 import org.infinispan.commons.dataconversion.Wrapper;
+import org.infinispan.commons.dataconversion.WrapperIds;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapper;
 
@@ -10,6 +11,11 @@ import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapper;
  * @since 9.1
  */
 public class ProtostreamWrapper implements Wrapper {
+
+   public static final ProtostreamWrapper INSTANCE = new ProtostreamWrapper();
+
+   private ProtostreamWrapper() {
+   }
 
    @Override
    public Object wrap(Object value) {
@@ -28,6 +34,11 @@ public class ProtostreamWrapper implements Wrapper {
          return ((ProtobufValueWrapper) target).getBinary();
       }
       return target;
+   }
+
+   @Override
+   public byte id() {
+      return WrapperIds.PROTOSTREAM_WRAPPER;
    }
 
 }
