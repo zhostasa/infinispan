@@ -1,5 +1,7 @@
 package org.infinispan.security;
 
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OBJECT_TYPE;
+
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
@@ -732,6 +734,11 @@ public class SecureCacheTestDriver {
    @TestCachePermission(AuthorizationPermission.NONE)
    public void testWithWrapping_Class_Class(SecureCache<String, String> cache) {
       cache.withWrapping(ByteArrayWrapper.class, ByteArrayWrapper.class);
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testWithMediaType_String_String(SecureCache<String, String> cache) {
+      cache.withMediaType(APPLICATION_OBJECT_TYPE, APPLICATION_OBJECT_TYPE);
    }
 
 }

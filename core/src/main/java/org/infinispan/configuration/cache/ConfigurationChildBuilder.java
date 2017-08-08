@@ -16,6 +16,8 @@ public interface ConfigurationChildBuilder {
 
    DeadlockDetectionConfigurationBuilder deadlockDetection();
 
+   EncodingConfigurationBuilder encoding();
+
    EvictionConfigurationBuilder eviction();
 
    ExpirationConfigurationBuilder expiration();

@@ -56,16 +56,17 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusterLoaderConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.ContentTypeConfigurationBuilder;
 import org.infinispan.configuration.cache.CustomStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
-import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.jdbc.DatabaseType;
@@ -518,6 +519,21 @@ public abstract class CacheConfigurationAdd extends AbstractAddStepHandler imple
                 builder.expiration().enableReaper();
             } else {
                 builder.expiration().disableReaper();
+            }
+        }
+
+        if (cache.hasDefined(ModelKeys.ENCODING)) {
+            ModelNode dataTypeNode = cache.get(ModelKeys.ENCODING);
+            ModelNode node;
+            if ((node = dataTypeNode.get(ModelKeys.KEY)).isDefined()) {
+                final String mediaType = KeyDataTypeConfigurationResource.MEDIA_TYPE.resolveModelAttribute(context, node).asString();
+                ContentTypeConfigurationBuilder keyTypeConfigurationBuilder = builder.encoding().key();
+                keyTypeConfigurationBuilder.mediaType(mediaType);
+
+            } else if ((node = dataTypeNode.get(ModelKeys.VALUE)).isDefined()) {
+                final String mediaType = ValueDataTypeConfigurationResource.MEDIA_TYPE.resolveModelAttribute(context, node).asString();
+                ContentTypeConfigurationBuilder valueTypeConfigurationBuilder = builder.encoding().value();
+                valueTypeConfigurationBuilder.mediaType(mediaType);
             }
         }
 
