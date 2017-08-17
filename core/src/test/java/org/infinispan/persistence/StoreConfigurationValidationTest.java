@@ -43,7 +43,6 @@ public class StoreConfigurationValidationTest {
       ConfigurationBuilder builder = TestCacheManagerFactory.getDefaultCacheConfiguration(false);
       builder.persistence()
             .addStore(DummyInMemoryStoreConfigurationBuilder.class)
-            .transactional(true)
             .validate();
    }
 
@@ -54,7 +53,6 @@ public class StoreConfigurationValidationTest {
       builder.persistence()
             .passivation(true)
             .addStore(DummyInMemoryStoreConfigurationBuilder.class)
-            .transactional(true)
             .validate();
    }
 

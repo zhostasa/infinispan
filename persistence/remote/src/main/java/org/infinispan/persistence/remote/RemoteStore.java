@@ -14,6 +14,8 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
+import org.infinispan.commons.persistence.Store;
+import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.versioning.NumericVersion;
