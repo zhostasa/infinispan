@@ -14,7 +14,6 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
-import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.versioning.NumericVersion;
@@ -54,6 +53,7 @@ import net.jcip.annotations.ThreadSafe;
  * @see <a href="http://community.jboss.org/wiki/JavaHotRodclient">Hotrod Java Client</a>
  * @since 4.1
  */
+@Store(shared = true)
 @ThreadSafe
 @ConfiguredBy(RemoteStoreConfiguration.class)
 public class RemoteStore implements AdvancedLoadWriteStore, FlagAffectedStore {

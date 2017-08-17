@@ -13,6 +13,7 @@ import java.util.Properties;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
+import org.infinispan.commons.persistence.Store;
 import org.infinispan.commons.util.ReflectionUtil;
 import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -177,6 +178,17 @@ public abstract class AbstractStoreConfigurationBuilder<T extends StoreConfigura
       boolean purgeOnStartup = attributes.attribute(PURGE_ON_STARTUP).get();
       boolean preload = attributes.attribute(PRELOAD).get();
       ConfigurationBuilder builder = getBuilder();
+
+      Class storeClazz = attributes.getKlass();
+      if (storeClazz != null && storeClazz.isAnnotationPresent(Store.class)) {
+         Store storeProps = (Store) storeClazz.getAnnotation(Store.class);
+         if (!storeProps.shared() && shared) {
+            throw log.nonSharedStoreConfiguredAsShared(attributes.getName());
+         }
+      } else {
+         log.warnStoreAnnotationMissing(attributes.getName());
+      }
+
       if (!shared && !fetchPersistentState && !purgeOnStartup
             && builder.clustering().cacheMode().isClustered())
          log.staleEntriesWithoutFetchPersistentStateOrPurgeOnStartup();

@@ -1461,4 +1461,11 @@ public interface Log extends BasicLogger {
    @Message(value = "Received new x-site view: %s", id = 425)
    void receivedXSiteClusterView(Set<String> view);
 
+
+   @Message(value = "%s cannot be shared", id = 430)
+   CacheConfigurationException nonSharedStoreConfiguredAsShared(String storeType);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to validate all properties of %s's configuration as the @Store attribute is missing", id = 431)
+   void warnStoreAnnotationMissing(String name);
 }

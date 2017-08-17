@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.io.ByteBuffer;
+import org.infinispan.commons.persistence.Store;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.filter.KeyFilter;
@@ -71,6 +72,7 @@ import org.infinispan.util.logging.LogFactory;
  * @see org.infinispan.persistence.keymappers.Key2StringMapper
  * @see org.infinispan.persistence.keymappers.DefaultTwoWayKey2StringMapper
  */
+@Store(shared = true)
 @ConfiguredBy(JdbcStringBasedStoreConfiguration.class)
 public class JdbcStringBasedStore implements AdvancedLoadWriteStore {
 
