@@ -50,7 +50,7 @@
                 <repository>
                     <id>jdg7-snapshots</id>
                     <name>JDG7 Snapshots Maven Repository (Nexus, via Jenkins)</name>
-                    <url>http://10.8.173.7:8081/nexus/content/repositories/snapshots/</url>
+                    <url>http://host-8-173-7.host.centralci.eng.rdu2.redhat.com:8081/nexus/content/repositories/snapshots/</url>
                     <releases>
                         <enabled>false</enabled>
                         <updatePolicy>never</updatePolicy>
