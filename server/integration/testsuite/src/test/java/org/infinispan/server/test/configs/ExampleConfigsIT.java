@@ -354,12 +354,6 @@ public class ExampleConfigsIT {
         } catch (TransportException e) {
             // ok
         }
-        try {
-            doPutGet(s, createCache(s, securityConfig("keystore_client.jks", "truststore_server.jks", s.server)));
-            Assert.fail();
-        } catch (TransportException e) {
-            // ok
-        }
     }
 
     @Test
@@ -611,7 +605,7 @@ public class ExampleConfigsIT {
         builder.security().ssl().enable().keyStoreFileName(ITestUtils.SERVER_CONFIG_DIR + File.separator + keystoreName)
                 .keyStorePassword("secret".toCharArray())
                 .trustStoreFileName(ITestUtils.SERVER_CONFIG_DIR + File.separator + truststoreName)
-                .trustStorePassword("secret".toCharArray());
+                .trustStorePassword("secret".toCharArray()).maxRetries(3);
         return builder;
     }
 
