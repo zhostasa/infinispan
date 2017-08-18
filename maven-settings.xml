@@ -9,11 +9,6 @@
 
         <profile>
             <id>jdg-mead-repository</id>
-            <activation>
-                <property>
-                    <name>!jdg-mead-repository</name>
-                </property>
-            </activation>
             <repositories>
                 <repository>
                     <id>mead-jdg7</id>
@@ -66,7 +61,7 @@
     </profiles>
 
     <activeProfiles>
-        <!-- <activeProfile>jdg-mead-repository</activeProfile> -->
+        <activeProfile>jdg-mead-repository</activeProfile>
         <activeProfile>jdg7-snapshots-repository</activeProfile>
     </activeProfiles>
 
