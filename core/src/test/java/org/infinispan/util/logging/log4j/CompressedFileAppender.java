@@ -46,15 +46,11 @@ public final class CompressedFileAppender extends AbstractOutputStreamAppender<F
     }
 
     @Override
-    public boolean stop(long timeout, TimeUnit timeUnit, boolean changeLifeCycleState) {
-        super.stop(timeout, timeUnit, false);
+    public void stop() {
+        super.stop();
         if (advertiser != null) {
             advertiser.unadvertise(advertisement);
         }
-        if (changeLifeCycleState) {
-            setStopped();
-        }
-        return true;
     }
 
     /**
