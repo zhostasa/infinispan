@@ -97,7 +97,6 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    @AfterMethod(alwaysRun=true)
    protected void clearContent() throws Throwable {
       if (cleanupAfterTest()) {
-//         assertSupportedConfig();
          log.debug("*** Test method complete; clearing contents on all caches.");
          if (cacheManagers.isEmpty())
             throw new IllegalStateException("No caches registered! Use registerCacheManager(Cache... caches) to do that!");
@@ -106,27 +105,6 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
          TestingUtil.clearContent(cacheManagers);
          TestingUtil.killCacheManagers(cacheManagers);
          cacheManagers.clear();
-      }
-   }
-
-   /**
-    * Reason: after a tm.commit is run, multiple tests assert that the new value (as within the committing transaction)
-    * is present on a remote cache (i.e. not on the cache on which tx originated). If we don't use sync commit,
-    * than this (i.e. actual commit of the tx on the remote cache) might happen after the tm.commit() returns,
-    * and result in an intermittent failure for the assertion
-    */
-   protected void assertSupportedConfig() {
-      for (EmbeddedCacheManager cm : cacheManagers) {
-         for (Cache<?, ?> cache : TestingUtil.getRunningCaches(cm)) {
-            Configuration config = cache.getCacheConfiguration();
-            try {
-               assert config.transaction().syncCommitPhase() : "Must use a sync commit phase!";
-               assert config.transaction().syncRollbackPhase(): "Must use a sync rollback phase!";
-            } catch (AssertionError e) {
-               log.error("Invalid config for cache in test: " + getClass().getName());
-               throw e;
-            }
-         }
       }
    }
 

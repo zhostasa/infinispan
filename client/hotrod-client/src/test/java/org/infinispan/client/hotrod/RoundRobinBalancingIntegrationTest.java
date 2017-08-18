@@ -49,11 +49,6 @@ public class RoundRobinBalancingIntegrationTest extends MultipleCacheManagersTes
    private RemoteCacheManager remoteCacheManager;
 
    @Override
-   protected void assertSupportedConfig() {
-      return;
-   }
-
-   @Override
    protected void createCacheManagers() throws Throwable {
       c1 = TestCacheManagerFactory.createCacheManager(hotRodCacheConfiguration()).getCache();
       c2 = TestCacheManagerFactory.createCacheManager(hotRodCacheConfiguration()).getCache();

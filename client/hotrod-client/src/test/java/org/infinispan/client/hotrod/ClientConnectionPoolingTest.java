@@ -58,11 +58,6 @@ public class ClientConnectionPoolingTest extends MultipleCacheManagersTest {
 
 
    @Override
-   protected void assertSupportedConfig() {
-      // No-op
-   }
-
-   @Override
    protected void createCacheManagers() throws Throwable {
       // The caches are not configured to form a cluster
       // so the client will have to use round-robin for balancing.
