@@ -73,7 +73,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                 { JGroupsSchema.VERSION_2_0, 22, "schema/jboss-as-jgroups_2_0.xsd" },
                 { JGroupsSchema.VERSION_3_0, 26, "schema/jboss-as-jgroups_3_0.xsd"},
                 { JGroupsSchema.INFINISPAN_SERVER_JGROUPS_7_0, 25, "schema/jboss-infinispan-jgroups_7_0.xsd" },
-                { JGroupsSchema.INFINISPAN_SERVER_JGROUPS_8_0, 27, "schema/jboss-infinispan-jgroups_8_0.xsd" },
+                { JGroupsSchema.INFINISPAN_SERVER_JGROUPS_8_0, 26, "schema/jboss-infinispan-jgroups_8_0.xsd" },
         };
         return Arrays.asList(data);
     }
