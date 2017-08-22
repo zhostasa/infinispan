@@ -193,7 +193,7 @@ public class AuthenticationConfigurationBuilder extends AbstractSecurityConfigur
    @Override
    public void validate() {
       if (enabled) {
-         if (callbackHandler == null && clientSubject == null && username == null) {
+         if (callbackHandler == null && clientSubject == null && username == null && !"EXTERNAL".equals(saslMechanism)) {
             throw log.invalidCallbackHandler();
          }
          if (callbackHandler != null && username != null) {
