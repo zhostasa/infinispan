@@ -18,6 +18,9 @@ import org.infinispan.persistence.rest.configuration.RestStoreConfigurationBuild
 import org.infinispan.tools.config.v6.Parser60;
 import org.kohsuke.MetaInfServices;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * RestStoreConfigurationParser60.
@@ -31,6 +34,13 @@ import org.kohsuke.MetaInfServices;
 })
 public class RestStoreConfigurationParser60 implements ConfigurationParser {
 
+   private static final Map<String, String> relocatedClasses = new HashMap<>();
+
+   static {
+      relocatedClasses.put("org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper",
+              "org.infinispan.persistence.keymappers.WrappedByteArrayOrPrimitiveMapper");
+   }
+
    public RestStoreConfigurationParser60() {
    }
 
@@ -39,6 +49,12 @@ public class RestStoreConfigurationParser60 implements ConfigurationParser {
       return ParseUtils.getNamespaceAnnotations(getClass());
    }
 
+   private String getRelocatedClass(String configuration) {
+      if(!relocatedClasses.containsKey(configuration)) {
+         return configuration;
+      }
+      return relocatedClasses.get(configuration);
+   }
 
    @Override
    public void readElement(final XMLExtendedStreamReader reader, final ConfigurationBuilderHolder holder)
@@ -141,7 +157,7 @@ public class RestStoreConfigurationParser60 implements ConfigurationParser {
             break;
          }
          case KEY_TO_STRING_MAPPER: {
-            builder.key2StringMapper(value);
+            builder.key2StringMapper(getRelocatedClass(value));
             break;
          }
          default: {
