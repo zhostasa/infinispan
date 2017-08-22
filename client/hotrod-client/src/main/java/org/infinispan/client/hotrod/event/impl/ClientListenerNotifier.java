@@ -125,6 +125,10 @@ public class ClientListenerNotifier {
       failoverListenerIds.forEach(this::failoverClientListener);
    }
 
+   public void failoverClientListener(byte[] listenerId) {
+    failoverClientListener(new WrappedByteArray(listenerId));
+   }
+
    public void failoverClientListener(WrappedByteArray listenerId) {
       EventDispatcher dispatcher = clientListeners.get(listenerId);
       removeClientListener(listenerId);
