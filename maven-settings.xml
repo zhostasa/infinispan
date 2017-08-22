@@ -5,6 +5,16 @@
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
     <localRepository>${user.home}/.m2/jdg-mead-repository</localRepository>
 
+    <!-- This is to exclude all repositories except the ones defined below -->
+    <mirrors>
+      <mirror>
+        <id>jdg7-mirror-setting</id>
+        <mirrorOf>*,!mead-jdg7,!mead-jdg7-plugins,!jdg7-snapshots</mirrorOf>
+        <name>Mirror Settings for JDG 7 build</name>
+        <url>http://host-8-173-7.host.centralci.eng.rdu2.redhat.com:8081/nexus/content/repositories/invalid</url>
+      </mirror>
+    </mirrors>
+
     <profiles>
 
         <profile>
