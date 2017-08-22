@@ -31,11 +31,28 @@ public class SslContextFactory {
    }
 
    public static SSLContext getContext(String keyStoreFileName, char[] keyStorePassword, char[] keyStoreCertificatePassword, String trustStoreFileName, char[] trustStorePassword) {
+      return getContext(keyStoreFileName, keyStorePassword, null, null, trustStoreFileName, trustStorePassword);
+   }
+
+   public static SSLContext getContext(String keyStoreFileName, char[] keyStorePassword, char[] keyStoreCertificatePassword, String keyAlias, String trustStoreFileName, char[] trustStorePassword) {
       try {
          KeyManager[] keyManagers = null;
          if (keyStoreFileName != null) {
             KeyStore ks = KeyStore.getInstance("JKS");
             loadKeyStore(ks, keyStoreFileName, keyStorePassword);
+            char[] keyPassword = keyStoreCertificatePassword == null ? keyStorePassword : keyStoreCertificatePassword;
+            if (keyAlias != null) {
+               if (ks.containsAlias(keyAlias) && ks.isKeyEntry(keyAlias)) {
+                  KeyStore.PasswordProtection passParam = new KeyStore.PasswordProtection(keyPassword);
+                  KeyStore.Entry entry = ks.getEntry(keyAlias, passParam);
+                  // Recreate the keystore with just one key
+                  ks = KeyStore.getInstance("JKS");
+                  ks.load(null);
+                  ks.setEntry(keyAlias, entry, passParam);
+               } else {
+                  throw log.noSuchAliasInKeyStore(keyAlias, keyStoreFileName);
+               }
+            }
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, keyStoreCertificatePassword == null ? keyStorePassword : keyStoreCertificatePassword);
             keyManagers = kmf.getKeyManagers();

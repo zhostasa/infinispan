@@ -15,17 +15,20 @@ public class SslConfiguration {
    private final String keyStoreFileName;
    private final char[] keyStorePassword;
    private final char[] keyStoreCertificatePassword;
+   private final String keyAlias;
    private final SSLContext sslContext;
    private final String trustStoreFileName;
    private final char[] trustStorePassword;
    private String sniHostName;
 
-   SslConfiguration(boolean enabled, String keyStoreFileName, char[] keyStorePassword, char[] keyStoreCertificatePassword, SSLContext sslContext, String trustStoreFileName,
-                    char[] trustStorePassword, String sniHostName) {
+   SslConfiguration(boolean enabled, String keyStoreFileName, char[] keyStorePassword, char[] keyStoreCertificatePassword, String keyAlias,
+                    SSLContext sslContext,
+                    String trustStoreFileName, char[] trustStorePassword, String sniHostName) {
       this.enabled = enabled;
       this.keyStoreFileName = keyStoreFileName;
       this.keyStorePassword = keyStorePassword;
       this.keyStoreCertificatePassword = keyStoreCertificatePassword;
+      this.keyAlias = keyAlias;
       this.sslContext = sslContext;
       this.trustStoreFileName = trustStoreFileName;
       this.trustStorePassword = trustStorePassword;
@@ -48,6 +51,10 @@ public class SslConfiguration {
       return keyStoreCertificatePassword;
    }
 
+   public String keyAlias() {
+      return keyAlias;
+   }
+
    public SSLContext sslContext() {
       return sslContext;
    }
@@ -66,6 +73,7 @@ public class SslConfiguration {
               "keyStoreFileName='" + keyStoreFileName + '\'' +
               ", enabled=" + enabled +
               ", keyStoreCertificatePassword=" + Arrays.toString(keyStoreCertificatePassword) +
+              ", keyAlias='" + keyAlias + '\'' +
               ", sslContext=" + sslContext +
               ", trustStoreFileName='" + trustStoreFileName + '\'' +
               ", sniHostName=" + sniHostName +

@@ -26,6 +26,7 @@ public class SslConfigurationBuilder extends AbstractSecurityConfigurationChildB
    private String keyStoreFileName;
    private char[] keyStorePassword;
    private char[] keyStoreCertificatePassword;
+   private String keyAlias;
    private String trustStoreFileName;
    private char[] trustStorePassword;
    private SSLContext sslContext;
@@ -89,6 +90,11 @@ public class SslConfigurationBuilder extends AbstractSecurityConfigurationChildB
       return this;
    }
 
+   public SslConfigurationBuilder keyAlias(String keyAlias) {
+      this.keyAlias = keyAlias;
+      return this;
+   }
+
    public SslConfigurationBuilder sslContext(SSLContext sslContext) {
       this.sslContext = sslContext;
       return this;
@@ -146,7 +152,9 @@ public class SslConfigurationBuilder extends AbstractSecurityConfigurationChildB
 
    @Override
    public SslConfiguration create() {
-      return new SslConfiguration(enabled, keyStoreFileName, keyStorePassword, keyStoreCertificatePassword, sslContext, trustStoreFileName, trustStorePassword, sniHostName);
+      return new SslConfiguration(enabled,
+         keyStoreFileName, keyStorePassword, keyStoreCertificatePassword, keyAlias,
+         sslContext, trustStoreFileName, trustStorePassword, sniHostName);
    }
 
    @Override
@@ -155,6 +163,7 @@ public class SslConfigurationBuilder extends AbstractSecurityConfigurationChildB
       this.keyStoreFileName = template.keyStoreFileName();
       this.keyStorePassword = template.keyStorePassword();
       this.keyStoreCertificatePassword = template.keyStoreCertificatePassword();
+      this.keyAlias = template.keyAlias();
       this.sslContext = template.sslContext();
       this.trustStoreFileName = template.trustStoreFileName();
       this.trustStorePassword = template.trustStorePassword();

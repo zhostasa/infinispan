@@ -133,7 +133,13 @@ public class TcpTransportFactory implements TransportFactory {
             if (ssl.sslContext() != null) {
                sslContext = ssl.sslContext();
             } else {
-               sslContext = SslContextFactory.getContext(ssl.keyStoreFileName(), ssl.keyStorePassword(), ssl.keyStoreCertificatePassword(), ssl.trustStoreFileName(), ssl.trustStorePassword());
+               sslContext = SslContextFactory.getContext(
+                  ssl.keyStoreFileName(),
+                  ssl.keyStorePassword(),
+                  ssl.keyStoreCertificatePassword(),
+                  ssl.keyAlias(),
+                  ssl.trustStoreFileName(),
+                  ssl.trustStorePassword());
             }
             sniHostName = ssl.sniHostName();
          }

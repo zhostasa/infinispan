@@ -63,6 +63,7 @@ public class ClusteredCacheAuthExternalIT {
     public void initRCM() {
         controller.start(ARQ_NODE_1_ID);
         final SecurityConfigurationHelper cb = new SecurityConfigurationHelper(SASL_MECH).forIspnServer(server1).withServerName(TEST_SERVER_NAME).withDefaultSsl();
+        cb.security().ssl().keyAlias("client1");
         rcm = new RemoteCacheManager(cb.forExternalAuth().build(), true);
         controller.stop(ARQ_NODE_1_ID);
         isInitialized = true;

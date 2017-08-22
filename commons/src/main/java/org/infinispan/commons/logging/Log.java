@@ -103,4 +103,7 @@ public interface Log extends BasicLogger {
    @Message(value = "Cannot resize unbounded container", id = 917)
    UnsupportedOperationException cannotResizeUnboundedContainer();
 
+   @Message(value = "The alias '%s' does not exist in the key store '%s'", id = 918)
+   SecurityException noSuchAliasInKeyStore(String keyAlias, String keyStoreFileName);
+
 }
