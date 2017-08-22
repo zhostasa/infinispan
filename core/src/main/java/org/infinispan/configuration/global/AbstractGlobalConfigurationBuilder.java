@@ -91,4 +91,8 @@ abstract class AbstractGlobalConfigurationBuilder implements GlobalConfiguration
       return globalConfig.build();
    }
 
+   @Override
+   public GlobalConfigurationBuilder defaultCacheName(String defaultCacheName) {
+      return globalConfig.defaultCacheName(defaultCacheName);
+   }
 }

@@ -1,12 +1,7 @@
 package org.infinispan.client.hotrod.impl;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
@@ -44,11 +39,15 @@ public class ConfigurationProperties {
    public static final String PROTOCOL_VERSION = "infinispan.client.hotrod.protocol_version";
    public static final String USE_SSL = "infinispan.client.hotrod.use_ssl";
    public static final String KEY_STORE_FILE_NAME = "infinispan.client.hotrod.key_store_file_name";
+   public static final String KEY_STORE_TYPE = "infinispan.client.hotrod.key_store_type";
    public static final String KEY_STORE_PASSWORD = "infinispan.client.hotrod.key_store_password";
    public static final String SNI_HOST_NAME = "infinispan.client.hotrod.sni_host_name";
+   public static final String KEY_ALIAS = "infinispan.client.hotrod.key_alias";
    public static final String KEY_STORE_CERTIFICATE_PASSWORD = "infinispan.client.hotrod.key_store_certificate_password";
    public static final String TRUST_STORE_FILE_NAME = "infinispan.client.hotrod.trust_store_file_name";
+   public static final String TRUST_STORE_TYPE = "infinispan.client.hotrod.trust_store_type";
    public static final String TRUST_STORE_PASSWORD = "infinispan.client.hotrod.trust_store_password";
+   public static final String SSL_PROTOCOL = "infinispan.client.hotrod.ssl_protocol";
    public static final String SSL_CONTEXT = "infinispan.client.hotrod.ssl_context";
    public static final String MAX_RETRIES = "infinispan.client.hotrod.max_retries";
    public static final String USE_AUTH = "infinispan.client.hotrod.use_auth";
@@ -63,6 +62,7 @@ public class ConfigurationProperties {
    public static final Pattern SASL_PROPERTIES_PREFIX_REGEX =
          Pattern.compile('^' + ConfigurationProperties.SASL_PROPERTIES_PREFIX + '.');
    public static final String JAVA_SERIAL_WHITELIST = "infinispan.client.hotrod.java_serial_whitelist";
+   public static final String BATCH_SIZE = "infinispan.client.hotrod.batch_size";
 
    // defaults
 
@@ -72,6 +72,7 @@ public class ConfigurationProperties {
    public static final int DEFAULT_SO_TIMEOUT = 60000;
    public static final int DEFAULT_CONNECT_TIMEOUT = 60000;
    public static final int DEFAULT_MAX_RETRIES = 10;
+   public static final int DEFAULT_BATCH_SIZE = 10000;
 
    private final TypedProperties props;
 
@@ -91,22 +92,6 @@ public class ConfigurationProperties {
 
    public String getTransportFactory() {
       return props.getProperty(TRANSPORT_FACTORY, TcpTransportFactory.class.getName());
-   }
-
-   public Collection<SocketAddress> getServerList() {
-      Set<SocketAddress> addresses = new HashSet<SocketAddress>();
-      String servers = props.getProperty(SERVER_LIST, "127.0.0.1:" + DEFAULT_HOTROD_PORT);
-      for (String server : servers.split(";")) {
-         String[] components = server.trim().split(":");
-         String host = components[0];
-         int port = DEFAULT_HOTROD_PORT;
-         if (components.length > 1) port = Integer.parseInt(components[1]);
-         addresses.add(new InetSocketAddress(host, port));
-      }
-
-      if (addresses.isEmpty()) throw new IllegalStateException("No Hot Rod servers specified!");
-
-      return addresses;
    }
 
    public String getMarshaller() {
@@ -173,20 +158,40 @@ public class ConfigurationProperties {
       return props.getProperty(KEY_STORE_FILE_NAME, null);
    }
 
+   public String getKeyStoreType() {
+      return props.getProperty(KEY_STORE_TYPE, null);
+   }
+
    public String getKeyStorePassword() {
       return props.getProperty(KEY_STORE_PASSWORD, null);
+   }
+
+   public String getKeyAlias() {
+      return props.getProperty(KEY_ALIAS, null);
    }
 
    public String getTrustStoreFileName() {
       return props.getProperty(TRUST_STORE_FILE_NAME, null);
    }
 
+   public String getTrustStoreType() {
+      return props.getProperty(TRUST_STORE_TYPE, null);
+   }
+
    public String getTrustStorePassword() {
       return props.getProperty(TRUST_STORE_PASSWORD, null);
    }
 
+   public String getSSLProtocol() {
+      return props.getProperty(SSL_PROTOCOL, null);
+   }
+
    public int getMaxRetries() {
       return props.getIntProperty(MAX_RETRIES, DEFAULT_MAX_RETRIES);
+   }
+
+   public int getBatchSize() {
+      return props.getIntProperty(BATCH_SIZE, DEFAULT_BATCH_SIZE);
    }
 
    /**

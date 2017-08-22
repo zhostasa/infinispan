@@ -1,5 +1,7 @@
 package org.infinispan.configuration.global;
 
+import org.infinispan.manager.EmbeddedCacheManager;
+
 public interface GlobalConfigurationChildBuilder {
    TransportConfigurationBuilder transport();
 
@@ -38,4 +40,10 @@ public interface GlobalConfigurationChildBuilder {
    GlobalConfiguration build();
 
    GlobalStateConfigurationBuilder globalState();
+
+   /**
+    * Sets the name of the cache that acts as the default cache and is returned by
+    * {@link EmbeddedCacheManager#getCache()}. Not
+    */
+   GlobalConfigurationBuilder defaultCacheName(String defaultCacheName);
 }

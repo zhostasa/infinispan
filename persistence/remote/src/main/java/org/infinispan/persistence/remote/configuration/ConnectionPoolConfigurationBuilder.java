@@ -22,7 +22,7 @@ public class ConnectionPoolConfigurationBuilder extends AbstractRemoteStoreConfi
    private boolean testWhileIdle = true;
 
    ConnectionPoolConfigurationBuilder(RemoteStoreConfigurationBuilder builder) {
-      super(builder);
+      super(builder, ConnectionPoolConfiguration.attributeDefinitionSet());
    }
 
    /**

@@ -1000,6 +1000,8 @@
             <xs:extension base="tns:store">
                 <xs:sequence>
                     <xs:element name="remote-server" type="tns:remote-server" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="authentication" type="tns:remote-store-authentication" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="encryption" type="tns:remote-store-encryption" minOccurs="0" maxOccurs="1"/>
                 </xs:sequence>
                 <xs:attribute name="cache" type="xs:string">
                     <xs:annotation>
@@ -1050,6 +1052,50 @@
         <xs:attribute name="outbound-socket-binding" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>An outbound socket binding for a remote server.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="remote-store-authentication">
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="plain" type="tns:remote-store-authentication-plain" />
+            <xs:element name="digest" type="tns:remote-store-authentication-digest" />
+            <xs:element name="external" type="tns:remote-store-authentication-external" />
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="remote-store-authentication-plain">
+        <xs:annotation>
+            <xs:documentation>Uses PLAIN authentication with the supplied credentials.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="username" type="xs:string" use="required" />
+        <xs:attribute name="password" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="remote-store-authentication-digest">
+        <xs:annotation>
+            <xs:documentation>Uses DIGEST-MD5 authentication with the supplied credentials.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="username" type="xs:string" use="required" />
+        <xs:attribute name="password" type="xs:string" use="required" />
+        <xs:attribute name="realm" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="remote-store-authentication-external">
+        <xs:annotation>
+            <xs:documentation>Uses EXTERNAL authentication, with credentials supplied by the encrypted transport client certificate.</xs:documentation>
+        </xs:annotation>
+    </xs:complexType>
+
+    <xs:complexType name="remote-store-encryption">
+        <xs:attribute name="security-realm" use="required">
+            <xs:annotation>
+                <xs:documentation>A security realm which supplies a truststore for identifying the remote servers. If client authentication is required, then the security realm must also provide an identity keystore.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="sni-hostname">
+            <xs:annotation>
+                <xs:documentation>An optional SNI hostname for identifying the remote server.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

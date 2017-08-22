@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.Builder;
@@ -29,7 +30,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
    private final GlobalStateConfigurationBuilder globalState;
    private final List<Builder<?>> modules = new ArrayList<>();
    private final SiteConfigurationBuilder site;
-
+   private Optional<String> defaultCacheName;
 
    public GlobalConfigurationBuilder() {
       // In OSGi contexts the TCCL should not be used. Use the infinispan-core bundle as default instead.
@@ -48,6 +49,7 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
       this.persistenceThreadPool = new ThreadPoolConfigurationBuilder(this);
       this.stateTransferThreadPool = new ThreadPoolConfigurationBuilder(this);
       this.asyncThreadPool = new ThreadPoolConfigurationBuilder(this);
+      this.defaultCacheName = Optional.empty();
    }
 
    /**
@@ -259,6 +261,16 @@ public class GlobalConfigurationBuilder implements GlobalConfigurationChildBuild
       GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
       builder.transport().defaultTransport();
       return builder;
+   }
+
+   @Override
+   public GlobalConfigurationBuilder defaultCacheName(String defaultCacheName) {
+      this.defaultCacheName = Optional.of(defaultCacheName);
+      return this;
+   }
+
+   public Optional<String> defaultCacheName() {
+      return defaultCacheName;
    }
 
    @Override

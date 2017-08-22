@@ -77,7 +77,9 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
 import org.infinispan.persistence.leveldb.configuration.CompressionType;
 import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguration;
 import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationBuilder;
+import org.infinispan.persistence.remote.configuration.AuthenticationConfigurationBuilder;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
+import org.infinispan.persistence.remote.configuration.SslConfigurationBuilder;
 import org.infinispan.persistence.rest.configuration.RestStoreConfigurationBuilder;
 import org.infinispan.persistence.rest.metadata.MimeMetadataHelper;
 import org.infinispan.persistence.spi.CacheLoader;
@@ -97,6 +99,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
@@ -796,6 +799,30 @@ public abstract class CacheConfigurationAdd extends AbstractAddStepHandler imple
             }
             if (store.hasDefined(ModelKeys.PROTOCOL_VERSION)) {
                 builder.protocolVersion(ProtocolVersion.parseVersion(store.require(ModelKeys.PROTOCOL_VERSION).asString()));
+            }
+            if (store.hasDefined(ModelKeys.ENCRYPTION) && store.get(ModelKeys.ENCRYPTION, ModelKeys.ENCRYPTION_NAME).isDefined()) {
+                ModelNode encryption = store.get(ModelKeys.ENCRYPTION, ModelKeys.ENCRYPTION_NAME);
+                SslConfigurationBuilder ssl = builder.remoteSecurity().ssl();
+                ssl.enable().sniHostName(EncryptionResource.SNI_HOSTNAME.resolveModelAttribute(context, encryption).asString());
+                String realm = EncryptionResource.SECURITY_REALM.resolveModelAttribute(context, encryption).asString();
+                ServiceName securityRealmServiceName = SecurityRealm.ServiceUtil.createServiceName(realm);
+                Injector<SecurityRealm> injector = new SimpleInjector<SecurityRealm> () {
+                    @Override
+                    public void inject(SecurityRealm value) {
+                        builder.remoteSecurity().ssl().sslContext(value.getSSLContext());
+                    }
+                };
+                dependencies.add(new Dependency<>(securityRealmServiceName, SecurityRealm.class, injector));
+            }
+            if (store.hasDefined(ModelKeys.AUTHENTICATION) && store.get(ModelKeys.AUTHENTICATION, ModelKeys.AUTHENTICATION_NAME).isDefined()) {
+                ModelNode authentication = store.get(ModelKeys.AUTHENTICATION, ModelKeys.AUTHENTICATION_NAME);
+                AuthenticationConfigurationBuilder auth = builder.remoteSecurity().authentication();
+                auth
+                      .enable()
+                      .saslMechanism(AuthenticationResource.MECHANISM.resolveModelAttribute(context, authentication).asString())
+                      .username(AuthenticationResource.USERNAME.resolveModelAttribute(context, authentication).asString())
+                      .password(AuthenticationResource.PASSWORD.resolveModelAttribute(context, authentication).asString())
+                      .realm(AuthenticationResource.REALM.resolveModelAttribute(context, authentication).asString());
             }
             return builder;
         } else if (storeKey.equals(ModelKeys.LEVELDB_STORE)) {

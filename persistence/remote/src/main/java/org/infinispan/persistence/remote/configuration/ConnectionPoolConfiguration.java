@@ -1,6 +1,19 @@
 package org.infinispan.persistence.remote.configuration;
 
+import org.infinispan.commons.configuration.attributes.AttributeDefinition;
+import org.infinispan.commons.configuration.attributes.AttributeSet;
+
 public class ConnectionPoolConfiguration {
+
+   static final AttributeDefinition<ExhaustedAction> EXHAUSTED_ACTION = AttributeDefinition.builder("exhaustedAction", ExhaustedAction.WAIT, ExhaustedAction.class).immutable().build();
+   static final AttributeDefinition<Integer> MAX_ACTIVE = AttributeDefinition.builder("maxActive", -1).immutable().build();
+   static final AttributeDefinition<Integer> MAX_TOTAL = AttributeDefinition.builder("maxTotal", -1).immutable().build();
+   static final AttributeDefinition<Integer> MAX_IDLE = AttributeDefinition.builder("maxIdle", -1).immutable().build();
+   static final AttributeDefinition<Integer> MIN_IDLE = AttributeDefinition.builder("minIdle", -1).immutable().build();
+   static final AttributeDefinition<Long> TIME_BETWEEN_EVICTION_RUNS = AttributeDefinition.builder("timeBetweenEvictionRuns", 120000L).immutable().build();
+   static final AttributeDefinition<Long> MIN_EVICTABLE_IDLE_TIME = AttributeDefinition.builder("minEvictableIdleTime", 1800000L).immutable().build();
+   static final AttributeDefinition<Boolean> TEST_WHILE_IDLE = AttributeDefinition.builder("testWhileIdle", true).immutable().build();
+
    private final ExhaustedAction exhaustedAction;
    private final int maxActive;
    private final int maxTotal;
@@ -10,6 +23,10 @@ public class ConnectionPoolConfiguration {
    private final long minEvictableIdleTime;
    private final boolean testWhileIdle;
 
+   public static AttributeSet attributeDefinitionSet() {
+      return new AttributeSet(ConnectionPoolConfiguration.class, EXHAUSTED_ACTION, MAX_ACTIVE, MAX_TOTAL, MAX_IDLE,
+            MIN_IDLE, TIME_BETWEEN_EVICTION_RUNS, MIN_EVICTABLE_IDLE_TIME, TEST_WHILE_IDLE);
+   }
    ConnectionPoolConfiguration(ExhaustedAction exhaustedAction, int maxActive, int maxTotal, int maxIdle, int minIdle,
          long timeBetweenEvictionRuns, long minEvictableIdleTime, boolean testWhileIdle) {
       this.exhaustedAction = exhaustedAction;

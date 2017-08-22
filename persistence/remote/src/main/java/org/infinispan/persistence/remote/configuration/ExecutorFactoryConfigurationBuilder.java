@@ -15,10 +15,8 @@ import org.infinispan.configuration.global.GlobalConfiguration;
  * Configures executor factory.
  */
 public class ExecutorFactoryConfigurationBuilder extends AbstractRemoteStoreConfigurationChildBuilder<RemoteStoreConfigurationBuilder> implements Builder<ExecutorFactoryConfiguration> {
-   private final AttributeSet attributes;
    ExecutorFactoryConfigurationBuilder(RemoteStoreConfigurationBuilder builder) {
-      super(builder);
-      attributes = ExecutorFactoryConfiguration.attributeSet();
+      super(builder, ExecutorFactoryConfiguration.attributeDefinitionSet());
    }
 
    /**

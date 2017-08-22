@@ -95,6 +95,10 @@
                 <write-behind modification-queue-size="2048" thread-pool-size="1" />
                 <remote-server outbound-socket-binding="hotrod-server-1" />
                 <remote-server outbound-socket-binding="hotrod-server-2" />
+                <authentication>
+                    <digest username="username" password="password" realm="realm" />
+                </authentication>
+                <encryption security-realm="myrealm" sni-hostname="snihostname" />
             </remote-store>
             <indexing index="NONE" />
         </invalidation-cache>
