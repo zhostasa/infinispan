@@ -22,7 +22,7 @@
   -->
 <!-- N.B. This is *not* meant to be a usable cache configuration -->
 <!-- This file supplies the internal configuration defaults per cache mode -->
-<infinispan xmlns="urn:infinispan:config:8.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:8.4 http://infinispan.org/schemas/infinispan-config-8.4.xsd">
+<infinispan xmlns="urn:infinispan:config:8.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:8.5 infinispan-config-8.5.xsd">
 
    <cache-container default-cache="default">
       <local-cache name="default">

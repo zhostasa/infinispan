@@ -97,6 +97,7 @@ import org.kohsuke.MetaInfServices;
       @Namespace(uri = "urn:infinispan:config:8.2", root = "infinispan"),
       @Namespace(uri = "urn:infinispan:config:8.3", root = "infinispan"),
       @Namespace(uri = "urn:infinispan:config:8.4", root = "infinispan"),
+      @Namespace(uri = "urn:infinispan:config:8.5", root = "infinispan"),
       @Namespace(root = "infinispan"),
 
       @Namespace(uri = "urn:infinispan:config:7.0", root = "infinispan"),
