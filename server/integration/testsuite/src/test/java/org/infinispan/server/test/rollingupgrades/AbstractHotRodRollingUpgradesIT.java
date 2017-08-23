@@ -24,7 +24,8 @@ import org.junit.Before;
 public class AbstractHotRodRollingUpgradesIT {
 
    static final boolean IS_JDG6 = Boolean.parseBoolean(System.getProperty("test.with.jdg6"));
-   static final ProtocolVersion HR_VERSION = ProtocolVersion.parseVersion(System.getProperty("hotrod.protocol.version", "2.3"));
+   static final String HR_VERSION_PROP = System.getProperty("hotrod.protocol.version", "2.3").isEmpty() ? "2.3" : System.getProperty("hotrod.protocol.version", "2.3");
+   static final ProtocolVersion HR_VERSION = ProtocolVersion.parseVersion(HR_VERSION_PROP);
    
    static final String JDG_REMOTING_PROTOCOL = "http-remoting-jmx";
 	static final String JDG6_REMOTING_PROTOCOL = "remoting-jmx";
