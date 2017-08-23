@@ -8,9 +8,9 @@ Manik Surtani, Mircea Markus, Galder Zamarreño, Pete Muir, and others from the 
 This guide walks you through the process of upgrading Infinispan.
 
 == Upgrading from Infinispan 8.x to JBoss Data Grid 7.x
+=== New Cloud module for library mode
+In JBoss Data Grid 7.2, cloud related configuration were added to `infinispan-core` module. Since 7.2 they were moved to `infinispan-cloud` module.
 
-=== Clustering configuration changes
-The `mode` attribute in the XML declaration of clustered caches is no longer mandatory. It defaults to SYNC.
 
 
 === Entry Retriever is now removed
