@@ -175,7 +175,7 @@
       <version.webdav.servlet>2.0.1</version.webdav.servlet>
       <version.weld>2.3.3.Final-redhat-1</version.weld>
       <version.weld-se>2.2.0.SP1</version.weld-se>
-      <version.groups.kubernetes>0.9.0</version.groups.kubernetes>
+      <version.jgroups.kubernetes>1.0.0.Beta1</version.jgroups.kubernetes>
       <version.oauth.core>20090531</version.oauth.core>
 
       <version.org.wildfly>7.0.4.GA-redhat-2</version.org.wildfly>
@@ -1135,24 +1135,9 @@
           </dependency>
          <dependency>
             <groupId>org.jgroups.kubernetes</groupId>
-            <artifactId>kubernetes</artifactId>
-            <version>${version.groups.kubernetes}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jgroups.kubernetes</groupId>
-            <artifactId>common</artifactId>
-            <version>${version.groups.kubernetes}</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>io.undertow</groupId>
-                  <artifactId>undertow-core</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <groupId>org.jgroups.kubernetes</groupId>
-            <artifactId>dns</artifactId>
-            <version>${version.groups.kubernetes}</version>
+            <artifactId>jgroups-kubernetes</artifactId>
+            <version>${version.jgroups.kubernetes}</version>
+
          </dependency>
          <dependency>
             <groupId>net.oauth.core</groupId>
