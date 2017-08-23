@@ -380,7 +380,7 @@ public class JdbcBinaryStore<K,V> extends AbstractJdbcStore<K,V> {
          }
 
          if (existingBucket == null) {
-            Bucket bucket = new Bucket(keyEquivalence);
+            Bucket bucket = new Bucket();
             bucket.setBucketId(bucketKey);
             bucket.addEntry(entryKey, entry);
             existingBuckets.put(bucketKey, bucket);
