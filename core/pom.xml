@@ -34,7 +34,7 @@
          <groupId>org.jgroups.kubernetes</groupId>
          <artifactId>kubernetes</artifactId>
       </dependency>
-      
+
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
@@ -102,7 +102,7 @@
          <artifactId>geronimo-transaction</artifactId>
          <scope>test</scope>
       </dependency>
-      
+
       <dependency>
          <groupId>org.objectweb.howl</groupId>
          <artifactId>howl</artifactId>
