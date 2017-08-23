@@ -31,7 +31,7 @@ public class SslContextFactory {
    }
 
    public static SSLContext getContext(String keyStoreFileName, char[] keyStorePassword, char[] keyStoreCertificatePassword, String trustStoreFileName, char[] trustStorePassword) {
-      return getContext(keyStoreFileName, keyStorePassword, null, null, trustStoreFileName, trustStorePassword);
+      return getContext(keyStoreFileName, keyStorePassword, keyStoreCertificatePassword, null, trustStoreFileName, trustStorePassword);
    }
 
    public static SSLContext getContext(String keyStoreFileName, char[] keyStorePassword, char[] keyStoreCertificatePassword, String keyAlias, String trustStoreFileName, char[] trustStorePassword) {
@@ -54,7 +54,7 @@ public class SslContextFactory {
                }
             }
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(ks, keyStoreCertificatePassword == null ? keyStorePassword : keyStoreCertificatePassword);
+            kmf.init(ks, keyPassword);
             keyManagers = kmf.getKeyManagers();
          }
 
