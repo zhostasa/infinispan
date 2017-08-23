@@ -39,7 +39,7 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 /**
- * A filesystem-based implementation of a {@link org.infinispan.persistence.spi.CacheLoader}. This file store
+ * A filesystem-based implementation of a {@link org.infinispan.persistence.spi.AdvancedLoadWriteStore}. This file store
  * stores cache values in a single file <tt>&lt;location&gt;/&lt;cache name&gt;.dat</tt>,
  * keys and file positions are kept in memory.
  * <p/>
@@ -652,48 +652,42 @@ public class SingleFileStore<K, V> implements AdvancedLoadWriteStore<K, V> {
    }
    @Override
    public void purge(Executor threadPool, final PurgeListener task) {
-
-      threadPool.execute(new Runnable() {
-         @Override
-         public void run() {
-            long now = timeService.wallClockTime();
-            List<KeyValuePair<Object, FileEntry>> entriesToPurge = new ArrayList<KeyValuePair<Object, FileEntry>>();
-            synchronized (entries) {
-               for (Iterator<Map.Entry<K, FileEntry>> it = entries.entrySet().iterator(); it.hasNext(); ) {
-                  Map.Entry<K, FileEntry> next = it.next();
-                  FileEntry fe = next.getValue();
-                  if (fe.isExpired(now)) {
-                     it.remove();
-                     entriesToPurge.add(new KeyValuePair<Object, FileEntry>(next.getKey(), fe));
-                  }
-               }
-            }
-
-            resizeLock.readLock().lock();
-            try {
-               for (Iterator<KeyValuePair<Object, FileEntry>> it = entriesToPurge.iterator(); it.hasNext(); ) {
-                  KeyValuePair<Object, FileEntry> next = it.next();
-                  FileEntry fe = next.getValue();
-                  if (fe.isExpired(now)) {
-                     it.remove();
-                     try {
-                        free(fe);
-                     } catch (Exception e) {
-                        throw new PersistenceException(e);
-                     }
-                     if (task != null) task.entryPurged(next.getKey());
-                  }
-               }
-
-               // Disk space optimizations
-               synchronized (freeList) {
-                 processFreeEntries();
-               }
-            } finally {
-               resizeLock.readLock().unlock();
+      long now = timeService.wallClockTime();
+      List<KeyValuePair<Object, FileEntry>> entriesToPurge = new ArrayList<>();
+      synchronized (entries) {
+         for (Iterator<Map.Entry<K, FileEntry>> it = entries.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<K, FileEntry> next = it.next();
+            FileEntry fe = next.getValue();
+            if (fe.isExpired(now)) {
+               it.remove();
+               entriesToPurge.add(new KeyValuePair<>(next.getKey(), fe));
             }
          }
-      });
+      }
+
+      resizeLock.readLock().lock();
+      try {
+         for (Iterator<KeyValuePair<Object, FileEntry>> it = entriesToPurge.iterator(); it.hasNext(); ) {
+            KeyValuePair<Object, FileEntry> next = it.next();
+            FileEntry fe = next.getValue();
+            if (fe.isExpired(now)) {
+               it.remove();
+               try {
+                  free(fe);
+               } catch (Exception e) {
+                  throw new PersistenceException(e);
+               }
+               if (task != null) task.entryPurged(next.getKey());
+            }
+         }
+
+         // Disk space optimizations
+         synchronized (freeList) {
+           processFreeEntries();
+         }
+      } finally {
+         resizeLock.readLock().unlock();
+      }
    }
 
    @Override
@@ -736,43 +730,43 @@ public class SingleFileStore<K, V> implements AdvancedLoadWriteStore<K, V> {
       /**
        * File offset of this block.
        */
-      private final long offset;
+      final long offset;
 
       /**
        * Total size of this block.
        */
-      private final int size;
+      final int size;
 
       /**
        * Size of serialized key.
        */
-      private final int keyLen;
+      final int keyLen;
 
       /**
        * Size of serialized data.
        */
-      private final int dataLen;
+      final int dataLen;
 
       /**
        * Size of serialized metadata.
        */
-      private final int metadataLen;
+      final int metadataLen;
 
       /**
        * Time stamp when the entry will expire (i.e. will be collected by purge).
        */
-      private final long expiryTime;
+      final long expiryTime;
 
       /**
        * Number of current readers.
        */
-      private transient int readers = 0;
+      transient int readers = 0;
 
-      public FileEntry(long offset, int size) {
+      FileEntry(long offset, int size) {
          this(offset, size, 0, 0, 0, -1);
       }
 
-      public FileEntry(long offset, int size, int keyLen, int dataLen, int metadataLen, long expiryTime) {
+      FileEntry(long offset, int size, int keyLen, int dataLen, int metadataLen, long expiryTime) {
          this.offset = offset;
          this.size = size;
          this.keyLen = keyLen;
@@ -781,25 +775,25 @@ public class SingleFileStore<K, V> implements AdvancedLoadWriteStore<K, V> {
          this.expiryTime = expiryTime;
       }
 
-      public FileEntry(FileEntry fe, int keyLen, int dataLen, int metadataLen, long expiryTime) {
+      FileEntry(FileEntry fe, int keyLen, int dataLen, int metadataLen, long expiryTime) {
          this(fe.offset, fe.size, keyLen, dataLen, metadataLen, expiryTime);
       }
 
-      public synchronized boolean isLocked() {
+      synchronized boolean isLocked() {
          return readers > 0;
       }
 
-      public synchronized void lock() {
+      synchronized void lock() {
          readers++;
       }
 
-      public synchronized void unlock() {
+      synchronized void unlock() {
          readers--;
          if (readers == 0)
             notifyAll();
       }
 
-      public synchronized void waitUnlocked() {
+      synchronized void waitUnlocked() {
          while (readers > 0) {
             try {
                wait();
@@ -809,11 +803,11 @@ public class SingleFileStore<K, V> implements AdvancedLoadWriteStore<K, V> {
          }
       }
 
-      public boolean isExpired(long now) {
+      boolean isExpired(long now) {
          return expiryTime > 0 && expiryTime < now;
       }
 
-      public int actualSize() {
+      int actualSize() {
          return KEY_POS + keyLen + dataLen + metadataLen;
       }
 
