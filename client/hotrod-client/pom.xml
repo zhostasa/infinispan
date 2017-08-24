@@ -68,13 +68,13 @@
          <artifactId>infinispan-remote-query-server</artifactId>
          <scope>test</scope>
       </dependency>
-      
+
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-scripting</artifactId>
          <scope>test</scope>
       </dependency>
-      
+
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-scripting</artifactId>
