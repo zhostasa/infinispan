@@ -194,7 +194,18 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
       InternalMetadata metadata = entry.getMetadata();
       long lifespan = metadata != null ? metadata.lifespan() : -1;
       long maxIdle = metadata != null ? metadata.maxIdle() : -1;
-      remoteCache.put(entry.getKey(), getValue(entry), toSeconds(lifespan, entry.getKey(), LIFESPAN), TimeUnit.SECONDS, toSeconds(maxIdle, entry.getKey(), MAXIDLE), TimeUnit.SECONDS);
+      Object key = getKey(entry);
+      Object value = getValue(entry);
+
+      remoteCache.put(key, value, toSeconds(lifespan, entry.getKey(), LIFESPAN), TimeUnit.SECONDS,
+            toSeconds(maxIdle, entry.getKey(), MAXIDLE), TimeUnit.SECONDS);
+   }
+
+   private Object getKey(MarshalledEntry entry) {
+      Object key = entry.getKey();
+      if (key instanceof WrappedByteArray)
+         return ((WrappedByteArray) key).getBytes();
+      return key;
    }
 
    private Object getValue(MarshalledEntry entry) {
@@ -209,7 +220,7 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
    public void writeBatch(Iterable<MarshalledEntry<? extends K, ? extends V>> marshalledEntries) {
       Map<Object, Object> batch = new HashMap<>();
       for (MarshalledEntry entry : marshalledEntries) {
-         batch.put(entry.getKey(), getValue(entry));
+         batch.put(getKey(entry), getValue(entry));
          if (batch.size() == configuration.maxBatchSize()) {
             remoteCache.putAll(batch);
             batch.clear();
