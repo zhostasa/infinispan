@@ -48,7 +48,7 @@ public enum Namespace {
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = INFINISPAN_SERVER_8_4;
+    public static final Namespace CURRENT = INFINISPAN_SERVER_8_5;
 
     private final int major;
     private final int minor;

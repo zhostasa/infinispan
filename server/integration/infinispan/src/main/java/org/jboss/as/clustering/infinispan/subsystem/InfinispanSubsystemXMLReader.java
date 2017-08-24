@@ -1117,7 +1117,7 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
                     throw ParseUtils.unexpectedElement(reader);
             }
             if (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-                ParseUtils.unexpectedElement(reader);
+                throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
@@ -1201,7 +1201,7 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
 
     private void parseEviction(XMLExtendedStreamReader reader, ModelNode cache, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        if (namespace.since(Namespace.INFINISPAN_SERVER_8_4)) {
+        if (namespace.since(Namespace.INFINISPAN_SERVER_8_5)) {
             throw ParseUtils.unexpectedElement(reader);
         }
 
