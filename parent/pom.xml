@@ -175,8 +175,8 @@
       <version.webdav.servlet>2.0.1</version.webdav.servlet>
       <version.weld>2.3.3.Final-redhat-1</version.weld>
       <version.weld-se>2.2.0.SP1</version.weld-se>
-      <version.jgroups.kubernetes>1.0.0.Beta1</version.jgroups.kubernetes>
-      <version.oauth.core>20090531</version.oauth.core>
+      <version.jgroups.kubernetes>1.0.0.Beta1-redhat-1</version.jgroups.kubernetes>
+      <version.oauth.core>20100527</version.oauth.core>
 
       <version.org.wildfly>7.0.4.GA-redhat-2</version.org.wildfly>
       <version.org.wildfly.short>7.0</version.org.wildfly.short>
