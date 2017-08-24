@@ -95,7 +95,7 @@
       <module.skipTestComponentMetaDataProcessing>true</module.skipTestComponentMetaDataProcessing>
       <module.metadata.isCoreModule>false</module.metadata.isCoreModule>
 
-      <product.version>7.1.0</product.version>
+      <product.version>7.2.0</product.version>
 
       <version.ant>1.9.4</version.ant>
       <version.antlr>3.4</version.antlr>

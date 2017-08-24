@@ -5,7 +5,7 @@
 
     <import file="../lib.xml" />
 
-    <major-minor version="7.1.0" property="infinispan.slot" prefix="jdg-"/>
+    <major-minor version="7.2.0" property="infinispan.slot" prefix="jdg-"/>
     <major-minor version="${version.lucene}" property="lucene.slot"/>
     <major-minor version="${version.hibernate.search}" property="hibernate.search.slot"/>
     <property name="hibernate-search-directory-provider-ref" value="for-hibernatesearch-${hibernate.search.slot}"/>
