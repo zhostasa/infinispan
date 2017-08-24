@@ -40,7 +40,9 @@
             </distributed-cache-configuration>
 
             <distributed-cache-configuration name="memory-bounded">
-               <eviction strategy="LRU" size="10000000" type="MEMORY"/>
+               <memory>
+                  <object size="10000"/>
+               </memory>
             </distributed-cache-configuration>
 
             <distributed-cache-configuration name="persistent-file-store-passivation">
