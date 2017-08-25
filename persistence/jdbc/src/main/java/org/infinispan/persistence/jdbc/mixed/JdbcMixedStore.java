@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import org.infinispan.commons.configuration.ConfiguredBy;
+import org.infinispan.commons.persistence.Store;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.filter.KeyFilter;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -52,6 +53,7 @@ import org.infinispan.util.logging.LogFactory;
  * @see org.infinispan.persistence.jdbc.binary.JdbcBinaryStore
  * @see org.infinispan.persistence.jdbc.stringbased.JdbcStringBasedStore
  */
+@Store(shared = true)
 @ConfiguredBy(JdbcMixedStoreConfiguration.class)
 public class JdbcMixedStore<K,V> implements AdvancedLoadWriteStore<K,V>, TransactionalCacheWriter<K,V> {
 

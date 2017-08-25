@@ -25,6 +25,7 @@ import javax.transaction.Transaction;
 
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.io.ByteBuffer;
+import org.infinispan.commons.persistence.Store;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.filter.KeyFilter;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -62,6 +63,7 @@ import org.infinispan.util.logging.LogFactory;
  * @see org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfiguration
  * @see org.infinispan.persistence.jdbc.stringbased.JdbcStringBasedStore
  */
+@Store(shared = true)
 @ConfiguredBy(JdbcBinaryStoreConfiguration.class)
 public class JdbcBinaryStore<K,V> extends AbstractJdbcStore<K,V> {
 
