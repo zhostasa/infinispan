@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
  * @author Sebastian Laskawiec
  * @see Config
  */
-@Test(groups = "functional", testName = "cdi.test.event.CacheEventTest")
+@Test(groups = "functional", testName = "cdi.test.event.CacheEventTest", enabled = false, description = "JDG-1159")
 public class CacheEventTest extends Arquillian {
 
    private final NonTxInvocationContext invocationContext = new NonTxInvocationContext(null, AnyEquivalence.getInstance());
