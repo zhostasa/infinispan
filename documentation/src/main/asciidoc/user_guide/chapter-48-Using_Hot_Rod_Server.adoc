@@ -1322,16 +1322,16 @@ is detailed in the link:#_configuration_7[Querying Infinispan] chapter.
 
 There is however an extra configuration step involved. While in embedded mode the indexing metadata is obtained via Java
 reflection by analyzing the presence of various Hibernate Search annotations on the entry's class, this is obviously not
-possible if the entry is protobuf encoded. 
-The server needs to extract the relevant metadata from the same descriptor (.proto file) as the client. 
+possible if the entry is protobuf encoded.
+The server needs to extract the relevant metadata from the same descriptor (.proto file) as the client.
 The descriptors are stored in a dedicated cache on the server _'___protobuf_metadata'_.
 Registering a new schema is therefore as simple as performing a _put_ operation on that cache using the schema's name as
-a key and the schema itself as the value. 
-Alternatively you can use the CLI (via the cache-container=*:register-proto-schemas() operation), the Console or the 
-_ProtobufMetadataManager_ MBean via JMX. 
+a key and the schema itself as the value.
+Alternatively you can use the CLI (via the cache-container=*:register-proto-schemas() operation), the Console or the
+_ProtobufMetadataManager_ MBean via JMX.
 Be aware that, when security is enabled, access to the schema cache via the remote protocols requires
 that the user belongs to the _'___schema_manager role'_
-NOTE: Once indexing is enabled for a cache all fields of Protobuf encoded entries are going to be indexed. 
+NOTE: Once indexing is enabled for a cache all fields of Protobuf encoded entries are going to be indexed.
 Future versions will allow you to select which fields to index (see link:https://issues.jboss.org/browse/ISPN-3718[ISPN-3718]).
 
 ===== A remote query example
