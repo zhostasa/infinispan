@@ -22,6 +22,7 @@ import org.infinispan.commons.marshall.WrappedBytes;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.eviction.EvictionManager;
 import org.infinispan.eviction.PassivationManager;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Stop;
@@ -53,6 +54,7 @@ public class OffHeapDataContainer implements DataContainer<WrappedBytes, Wrapped
    protected OffHeapEntryFactory offHeapEntryFactory;
    protected InternalEntryFactory internalEntryFactory;
    protected TimeService timeService;
+   protected EvictionManager evictionManager;
    protected PassivationManager passivator;
    // Variable to make sure memory locations aren't read after being deallocated
    // This variable should always be read first after acquiring either the read or write lock
@@ -84,8 +86,9 @@ public class OffHeapDataContainer implements DataContainer<WrappedBytes, Wrapped
    }
 
    @Inject
-   public void inject(PassivationManager passivator, OffHeapEntryFactory offHeapEntryFactory,
-         OffHeapMemoryAllocator allocator, TimeService timeService, InternalEntryFactory internalEntryFactory) {
+   public void inject(EvictionManager evictionManager, PassivationManager passivator, OffHeapEntryFactory offHeapEntryFactory,
+                      OffHeapMemoryAllocator allocator, TimeService timeService, InternalEntryFactory internalEntryFactory) {
+      this.evictionManager = evictionManager;
       this.passivator = passivator;
       this.internalEntryFactory = internalEntryFactory;
       this.allocator = allocator;
