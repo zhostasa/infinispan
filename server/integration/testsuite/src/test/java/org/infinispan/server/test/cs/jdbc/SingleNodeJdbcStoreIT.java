@@ -3,6 +3,7 @@ package org.infinispan.server.test.cs.jdbc;
 import static org.infinispan.server.test.util.ITestUtils.createMBeans;
 import static org.infinispan.server.test.util.ITestUtils.createMemcachedClient;
 import static org.infinispan.server.test.util.ITestUtils.eventually;
+import static org.infinispan.server.test.util.ITestUtils.getRealKeyFromStored;
 import static org.infinispan.server.test.util.ITestUtils.getRealKeyStored;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -10,7 +11,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
@@ -19,14 +25,18 @@ import org.infinispan.arquillian.core.WithRunningServer;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
+import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
-import org.infinispan.commons.util.Base64;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.marshall.core.MarshalledEntry;
+import org.infinispan.persistence.support.Bucket;
 import org.infinispan.server.test.category.CacheStore;
 import org.infinispan.server.test.client.memcached.MemcachedClient;
 import org.infinispan.server.test.util.ITestUtils;
 import org.infinispan.server.test.util.RemoteCacheManagerFactory;
 import org.infinispan.server.test.util.RemoteInfinispanMBeans;
 import org.infinispan.server.test.util.jdbc.DBServer;
+import org.infinispan.test.TestingUtil;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -68,6 +78,7 @@ public class SingleNodeJdbcStoreIT {
     public final String DATA_COLUMN_NAME = "datum";
 
     public static RemoteCacheManagerFactory rcmFactory;
+    public static StreamingMarshaller globalMarshaller; // Necessary to unmarshall buckets
 
     // WP = without passivation
     static DBServer stringDB, stringWPDB, binaryDB, binaryWPDB, mixedDB, mixedWPDB, stringAsyncDB;
@@ -77,6 +88,7 @@ public class SingleNodeJdbcStoreIT {
     @BeforeClass
     public static void startup() {
         rcmFactory = new RemoteCacheManagerFactory();
+        globalMarshaller = TestingUtil.marshaller(new DefaultCacheManager().getCache());
     }
 
     @AfterClass
@@ -225,8 +237,8 @@ public class SingleNodeJdbcStoreIT {
         stringCache.put("k2", "v2");
         boolean tableExists = stringDB.stringTable.exists();
         if (tableExists) {
-            assertNull(stringDB.stringTable.getValueByKey(getStoredKey(stringCache, "k1")));
-            assertNull(stringDB.stringTable.getValueByKey(getStoredKey(stringCache, "k2")));
+            assertNull(stringDB.stringTable.getValueByKey(getStoredStringKey(stringCache, "k1")));
+            assertNull(stringDB.stringTable.getValueByKey(getStoredStringKey(stringCache, "k2")));
         }
         stringCache.put("k3", "v3");
         //now a key would be evicted and stored in store
@@ -239,19 +251,23 @@ public class SingleNodeJdbcStoreIT {
     public void testRestartStringStoreAfter(boolean killed) throws Exception {
         assertEquals(0, server.getCacheManager(stringMBeans.managerName).getCache(stringMBeans.cacheName).getNumberOfEntries());
 
-        assertNotNull(stringDB.stringTable.getValueByKey(getStoredKey(stringCache, "k1")));
         if (killed) {
-            assertEquals(1, stringDB.stringTable.getAllRows().size());
-            assertEquals("v1", stringCache.get("k1")); // removed from store
-            assertNull(stringDB.stringTable.getValueByKey(getStoredKey(stringCache, "k1")));
-            assertNull(stringCache.get("k2"));
-            assertNull(stringCache.get("k3"));
+            List<String> passivatedKeys = stringDB.stringTable.getAllKeys();
+            assertEquals(1, passivatedKeys.size());
+            String passivatedKey = getStoredKey(stringCache, passivatedKeys.get(0));
+            assertEquals("v"+passivatedKey.substring(1), stringCache.get(passivatedKey)); // removed from store
+            assertNull(stringDB.stringTable.getValueByKey(getStoredStringKey(stringCache, passivatedKey)));
+            Set<String> allKeys = new HashSet<>(Arrays.asList("k1", "k2", "k3"));
+            allKeys.remove(passivatedKey);
+            for(String key : allKeys) {
+                assertNull(stringCache.get(key));
+            }
         } else {
             assertEquals(3, stringDB.stringTable.getAllRows().size());
             assertEquals("v1", stringCache.get("k1"));
             assertEquals("v2", stringCache.get("k2"));
             assertEquals("v3", stringCache.get("k3"));
-            assertNull(stringDB.stringTable.getValueByKey(getStoredKey(stringCache, "k3")));
+            assertNull(stringDB.stringTable.getValueByKey(getStoredStringKey(stringCache, "k3")));
         }
     }
 
@@ -266,24 +282,23 @@ public class SingleNodeJdbcStoreIT {
         assertTrue(!binaryDB.bucketTable.exists() || binaryDB.bucketTable.getAllRows().isEmpty());
         binaryCache.put(key3, "v3");
         assertTrue(2 >= server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntries());
-        byte[] k1Stored = getRealKeyStored(key1, binaryCache);
         assertTrue(!binaryDB.bucketTable.getAllRows().isEmpty());
-        assertNotNull(binaryDB.bucketTable.getBucketByKey(new WrappedByteArray(k1Stored)));
+        assertNotNull(getFirstKeyInBucket(binaryCache, binaryDB));
     }
 
     public void testRestartBinaryStoreAfter(boolean killed) throws Exception {
         String key1 = "key1";
         String key2 = "anotherExtraUniqueKey";
         String key3 = "key3";
-        byte[] k1Stored = getRealKeyStored(key1, binaryCache);
-        byte[] k3Stored = getRealKeyStored(key3, binaryCache);
         assertEquals(0, server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntries());
-        assertNotNull(binaryDB.bucketTable.getBucketByKey(new WrappedByteArray(k1Stored)));
         if (killed) {
             assertEquals(1, binaryDB.bucketTable.getAllRows().size());
-            assertEquals("v1", binaryCache.get(key1));
-            assertNull(binaryCache.get(key2));
-            assertNull(binaryCache.get(key3));
+            Set<String> allKeys = new HashSet<>(Arrays.asList(key1, key2, key3));
+            String passivatedKey = (String) getFirstKeyInBucket(binaryCache, binaryDB);
+            allKeys.remove(passivatedKey);
+            for (String key : allKeys) {
+                assertNull(binaryCache.get(key));
+            }
         } else {
             assertTrue(binaryDB.bucketTable.getAllRows().size() >= 2); // can't test for 3, the row may be shared
             assertEquals("v1", binaryCache.get(key1));
@@ -310,19 +325,22 @@ public class SingleNodeJdbcStoreIT {
     public void testRestartMixedStoreAfter(boolean killed) throws Exception {
         assertEquals(0, server.getCacheManager(mixedMBeans.managerName).getCache(mixedMBeans.cacheName).getNumberOfEntries());
         assertTrue(mixedDB.bucketTable.getAllRows().isEmpty());
-        assertNotNull(mixedDB.stringTable.getValueByKey(getStoredKey(mixedCache, "k1")));
         if (killed) {
-            assertEquals(1, mixedDB.stringTable.getAllRows().size());
-            assertEquals("v1", mixedCache.get("k1"));
-            assertNull(mixedDB.stringTable.getValueByKey(getStoredKey(mixedCache, "k1")));
-            assertNull(mixedCache.get("k2"));
-            assertNull(mixedCache.get("k3"));
+            Set<String> allKeys = new HashSet<>(Arrays.asList("k1", "k2", "k3"));
+            List<String> passivatedKeys = mixedDB.stringTable.getAllKeys();
+            assertEquals(1, passivatedKeys.size());
+            String passivatedKey = getStoredKey(mixedCache, passivatedKeys.get(0));
+            assertEquals("v"+passivatedKey.substring(1), mixedCache.get(passivatedKey)); // removed from store
+            allKeys.remove(passivatedKey);
+            for (String key : allKeys) {
+                assertNull(mixedCache.get(key));
+            }
         } else {
             assertEquals(3, mixedDB.stringTable.getAllRows().size());
             assertEquals("v1", mixedCache.get("k1"));
             assertEquals("v2", mixedCache.get("k2"));
             assertEquals("v3", mixedCache.get("k3"));
-            assertNull(mixedDB.stringTable.getValueByKey(getStoredKey(mixedCache, "k3")));
+            assertNull(mixedDB.stringTable.getValueByKey(getStoredStringKey(mixedCache, "k3")));
         }
     }
 
@@ -330,8 +348,8 @@ public class SingleNodeJdbcStoreIT {
         assertCleanCacheAndStoreHotrod(stringWPCache, stringWPDB.stringTable);
         stringWPCache.put("k1", "v1");
         stringWPCache.put("k2", "v2");
-        assertNotNull(stringWPDB.stringTable.getValueByKey(getStoredKey(stringWPCache, "k1")));
-        assertNotNull(stringWPDB.stringTable.getValueByKey(getStoredKey(stringWPCache, "k2")));
+        assertNotNull(stringWPDB.stringTable.getValueByKey(getStoredStringKey(stringWPCache, "k1")));
+        assertNotNull(stringWPDB.stringTable.getValueByKey(getStoredStringKey(stringWPCache, "k2")));
     }
 
     public void testRestartStringStoreWPAfter() throws Exception {
@@ -344,8 +362,8 @@ public class SingleNodeJdbcStoreIT {
         assertEquals("v1", stringWPCache.get("k1"));
         assertEquals("v2", stringWPCache.get("k2"));
         stringWPCache.remove("k1");
-        assertNull(stringWPDB.stringTable.getValueByKey(getStoredKey(stringWPCache, "k1")));
-        assertNotNull(stringWPDB.stringTable.getValueByKey(getStoredKey(stringWPCache, "k2")));
+        assertNull(stringWPDB.stringTable.getValueByKey(getStoredStringKey(stringWPCache, "k1")));
+        assertNotNull(stringWPDB.stringTable.getValueByKey(getStoredStringKey(stringWPCache, "k2")));
     }
 
     public void testRestartBinaryStoreWPBefore() throws Exception {
@@ -402,7 +420,7 @@ public class SingleNodeJdbcStoreIT {
         assertEquals("v1", mixedWPCache.get("k1"));
         assertEquals("v2", mixedWPCache.get("k2"));
         mixedWPCache.remove("k2");
-        assertNull(mixedWPDB.stringTable.getValueByKey(getStoredKey(mixedWPCache, "k2")));
+        assertNull(mixedWPDB.stringTable.getValueByKey(getStoredStringKey(mixedWPCache, "k2")));
     }
 
     public void assertCleanCacheAndStoreHotrod(RemoteCache cache, final DBServer.TableManipulation table) throws Exception {
@@ -418,13 +436,33 @@ public class SingleNodeJdbcStoreIT {
         }
     }
 
+    public Object getFirstKeyInBucket(RemoteCache cache, DBServer db) throws Exception {
+        Bucket bucket = db.bucketTable.getFirstNonEmptyBucket(globalMarshaller);
+        assertNotNull(bucket);
+        Map<Object, MarshalledEntry> entries = bucket.getStoredEntries();
+        assertNotNull(entries);
+        assertEquals(1, entries.size());
+        WrappedByteArray key = (WrappedByteArray) entries.keySet().iterator().next();
+        return getRealKeyFromStored(key.getBytes(), cache);
+    }
+
     // gets the database representation of the String key stored with hotrod client (when using string store)
-    public String getStoredKey(RemoteCache cache, String key) throws IOException, InterruptedException {
+    public String getStoredStringKey(RemoteCache cache, String key) throws IOException, InterruptedException {
         // 1. marshall the key
         // 2. encode it with base64 (that's what DefaultTwoWayKey2StringMapper does)
         // 3. prefix it with 8 (again, done by DefaultTwoWayKey2StringMapper to mark the key as wrapped byte array type)
         // 4. prefix it with UTF-16 BOM (that is what DefaultTwoWayKey2StringMapper does for non string values)
-        return '\uFEFF' + "8" + Base64.encodeBytes(cache.getRemoteCacheManager().getMarshaller().objectToByteBuffer(key));
+        return '\uFEFF' + "8" + Base64.getEncoder().encodeToString(cache.getRemoteCacheManager().getMarshaller().objectToByteBuffer(key));
+    }
+
+    private StreamingMarshaller getMarshaller(RemoteCache cache) {
+        return (StreamingMarshaller) cache.getRemoteCacheManager().getMarshaller();
+    }
+
+    private String getStoredKey(RemoteCache cache, String key) throws IOException, InterruptedException, ClassNotFoundException {
+        Object o = getMarshaller(cache).objectFromByteBuffer(Base64.getDecoder().decode(key.substring(2)));
+        log.tracef("Key in DB=%s > %s", key, o);
+        return (String)o;
     }
 
     public RemoteCache<Object, Object> createCache(RemoteInfinispanMBeans mbeans) {

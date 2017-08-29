@@ -125,6 +125,11 @@ public class ITestUtils {
         return m.objectToByteBuffer(key, 64);
     }
 
+    public static Object getRealKeyFromStored(byte[] buf, RemoteCache rc) throws Exception {
+        Marshaller m = getMarshallerField((RemoteCacheImpl) rc);
+        return m.objectFromByteBuffer(buf);
+    }
+
     private static Marshaller getMarshallerField(RemoteCacheImpl rci) throws Exception {
         Field field;
         try {

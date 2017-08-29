@@ -2,6 +2,7 @@ package org.infinispan.server.test.util.jdbc;
 
 import static org.infinispan.server.test.util.ITestUtils.sleepForSecs;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -9,10 +10,13 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.infinispan.commons.equivalence.AnyEquivalence;
-import org.infinispan.commons.equivalence.ByteArrayEquivalence;
+import org.infinispan.commons.marshall.StreamingMarshaller;
+import org.infinispan.marshall.core.MarshalledEntry;
+import org.infinispan.persistence.support.Bucket;
 
 /**
  * @author <a href="mailto:mgencur@redhat.com">Martin Gencur</a>
@@ -177,34 +181,37 @@ public class DBServer {
             return result;
         }
 
-        public Object getBucketByKeyAwait(Object key) throws Exception {
-            int keyHash = ByteArrayEquivalence.INSTANCE.hashCode(key) & 0xfffffc00; //computation taken from BucketBasedCacheStore
-            Connection connection = factory.getConnection();
-            final PreparedStatement ps = connection.prepareStatement(getRowByKeySql);
-            Object result = null;
-            ps.setString(1, String.valueOf(keyHash));
-            try {
-                ResultSet rs;
-                rs = withAwait(new Callable<ResultSet>() {
-                    @Override
-                    public ResultSet call() throws Exception {
-                        return ps.executeQuery();
-                    }
-                });
-                if (rs.next()) {
-                    result = rs.getObject(dataColumnName);
+        public Bucket getFirstNonEmptyBucket(StreamingMarshaller marshaller) throws Exception {
+            try (Connection connection = factory.getConnection();
+                 Statement s = connection.createStatement();
+                 ResultSet rs = s.executeQuery(getAllRowsSql)) {
+                Bucket bucket = new Bucket();
+                while (rs.next()) {
+                    bucket = loadBucket(marshaller, rs);
+                    if (!bucket.isEmpty())
+                        return bucket;
                 }
-            } finally {
-                factory.releaseConnection(connection);
+                return bucket;
             }
-            return result;
+        }
+
+        private Bucket loadBucket(StreamingMarshaller marshaller, ResultSet resultSet) throws Exception {
+            String bucketName = resultSet.getString(2);
+            InputStream inputStream = resultSet.getBinaryStream(1);
+            Map<Object, MarshalledEntry> entries = (Map<Object, MarshalledEntry>) marshaller.objectFromInputStream(inputStream);
+            if (entries == null || entries.isEmpty())
+                return new Bucket();
+
+            Bucket bucket = new Bucket(entries);
+            bucket.setBucketId(bucketName);
+            return bucket;
         }
 
         public List<String> getAllRows() throws Exception {
             Connection connection = factory.getConnection();
             final Statement s = connection.createStatement();
             ResultSet rs;
-            List<String> rows = new ArrayList<String>();
+            List<String> rows = new ArrayList<>();
             try {
                 rs = s.executeQuery(getAllRowsSql);
                 while (rs.next()) {
@@ -286,18 +293,6 @@ public class DBServer {
                 }
             });
             if (result == null) throw new RuntimeException("Table " + tableName + " was not created in " + TIMEOUT + " ms");
-        }
-
-        public String getDBName() throws Exception {
-            Connection connection = factory.getConnection();
-            try {
-                String dbProduct = connection.getMetaData().getDatabaseProductName();
-                String result = "DB Product: " + dbProduct;
-                result += ", Driver Name:" + connection.getMetaData().getDriverName();
-                return result;
-            } finally {
-                factory.releaseConnection(connection);
-            }
         }
 
         public String getConnectionUrl() {

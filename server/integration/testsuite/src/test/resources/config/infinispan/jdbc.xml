@@ -1,4 +1,4 @@
-       <subsystem xmlns="urn:infinispan:server:core:8.4" >
+       <subsystem xmlns="urn:infinispan:server:core:8.5" >
             <cache-container name="local" default-cache="stringWithPassivation">
 
                 <local-cache name="stringWithPassivation">
