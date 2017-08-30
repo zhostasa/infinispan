@@ -153,8 +153,8 @@ public interface InfinispanLogger extends BasicLogger {
     void unregisteringDeployedTask(String className);
 
     /**
-     * Logs a warning message indicating that the flush-lock-timeout attribute of the write-behind element is no longer
-     * valid
+     * Logs a warning message indicating that the flush-lock-timeout attribute of the write-behind element
+     * is no longer valid
      */
     @LogMessage(level = WARN)
     @Message(id = 14, value = "The 'flush-lock-timeout' attribute specified on the 'write-behind' element of a cache is no longer valid")
@@ -164,8 +164,14 @@ public interface InfinispanLogger extends BasicLogger {
      * Logs a warning message indicating that the flush-lock-timeout attribute of the write-behind element
      * is no longer valid
      */
-
     @LogMessage(level = WARN)
     @Message(id = 15, value = "The 'shutdown-timeout' attribute specified on the 'write-behind' element of a cache is no longer valid")
     void shutdownTimeoutDeprecated();
+
+    /**
+     * Logs a warning message indicating that the module attribute of the cache element is no longer valid.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 17, value = "Found and ignored unsupported (deprecated) attribute 'module' in cache configuration at [row,col] [%s, %s]")
+    void cacheModuleDeprecated(int row, int col);
 }
