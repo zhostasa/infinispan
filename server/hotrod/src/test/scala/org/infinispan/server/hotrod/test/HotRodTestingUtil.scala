@@ -8,8 +8,6 @@ import java.util.{Arrays, Collections, Optional, List => JList, Map => JMap}
 
 import io.netty.channel.{Channel, ChannelFuture, ChannelInitializer}
 import org.infinispan.commons.api.BasicCacheContainer
-import org.infinispan.commons.equivalence.ByteArrayEquivalence
-import org.infinispan.commons.hash.MurmurHash3
 import org.infinispan.commons.logging.LogFactory
 import org.infinispan.commons.marshall.WrappedByteArray
 import org.infinispan.commons.util.Util
@@ -386,9 +384,6 @@ object HotRodTestingUtil {
       hotRodCacheConfiguration(new ConfigurationBuilder())
 
    def hotRodCacheConfiguration(base: ConfigurationBuilder): ConfigurationBuilder = {
-      base.dataContainer()
-              .keyEquivalence(ByteArrayEquivalence.INSTANCE)
-              .valueEquivalence(ByteArrayEquivalence.INSTANCE)
       base
    }
 
