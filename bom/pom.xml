@@ -68,6 +68,7 @@
       <version.protostream>4.0.0.Final-redhat-1</version.protostream>
       <version.aesh>0.66.12.redhat-1</version.aesh>
       <version.antlr>3.5.2</version.antlr>
+      <version.caffeine>2.4.0</version.caffeine>
       <version.c3p0>0.9.5</version.c3p0>
       <version.commons.pool>1.6.0.redhat-9</version.commons.pool>
       <version.gnu.getopt>1.0.13.redhat-5</version.gnu.getopt>
