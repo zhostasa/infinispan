@@ -66,11 +66,13 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = address(0);
 
-      DistributedTaskBuilder builder = des.createDistributedTaskBuilder(new SleepingSimpleCallable());
-      builder.timeout(1000, TimeUnit.MILLISECONDS);
+      latchHolder.get().close();
+      DistributedTaskBuilder builder = des.createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
+      builder.timeout(100, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
       expectException(ExecutionException.class, () -> future.get());
+      latchHolder.get().open();
    }
 
    public void testBasicTargetRemoteDistributedCallableWithException() throws Exception {
@@ -95,12 +97,14 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
 
+      latchHolder.get().close();
       DistributedTaskBuilder builder = des
-            .createDistributedTaskBuilder(new SleepingSimpleCallable());
-      builder.timeout(1000, TimeUnit.MILLISECONDS);
+            .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
+      builder.timeout(100, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
       expectException(TimeoutException.class, () -> future.get(10000, TimeUnit.MILLISECONDS));
+      latchHolder.get().open();
    }
 
    public void testBasicTargetLocalDistributedCallableWithLowFutureAndHighTaskTimeout() throws Exception {
@@ -110,12 +114,14 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
 
+      latchHolder.get().close();
       DistributedTaskBuilder builder = des
-            .createDistributedTaskBuilder(new SleepingSimpleCallable());
+            .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(10000, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      expectException(TimeoutException.class, () -> future.get(1000, TimeUnit.MILLISECONDS));
+      expectException(TimeoutException.class, () -> future.get(100, TimeUnit.MILLISECONDS));
+      latchHolder.get().open();
    }
 
    public void testBasicTargetRemoteDistributedCallableWithHighFutureAndLowTaskTimeout() throws Exception {
@@ -126,12 +132,14 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache2.getAdvancedCache().getRpcManager().getAddress();
 
+      latchHolder.get().close();
       DistributedTaskBuilder builder = des
-            .createDistributedTaskBuilder(new SleepingSimpleCallable());
-      builder.timeout(1000, TimeUnit.MILLISECONDS);
+            .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
+      builder.timeout(100, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
       expectException(TimeoutException.class, () -> future.get(10000, TimeUnit.MILLISECONDS));
+      latchHolder.get().open();
    }
 
    public void testBasicTargetRemoteDistributedCallableWithLowFutureAndHighTaskTimeout() throws Exception {
@@ -142,12 +150,14 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache2.getAdvancedCache().getRpcManager().getAddress();
 
+      latchHolder.get().close();
       DistributedTaskBuilder builder = des
-            .createDistributedTaskBuilder(new SleepingSimpleCallable());
+            .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(10000, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      expectException(TimeoutException.class, () -> future.get(1000, TimeUnit.MILLISECONDS));
+      expectException(TimeoutException.class, () -> future.get(100, TimeUnit.MILLISECONDS));
+      latchHolder.get().open();
    }
 
    public void testBasicTargetLocalDistributedCallableWithoutSpecTimeout() throws Exception {
@@ -158,7 +168,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
 
       DistributedTaskBuilder builder = des
-            .createDistributedTaskBuilder(new SleepingSimpleCallable());
+            .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
 
       Future<Integer> future = des.submit(target, builder.build());
 
@@ -202,7 +212,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       assertEquals(caches(cacheName()).size(), members.size());
       members.remove(getCache().getAdvancedCache().getRpcManager().getAddress());
 
-      DistributedTaskBuilder<Integer> tb = des.createDistributedTaskBuilder(new SleepingSimpleCallable());
+      DistributedTaskBuilder<Integer> tb = des.createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       final Future<Integer> future = des.submit(members.get(0),tb.build());
 
       future.cancel(true);
@@ -212,8 +222,10 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
    public void testTimeoutOnLocalNode() throws Exception {
       AdvancedCache<Object, Object> localCache = getCache().getAdvancedCache();
       DistributedExecutorService des = createDES(localCache);
-      Future<Integer> future = des.submit(localCache.getRpcManager().getAddress(), new SleepingSimpleCallable());
-      expectException(TimeoutException.class, () -> future.get(1000, TimeUnit.MILLISECONDS));
+      latchHolder.get().close();
+      Future<Integer> future = des.submit(localCache.getRpcManager().getAddress(), new SleepingSimpleCallable(latchHolder));
+      expectException(TimeoutException.class, () -> future.get(100, TimeUnit.MILLISECONDS));
+      latchHolder.get().open();
    }
 
    public void testBasicTargetDistributedCallableTargetSameNode() throws Exception {
@@ -261,7 +273,7 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
 
-      DistributedTaskBuilder<Integer> builder = des.createDistributedTaskBuilder(new SleepingSimpleCallable());
+      DistributedTaskBuilder<Integer> builder = des.createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(10, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
