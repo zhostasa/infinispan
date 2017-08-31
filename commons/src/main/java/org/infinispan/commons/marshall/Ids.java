@@ -135,7 +135,7 @@ public interface Ids {
    // TODO: Add other meta params
    int META_LIFESPAN = 91;
    int META_ENTRY_VERSION = 92;
-   int NUMERIC_ENTRY_VERSION = 93;
+   int META_MAX_IDLE = 93;
 
    int READ_WRITE_SNAPSHOT_VIEW = 94;
 

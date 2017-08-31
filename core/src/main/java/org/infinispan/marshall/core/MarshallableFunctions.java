@@ -1,4 +1,4 @@
-package org.infinispan.commons.marshall;
+package org.infinispan.marshall.core;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -6,10 +6,10 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
-import org.infinispan.commons.api.functional.EntryView.ReadWriteEntryView;
-import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
-import org.infinispan.commons.api.functional.MetaParam;
+import org.infinispan.functional.EntryView;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.functional.MetaParam;
+
 
 public final class MarshallableFunctions {
 
@@ -77,15 +77,15 @@ public final class MarshallableFunctions {
       return RemoveIfValueEqualsReturnBoolean.getInstance();
    }
 
-   public static <V> BiConsumer<V, WriteEntryView<V>> setValueConsumer() {
+   public static <V> BiConsumer<V, EntryView.WriteEntryView<V>> setValueConsumer() {
       return SetValue.getInstance();
    }
 
-   public static <V> BiConsumer<V, WriteEntryView<V>> setValueMetasConsumer(MetaParam.Writable... metas) {
+   public static <V> BiConsumer<V, EntryView.WriteEntryView<V>> setValueMetasConsumer(MetaParam.Writable... metas) {
       return new SetValueMetas<>(metas);
    }
 
-   public static <V> Consumer<WriteEntryView<V>> removeConsumer() {
+   public static <V> Consumer<EntryView.WriteEntryView<V>> removeConsumer() {
       return Remove.getInstance();
    }
 
@@ -101,11 +101,11 @@ public final class MarshallableFunctions {
       return ReturnReadWriteView.getInstance();
    }
 
-   public static <K, V> Function<ReadEntryView<K, V>, V> returnReadOnlyFindOrNull() {
+   public static <K, V> Function<EntryView.ReadEntryView<K, V>, V> returnReadOnlyFindOrNull() {
       return ReturnReadOnlyFindOrNull.getInstance();
    }
 
-   public static <K, V> Function<ReadEntryView<K, V>, Boolean> returnReadOnlyFindIsPresent() {
+   public static <K, V> Function<EntryView.ReadEntryView<K, V>, Boolean> returnReadOnlyFindIsPresent() {
       return ReturnReadOnlyFindIsPresent.getInstance();
    }
 
@@ -451,7 +451,7 @@ public final class MarshallableFunctions {
       }
    }
 
-   private static abstract class AbstractSetValue<V> implements BiConsumer<V, WriteEntryView<V>> {
+   private static abstract class AbstractSetValue<V> implements BiConsumer<V, EntryView.WriteEntryView<V>> {
       final MetaParam.Writable[] metas;
 
       protected AbstractSetValue(MetaParam.Writable[] metas) {
@@ -459,7 +459,7 @@ public final class MarshallableFunctions {
       }
 
       @Override
-      public void accept(V v, WriteEntryView<V> wo) {
+      public void accept(V v, EntryView.WriteEntryView<V> wo) {
          wo.set(v, metas);
       }
    }
@@ -471,7 +471,7 @@ public final class MarshallableFunctions {
 
       private static final SetValue INSTANCE = new SetValue<>(new MetaParam.Writable[0]);
       @SuppressWarnings("unchecked")
-      private static <K, V> BiConsumer<V, WriteEntryView<V>> getInstance() {
+      private static <K, V> BiConsumer<V, EntryView.WriteEntryView<V>> getInstance() {
          return SetValue.INSTANCE;
       }
    }
@@ -487,15 +487,15 @@ public final class MarshallableFunctions {
       }
    }
 
-   private static final class Remove<V> implements Consumer<WriteEntryView<V>> {
+   private static final class Remove<V> implements Consumer<EntryView.WriteEntryView<V>> {
       @Override
-      public void accept(WriteEntryView<V> wo) {
+      public void accept(EntryView.WriteEntryView<V> wo) {
          wo.remove();
       }
 
       private static final Remove INSTANCE = new Remove<>();
       @SuppressWarnings("unchecked")
-      private static <V> Consumer<WriteEntryView<V>> getInstance() {
+      private static <V> Consumer<EntryView.WriteEntryView<V>> getInstance() {
          return Remove.INSTANCE;
       }
    }
@@ -543,29 +543,29 @@ public final class MarshallableFunctions {
    }
 
    private static final class ReturnReadOnlyFindOrNull<K, V>
-      implements Function<ReadEntryView<K, V>, V> {
+      implements Function<EntryView.ReadEntryView<K, V>, V> {
       @Override
-      public V apply(ReadEntryView<K, V> ro) {
+      public V apply(EntryView.ReadEntryView<K, V> ro) {
          return ro.find().orElse(null);
       }
 
       private static final ReturnReadOnlyFindOrNull INSTANCE = new ReturnReadOnlyFindOrNull<>();
 
-      private static <K, V> Function<ReadEntryView<K, V>, V> getInstance() {
+      private static <K, V> Function<EntryView.ReadEntryView<K, V>, V> getInstance() {
          return INSTANCE;
       }
    }
 
    private static final class ReturnReadOnlyFindIsPresent<K, V>
-      implements Function<ReadEntryView<K, V>, Boolean> {
+      implements Function<EntryView.ReadEntryView<K, V>, Boolean> {
       @Override
-      public Boolean apply(ReadEntryView<K, V> ro) {
+      public Boolean apply(EntryView.ReadEntryView<K, V> ro) {
          return ro.find().isPresent();
       }
 
       private static final ReturnReadOnlyFindIsPresent INSTANCE = new ReturnReadOnlyFindIsPresent<>();
 
-      private static <K, V> Function<ReadEntryView<K, V>, Boolean> getInstance() {
+      private static <K, V> Function<EntryView.ReadEntryView<K, V>, Boolean> getInstance() {
          return INSTANCE;
       }
    }

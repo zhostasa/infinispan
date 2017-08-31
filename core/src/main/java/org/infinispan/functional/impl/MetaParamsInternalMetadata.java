@@ -5,14 +5,15 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import org.infinispan.commons.api.functional.MetaParam;
-import org.infinispan.commons.api.functional.MetaParam.MetaLifespan;
-import org.infinispan.commons.api.functional.MetaParam.MetaMaxIdle;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Experimental;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.versioning.EntryVersion;
+import org.infinispan.functional.MetaParam;
+import org.infinispan.functional.MetaParam.MetaLifespan;
+import org.infinispan.functional.MetaParam.MetaMaxIdle;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.metadata.Metadata;
@@ -37,22 +38,36 @@ public final class MetaParamsInternalMetadata implements InternalMetadata, MetaP
 
    @Override
    public long created() {
-      return 0;  // TODO: Customise this generated block
+      return params.find(MetaParam.MetaCreated.class).map(mc -> mc.get()).orElse(0L);
    }
 
    @Override
    public long lastUsed() {
-      return 0;  // TODO: Customise this generated block
+      return params.find(MetaParam.MetaLastUsed.class).map(ml -> ml.get()).orElse(0L);
    }
 
    @Override
    public boolean isExpired(long now) {
-      return false;  // TODO: Customise this generated block
+      long expiryTime = expiryTime();
+      return expiryTime >= 0 && expiryTime <= now;
    }
 
    @Override
    public long expiryTime() {
-      return 0;  // TODO: Customise this generated block
+      long deadline = -1;
+      long lifespan = lifespan();
+      if (lifespan >= 0) {
+         deadline = created() + lifespan;
+      }
+      long maxIdle = maxIdle();
+      if (maxIdle >= 0) {
+         if (deadline < 0) {
+            deadline = lastUsed() + maxIdle;
+         } else {
+            deadline = Math.min(deadline, lastUsed() + maxIdle);
+         }
+      }
+      return deadline;
    }
 
    @Override
@@ -69,12 +84,12 @@ public final class MetaParamsInternalMetadata implements InternalMetadata, MetaP
 
    @Override
    public EntryVersion version() {
-      return null;  // TODO: Customise this generated block
+      return params.find(MetaParam.MetaEntryVersion.class).map(MetaParam.MetaEntryVersion::get).orElse(null);
    }
 
    @Override
    public Builder builder() {
-      return null;  // TODO: Customise this generated block
+      return new Builder(params.copy());
    }
 
    @Override
@@ -89,6 +104,70 @@ public final class MetaParamsInternalMetadata implements InternalMetadata, MetaP
          '}';
    }
 
+   public static class Builder implements Metadata.Builder {
+      private final MetaParams params;
+
+      public Builder() {
+         this.params = MetaParams.empty();
+      }
+
+      Builder(MetaParams params) {
+         this.params = params;
+      }
+
+      @Override
+      public Builder lifespan(long time, TimeUnit unit) {
+         params.add(new MetaLifespan(unit.toMillis(time)));
+         return this;
+      }
+
+      @Override
+      public Builder lifespan(long time) {
+         params.add(new MetaLifespan(time));
+         return this;
+      }
+
+      @Override
+      public Builder maxIdle(long time, TimeUnit unit) {
+         params.add(new MetaMaxIdle(unit.toMillis(time)));
+         return this;
+      }
+
+      @Override
+      public Builder maxIdle(long time) {
+         params.add(new MetaMaxIdle(time));
+         return this;
+      }
+
+      @Override
+      public Builder version(EntryVersion version) {
+         params.add(new MetaParam.MetaEntryVersion(version));
+         return this;
+      }
+
+      @Override
+      public MetaParamsInternalMetadata build() {
+         return new MetaParamsInternalMetadata(params);
+      }
+
+      @Override
+      public Builder merge(Metadata metadata) {
+         if (metadata instanceof MetaParamsInternalMetadata) {
+            params.merge(((MetaParamsInternalMetadata) metadata).params);
+         } else {
+            if (!params.find(MetaLifespan.class).isPresent()) {
+               lifespan(metadata.lifespan());
+            }
+            if (!params.find(MetaMaxIdle.class).isPresent()) {
+               maxIdle(metadata.maxIdle());
+            }
+            if (!params.find(MetaParam.MetaEntryVersion.class).isPresent()) {
+               version(metadata.version());
+            }
+         }
+         return this;
+      }
+   }
    public static final class Externalizer extends AbstractExternalizer<MetaParamsInternalMetadata> {
       @Override
       public void writeObject(ObjectOutput oo, MetaParamsInternalMetadata o) throws IOException {

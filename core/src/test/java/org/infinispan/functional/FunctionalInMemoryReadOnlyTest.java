@@ -12,9 +12,7 @@ import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
-import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
-import org.infinispan.commons.api.functional.FunctionalMap;
-import org.infinispan.commons.api.functional.Param;
+import org.infinispan.functional.EntryView.ReadEntryView;
 import org.infinispan.functional.impl.ReadOnlyMapImpl;
 import org.testng.annotations.Test;
 

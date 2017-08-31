@@ -1,7 +1,7 @@
 package org.infinispan.functional.impl;
 
-import org.infinispan.commons.api.functional.FunctionalMap;
-import org.infinispan.commons.api.functional.Status;
+import org.infinispan.functional.FunctionalMap;
+import org.infinispan.functional.Status;
 
 /**
  * Abstract functional map, providing implementations for some of the shared methods.

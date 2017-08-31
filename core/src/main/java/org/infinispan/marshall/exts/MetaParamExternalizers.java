@@ -5,12 +5,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-import org.infinispan.commons.api.functional.EntryVersion;
-import org.infinispan.commons.api.functional.EntryVersion.NumericEntryVersion;
-import org.infinispan.commons.api.functional.MetaParam.MetaEntryVersion;
-import org.infinispan.commons.api.functional.MetaParam.MetaLifespan;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.versioning.EntryVersion;
+import org.infinispan.functional.MetaParam;
+import org.infinispan.functional.MetaParam.MetaEntryVersion;
+import org.infinispan.functional.MetaParam.MetaLifespan;
 import org.infinispan.marshall.core.Ids;
 
 public final class MetaParamExternalizers {
@@ -32,12 +32,34 @@ public final class MetaParamExternalizers {
 
       @Override
       public Set<Class<? extends MetaLifespan>> getTypeClasses() {
-         return Util.<Class<? extends MetaLifespan>>asSet(MetaLifespan.class);
+         return Util.asSet(MetaLifespan.class);
       }
 
       @Override
       public Integer getId() {
          return Ids.META_LIFESPAN;
+      }
+   }
+
+   public static final class MaxIdleExternalizer extends AbstractExternalizer<MetaParam.MetaMaxIdle> {
+      @Override
+      public void writeObject(ObjectOutput output, MetaParam.MetaMaxIdle object) throws IOException {
+         output.writeLong(object.get());
+      }
+
+      @Override
+      public MetaParam.MetaMaxIdle readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+         return new MetaParam.MetaMaxIdle(input.readLong());
+      }
+
+      @Override
+      public Set<Class<? extends MetaParam.MetaMaxIdle>> getTypeClasses() {
+         return Util.asSet(MetaParam.MetaMaxIdle.class);
+      }
+
+      @Override
+      public Integer getId() {
+         return Ids.META_MAX_IDLE;
       }
    }
 
@@ -55,7 +77,7 @@ public final class MetaParamExternalizers {
 
       @Override
       public Set<Class<? extends MetaEntryVersion>> getTypeClasses() {
-         return Util.<Class<? extends MetaEntryVersion>>asSet(MetaEntryVersion.class);
+         return Util.asSet(MetaEntryVersion.class);
       }
 
       @Override
@@ -63,28 +85,4 @@ public final class MetaParamExternalizers {
          return Ids.META_ENTRY_VERSION;
       }
    }
-
-   public static final class NumericEntryVersionExternalizer extends AbstractExternalizer<NumericEntryVersion> {
-      @Override
-      public void writeObject(ObjectOutput output, NumericEntryVersion object) throws IOException {
-         output.writeLong(object.get());
-      }
-
-      @Override
-      public NumericEntryVersion readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-         long version = input.readLong();
-         return new NumericEntryVersion(version);
-      }
-
-      @Override
-      public Set<Class<? extends NumericEntryVersion>> getTypeClasses() {
-         return Util.<Class<? extends NumericEntryVersion>>asSet(NumericEntryVersion.class);
-      }
-
-      @Override
-      public Integer getId() {
-         return Ids.NUMERIC_ENTRY_VERSION;
-      }
-   }
-
 }

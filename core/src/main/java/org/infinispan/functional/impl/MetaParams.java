@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.infinispan.commons.api.functional.MetaParam;
+import org.infinispan.functional.MetaParam;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Experimental;
 import org.infinispan.commons.util.Util;
@@ -82,6 +82,30 @@ public final class MetaParams {
       }
 
       return null;
+   }
+
+   public MetaParams copy() {
+      if ( metas.length == 0) {
+         return empty();
+      } else {
+         return new MetaParams(Arrays.copyOf(metas, metas.length));
+      }
+   }
+
+   void merge(MetaParams other) {
+      Map<Class<?>, MetaParam<?>> all = new HashMap<>();
+      // Add other's metadata first, because we don't want to override those already present
+      for (MetaParam meta : other.metas) {
+         if (meta == null) continue;
+         all.put(meta.getClass(), meta);
+      }
+      for (MetaParam meta : metas) {
+         if (meta == null) continue;
+         all.put(meta.getClass(), meta);
+      }
+
+
+      metas = all.values().toArray(new MetaParam[all.size()]);
    }
 
    public void add(MetaParam.Writable meta) {

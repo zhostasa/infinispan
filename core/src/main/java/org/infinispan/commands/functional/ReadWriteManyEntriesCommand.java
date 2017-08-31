@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.infinispan.commands.Visitor;
-import org.infinispan.commons.api.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.functional.impl.EntryViews;

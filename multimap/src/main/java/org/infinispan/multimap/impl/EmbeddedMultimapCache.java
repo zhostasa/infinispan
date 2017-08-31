@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.api.functional.FunctionalMap;
+import org.infinispan.functional.FunctionalMap;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.functional.impl.FunctionalMapImpl;
 import org.infinispan.functional.impl.ReadWriteMapImpl;

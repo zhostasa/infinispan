@@ -13,7 +13,6 @@ import org.infinispan.commands.RemoteCommandsFactory;
 import org.infinispan.commons.hash.MurmurHash3;
 import org.infinispan.commons.io.ByteBufferImpl;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
-import org.infinispan.commons.marshall.MarshallableFunctionExternalizers;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.marshall.exts.EquivalenceExternalizer;
 import org.infinispan.commons.util.Immutables;
@@ -200,7 +199,7 @@ final class InternalExternalizers {
       addInternalExternalizer(new MetadataTransientMortalCacheValue.Externalizer(), exts); // TODO: Untested in core
       addInternalExternalizer(new MetaParamExternalizers.LifespanExternalizer(), exts);
       addInternalExternalizer(new MetaParamExternalizers.EntryVersionParamExternalizer(), exts);
-      addInternalExternalizer(new MetaParamExternalizers.NumericEntryVersionExternalizer(), exts);
+      addInternalExternalizer(new MetaParamExternalizers.MaxIdleExternalizer(), exts);
       addInternalExternalizer(new MetaParams.Externalizer(), exts);
       addInternalExternalizer(new MetaParamsInternalMetadata.Externalizer(), exts);
       addInternalExternalizer(new MIMECacheEntry.Externalizer(), exts); // new

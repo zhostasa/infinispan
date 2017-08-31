@@ -9,9 +9,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
-import org.infinispan.commons.api.functional.Param;
-import org.infinispan.commons.api.functional.Param.FutureMode;
-import org.infinispan.commons.api.functional.Param.PersistenceMode;
+import org.infinispan.functional.Param;
+import org.infinispan.functional.Param.FutureMode;
+import org.infinispan.functional.Param.PersistenceMode;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.util.Experimental;
 

@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.infinispan.commons.api.functional.EntryView;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.infinispan.functional.EntryView;
 import org.infinispan.multimap.impl.ExternalizerIds;
 
 /**

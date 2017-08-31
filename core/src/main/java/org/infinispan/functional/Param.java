@@ -1,4 +1,4 @@
-package org.infinispan.commons.api.functional;
+package org.infinispan.functional;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -6,7 +6,7 @@ import org.infinispan.commons.util.Experimental;
 
 /**
  * An easily extensible parameter that allows functional map operations to be
- * tweaked. Apart from {@link org.infinispan.commons.api.functional.Param.FutureMode}, examples
+ * tweaked. Apart from {@link Param.FutureMode}, examples
  * would include local-only parameter, skip-cache-store parameter and others.
  *
  * <p>What makes {@link Param} different from {@link MetaParam} is that {@link Param}
@@ -100,7 +100,7 @@ public interface Param<P> {
     * @apiNote Amongst the old flags, there's one that allows cache store
     * to be skipped for loading or reading. There's no need for such
     * per-invocation parameter here, because to avoid loading or reading from
-    * the store, {@link org.infinispan.commons.api.functional.FunctionalMap.WriteOnlyMap}
+    * the store, {@link FunctionalMap.WriteOnlyMap}
     * operations can be called which do not read previous values from the
     * persistence store.
     *

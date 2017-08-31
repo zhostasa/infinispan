@@ -4,6 +4,6 @@
  * @public
  */
 @Experimental
-package org.infinispan.commons.api.functional;
+package org.infinispan.functional;
 
 import org.infinispan.commons.util.Experimental;

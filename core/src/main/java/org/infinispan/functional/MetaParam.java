@@ -1,8 +1,9 @@
-package org.infinispan.commons.api.functional;
+package org.infinispan.functional;
 
 import java.util.Optional;
 
 import org.infinispan.commons.util.Experimental;
+import org.infinispan.container.versioning.EntryVersion;
 
 /**
  * An easily extensible metadata parameter that's stored along with the value
@@ -197,15 +198,15 @@ public interface MetaParam<T> {
     * @since 8.0
     */
    @Experimental
-   class MetaEntryVersion<T> implements Writable<EntryVersion<T>> {
-      private final EntryVersion<T> entryVersion;
+   class MetaEntryVersion<T> implements Writable<EntryVersion> {
+      private final EntryVersion entryVersion;
 
-      public MetaEntryVersion(EntryVersion<T> entryVersion) {
+      public MetaEntryVersion(EntryVersion entryVersion) {
          this.entryVersion = entryVersion;
       }
 
       @Override
-      public EntryVersion<T> get() {
+      public EntryVersion get() {
          return entryVersion;
       }
 

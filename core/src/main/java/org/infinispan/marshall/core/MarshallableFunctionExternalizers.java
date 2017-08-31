@@ -1,39 +1,42 @@
-package org.infinispan.commons.marshall;
+package org.infinispan.marshall.core;
 
-import static org.infinispan.commons.marshall.MarshallableFunctions.LambdaWithMetas;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueIfEqualsReturnBoolean;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueMetas;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueMetasIfAbsentReturnBoolean;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueMetasIfAbsentReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueMetasIfPresentReturnBoolean;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueMetasIfPresentReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueMetasReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.SetValueMetasReturnView;
-import static org.infinispan.commons.marshall.MarshallableFunctions.identity;
-import static org.infinispan.commons.marshall.MarshallableFunctions.removeConsumer;
-import static org.infinispan.commons.marshall.MarshallableFunctions.removeIfValueEqualsReturnBoolean;
-import static org.infinispan.commons.marshall.MarshallableFunctions.removeReturnBoolean;
-import static org.infinispan.commons.marshall.MarshallableFunctions.removeReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadOnlyFindIsPresent;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadOnlyFindOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadWriteFind;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadWriteGet;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadWriteView;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueConsumer;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueIfAbsentReturnBoolean;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueIfAbsentReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueIfPresentReturnBoolean;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueIfPresentReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueReturnView;
+import static org.infinispan.functional.MetaParam.Writable;
+import static org.infinispan.marshall.core.MarshallableFunctions.SetValueMetas;
+import static org.infinispan.marshall.core.MarshallableFunctions.SetValueMetasIfPresentReturnBoolean;
+import static org.infinispan.marshall.core.MarshallableFunctions.identity;
+import static org.infinispan.marshall.core.MarshallableFunctions.removeConsumer;
+import static org.infinispan.marshall.core.MarshallableFunctions.removeIfValueEqualsReturnBoolean;
+import static org.infinispan.marshall.core.MarshallableFunctions.removeReturnBoolean;
+import static org.infinispan.marshall.core.MarshallableFunctions.removeReturnPrevOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadOnlyFindIsPresent;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadOnlyFindOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadWriteFind;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadWriteGet;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadWriteView;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueConsumer;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueIfAbsentReturnBoolean;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueIfAbsentReturnPrevOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueIfPresentReturnBoolean;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueIfPresentReturnPrevOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueReturnPrevOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueReturnView;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-import org.infinispan.commons.api.functional.MetaParam;
+import org.infinispan.commons.marshall.Ids;
+import org.infinispan.commons.marshall.LambdaExternalizer;
+import org.infinispan.commons.marshall.ValueMatcherMode;
 import org.infinispan.commons.util.Util;
+import org.infinispan.marshall.core.MarshallableFunctions.LambdaWithMetas;
+import org.infinispan.marshall.core.MarshallableFunctions.SetValueIfEqualsReturnBoolean;
+import org.infinispan.marshall.core.MarshallableFunctions.SetValueMetasIfAbsentReturnBoolean;
+import org.infinispan.marshall.core.MarshallableFunctions.SetValueMetasIfAbsentReturnPrevOrNull;
+import org.infinispan.marshall.core.MarshallableFunctions.SetValueMetasIfPresentReturnPrevOrNull;
+import org.infinispan.marshall.core.MarshallableFunctions.SetValueMetasReturnPrevOrNull;
+import org.infinispan.marshall.core.MarshallableFunctions.SetValueMetasReturnView;
 import org.jboss.marshalling.util.IdentityIntMap;
 
 public class MarshallableFunctionExternalizers {
@@ -92,7 +95,7 @@ public class MarshallableFunctionExternalizers {
       public ValueMatcherMode valueMatcher(Object o) {
          int i = numbers.get(o.getClass(), -1);
          if (i > 0) {
-            int valueMatcherId = ((i & VALUE_MATCH_MASK) >> 12) - 1;
+            int valueMatcherId = ((i & VALUE_MATCH_MASK)>> 12) - 1;
             return ValueMatcherMode.valueOf(valueMatcherId);
          }
 
@@ -185,7 +188,7 @@ public class MarshallableFunctionExternalizers {
 
       @Override
       public Set<Class<? extends LambdaWithMetas>> getTypeClasses() {
-         return Util.<Class<? extends LambdaWithMetas>>asSet(
+         return Util.asSet(
             SetValueMetasReturnPrevOrNull.class,
             SetValueMetasReturnView.class,
             SetValueMetasIfAbsentReturnPrevOrNull.class,
@@ -198,7 +201,7 @@ public class MarshallableFunctionExternalizers {
 
       @Override
       public Integer getId() {
-         return Ids.LAMBDA_WITH_METAS;
+         return org.infinispan.commons.marshall.Ids.LAMBDA_WITH_METAS;
       }
 
       @Override
@@ -211,32 +214,32 @@ public class MarshallableFunctionExternalizers {
       @Override
       public LambdaWithMetas readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          short id = input.readShort();
-         MetaParam.Writable[] metas = readMetas(input);
+         Writable[] metas = readMetas(input);
          switch (id) {
             case SET_VALUE_RETURN_PREV_OR_NULL: return new SetValueMetasReturnPrevOrNull<>(metas);
             case SET_VALUE_IF_ABSENT_RETURN_PREV_OR_NULL: return new SetValueMetasIfAbsentReturnPrevOrNull<>(metas);
             case SET_VALUE_IF_ABSENT_RETURN_BOOLEAN: return new SetValueMetasIfAbsentReturnBoolean<>(metas);
             case SET_VALUE_RETURN_VIEW: return new SetValueMetasReturnView<>(metas);
             case SET_VALUE_IF_PRESENT_RETURN_PREV_OR_NULL: return new SetValueMetasIfPresentReturnPrevOrNull<>(metas);
-            case SET_VALUE_IF_PRESENT_RETURN_BOOLEAN: return new SetValueMetasIfPresentReturnBoolean<>(metas);
-            case SET_VALUE_CONSUMER: return new SetValueMetas<>(metas);
+            case SET_VALUE_IF_PRESENT_RETURN_BOOLEAN: return new MarshallableFunctions.SetValueMetasIfPresentReturnBoolean<>(metas);
+            case SET_VALUE_CONSUMER: return new MarshallableFunctions.SetValueMetas<>(metas);
             default:
                throw new IllegalStateException("Unknown lambda and meta parameters with ID: " + id);
          }
       }
    }
 
-   static MetaParam.Writable[] readMetas(ObjectInput input) throws IOException, ClassNotFoundException {
+   static Writable[] readMetas(ObjectInput input) throws IOException, ClassNotFoundException {
       int len = input.readInt();
-      MetaParam.Writable[] metas = new MetaParam.Writable[len];
+      Writable[] metas = new Writable[len];
       for(int i = 0; i < len; i++)
-         metas[i] = (MetaParam.Writable) input.readObject();
+         metas[i] = (Writable) input.readObject();
       return metas;
    }
 
    private static void writeMetas(ObjectOutput oo, LambdaWithMetas o) throws IOException {
       oo.writeInt(o.metas().length);
-      for (MetaParam.Writable meta : o.metas())
+      for (Writable meta : o.metas())
          oo.writeObject(meta);
    }
 
@@ -250,7 +253,7 @@ public class MarshallableFunctionExternalizers {
       public SetValueIfEqualsReturnBoolean readObject(ObjectInput input)
          throws IOException, ClassNotFoundException {
          Object oldValue = input.readObject();
-         MetaParam.Writable[] metas = readMetas(input);
+         Writable[] metas = readMetas(input);
          return new SetValueIfEqualsReturnBoolean<>(oldValue, metas);
       }
 
@@ -261,7 +264,7 @@ public class MarshallableFunctionExternalizers {
 
       @Override
       public Set<Class<? extends SetValueIfEqualsReturnBoolean>> getTypeClasses() {
-         return Util.<Class<? extends SetValueIfEqualsReturnBoolean>>asSet(SetValueIfEqualsReturnBoolean.class);
+         return Util.asSet(SetValueIfEqualsReturnBoolean.class);
       }
 
       @Override

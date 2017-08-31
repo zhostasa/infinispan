@@ -8,9 +8,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
-import org.infinispan.commons.api.functional.FunctionalMap.ReadOnlyMap;
-import org.infinispan.commons.api.functional.Param;
+import org.infinispan.functional.EntryView.ReadEntryView;
+import org.infinispan.functional.FunctionalMap.ReadOnlyMap;
 import org.infinispan.functional.impl.ReadOnlyMapImpl;
 import org.infinispan.remoting.transport.Address;
 import org.testng.annotations.BeforeMethod;

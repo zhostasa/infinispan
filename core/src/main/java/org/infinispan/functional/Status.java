@@ -1,4 +1,4 @@
-package org.infinispan.commons.api.functional;
+package org.infinispan.functional;
 
 //TODO: Component status is in core/, not commons :(
 

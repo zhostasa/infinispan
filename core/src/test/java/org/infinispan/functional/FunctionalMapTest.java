@@ -1,15 +1,15 @@
 package org.infinispan.functional;
 
-import static org.infinispan.commons.api.functional.EntryVersion.CompareResult.EQUAL;
-import static org.infinispan.commons.marshall.MarshallableFunctions.identity;
-import static org.infinispan.commons.marshall.MarshallableFunctions.removeReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadOnlyFindOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadWriteFind;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadWriteGet;
-import static org.infinispan.commons.marshall.MarshallableFunctions.returnReadWriteView;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueConsumer;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueReturnPrevOrNull;
-import static org.infinispan.commons.marshall.MarshallableFunctions.setValueReturnView;
+import static org.infinispan.container.versioning.InequalVersionComparisonResult.EQUAL;
+import static org.infinispan.marshall.core.MarshallableFunctions.identity;
+import static org.infinispan.marshall.core.MarshallableFunctions.removeReturnPrevOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadOnlyFindOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadWriteFind;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadWriteGet;
+import static org.infinispan.marshall.core.MarshallableFunctions.returnReadWriteView;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueConsumer;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueReturnPrevOrNull;
+import static org.infinispan.marshall.core.MarshallableFunctions.setValueReturnView;
 import static org.infinispan.functional.FunctionalTestUtils.assertReadOnlyViewEmpty;
 import static org.infinispan.functional.FunctionalTestUtils.assertReadOnlyViewEquals;
 import static org.infinispan.functional.FunctionalTestUtils.assertReadWriteViewEmpty;
@@ -45,16 +45,15 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.AdvancedCache;
-import org.infinispan.commons.api.functional.EntryVersion.NumericEntryVersion;
-import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
-import org.infinispan.commons.api.functional.EntryView.ReadWriteEntryView;
-import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
-import org.infinispan.commons.api.functional.FunctionalMap.ReadOnlyMap;
-import org.infinispan.commons.api.functional.FunctionalMap.ReadWriteMap;
-import org.infinispan.commons.api.functional.FunctionalMap.WriteOnlyMap;
-import org.infinispan.commons.api.functional.MetaParam.MetaEntryVersion;
-import org.infinispan.commons.api.functional.MetaParam.MetaLifespan;
-import org.infinispan.commons.api.functional.Traversable;
+import org.infinispan.container.versioning.NumericVersion;
+import org.infinispan.functional.EntryView.ReadEntryView;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.functional.EntryView.WriteEntryView;
+import org.infinispan.functional.FunctionalMap.ReadOnlyMap;
+import org.infinispan.functional.FunctionalMap.ReadWriteMap;
+import org.infinispan.functional.FunctionalMap.WriteOnlyMap;
+import org.infinispan.functional.MetaParam.MetaEntryVersion;
+import org.infinispan.functional.MetaParam.MetaLifespan;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeFunctionWith;
 import org.infinispan.commons.marshall.SerializeWith;
@@ -312,13 +311,13 @@ public class FunctionalMapTest extends AbstractFunctionalTest {
          ReadWriteMap<K, String> map1, ReadWriteMap<K, String> map2) {
       replaceWithVersion(keySupplier, map1, map2, 100, rw -> {
             assertEquals("uno", rw.get());
-            assertEquals(Optional.of(new MetaEntryVersion<>(new NumericEntryVersion(200))),
+            assertEquals(Optional.of(new MetaEntryVersion<>(new NumericVersion(200))),
                rw.findMetaParam(MetaEntryVersion.class));
          }
       );
       replaceWithVersion(keySupplier, map1, map2, 900, rw -> {
          assertEquals(Optional.of("one"), rw.find());
-         assertEquals(Optional.of(new MetaEntryVersion<>(new NumericEntryVersion(100))),
+         assertEquals(Optional.of(new MetaEntryVersion<>(new NumericVersion(100))),
             rw.findMetaParam(MetaEntryVersion.class));
       });
    }
@@ -343,7 +342,7 @@ public class FunctionalMapTest extends AbstractFunctionalTest {
          implements Function<ReadWriteEntryView<K, String>, Void> {
       @Override
       public Void apply(ReadWriteEntryView<K, String> rw) {
-         rw.set("one", new MetaEntryVersion<>(new NumericEntryVersion(100)));
+         rw.set("one", new MetaEntryVersion<>(new NumericVersion(100)));
          return null;
       }
 
@@ -374,8 +373,8 @@ public class FunctionalMapTest extends AbstractFunctionalTest {
          Class<MetaEntryVersion<Long>> clazz = MetaEntryVersion.type();
          Optional<MetaEntryVersion<Long>> metaParam = rw.findMetaParam(clazz);
          metaParam.ifPresent(metaVersion -> {
-            if (metaVersion.get().compareTo(new NumericEntryVersion(version)) == EQUAL)
-               rw.set("uno", new MetaEntryVersion<>(new NumericEntryVersion(200)));
+            if (metaVersion.get().compareTo(new NumericVersion(version)) == EQUAL)
+               rw.set("uno", new MetaEntryVersion<>(new NumericVersion(200)));
          });
          return rw;
       }

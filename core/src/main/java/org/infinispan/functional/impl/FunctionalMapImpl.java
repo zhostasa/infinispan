@@ -6,9 +6,9 @@ import java.util.concurrent.ExecutorService;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.commands.CommandsFactory;
-import org.infinispan.commons.api.functional.FunctionalMap;
-import org.infinispan.commons.api.functional.Param;
-import org.infinispan.commons.api.functional.Status;
+import org.infinispan.functional.FunctionalMap;
+import org.infinispan.functional.Param;
+import org.infinispan.functional.Status;
 import org.infinispan.commons.util.Experimental;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.interceptors.InterceptorChain;
