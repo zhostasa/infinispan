@@ -66,13 +66,11 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = address(0);
 
-      latchHolder.get().close();
       DistributedTaskBuilder builder = des.createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(100, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
       expectException(ExecutionException.class, () -> future.get());
-      latchHolder.get().open();
    }
 
    public void testBasicTargetRemoteDistributedCallableWithException() throws Exception {
@@ -97,7 +95,6 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
 
-      latchHolder.get().close();
       DistributedTaskBuilder builder = des
             .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(100, TimeUnit.MILLISECONDS);
@@ -114,7 +111,6 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache1.getAdvancedCache().getRpcManager().getAddress();
 
-      latchHolder.get().close();
       DistributedTaskBuilder builder = des
             .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(10000, TimeUnit.MILLISECONDS);
@@ -132,7 +128,6 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache2.getAdvancedCache().getRpcManager().getAddress();
 
-      latchHolder.get().close();
       DistributedTaskBuilder builder = des
             .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(100, TimeUnit.MILLISECONDS);
@@ -150,7 +145,6 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       DistributedExecutorService des = createDES(cache1);
       Address target = cache2.getAdvancedCache().getRpcManager().getAddress();
 
-      latchHolder.get().close();
       DistributedTaskBuilder builder = des
             .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
       builder.timeout(10000, TimeUnit.MILLISECONDS);
@@ -169,8 +163,10 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
 
       DistributedTaskBuilder builder = des
             .createDistributedTaskBuilder(new SleepingSimpleCallable(latchHolder));
-
       Future<Integer> future = des.submit(target, builder.build());
+
+      Thread.sleep(100);
+      latchHolder.get().open();
 
       assertEquals((Integer) 1, future.get());
    }
@@ -217,12 +213,13 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
 
       future.cancel(true);
       expectException(CancellationException.class, () -> future.get());
+      latchHolder.get().open();
    }
 
    public void testTimeoutOnLocalNode() throws Exception {
       AdvancedCache<Object, Object> localCache = getCache().getAdvancedCache();
       DistributedExecutorService des = createDES(localCache);
-      latchHolder.get().close();
+
       Future<Integer> future = des.submit(localCache.getRpcManager().getAddress(), new SleepingSimpleCallable(latchHolder));
       expectException(TimeoutException.class, () -> future.get(100, TimeUnit.MILLISECONDS));
       latchHolder.get().open();
@@ -277,7 +274,8 @@ public class DistributedExecutorTest extends LocalDistributedExecutorTest {
       builder.timeout(10, TimeUnit.MILLISECONDS);
 
       Future<Integer> future = des.submit(target, builder.build());
-      expectException(ExecutionException.class, () -> future.get());
+      expectException(ExecutionException.class, TimeoutException.class, () -> future.get());
+      latchHolder.get().open();
    }
 
    public void testBasicTargetCallableWithNullTask() {
