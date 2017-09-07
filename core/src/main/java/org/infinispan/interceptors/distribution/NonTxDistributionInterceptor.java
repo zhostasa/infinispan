@@ -32,6 +32,7 @@ import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.util.ReadOnlySegmentAwareCollection;
 import org.infinispan.distribution.util.ReadOnlySegmentAwareMap;
@@ -183,12 +184,13 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Container, Item> Object handleWriteOnlyManyCommand(
-         InvocationContext ctx, C command, CommandHelper<C, Container, Item> helper) throws Exception {
+         InvocationContext ctx, C command, WriteManyCommandHelper<C, Container, Item> helper) throws Exception {
       // TODO: due to possible repeating of the operation (after OutdatedTopologyException is thrown)
       // it is possible that the function will be applied multiple times on some of the nodes.
       // There is no general solution for this ATM; proper solution will probably record CommandInvocationId
       // in the entry, and implement some housekeeping
-      ConsistentHash ch = checkTopologyId(command).getWriteConsistentHash();
+      LocalizedCacheTopology cacheTopology = checkTopologyId(command);
+      ConsistentHash ch = cacheTopology.getWriteConsistentHash();
       if (ctx.isOriginLocal()) {
          Map<Address, Set<Integer>> segmentMap = primaryOwnersOfSegments(ch);
          CountDownCompletableFuture allFuture = new CountDownCompletableFuture(ctx, segmentMap.size());
@@ -209,10 +211,10 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Container, Item> void handleSegmentsForWriteOnlyManyCommand(
-         InvocationContext ctx, C command, CommandHelper<C, Container, Item> helper, ConsistentHash ch,
+         InvocationContext ctx, C command, WriteManyCommandHelper<C, Container, Item> helper, ConsistentHash ch,
          CountDownCompletableFuture allFuture, Address member, Set<Integer> segments) {
       if (member.equals(rpcManager.getAddress())) {
-         Container myItems = filterAndWrap(ctx, command, segments, ch, helper);
+         Container myItems = filterAndWrap(ctx, command, segments, helper);
 
          C localCommand = helper.copyForLocal(command, myItems);
          // Local keys are backed up in the handler, and counters on allFuture are decremented when the backup
@@ -242,11 +244,10 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
                   allFuture.completeExceptionally(t);
                }
             });
-      return;
    }
 
    private <C extends WriteCommand, Item> Object handleRemoteWriteOnlyManyCommand(
-         InvocationContext ctx, C command, CommandHelper<C, ?, Item> helper) {
+         InvocationContext ctx, C command, WriteManyCommandHelper<C, ?, Item> helper) {
       for (Item item : helper.getItems(command)) {
          Object key = helper.item2key(item);
          if (ctx.lookupEntry(key) == null) {
@@ -262,13 +263,13 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Container, Item> Container filterAndWrap(
-         InvocationContext ctx, C command, Set<Integer> segments, ConsistentHash ch,
-         CommandHelper<C, Container, Item> helper) {
+         InvocationContext ctx, C command, Set<Integer> segments,
+         WriteManyCommandHelper<C, Container, Item> helper) {
       // Filter command keys/entries into the collection, and wrap null for those that are not in context yet
       Container myItems = helper.newContainer();
       for (Item item : helper.getItems(command)) {
          Object key = helper.item2key(item);
-         if (segments.contains(ch.getSegment(key))) {
+         if (segments.contains(keyPartitioner.getSegment(key))) {
             helper.accumulate(myItems, item);
             CacheEntry entry = ctx.lookupEntry(key);
             if (entry == null) {
@@ -280,7 +281,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Container, Item> Object handleReadWriteManyCommand(
-         InvocationContext ctx, C command, CommandHelper<C, Item, Container> helper) throws Exception {
+         InvocationContext ctx, C command, WriteManyCommandHelper<C, Item, Container> helper) throws Exception {
       // TODO: due to possible repeating of the operation (after OutdatedTopologyException is thrown)
       // it is possible that the function will be applied multiple times on some of the nodes.
       // There is no general solution for this ATM; proper solution will probably record CommandInvocationId
@@ -315,7 +316,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Container, Item> void handleLocalSegmentsForReadWriteManyCommand(
-         InvocationContext ctx, C command, CommandHelper<C, Container, Item> helper, ConsistentHash ch,
+         InvocationContext ctx, C command, WriteManyCommandHelper<C, Container, Item> helper, ConsistentHash ch,
          MergingCompletableFuture<Object> allFuture, MutableInt offset, Set<Integer> segments) throws Exception {
       Container myItems = helper.newContainer();
       List<CompletableFuture<?>> retrievals = null;
@@ -323,7 +324,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       // in the context yet
       for (Item item : helper.getItems(command)) {
          Object key = helper.item2key(item);
-         if (segments.contains(ch.getSegment(key))) {
+         if (segments.contains(keyPartitioner.getSegment(key))) {
             helper.accumulate(myItems, item);
             retrievals = addRemoteGet(ctx, command, retrievals, key);
          }
@@ -352,7 +353,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Item> void handleRemoteSegmentsForReadWriteManyCommand(
-         C command, CommandHelper<C, ?, Item> helper,
+         C command, WriteManyCommandHelper<C, ?, Item> helper,
          ConsistentHash ch, MergingCompletableFuture<Object> allFuture,
          MutableInt offset, Address member, Set<Integer> segments) {
       final int myOffset = offset.value;
@@ -381,7 +382,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    private <C extends WriteCommand, Item> Object handleRemoteReadWriteManyCommand(
-         InvocationContext ctx, C command, CommandHelper<C, ?, Item> helper, ConsistentHash ch) throws Exception {
+         InvocationContext ctx, C command, WriteManyCommandHelper<C, ?, Item> helper, ConsistentHash ch) throws Exception {
       List<CompletableFuture<?>> retrievals = null;
       // check that we have all the data we need
       for (Item item : helper.getItems(command)) {
@@ -424,7 +425,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
 
    private <C extends WriteCommand, F extends CountDownCompletableFuture, Item>
    InvocationFinallyAction createLocalInvocationHandler(
-         ConsistentHash ch, F allFuture, Set<Integer> segments, CommandHelper<C, ?, Item> helper,
+         ConsistentHash ch, F allFuture, Set<Integer> segments, WriteManyCommandHelper<C, ?, Item> helper,
          BiConsumer<F, Object> returnValueConsumer) {
       return (rCtx, rCommand, rv, throwable) -> {
          if (throwable != null) {
@@ -475,7 +476,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       public int value;
    }
 
-   private abstract class CommandHelper<C extends WriteCommand, Container, Item>
+   private abstract class WriteManyCommandHelper<C extends WriteCommand, Container, Item>
          implements InvocationSuccessFunction {
       public abstract C copyForLocal(C cmd, Container container);
 
@@ -521,7 +522,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
    }
 
-   private class PutMapHelper extends CommandHelper<PutMapCommand, Map<Object, Object>, Entry<Object, Object>> {
+   private class PutMapHelper extends WriteManyCommandHelper<PutMapCommand, Map<Object, Object>, Entry<Object, Object>> {
       @Override
       public PutMapCommand copyForLocal(PutMapCommand cmd, Map<Object, Object> container) {
          return new PutMapCommand(cmd).withMap(container);
@@ -581,7 +582,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
    }
 
-   private class ReadWriteManyEntriesHelper extends CommandHelper<ReadWriteManyEntriesCommand, Map<Object, Object>, Entry<Object, Object>> {
+   private class ReadWriteManyEntriesHelper extends WriteManyCommandHelper<ReadWriteManyEntriesCommand, Map<Object, Object>, Entry<Object, Object>> {
       @Override
       public ReadWriteManyEntriesCommand copyForLocal(ReadWriteManyEntriesCommand cmd, Map<Object, Object> entries) {
          return new ReadWriteManyEntriesCommand(cmd).withEntries(entries);
@@ -637,7 +638,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
    }
 
-   private class ReadWriteManyHelper extends CommandHelper<ReadWriteManyCommand, Collection<Object>, Object> {
+   private class ReadWriteManyHelper extends WriteManyCommandHelper<ReadWriteManyCommand, Collection<Object>, Object> {
       @Override
       public ReadWriteManyCommand copyForLocal(ReadWriteManyCommand cmd, Collection<Object> keys) {
          return new ReadWriteManyCommand(cmd).withKeys(keys);
@@ -692,7 +693,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
    }
 
-   private class WriteOnlyManyEntriesHelper extends CommandHelper<WriteOnlyManyEntriesCommand, Map<Object, Object>, Entry<Object, Object>> {
+   private class WriteOnlyManyEntriesHelper extends WriteManyCommandHelper<WriteOnlyManyEntriesCommand, Map<Object, Object>, Entry<Object, Object>> {
 
       @Override
       public WriteOnlyManyEntriesCommand copyForLocal(WriteOnlyManyEntriesCommand cmd, Map<Object, Object> entries) {
@@ -749,7 +750,7 @@ public class NonTxDistributionInterceptor extends BaseDistributionInterceptor {
       }
    }
 
-   private class WriteOnlyManyHelper extends CommandHelper<WriteOnlyManyCommand, Collection<Object>, Object> {
+   private class WriteOnlyManyHelper extends WriteManyCommandHelper<WriteOnlyManyCommand, Collection<Object>, Object> {
       @Override
       public WriteOnlyManyCommand copyForLocal(WriteOnlyManyCommand cmd, Collection<Object> keys) {
          return new WriteOnlyManyCommand(cmd).withKeys(keys);

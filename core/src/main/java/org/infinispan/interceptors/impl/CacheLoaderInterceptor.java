@@ -48,8 +48,8 @@ import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
-import org.infinispan.distribution.group.GroupFilter;
-import org.infinispan.distribution.group.GroupManager;
+import org.infinispan.distribution.group.impl.GroupFilter;
+import org.infinispan.distribution.group.impl.GroupManager;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
@@ -496,23 +496,15 @@ public class CacheLoaderInterceptor<K, V> extends JmxStatsCommandInterceptor {
          this.entrySet = entrySet;
       }
 
-      long calculateTimeoutSeconds() {
-         int minimum = 10;
-         int size = dataContainer.sizeIncludingExpired();
-         if (size < 10_000) return minimum;
-         return Math.round(Math.log1p(size) * 10);
-      }
-
       @Override
       public CloseableIterator<CacheEntry<K, V>> iterator() {
          CloseableIterator<CacheEntry<K, V>> iterator = Closeables.iterator(entrySet.stream());
          Set<K> seenKeys = new HashSet<>(cache.getAdvancedCache().getDataContainer().sizeIncludingExpired());
          // TODO: how to handle concurrent activation....
          return new DistinctKeyDoubleEntryCloseableIterator<>(iterator, new CloseableSuppliedIterator<>(
-
                // TODO: how to pass in key filter...
                new PersistenceManagerCloseableSupplier<>(executorService, persistenceManager, iceFactory,
-                     new CollectionKeyFilter<>(seenKeys), calculateTimeoutSeconds(), TimeUnit.SECONDS, 2048)),
+                     new CollectionKeyFilter<>(seenKeys), 10, TimeUnit.SECONDS, 2048)),
                      CacheEntry::getKey, seenKeys);
       }
 

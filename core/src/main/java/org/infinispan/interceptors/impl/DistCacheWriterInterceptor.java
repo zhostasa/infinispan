@@ -1,6 +1,5 @@
 package org.infinispan.interceptors.impl;
 
-import static org.infinispan.commons.util.Util.toStr;
 import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.BOTH;
 import static org.infinispan.persistence.manager.PersistenceManager.AccessMode.PRIVATE;
 
@@ -13,12 +12,9 @@ import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
-import org.infinispan.interceptors.locking.ClusteringDependentLogic;
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.Transport;
-import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -43,12 +39,8 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
    private static final boolean trace = log.isTraceEnabled();
 
    private DistributionManager dm;
-   private Transport transport;
-   private Address address;
 
    private boolean isUsingLockDelegation;
-   private ClusteringDependentLogic cdl;
-   private StateTransferManager stateTransferManager;
 
    @Override
    protected Log getLog() {
@@ -56,18 +48,14 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
    }
 
    @Inject
-   public void inject(DistributionManager dm, Transport transport, ClusteringDependentLogic cdl, StateTransferManager stateTransferManager) {
+   public void inject(DistributionManager dm) {
       this.dm = dm;
-      this.transport = transport;
-      this.cdl = cdl;
-      this.stateTransferManager = stateTransferManager;
    }
 
    @Start(priority = 25) // after the distribution manager!
    @SuppressWarnings("unused")
    protected void start() {
       super.start();
-      this.address = transport.getAddress();
       this.isUsingLockDelegation = !cacheConfiguration.transaction().transactionMode().isTransactional();
    }
 
@@ -158,7 +146,7 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
 
    @Override
    protected boolean skipSharedStores(InvocationContext ctx, Object key, FlagAffectedCommand command) {
-      return !cdl.localNodeIsPrimaryOwner(key) || command.hasAnyFlag(FlagBitSets.SKIP_SHARED_CACHE_STORE);
+      return !dm.getCacheTopology().getDistribution(key).isPrimary() || command.hasAnyFlag(FlagBitSets.SKIP_SHARED_CACHE_STORE);
    }
 
    @Override
@@ -166,19 +154,12 @@ public class DistCacheWriterInterceptor extends CacheWriterInterceptor {
       if (command.hasAnyFlag(FlagBitSets.SKIP_OWNERSHIP_CHECK))
          return true;
 
-      if (isUsingLockDelegation && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
-         if (ctx.isOriginLocal() && !dm.getPrimaryLocation(key).equals(address)) {
-            // The command will be forwarded back to the originator, and the value will be stored then
-            // (while holding the lock on the primary owner).
-            log.tracef("Skipping cache store on the originator because it is not the primary owner " +
-                  "of key %s", toStr(key));
-            return false;
-         }
+      if (isUsingLockDelegation && ctx.isOriginLocal() && !command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL)) {
+         // If the originator is a backup, the command will be forwarded back to it, and the value will be stored then
+         // (while holding the lock on the primary owner).
+         return dm.getCacheTopology().getDistribution(key).isPrimary();
+      } else {
+         return dm.getCacheTopology().isWriteOwner(key);
       }
-      if (stateTransferManager.getCacheTopology() != null && !dm.getWriteConsistentHash().isKeyLocalToNode(address, key)) {
-         log.tracef("Skipping cache store since the key is not local: %s", key);
-         return false;
-      }
-      return true;
    }
 }

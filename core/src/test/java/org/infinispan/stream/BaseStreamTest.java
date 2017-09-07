@@ -45,8 +45,7 @@ import org.infinispan.CacheStream;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.entries.ImmortalCacheEntry;
-import org.infinispan.distribution.DistributionManager;
-import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -2099,10 +2098,9 @@ private static class ForEachIntInjected implements IntConsumer,
       int segments = cache.getCacheConfiguration().clustering().hash().numSegments() / 2;
       AtomicInteger realCount = new AtomicInteger();
 
-      DistributionManager dm = cache.getAdvancedCache().getComponentRegistry().getComponent(DistributionManager.class);
-      ConsistentHash ch = dm.getConsistentHash();
+      KeyPartitioner keyPartitioner = cache.getAdvancedCache().getComponentRegistry().getComponent(KeyPartitioner.class);
       cache.forEach((k, v) -> {
-         if (segments >= ch.getSegment(k)) {
+         if (segments >= keyPartitioner.getSegment(k)) {
             realCount.incrementAndGet();
          }
       });

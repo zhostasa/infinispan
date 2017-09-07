@@ -40,6 +40,7 @@ import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.Configurations;
+import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
@@ -854,12 +855,11 @@ public class TransactionTable implements org.infinispan.transaction.TransactionT
    private void removeTransactionInfoRemotely(LocalTransaction localTransaction, GlobalTransaction gtx) {
       if (mayHaveRemoteLocks(localTransaction) && !isSecondPhaseAsync &&
             !partitionHandlingManager.isTransactionPartiallyCommitted(gtx)) {
-         final TxCompletionNotificationCommand command =
-               commandsFactory.buildTxCompletionNotificationCommand(null, gtx);
-         final Collection<Address> owners =
-               clusteringLogic.getOwners(filterDeltaCompositeKeys(localTransaction.getAffectedKeys()));
-         Collection<Address> commitNodes =
-               localTransaction.getCommitNodes(owners, rpcManager.getTopologyId(), rpcManager.getMembers());
+         final TxCompletionNotificationCommand command = commandsFactory.buildTxCompletionNotificationCommand(null, gtx);
+         LocalizedCacheTopology cacheTopology = clusteringLogic.getCacheTopology();
+         final Collection<Address> owners = cacheTopology.getWriteOwners(filterDeltaCompositeKeys(localTransaction.getAffectedKeys()));
+         Collection<Address> commitNodes = cacheTopology.getReadConsistentHash().isReplicated() ? null : owners;
+         commitNodes = localTransaction.getCommitNodes(commitNodes, cacheTopology);
          if (trace)
             log.tracef("About to invoke tx completion notification on commitNodes: %s", commitNodes);
          rpcManager.invokeRemotely(commitNodes, command,
