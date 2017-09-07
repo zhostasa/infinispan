@@ -143,6 +143,26 @@
                </execution>
             </executions>
          </plugin>
+
+        <plugin>
+          <groupId>org.wildfly.maven.plugins</groupId>
+          <artifactId>licenses-plugin</artifactId>
+          <version>1.0.0</version>
+          <inherited>false</inherited>
+          <executions>
+            <execution>
+              <id>update-licenses-xml</id>
+              <goals>
+                <goal>insert-versions</goal>
+              </goals>
+              <phase>prepare-package</phase>
+              <configuration>
+                <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                <licensesOutputFile>${project.build.directory}/raw-licenses-xml/licenses.xml</licensesOutputFile>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
    </build>
 

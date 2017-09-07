@@ -99,6 +99,75 @@
                <appendAssemblyId>false</appendAssemblyId>
             </configuration>
          </plugin>
+
+         <plugin>
+           <groupId>org.wildfly.maven.plugins</groupId>
+           <artifactId>licenses-plugin</artifactId>
+           <version>1.0.0</version>
+           <inherited>false</inherited>
+           <executions>
+             <execution>
+               <id>update-licenses-xml</id>
+               <goals>
+                 <goal>insert-versions</goal>
+               </goals>
+               <phase>prepare-package</phase>
+               <configuration>
+                 <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                 <licensesOutputFile>${project.build.directory}/raw-licenses-xml/licenses.xml</licensesOutputFile>
+               </configuration>
+             </execution>
+           </executions>
+         </plugin>
+
+         <plugin>
+           <groupId>org.codehaus.mojo</groupId>
+           <artifactId>build-helper-maven-plugin</artifactId>
+           <version>1.8</version>
+           <executions>
+             <execution>
+               <id>attach-artifacts</id>
+               <phase>package</phase>
+               <goals>
+                 <goal>attach-artifact</goal>
+               </goals>
+               <configuration>
+                 <artifacts>
+                   <artifact>
+                     <file>${project.build.directory}/raw-licenses-xml/licenses.xml</file>
+                     <type>xml</type>
+                     <classifier>raw-licenses-xml</classifier>
+                   </artifact>
+                 </artifacts>
+               </configuration>
+             </execution>
+           </executions>
+         </plugin>
+
+         <plugin>
+           <groupId>org.codehaus.mojo</groupId>
+           <artifactId>build-helper-maven-plugin</artifactId>
+           <version>1.8</version>
+           <executions>
+             <execution>
+               <id>attach-artifacts</id>
+               <phase>package</phase>
+               <goals>
+                 <goal>attach-artifact</goal>
+               </goals>
+               <configuration>
+                 <artifacts>
+                   <artifact>
+                     <file>${project.build.directory}/raw-licenses-xml/licenses.xml</file>
+                     <type>xml</type>
+                     <classifier>raw-licenses-xml</classifier>
+                   </artifact>
+                 </artifacts>
+               </configuration>
+             </execution>
+           </executions>
+         </plugin>
+
       </plugins>
    </build>
 </project>
