@@ -8,7 +8,7 @@ import java.io.ObjectOutput;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.interceptors.AsyncInterceptorChain;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -26,7 +26,7 @@ public class InvalidatedMarshalledValueTest extends MultipleCacheManagersTest {
    @Override
    protected void createCacheManagers() throws Throwable {
       ConfigurationBuilder invlSync = getDefaultClusteredCacheConfig(CacheMode.INVALIDATION_SYNC, false);
-      invlSync.storeAsBinary().enable();
+      invlSync.memory().storageType(StorageType.BINARY);
 
       createClusteredCaches(2, "invlSync", invlSync);
    }
