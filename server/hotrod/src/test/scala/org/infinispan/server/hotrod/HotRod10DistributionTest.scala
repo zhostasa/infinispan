@@ -55,7 +55,7 @@ class HotRod10DistributionTest extends HotRodMultiNodeTest {
       assertStatus(resp, Success)
       assertTopologyReceived(resp.topologyResponse, servers, currentServerTopologyId)
 
-      resp = client1.put(k(m) , 0, 0, v(m, "v3-"), INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + nodeCount)
+      resp = client1.put(k(m) , 0, 0, v(m, "v3-"), INTELLIGENCE_TOPOLOGY_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + 2 * nodeCount)
       assertStatus(resp, Success)
       assertEquals(resp.topologyResponse, null)
       assertSuccess(client2.get(k(m), 0), v(m, "v3-"))
@@ -96,7 +96,7 @@ class HotRod10DistributionTest extends HotRodMultiNodeTest {
          log.trace("New server stopped")
       }
 
-      resp = client2.put(k(m) , 0, 0, v(m, "v8-"), INTELLIGENCE_HASH_DISTRIBUTION_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + nodeCount)
+      resp = client2.put(k(m) , 0, 0, v(m, "v8-"), INTELLIGENCE_HASH_DISTRIBUTION_AWARE, ClusterCacheStatus.INITIAL_TOPOLOGY_ID + 2 * nodeCount)
       assertStatus(resp, Success)
       assertHashTopology10Received(resp.topologyResponse, servers, cacheName, currentServerTopologyId)
 
