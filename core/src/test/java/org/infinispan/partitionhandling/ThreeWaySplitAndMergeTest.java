@@ -12,12 +12,21 @@ import org.infinispan.distribution.MagicKey;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "partitionhandling.ThreeWaySplitAndMergeTest")
 public class ThreeWaySplitAndMergeTest extends BasePartitionHandlingTest {
 
    private static Log log = LogFactory.getLog(ThreeWaySplitAndMergeTest.class);
+
+   @Factory
+   public Object[] factory() {
+      return new Object[] {
+            new ThreeWaySplitAndMergeTest().partitionHandling(PartitionHandling.DENY_READ_WRITES),
+            new ThreeWaySplitAndMergeTest().partitionHandling(PartitionHandling.ALLOW_READS)
+      };
+   }
 
    public void testSplitAndMerge1() throws Exception {
       testSplitAndMerge(new PartitionDescriptor(0, 1), new PartitionDescriptor(2), new PartitionDescriptor(3));
@@ -56,13 +65,17 @@ public class ThreeWaySplitAndMergeTest extends BasePartitionHandlingTest {
 
       //1. check key visibility in partition 0
       partition(0).assertKeyAvailableForRead(k0, 0);
-      partition(0).assertKeysNotAvailableForRead(k1, k2, k3);
-
-      //2. check key visibility in partition 1
-      partition(1).assertKeysNotAvailableForRead(k0, k1, k2, k3);
-
-      //3. check key visibility in partition 2
-      partition(2).assertKeysNotAvailableForRead(k0, k1, k2, k3);
+      if (partitionHandling == PartitionHandling.DENY_READ_WRITES) {
+         partition(0).assertKeysNotAvailableForRead(k1, k2, k3);
+         partition(1).assertKeysNotAvailableForRead(k0, k1, k2, k3);
+         partition(2).assertKeysNotAvailableForRead(k0, k1, k2, k3);
+      } else {
+         partition(0).assertKeyAvailableForRead(k1, 1);
+         partition(0).assertKeyAvailableForRead(k3, 3);
+         partition(0).assertKeysNotAvailableForRead(k2);
+         partition(1).assertKeyAvailableForRead(k1, 1);
+         partition(2).assertKeyAvailableForRead(k2, 2);
+      }
 
       //4. check key ownership
       assertTrue(dataContainer(p0.node(0)).containsKey(k0));
@@ -120,7 +133,8 @@ public class ThreeWaySplitAndMergeTest extends BasePartitionHandlingTest {
       assertEquals(new HashSet<>(advancedCache(p0.node(1)).getDistributionManager().getWriteConsistentHash().getMembers()), members);
       assertEquals(new HashSet<>(advancedCache(p1.node(0)).getDistributionManager().getWriteConsistentHash().getMembers()), members);
 
-      partition(1).assertKeysNotAvailableForRead(k0, k1, k2, k3);
+      if (partitionHandling == PartitionHandling.DENY_READ_WRITES)
+         partition(1).assertKeysNotAvailableForRead(k0, k1, k2, k3);
 
       members = new HashSet<>(Arrays.asList(new Address[]{address(0), address(1), address(2), address(3)}));
       assertEquals(new HashSet<>(advancedCache(p2.node(0)).getDistributionManager().getWriteConsistentHash().getMembers()), members);

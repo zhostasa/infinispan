@@ -1,9 +1,11 @@
 package org.infinispan.partitionhandling;
 
+import static org.mockito.Mockito.mock;
+
 import java.util.Collections;
 import java.util.Optional;
 
-import org.infinispan.partitionhandling.impl.AvailabilityStrategyContext;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.partitionhandling.impl.PreferConsistencyStrategy;
 import org.infinispan.topology.ClusterCacheStatus;
 import org.infinispan.topology.ClusterTopologyManager;
@@ -13,7 +15,6 @@ import org.infinispan.topology.PersistentUUIDManagerImpl;
 import org.infinispan.topology.RebalancingStatus;
 import org.infinispan.util.logging.events.EventLogManager;
 import org.infinispan.util.logging.events.impl.EventLogManagerImpl;
-import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,14 +30,16 @@ public class PreferConsistencyStrategyTest {
       EventLogManager eventLogManager = new EventLogManagerImpl();
       PersistentUUIDManager persistentUUIDManager = new PersistentUUIDManagerImpl();
       ClusterTopologyManager topologyManager = new ClusterTopologyManagerImpl();
+      EmbeddedCacheManager cacheManager = mock(EmbeddedCacheManager.class);
 
       preferConsistencyStrategy = new PreferConsistencyStrategy(eventLogManager, persistentUUIDManager);
-      status = new ClusterCacheStatus("does-not-matter", preferConsistencyStrategy, topologyManager, null, Optional.empty(), persistentUUIDManager);
+      status = new ClusterCacheStatus(cacheManager, "does-not-matter", preferConsistencyStrategy, topologyManager,
+            null, Optional.empty(), persistentUUIDManager, false);
    }
 
    public void testAvoidingNullPointerExceptionWhenUpdatingPartitionWithNullTopology() {
       //when
-      preferConsistencyStrategy.onPartitionMerge(status, Collections.emptyList());
+      preferConsistencyStrategy.onPartitionMerge(status, Collections.emptyMap());
 
       //then
       Assert.assertNull(status.getCurrentTopology());

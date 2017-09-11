@@ -47,7 +47,7 @@
          <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" complete-timeout="34000" reaper-interval="35000" auto-commit="true" />
          <expiration interval="10000" lifespan="10" max-idle="10"/>
          <persistence passivation="false">
-            <file-store path="path" relative-to="jboss.server.temp.dir" shared="true" singleton="false" fetch-state="false" preload="true" purge="false">
+            <file-store path="path" relative-to="jboss.server.temp.dir" shared="false" singleton="false" fetch-state="false" preload="true" purge="false">
                <write-behind modification-queue-size="2048" thread-pool-size="1" />
             </file-store>
          </persistence>
@@ -95,7 +95,7 @@
          <memory>
             <object size="21500"/>
          </memory>
-         <partition-handling enabled="true"/>
+         <partition-handling when-split="ALLOW_READS" merge-policy="PREFERRED_NON_NULL"/>
          <state-transfer enabled="true" timeout="60500" chunk-size="10500" />
       </distributed-cache>
       <replicated-cache name="capedwarf-data" mode="ASYNC">
@@ -213,7 +213,7 @@
          <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" complete-timeout="34000" reaper-interval="35000" auto-commit="true" />
          <expiration interval="10000" lifespan="10" max-idle="10"/>
          <persistence passivation="false">
-            <file-store path="path" relative-to="jboss.server.temp.dir" shared="true" singleton="false" fetch-state="false" preload="true" purge="false">
+            <file-store path="path" relative-to="jboss.server.temp.dir" shared="false" singleton="false" fetch-state="false" preload="true" purge="false">
                <write-behind modification-queue-size="2048" thread-pool-size="1" />
             </file-store>
          </persistence>
@@ -273,7 +273,7 @@
          <memory>
             <object size="21500"/>
          </memory>
-         <partition-handling enabled="true"/>
+         <partition-handling when-split="DENY_READ_WRITES" merge-policy="PREFERRED_ALWAYS"/>
          <state-transfer enabled="true" timeout="60500" chunk-size="10500" />
       </distributed-cache-configuration>
       <distributed-cache name="dist-instance" configuration="dist-template" />
