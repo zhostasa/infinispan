@@ -10,6 +10,7 @@ import org.infinispan.protostream.TagHandler;
 import org.infinispan.protostream.WrappedMessage;
 import org.infinispan.protostream.descriptors.Descriptor;
 import org.infinispan.protostream.descriptors.FieldDescriptor;
+import org.infinispan.protostream.descriptors.GenericDescriptor;
 import org.infinispan.protostream.descriptors.JavaType;
 
 /**
@@ -49,7 +50,7 @@ public final class ProtobufMatcherEvalContext extends MatcherEvalContext<Descrip
    }
 
    @Override
-   public void onStart() {
+   public void onStart(GenericDescriptor descriptor) {
    }
 
    //todo [anistor] missing tags need to be fired with default value defined in proto schema or null if they admit null; missing messages need to be fired with null at end of the nesting level. BTW, seems like this is better to be included in Protostream as a feature
