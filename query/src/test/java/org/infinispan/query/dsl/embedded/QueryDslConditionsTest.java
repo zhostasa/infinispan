@@ -15,7 +15,6 @@ import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -2389,6 +2388,24 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(1L, list.get(0)[0]);  // only non-null "age"s were counted
    }
 
+   public void testCountNull2() {
+      QueryFactory qf = getQueryFactory();
+      Query q = qf.from(getModelFactory().getUserImplClass())
+            .select(property("name"), count("age"))
+            .groupBy("name")
+            .orderBy("name")
+            .build();
+
+      List<Object[]> list = q.list();
+      assertEquals(2, list.size());
+      assertEquals(2, list.get(0).length);
+      assertEquals("John" ,list.get(0)[0]);
+      assertEquals(1L, list.get(0)[1]);
+      assertEquals(2, list.get(1).length);
+      assertEquals("Spider", list.get(1)[0]);
+      assertEquals(0L, list.get(1)[1]);
+   }
+
    public void testAvgNull() {
       QueryFactory qf = getQueryFactory();
       Query q = qf.from(getModelFactory().getUserImplClass())
@@ -2397,7 +2414,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       List<Object[]> list = q.list();
       assertEquals(1, list.size());
       assertEquals(1, list.get(0).length);
-      assertEquals(22.0, list.get(0)[0]);  // only non-null "age"s were counted
+      assertEquals(22.0, list.get(0)[0]);  // only non-null "age"s were used in the average
    }
 
    public void testDateGrouping1() throws Exception {
