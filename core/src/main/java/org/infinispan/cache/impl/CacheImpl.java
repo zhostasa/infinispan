@@ -730,6 +730,9 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    final void evict(K key, long explicitFlags) {
       assertKeyNotNull(key);
+      if (!config.memory().isEvictionEnabled()) {
+         log.evictionDisabled(name);
+      }
       InvocationContext ctx = createSingleKeyNonTxInvocationContext();
       EvictCommand command = commandsFactory.buildEvictCommand(key, explicitFlags);
       invoker.invoke(ctx, command);

@@ -66,6 +66,10 @@ public class MemoryConfiguration {
       return evictionType.get();
    }
 
+   public boolean isEvictionEnabled() {
+      return size.get() > 0;
+   }
+
    /**
     * The address pointer count
     * @return

@@ -470,10 +470,10 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(20000, c.locking().lockAcquisitionTimeout());
       assertEquals(1000, c.locking().concurrencyLevel());
       assertEquals(IsolationLevel.REPEATABLE_READ, c.locking().isolationLevel());
-      assertTrue(!c.storeAsBinary().enabled());
+      assertEquals(StorageType.OBJECT, c.memory().storageType());
 
       c = cm.getCacheConfiguration("storeAsBinary");
-      assertTrue(c.storeAsBinary().enabled());
+      assertEquals(StorageType.BINARY, c.memory().storageType());
 
       c = cm.getCacheConfiguration("withFileStore");
       assertTrue(c.persistence().preload());
@@ -547,9 +547,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(CacheMode.DIST_SYNC, c.clustering().cacheMode());
 
       c = cm.getCacheConfiguration("storeKeyValueBinary");
-      assertTrue(c.storeAsBinary().enabled());
-      assertTrue(c.storeAsBinary().storeKeysAsBinary());
-      assertTrue(c.storeAsBinary().storeValuesAsBinary());
+      assertEquals(StorageType.BINARY, c.memory().storageType());
    }
 
    private void assertReaperAndTimeoutInfo(Configuration defaultCfg) {

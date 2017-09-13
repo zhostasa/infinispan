@@ -27,10 +27,10 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.InterceptorConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.DataContainer;
-import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.interceptors.base.BaseCustomInterceptor;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -143,15 +143,15 @@ public class CacheManagerTest extends AbstractInfinispanTest {
    public void testDefiningConfigurationOverridingBooleans() {
       EmbeddedCacheManager cm = createCacheManager(false);
       ConfigurationBuilder c = new ConfigurationBuilder();
-      c.storeAsBinary().enable();
+      c.memory().storageType(StorageType.BINARY);
       Configuration lazy = cm.defineConfiguration("storeAsBinary", c.build());
-      assert lazy.storeAsBinary().enabled();
+      assertEquals(StorageType.BINARY, lazy.memory().storageType());
 
       c = new ConfigurationBuilder().read(lazy);
-      c.eviction().strategy(EvictionStrategy.LRU).maxEntries(1);
-      Configuration lazyLru = cm.defineConfiguration("lazyDeserializationWithLRU", c.build());
-      assert lazy.storeAsBinary().enabled();
-      assert lazyLru.eviction().strategy() == EvictionStrategy.LRU;
+      c.memory().storageType(StorageType.OFF_HEAP).size(1);
+      Configuration lazyOffHeap = cm.defineConfiguration("lazyDeserializationWithOffHeap", c.build());
+      assertEquals(StorageType.OFF_HEAP, lazyOffHeap.memory().storageType());
+      assertEquals(1, lazyOffHeap.memory().size());
    }
 
    public void testDefineConfigurationTwice() {

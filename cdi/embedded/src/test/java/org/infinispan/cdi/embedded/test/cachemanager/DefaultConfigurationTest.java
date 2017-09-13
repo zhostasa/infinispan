@@ -35,7 +35,7 @@ public class DefaultConfigurationTest extends Arquillian {
    private Cache<?, ?> cache;
 
    public void testDefaultConfiguration() {
-      assertEquals(cache.getCacheConfiguration().eviction().maxEntries(), 16);
+      assertEquals(cache.getCacheConfiguration().memory().size(), 16);
       assertEquals(cache.getName(), DEFAULT_CACHE_NAME);
    }
 
@@ -47,7 +47,7 @@ public class DefaultConfigurationTest extends Arquillian {
       @Produces
       public Configuration customDefaultConfiguration() {
          return new ConfigurationBuilder()
-               .eviction().maxEntries(16)
+               .memory().size(16)
                .build();
       }
    }

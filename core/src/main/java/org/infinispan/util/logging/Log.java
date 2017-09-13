@@ -38,6 +38,7 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.commons.CacheListenerException;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.util.TypedProperties;
+import org.infinispan.configuration.parsing.Element;
 import org.infinispan.jmx.JmxDomainConflictException;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.partitionhandling.AvailabilityException;
@@ -1511,6 +1512,11 @@ public interface Log extends BasicLogger {
    @Message(value = "Class %s should be a subclass of %s", id = 439)
    CacheException invalidEncodingClass(Class<?> configured, Class<?> required);
 
-   @Message(value = "Class %s not found", id = 483)
+   @Message(value = "Class %s not found", id = 440)
    CacheConfigurationException classNotFound(String name);
+
+   @LogMessage(level = WARN)
+   @Message(value = "The '%s' element has been deprecated. Please use the '%s' element instead", id = 441)
+   void elementDeprecatedUseOther(Element element, Element other);
+
 }

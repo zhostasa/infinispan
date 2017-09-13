@@ -28,7 +28,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
-import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -324,7 +323,7 @@ public class CacheLoaderFunctionalTest extends AbstractInfinispanTest {
       ConfigurationBuilder preloadingCfg = new ConfigurationBuilder();
       preloadingCfg.read(cfg.build());
       preloadingCfg.persistence().clearStores().addStore(DummyInMemoryStoreConfigurationBuilder.class).preload(true).storeName(this.getClass().getName() + "preloadingCache_3");
-      preloadingCfg.eviction().strategy(EvictionStrategy.LIRS).maxEntries(1);
+      preloadingCfg.memory().size(1);
       doPreloadingTestWithEviction(preloadingCfg.build(), "preloadingCache_3");
    }
 
@@ -332,7 +331,7 @@ public class CacheLoaderFunctionalTest extends AbstractInfinispanTest {
       ConfigurationBuilder preloadingCfg = new ConfigurationBuilder();
       preloadingCfg.read(cfg.build());
       preloadingCfg.persistence().clearStores().addStore(DummyInMemoryStoreConfigurationBuilder.class).preload(true).storeName(this.getClass().getName() + "preloadingCache_4");
-      preloadingCfg.eviction().strategy(EvictionStrategy.LIRS).maxEntries(3);
+      preloadingCfg.memory().size(3);
       doPreloadingTestWithEviction(preloadingCfg.build(), "preloadingCache_4");
    }
 
@@ -597,12 +596,12 @@ public class CacheLoaderFunctionalTest extends AbstractInfinispanTest {
 
    protected void doPreloadingTestWithEviction(Configuration preloadingCfg, String cacheName) throws Exception {
       assertTrue("Preload not enabled for preload with eviction test", preloadingCfg.persistence().preload());
-      assertTrue("Eviction not enabled for preload with eviction test", preloadingCfg.eviction().strategy().isEnabled());
+      assertTrue("Eviction not enabled for preload with eviction test", preloadingCfg.memory().isEvictionEnabled());
 
       cm.defineConfiguration(cacheName, preloadingCfg);
 
       final Cache<String, String> preloadingCache = getCache(cm, cacheName);
-      final long expectedEntriesInContainer = Math.min(4l, preloadingCfg.eviction().maxEntries());
+      final long expectedEntriesInContainer = Math.min(4L, preloadingCfg.memory().size());
       AdvancedCacheLoader preloadingCacheLoader = (AdvancedCacheLoader) TestingUtil.getCacheLoader(preloadingCache);
 
       assertTrue("Preload not enabled in cache configuration",

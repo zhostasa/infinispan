@@ -54,11 +54,11 @@ public class ConfigurationUnitTest extends AbstractInfinispanTest {
    }
 
    @Test
-   public void testEvictionMaxEntries() {
+   public void testEvictionSize() {
       Configuration configuration = new ConfigurationBuilder()
-         .eviction().maxEntries(20)
+         .memory().size(20)
          .build();
-      Assert.assertEquals(configuration.eviction().maxEntries(), 20);
+      Assert.assertEquals(configuration.memory().size(), 20);
    }
 
    @Test
@@ -174,19 +174,6 @@ public class ConfigurationUnitTest extends AbstractInfinispanTest {
       SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(schemaFile).newValidator().validate(xmlFile);
    }
 
-   public void testEvictionWithoutStrategy() {
-      ConfigurationBuilder cb = new ConfigurationBuilder();
-      cb.eviction().maxEntries(76767);
-      withCacheManager(new CacheManagerCallable(createCacheManager(cb)) {
-         @Override
-         public void call() {
-            Configuration cfg = cm.getCache().getCacheConfiguration();
-            assert cfg.eviction().maxEntries() == 76767;
-            assert cfg.eviction().strategy() != EvictionStrategy.NONE;
-         }
-      });
-   }
-
    @Test(expectedExceptions = IllegalArgumentException.class)
    public void testNumOwners() {
       ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -285,19 +272,6 @@ public class ConfigurationUnitTest extends AbstractInfinispanTest {
       config = new ConfigurationBuilder();
       cm.defineConfiguration("local", config.build());
       return cm;
-   }
-
-   @Test(expectedExceptions = CacheConfigurationException.class)
-   public void testEvictionOnButWithoutMaxEntries() {
-      EmbeddedCacheManager ecm = null;
-      try {
-         ConfigurationBuilder c = new ConfigurationBuilder();
-         c.eviction().strategy(EvictionStrategy.LRU);
-         ecm = TestCacheManagerFactory.createClusteredCacheManager(c);
-         ecm.getCache();
-      } finally {
-         TestingUtil.killCacheManagers(ecm);
-      }
    }
 
    @Test(expectedExceptions = CacheConfigurationException.class,

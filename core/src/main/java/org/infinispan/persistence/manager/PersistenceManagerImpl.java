@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +38,6 @@ import org.infinispan.commons.io.ByteBufferFactory;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.EvictionConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.context.Flag;
@@ -765,10 +763,9 @@ public class PersistenceManagerImpl implements PersistenceManager {
    }
 
    private long getMaxEntries() {
-      long ne = EvictionConfigurationBuilder.EVICTION_MAX_SIZE;
-      if (configuration.eviction().strategy().isEnabled() && configuration.eviction().type() == EvictionType.COUNT)
-         ne = configuration.eviction().maxEntries();
-      return ne;
+      if (configuration.memory().isEvictionEnabled()&& configuration.memory().evictionType() == EvictionType.COUNT)
+         return configuration.memory().size();
+      return Long.MAX_VALUE;
    }
 
    private void preloadKey(AdvancedCache<Object, Object> cache, Object key, Object value, Metadata metadata) {

@@ -37,6 +37,7 @@ import org.infinispan.configuration.cache.InterceptorConfiguration.Position;
 import org.infinispan.configuration.cache.InterceptorConfigurationBuilder;
 import org.infinispan.configuration.cache.RecoveryConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -51,8 +52,6 @@ import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
 import org.infinispan.container.DataContainer;
 import org.infinispan.distribution.ch.ConsistentHashFactory;
 import org.infinispan.distribution.group.Grouper;
-import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.eviction.EvictionThreadPolicy;
 import org.infinispan.factories.threads.DefaultThreadFactory;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.jmx.MBeanServerLookup;
@@ -494,26 +493,31 @@ public class Parser60 implements ConfigurationParser {
 
    private void parseStoreAsBinary(final XMLExtendedStreamReader reader, final ConfigurationBuilderHolder holder) throws XMLStreamException {
       ConfigurationBuilder builder = holder.getCurrentConfigurationBuilder();
+      Boolean binaryKeys = null;
+      Boolean binaryValues = null;
+      builder.memory().storageType(StorageType.BINARY);
       for (int i = 0; i < reader.getAttributeCount(); i++) {
          ParseUtils.requireNoNamespaceAttribute(reader, i);
          String value = replaceProperties(reader.getAttributeValue(i));
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
             case ENABLED:
-               builder.storeAsBinary().enabled(Boolean.parseBoolean(value));
+               if (!Boolean.parseBoolean(value))
+                  builder.memory().storageType(StorageType.OBJECT);
                break;
             case STORE_KEYS_AS_BINARY:
-               builder.storeAsBinary().storeKeysAsBinary(Boolean.parseBoolean(value));
+               binaryKeys = Boolean.parseBoolean(value);
                break;
             case STORE_VALUES_AS_BINARY:
-               builder.storeAsBinary().storeValuesAsBinary(Boolean.parseBoolean(value));
+               binaryValues = Boolean.parseBoolean(value);
                break;
             case DEFENSIVE:
-               builder.storeAsBinary().defensive(Boolean.parseBoolean(value));
                break;
             default:
                throw ParseUtils.unexpectedAttribute(reader, i);
          }
+         if (binaryKeys != null && !binaryKeys && binaryValues != null && !binaryValues)
+            builder.memory().storageType(StorageType.OBJECT); // explicitly disable
       }
 
       ParseUtils.requireNoContent(reader);
@@ -941,14 +945,11 @@ public class Parser60 implements ConfigurationParser {
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
             case MAX_ENTRIES:
-               builder.eviction().maxEntries(Integer.parseInt(value));
+               builder.memory().size(Integer.parseInt(value));
                break;
             case STRATEGY:
-               builder.eviction().strategy(EvictionStrategy.valueOf(value));
-               break;
             case THREAD_POLICY:
-               builder.eviction().threadPolicy(EvictionThreadPolicy.valueOf(value));
-               break;
+               break; // ignore
             default:
                throw ParseUtils.unexpectedAttribute(reader, i);
          }
