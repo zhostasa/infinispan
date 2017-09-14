@@ -15,7 +15,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.Socket;
@@ -243,10 +242,8 @@ public final class Util {
    public static <T> T getInstance(Class<T> clazz) {
       try {
          return getInstanceStrict(clazz);
-      } catch (IllegalAccessException iae) {
+      } catch (IllegalAccessException | InstantiationException iae) {
          throw new CacheConfigurationException("Unable to instantiate class " + clazz.getName(), iae);
-      } catch (InstantiationException ie) {
-         throw new CacheConfigurationException("Unable to instantiate class " + clazz.getName(), ie);
       }
    }
 
@@ -358,7 +355,7 @@ public final class Util {
     * with the time of other nodes.
     * @return the value of {@link System#nanoTime()}, but converted in Milliseconds.
     */
-   public static final long currentMillisFromNanotime() {
+   public static long currentMillisFromNanotime() {
       return TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
    }
 
