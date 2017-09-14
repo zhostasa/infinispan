@@ -1,6 +1,6 @@
 package org.infinispan.query.config;
 
-import static org.junit.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -91,7 +91,7 @@ public class MultipleCachesTest extends SingleCacheManagerTest {
       assertEquals(1, cq.getResultSize());
       List<Person> l =  cq.list();
       assertEquals(1, l.size());
-      Person p = (Person) l.get(0);
+      Person p = l.get(0);
       assertEquals("A Person's Name", p.getName());
       assertEquals("A paragraph containing some text", p.getBlurb());
       assertEquals(75, p.getAge());

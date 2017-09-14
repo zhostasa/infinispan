@@ -1,6 +1,6 @@
 package org.infinispan.query.blackbox;
 
-import static org.junit.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.File;
 

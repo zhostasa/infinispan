@@ -1,6 +1,6 @@
 package org.infinispan.query.externalizers;
 
-import static org.junit.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertEquals;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.util.BytesRef;

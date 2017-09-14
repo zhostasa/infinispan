@@ -3,9 +3,9 @@ package org.infinispan.client.hotrod.marshall;
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemoteCacheManager;
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.Collections;
 

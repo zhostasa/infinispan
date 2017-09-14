@@ -3,11 +3,11 @@ package org.infinispan.query.nulls;
 import static org.infinispan.query.FetchOptions.FetchMode.EAGER;
 import static org.infinispan.query.FetchOptions.FetchMode.LAZY;
 import static org.infinispan.test.TestingUtil.withTx;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
 import java.util.List;
 import java.util.NoSuchElementException;

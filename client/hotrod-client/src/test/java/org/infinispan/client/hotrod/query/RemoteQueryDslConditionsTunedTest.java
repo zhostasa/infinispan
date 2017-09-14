@@ -1,7 +1,7 @@
 package org.infinispan.client.hotrod.query;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertTrue;
 
 import org.hibernate.search.spi.SearchIntegrator;
 import org.infinispan.configuration.cache.ConfigurationBuilder;

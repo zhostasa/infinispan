@@ -1,6 +1,6 @@
 package org.infinispan.query.helper;
 
-import static org.junit.Assert.assertNotNull;
+import static org.testng.AssertJUnit.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;

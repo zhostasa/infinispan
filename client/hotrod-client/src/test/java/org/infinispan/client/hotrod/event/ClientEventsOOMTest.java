@@ -1,7 +1,7 @@
 package org.infinispan.client.hotrod.event;
 
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
-import static org.junit.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.Serializable;
 import java.lang.management.BufferPoolMXBean;

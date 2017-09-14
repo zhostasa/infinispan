@@ -4,10 +4,10 @@ package org.infinispan.client.hotrod.event;
 import static org.infinispan.query.dsl.Expression.max;
 import static org.infinispan.query.dsl.Expression.param;
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertNull;
 
 import java.io.IOException;
 import java.util.Arrays;
