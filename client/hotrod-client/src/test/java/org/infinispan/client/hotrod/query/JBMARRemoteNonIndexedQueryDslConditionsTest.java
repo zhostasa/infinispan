@@ -3,7 +3,6 @@ package org.infinispan.client.hotrod.query;
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
 
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.testng.annotations.Test;
@@ -19,7 +18,6 @@ public class JBMARRemoteNonIndexedQueryDslConditionsTest extends JBMARRemoteQuer
 
    protected ConfigurationBuilder getConfigurationBuilder() {
       ConfigurationBuilder builder = hotRodCacheConfiguration();
-      builder.dataContainer().keyEquivalence(AnyEquivalence.getInstance());
       builder.compatibility()
             .enable()
             .marshaller(new GenericJBossMarshaller());

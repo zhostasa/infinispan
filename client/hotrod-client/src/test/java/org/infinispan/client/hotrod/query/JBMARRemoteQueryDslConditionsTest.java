@@ -17,7 +17,6 @@ import org.infinispan.client.hotrod.Search;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.impl.query.RemoteQueryFactory;
 import org.infinispan.client.hotrod.test.HotRodClientTestingUtil;
-import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
@@ -73,7 +72,6 @@ public class JBMARRemoteQueryDslConditionsTest extends QueryDslConditionsTest {
 
    protected ConfigurationBuilder getConfigurationBuilder() {
       ConfigurationBuilder builder = hotRodCacheConfiguration();
-      builder.dataContainer().keyEquivalence(AnyEquivalence.getInstance());
       builder.compatibility()
             .enable()
             .marshaller(new GenericJBossMarshaller());

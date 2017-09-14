@@ -14,7 +14,6 @@ import javax.security.auth.Subject;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
-import org.infinispan.commons.equivalence.AnyServerEquivalence;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalAuthorizationConfigurationBuilder;
@@ -58,17 +57,11 @@ public class SecureExecTest extends AbstractAuthenticationTest {
          .permission(AuthorizationPermission.WRITE);
 
       ConfigurationBuilder config = TestCacheManagerFactory.getDefaultCacheConfiguration(true);
-      config.dataContainer().keyEquivalence(new AnyServerEquivalence())
-         .valueEquivalence(new AnyServerEquivalence()).compatibility().enable()
-         .marshaller(new GenericJBossMarshaller())
+      config.compatibility().enable().marshaller(new GenericJBossMarshaller())
          .security().authorization().enable().role("admin").role("RWEuser").role("RWuser");
       cacheManager = TestCacheManagerFactory.createCacheManager(global, config);
       ConfigurationBuilder config2 = TestCacheManagerFactory.getDefaultCacheConfiguration(true);
-      config2
-            .dataContainer()
-            .keyEquivalence(new AnyServerEquivalence())
-            .valueEquivalence(new AnyServerEquivalence())
-            .security().authorization().enable().role("admin").role("RWEuser").role("RWuser");
+      config2.security().authorization().enable().role("admin").role("RWEuser").role("RWuser");
       cacheManager.defineConfiguration(CACHE_NAME, config2.build());
       cacheManager.getCache();
 

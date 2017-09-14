@@ -31,8 +31,6 @@ import javax.net.ssl.SSLEngine;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 
-import org.infinispan.commons.equivalence.AnyEquivalence;
-import org.infinispan.commons.equivalence.ByteArrayEquivalence;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.util.Util;

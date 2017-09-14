@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
-import org.infinispan.commons.equivalence.AnyEquivalence;
-import org.infinispan.commons.equivalence.ByteArrayEquivalence;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.Marshaller;
