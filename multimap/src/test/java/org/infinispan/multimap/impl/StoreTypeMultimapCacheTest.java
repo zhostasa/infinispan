@@ -13,6 +13,7 @@ import org.infinispan.multimap.api.EmbeddedMultimapCacheManagerFactory;
 import org.infinispan.multimap.api.MultimapCache;
 import org.infinispan.multimap.api.MultimapCacheManager;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.test.data.Person;
 import org.testng.annotations.Test;
 import org.junit.Ignore;
 
@@ -21,7 +22,7 @@ import org.junit.Ignore;
 @Ignore
 public class StoreTypeMultimapCacheTest extends DistributedMultimapCacheTest {
 
-   protected Map<Address, MultimapCache<String, User>> multimapCacheCluster = new HashMap<>();
+   protected Map<Address, MultimapCache<String, Person>> multimapCacheCluster = new HashMap<>();
 
    protected StorageType storageType;
 

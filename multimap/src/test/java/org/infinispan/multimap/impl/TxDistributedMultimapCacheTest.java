@@ -19,6 +19,7 @@ import javax.transaction.TransactionManager;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.multimap.api.MultimapCache;
+import org.infinispan.test.data.Person;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.testng.annotations.Test;
@@ -52,7 +53,7 @@ public class TxDistributedMultimapCacheTest extends DistributedMultimapCacheTest
 
    public void testExplicitTx() throws SystemException, NotSupportedException {
       initAndTest();
-      MultimapCache<String, User> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
 
       TransactionManager tm1 = MultimapTestUtils.getTransactionManager(multimapCache);
       assertMultimapCacheSize(multimapCache, 1);
@@ -74,7 +75,7 @@ public class TxDistributedMultimapCacheTest extends DistributedMultimapCacheTest
 
    public void testExplicitTxWithRollback() throws SystemException, NotSupportedException {
       initAndTest();
-      MultimapCache<String, User> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
 
       TransactionManager tm1 = MultimapTestUtils.getTransactionManager(multimapCache);
       assertMultimapCacheSize(multimapCache, 1);

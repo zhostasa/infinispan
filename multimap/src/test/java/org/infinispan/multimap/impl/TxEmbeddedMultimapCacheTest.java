@@ -20,6 +20,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.multimap.api.EmbeddedMultimapCacheManagerFactory;
 import org.infinispan.multimap.api.MultimapCacheManager;
+import org.infinispan.test.data.Person;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.infinispan.util.function.SerializablePredicate;
@@ -143,7 +144,7 @@ public class TxEmbeddedMultimapCacheTest extends EmbeddedMultimapCacheTest {
       TransactionManager tm1 = getTransactionManager(multimapCache);
       tm1.begin();
       try {
-         SerializablePredicate<User> removePredicate = v -> v.getName().contains("ih") || v.getName().contains("ol");
+         SerializablePredicate<Person> removePredicate = v -> v.getName().contains("ih") || v.getName().contains("ol");
          multimapCache.remove(removePredicate).thenAccept(r -> {
             assertMultimapCacheSize(multimapCache, 1);
          }).join();
