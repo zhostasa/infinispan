@@ -8,6 +8,8 @@ import javax.transaction.SystemException;
 
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
+import org.infinispan.commons.dataconversion.ByteArrayWrapper;
+import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.conflict.ConflictManagerFactory;
 import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.context.Flag;
@@ -161,7 +163,7 @@ public class SecureCacheTestDriver {
       cache.putAsync("a", "a", metadata);
    }
 
-   @TestCachePermission(value=AuthorizationPermission.LIFECYCLE, needsSecurityManager=true)
+   @TestCachePermission(value = AuthorizationPermission.LIFECYCLE, needsSecurityManager = true)
    public void testStop(SecureCache<String, String> cache) {
       cache.stop();
       cache.start();
@@ -648,7 +650,7 @@ public class SecureCacheTestDriver {
    @TestCachePermission(AuthorizationPermission.WRITE)
    public void testPutAll_Map_Metadata(SecureCache<String, String> cache) {
       cache.putAll(Collections.singletonMap("a", "a"), new EmbeddedMetadata.Builder().
-              lifespan(10, TimeUnit.SECONDS).maxIdle(5, TimeUnit.SECONDS).build());
+            lifespan(10, TimeUnit.SECONDS).maxIdle(5, TimeUnit.SECONDS).build());
    }
 
    @TestCachePermission(AuthorizationPermission.BULK_READ)
@@ -680,6 +682,46 @@ public class SecureCacheTestDriver {
    @TestCachePermission(AuthorizationPermission.LISTEN)
    public void testAddFilteredListener_Object_CacheEventFilter_CacheEventConverter_Set(SecureCache<String, String> cache) {
       cache.addFilteredListener(listener, keyValueFilter, converter, Collections.emptySet());
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testWithEncoding_Class(SecureCache<String, String> cache) {
+      cache.withEncoding(IdentityEncoder.class);
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testGetKeyEncoder(SecureCache<String, String> cache) {
+      cache.getKeyEncoder();
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testGetValueEncoder(SecureCache<String, String> cache) {
+      cache.getValueEncoder();
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testGetKeyWrapper(SecureCache<String, String> cache) {
+      cache.getKeyWrapper();
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testGetValueWrapper(SecureCache<String, String> cache) {
+      cache.getValueWrapper();
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testWithEncoding_Class_Class(SecureCache<String, String> cache) {
+      cache.withEncoding(IdentityEncoder.class, IdentityEncoder.class);
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testWithWrapping_Class(SecureCache<String, String> cache) {
+      cache.withWrapping(ByteArrayWrapper.class);
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testWithWrapping_Class_Class(SecureCache<String, String> cache) {
+      cache.withWrapping(ByteArrayWrapper.class, ByteArrayWrapper.class);
    }
 
 }

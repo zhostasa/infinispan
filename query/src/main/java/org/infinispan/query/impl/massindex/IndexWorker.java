@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.dataconversion.Encoder;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.WrappedByteArray;
-import org.infinispan.compat.TypeConverter;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
@@ -31,15 +31,15 @@ import org.infinispan.query.impl.externalizers.ExternalizerIds;
  */
 public class IndexWorker implements DistributedCallable<Object, Object, Void> {
 
-   protected Cache<Object, Object> cache;
-   protected TypeConverter typeConverter;
    protected final Class<?> entity;
    private final boolean flush;
    private final boolean clean;
    private final boolean primaryOwner;
+   protected Cache<Object, Object> cache;
    protected IndexUpdater indexUpdater;
 
    private ClusteringDependentLogic clusteringDependentLogic;
+   private Encoder valueEncoder;
 
    public IndexWorker(Class<?> entity, boolean flush, boolean clean, boolean primaryOwner) {
       this.entity = entity;
@@ -54,7 +54,8 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
       this.indexUpdater = new IndexUpdater(cache);
       ComponentRegistry componentRegistry = cache.getAdvancedCache().getComponentRegistry();
       this.clusteringDependentLogic = componentRegistry.getComponent(ClusteringDependentLogic.class);
-      this.typeConverter = componentRegistry.getComponent(TypeConverter.class);
+      valueEncoder = cache.getAdvancedCache().getValueEncoder();
+
    }
 
    protected void preIndex() {
@@ -70,10 +71,7 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
    }
 
    private Object extractValue(Object wrappedValue) {
-      if (typeConverter != null) {
-         return typeConverter.unboxValue(wrappedValue);
-      }
-      return wrappedValue;
+      return valueEncoder.fromStorage(wrappedValue);
    }
 
    @Override

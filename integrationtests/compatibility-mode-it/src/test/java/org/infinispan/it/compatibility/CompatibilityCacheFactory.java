@@ -18,12 +18,13 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.api.Lifecycle;
+import org.infinispan.commons.dataconversion.Encoder;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
+import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.infinispan.server.memcached.MemcachedServer;
@@ -40,6 +41,8 @@ import net.spy.memcached.MemcachedClient;
  */
 public class CompatibilityCacheFactory<K, V> {
 
+   private static final int DEFAULT_NUM_OWNERS = 2;
+
    private EmbeddedCacheManager cacheManager;
    private HotRodServer hotrod;
    private RemoteCacheManager hotrodClient;
@@ -54,6 +57,7 @@ public class CompatibilityCacheFactory<K, V> {
    private final String cacheName;
    private final Marshaller marshaller;
    private final CacheMode cacheMode;
+   private final Encoder encoder;
    private int restPort;
    private final int defaultNumOwners = 2;
    private int numOwners = defaultNumOwners;
@@ -65,22 +69,44 @@ public class CompatibilityCacheFactory<K, V> {
       this.cacheName = "";
       this.marshaller = null;
       this.cacheMode = cacheMode;
+      this.encoder = null;
    }
 
    CompatibilityCacheFactory(CacheMode cacheMode, int numOwners, boolean l1Enable) {
-      this(cacheMode);
+      this("", null, cacheMode, numOwners, l1Enable, null);
       this.numOwners = numOwners;
       this.l1Enable = l1Enable;
    }
 
+   CompatibilityCacheFactory(CacheMode cacheMode, int numOwners, boolean l1Enable, Encoder encoder) {
+      this("", null, cacheMode, numOwners, l1Enable, encoder);
+   }
+
    CompatibilityCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode) {
+      this(cacheName, marshaller, cacheMode, DEFAULT_NUM_OWNERS, null);
+   }
+
+   CompatibilityCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, Encoder encoder) {
+      this(cacheName, marshaller, cacheMode, DEFAULT_NUM_OWNERS, false, encoder);
+   }
+
+
+   CompatibilityCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, int numOwners, Encoder encoder) {
+      this(cacheName, marshaller, cacheMode, numOwners, false, encoder);
+   }
+
+   CompatibilityCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, int numOwners, boolean l1Enable,
+                             Encoder encoder) {
       this.cacheName = cacheName;
       this.marshaller = marshaller;
       this.cacheMode = cacheMode;
+      this.numOwners = numOwners;
+      this.l1Enable = l1Enable;
+      this.encoder = encoder;
    }
 
    CompatibilityCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, int numOwners) {
-      this(cacheName, marshaller, cacheMode);
+      this(cacheName, marshaller, cacheMode, null);
       this.numOwners = numOwners;
    }
 

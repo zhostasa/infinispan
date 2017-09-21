@@ -164,7 +164,7 @@ public class LifecycleManager extends AbstractModuleLifecycle {
    private void createQueryInterceptorIfNeeded(ComponentRegistry cr, Configuration cfg, SearchIntegrator searchFactory) {
       QueryInterceptor queryInterceptor = cr.getComponent(QueryInterceptor.class);
       if (queryInterceptor == null) {
-         queryInterceptor = buildQueryInterceptor(cfg, searchFactory);
+         queryInterceptor = buildQueryInterceptor(cfg, searchFactory, cr.getComponent(Cache.class));
 
          // Interceptor registration not needed, core configuration handling
          // already does it for all custom interceptors - UNLESS the InterceptorChain already exists in the component registry!
@@ -192,9 +192,9 @@ public class LifecycleManager extends AbstractModuleLifecycle {
       }
    }
 
-   private QueryInterceptor buildQueryInterceptor(Configuration cfg, SearchIntegrator searchFactory) {
+   private QueryInterceptor buildQueryInterceptor(Configuration cfg, SearchIntegrator searchFactory, Cache cache) {
       IndexModificationStrategy indexingStrategy = IndexModificationStrategy.configuredStrategy(searchFactory, cfg);
-      return new QueryInterceptor(searchFactory, indexingStrategy);
+      return new QueryInterceptor(searchFactory, indexingStrategy, cache);
    }
 
    @Override

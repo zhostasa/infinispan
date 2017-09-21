@@ -9,6 +9,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.infinispan.AdvancedCache;
+import org.infinispan.commons.dataconversion.ByteArrayWrapper;
 import org.infinispan.objectfilter.impl.ProtobufMatcher;
 import org.infinispan.objectfilter.impl.syntax.parser.IckleParsingResult;
 import org.infinispan.query.dsl.embedded.impl.IckleFilterAndConverter;
@@ -23,7 +24,8 @@ import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapper;
 final class RemoteQueryEngine extends BaseRemoteQueryEngine {
 
    RemoteQueryEngine(AdvancedCache<?, ?> cache, boolean isIndexed) {
-      super(cache, isIndexed, ProtobufMatcher.class, new ProtobufFieldBridgeAndAnalyzerProvider());
+      super(isIndexed ? cache.withWrapping(ByteArrayWrapper.class, ProtostreamWrapper.class) : cache,
+            isIndexed, ProtobufMatcher.class, new ProtobufFieldBridgeAndAnalyzerProvider());
    }
 
    @Override

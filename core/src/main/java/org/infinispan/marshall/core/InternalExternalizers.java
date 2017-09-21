@@ -8,6 +8,9 @@ import org.infinispan.atomic.impl.AtomicHashMapDelta;
 import org.infinispan.atomic.impl.ClearOperation;
 import org.infinispan.atomic.impl.PutOperation;
 import org.infinispan.atomic.impl.RemoveOperation;
+import org.infinispan.cache.impl.EncoderEntryMapper;
+import org.infinispan.cache.impl.EncoderKeyMapper;
+import org.infinispan.cache.impl.EncoderValueMapper;
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.RemoteCommandsFactory;
 import org.infinispan.commons.hash.MurmurHash3;
@@ -16,9 +19,6 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.marshall.exts.EquivalenceExternalizer;
 import org.infinispan.commons.util.Immutables;
-import org.infinispan.compat.ConverterKeyMapper;
-import org.infinispan.compat.ConverterValueMapper;
-import org.infinispan.compat.ConverterEntryMapper;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.ImmortalCacheValue;
 import org.infinispan.container.entries.MortalCacheEntry;
@@ -147,9 +147,6 @@ final class InternalExternalizers {
       addInternalExternalizer(new CollectionExternalizer(), exts);
       addInternalExternalizer(new CollectionKeyFilter.Externalizer(), exts);
       addInternalExternalizer(new CommandInvocationId.Externalizer(), exts);
-      addInternalExternalizer(new ConverterKeyMapper.Externalizer(), exts);
-      addInternalExternalizer(new ConverterEntryMapper.Externalizer(), exts);
-      addInternalExternalizer(new ConverterValueMapper.Externalizer(), exts);
       addInternalExternalizer(new CompositeKeyFilter.Externalizer(), exts); // TODO: Untested in core
       addInternalExternalizer(new CompositeKeyValueFilter.Externalizer(), exts); // TODO: Untested in core
       addInternalExternalizer(new DefaultConsistentHash.Externalizer(), exts);
@@ -236,6 +233,9 @@ final class InternalExternalizers {
       addInternalExternalizer(new WrappedByteArray.Externalizer(), exts);
       addInternalExternalizer(new XSiteState.XSiteStateExternalizer(), exts);
       addInternalExternalizer(new TriangleAckExternalizer(), exts);
+      addInternalExternalizer(new EncoderKeyMapper.Externalizer(), exts);
+      addInternalExternalizer(new EncoderValueMapper.Externalizer(), exts);
+      addInternalExternalizer(new EncoderEntryMapper.Externalizer(), exts);
 
       return exts;
    }

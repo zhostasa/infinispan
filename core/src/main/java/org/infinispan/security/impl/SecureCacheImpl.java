@@ -16,6 +16,8 @@ import org.infinispan.CacheCollection;
 import org.infinispan.CacheSet;
 import org.infinispan.atomic.Delta;
 import org.infinispan.batch.BatchContainer;
+import org.infinispan.commons.dataconversion.Encoder;
+import org.infinispan.commons.dataconversion.Wrapper;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.CacheEntry;
@@ -518,6 +520,48 @@ public final class SecureCacheImpl<K, V> implements SecureCache<K, V> {
    public void removeExpired(K key, V value, Long lifespan) {
       authzManager.checkPermission(AuthorizationPermission.WRITE);
       delegate.removeExpired(key, value, lifespan);
+   }
+
+   @Override
+   public AdvancedCache<?, ?> withEncoding(Class<? extends Encoder> encoderClass) {
+      return new SecureCacheImpl<>(delegate.withEncoding(encoderClass));
+   }
+
+   @Override
+   public AdvancedCache<K, V> withWrapping(Class<? extends Wrapper> wrapperClass) {
+      return new SecureCacheImpl<>(delegate.withWrapping(wrapperClass));
+   }
+
+   @Override
+   public AdvancedCache<?, ?> withEncoding(Class<? extends Encoder> keyEncoderClass,
+                                           Class<? extends Encoder> valueEncoderClass) {
+      return new SecureCacheImpl<>(delegate.withEncoding(keyEncoderClass, valueEncoderClass));
+   }
+
+   @Override
+   public AdvancedCache<K, V> withWrapping(Class<? extends Wrapper> keyWrapperClass,
+                                           Class<? extends Wrapper> valueWrapperClass) {
+      return new SecureCacheImpl<>(delegate.withWrapping(keyWrapperClass, valueWrapperClass));
+   }
+
+   @Override
+   public Encoder getKeyEncoder() {
+      return delegate.getKeyEncoder();
+   }
+
+   @Override
+   public Encoder getValueEncoder() {
+      return delegate.getValueEncoder();
+   }
+
+   @Override
+   public Wrapper getKeyWrapper() {
+      return delegate.getKeyWrapper();
+   }
+
+   @Override
+   public Wrapper getValueWrapper() {
+      return delegate.getValueWrapper();
    }
 
    @Override

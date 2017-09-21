@@ -2,7 +2,14 @@ package org.infinispan.scripting.impl;
 
 import java.util.Optional;
 
+import javax.security.auth.Subject;
+
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.commons.dataconversion.Encoder;
+import org.infinispan.commons.dataconversion.GenericJbossMarshallerEncoder;
+import org.infinispan.commons.dataconversion.IdentityEncoder;
+import org.infinispan.commons.dataconversion.UTF8Encoder;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -16,11 +23,14 @@ public final class DataTypedCacheManager extends AbstractDelegatingEmbeddedCache
 
    final DataType dataType;
    final Optional<Marshaller> marshaller;
+   private final Class<? extends Encoder> encoderClass;
 
    public DataTypedCacheManager(DataType dataType, Optional<Marshaller> marshaller, EmbeddedCacheManager cm) {
       super(cm);
       this.dataType = dataType;
       this.marshaller = marshaller;
+      this.encoderClass = dataType == DataType.UTF8 ? UTF8Encoder.class :
+            marshaller.isPresent() ? GenericJbossMarshallerEncoder.class : IdentityEncoder.class;
    }
 
    @Override
@@ -30,10 +40,8 @@ public final class DataTypedCacheManager extends AbstractDelegatingEmbeddedCache
 
    @Override
    public <K, V> Cache<K, V> getCache(String cacheName) {
-      Configuration cfg = super.getCacheConfiguration(cacheName);
-      return cfg != null && cfg.compatibility().enabled()
-            ? super.getCache(cacheName)
-            : new DataTypedCache<>(this, super.getCache(cacheName));
+      Cache<K, V> cache = super.getCache(cacheName);
+      return (AdvancedCache<K, V>) cache.getAdvancedCache().withEncoding(encoderClass);
    }
 
 }
