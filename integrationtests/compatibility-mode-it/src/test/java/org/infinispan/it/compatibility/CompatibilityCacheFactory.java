@@ -3,6 +3,9 @@ package org.infinispan.it.compatibility;
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemoteCacheManager;
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.startHotRodServer;
+import static org.infinispan.server.core.test.ServerTestingUtil.findFreePort;
+import static org.infinispan.server.core.test.ServerTestingUtil.isBindException;
+import static org.infinispan.server.core.test.ServerTestingUtil.startProtocolServer;
 import static org.infinispan.server.memcached.test.MemcachedTestingUtil.createMemcachedClient;
 import static org.infinispan.server.memcached.test.MemcachedTestingUtil.killMemcachedClient;
 import static org.infinispan.server.memcached.test.MemcachedTestingUtil.killMemcachedServer;
@@ -19,34 +22,36 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.commons.dataconversion.Encoder;
-import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
 import org.infinispan.rest.embedded.netty4.NettyRestServer;
 import org.infinispan.server.hotrod.HotRodServer;
-import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.infinispan.server.memcached.MemcachedServer;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 import net.spy.memcached.MemcachedClient;
 
 /**
- * Compatibility cache factory taking care of construction and destruction of
- * caches, servers and clients for each of the endpoints being tested.
+ * Compatibility cache factory taking care of construction and destruction of caches, servers and clients for each of
+ * the endpoints being tested.
  *
  * @author Galder Zamarreño
  * @since 5.3
  */
 public class CompatibilityCacheFactory<K, V> {
 
+   private static final Log LOG = LogFactory.getLog(CompatibilityCacheFactory.class);
+
    private static final int DEFAULT_NUM_OWNERS = 2;
 
    private EmbeddedCacheManager cacheManager;
    private HotRodServer hotrod;
    private RemoteCacheManager hotrodClient;
-   private Lifecycle rest;
+   private NettyRestServer rest;
    private MemcachedServer memcached;
 
    private Cache<K, V> embeddedCache;
@@ -62,8 +67,6 @@ public class CompatibilityCacheFactory<K, V> {
    private final int defaultNumOwners = 2;
    private int numOwners = defaultNumOwners;
    private boolean l1Enable = false;
-   private Equivalence keyEquivalence = null;
-   private Equivalence valueEquivalence = null;
 
    CompatibilityCacheFactory(CacheMode cacheMode) {
       this.cacheName = "";
@@ -110,16 +113,6 @@ public class CompatibilityCacheFactory<K, V> {
       this.numOwners = numOwners;
    }
 
-   CompatibilityCacheFactory<K, V> keyEquivalence(Equivalence equivalence) {
-      this.keyEquivalence = equivalence;
-      return this;
-   }
-
-   CompatibilityCacheFactory<K, V> valueEquivalence(Equivalence equivalence) {
-      this.valueEquivalence = equivalence;
-      return this;
-   }
-
    CompatibilityCacheFactory<K, V> setup() throws Exception {
       createEmbeddedCache();
       createHotRodCache();
@@ -127,28 +120,12 @@ public class CompatibilityCacheFactory<K, V> {
       return this;
    }
 
-   CompatibilityCacheFactory<K, V> setup(int baseHotRodPort, int portOffset) throws Exception {
-      createEmbeddedCache();
-      createHotRodCache(baseHotRodPort + portOffset);
-      createRestMemcachedCaches(portOffset);
-      return this;
-   }
-
    private void createRestMemcachedCaches() throws Exception {
-      restPort = hotrod.getPort() + 20;
-      final int memcachedPort = hotrod.getPort() + 40;
-      createRestCache(restPort);
-      createMemcachedCache(memcachedPort);
+      createRestCache();
+      createMemcachedCache();
    }
 
-   private void createRestMemcachedCaches(int portOffset) throws Exception {
-      restPort = hotrod.getPort() + 20 + portOffset;
-      final int memcachedPort = hotrod.getPort() + 40 + portOffset;
-      createRestCache(restPort);
-      createMemcachedCache(memcachedPort);
-   }
-
-   void createEmbeddedCache() {
+   private void createEmbeddedCache() {
       org.infinispan.configuration.cache.ConfigurationBuilder builder =
             new org.infinispan.configuration.cache.ConfigurationBuilder();
       builder.clustering().cacheMode(cacheMode)
@@ -160,14 +137,6 @@ public class CompatibilityCacheFactory<K, V> {
 
       if (cacheMode.isDistributed() && l1Enable) {
          builder.clustering().l1().enable();
-      }
-
-      if (keyEquivalence != null) {
-         builder.dataContainer().keyEquivalence(keyEquivalence);
-      }
-
-      if (valueEquivalence != null) {
-         builder.dataContainer().valueEquivalence(valueEquivalence);
       }
 
       cacheManager = cacheMode.isClustered()
@@ -183,11 +152,6 @@ public class CompatibilityCacheFactory<K, V> {
       createHotRodCache(startHotRodServer(cacheManager));
    }
 
-   private void createHotRodCache(int port) {
-      createHotRodCache(HotRodTestingUtil
-            .startHotRodServer(cacheManager, port));
-   }
-
    private void createHotRodCache(HotRodServer server) {
       hotrod = server;
       hotrodClient = new RemoteCacheManager(new ConfigurationBuilder()
@@ -200,16 +164,38 @@ public class CompatibilityCacheFactory<K, V> {
             : hotrodClient.<K, V>getCache(cacheName);
    }
 
-   void createRestCache(int port) throws Exception {
-      RestServerConfigurationBuilder builder = new RestServerConfigurationBuilder();
-      builder.port(port);
-      rest = NettyRestServer.createServer(builder.build(), cacheManager);
-      rest.start();
+   public void createRestCache() throws Exception {
+      int initialPort = findFreePort();
+      int maxTries = 10;
+      int currentTries = 0;
+      Throwable lastError = null;
+      while (rest == null && currentTries < maxTries) {
+         try {
+            RestServerConfigurationBuilder builder = new RestServerConfigurationBuilder();
+            builder.port(initialPort);
+            rest = NettyRestServer.createServer(builder.build(), cacheManager);
+            rest.start();
+         } catch (Throwable t) {
+            if (!isBindException(t)) {
+               throw t;
+            } else {
+               LOG.debug("Address already in use: [" + t.getMessage() + "], retrying");
+               currentTries++;
+               initialPort = findFreePort();
+               lastError = t;
+            }
+         }
+      }
+      if (rest == null && lastError != null)
+         throw new AssertionError(lastError);
+
+      restPort = initialPort;
       restClient = new HttpClient();
    }
 
-   private void createMemcachedCache(int port) throws IOException {
-      memcached = startMemcachedTextServer(cacheManager, port);
+
+   private void createMemcachedCache() throws IOException {
+      memcached = startProtocolServer(findFreePort(), p -> startMemcachedTextServer(cacheManager, p));
       memcachedClient = createMemcachedClient(60000, memcached.getPort());
    }
 

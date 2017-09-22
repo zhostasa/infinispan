@@ -85,4 +85,19 @@
       </dependency>
    </dependencies>
 
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <systemPropertyVariables combine.self="append">
+                  <io.netty.eventLoopThreads>3</io.netty.eventLoopThreads>
+                  <infinispan.server.hotrod.workerThreads>3</infinispan.server.hotrod.workerThreads>
+               </systemPropertyVariables>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
 </project>
