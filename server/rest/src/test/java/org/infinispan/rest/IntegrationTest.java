@@ -47,10 +47,12 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.infinispan.commons.dataconversion.Encoder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.metadata.Metadata;
@@ -1068,6 +1070,11 @@ public class IntegrationTest extends RestServerTestBase {
          this.v2PutLatch = v2PutLatch;
          this.v3PutLatch = v3PutLatch;
          this.v2FinishLatch = v2FinishLatch;
+      }
+
+      @Override
+      public AdvancedCache<String, Object> withEncoding(Class<? extends Encoder> encoder) {
+         return this;
       }
 
       @Override
