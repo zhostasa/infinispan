@@ -116,17 +116,17 @@ public class ScriptingTest extends AbstractScriptingTest {
       String value = "javaValue";
       String key = "processValue";
 
-      cacheManager.getCache("test_cache").put(key, value);
+      cacheManager.getCache(CACHE_NAME).put(key, value);
 
       CompletableFuture exec = scriptingManager.runScript("testExecWithoutProp.js");
       exec.get(1000, TimeUnit.MILLISECONDS);
 
-      assertEquals(value + ":additionFromJavascript", cacheManager.getCache("test_cache").get(key));
+      assertEquals(value + ":additionFromJavascript", cacheManager.getCache(CACHE_NAME).get(key));
    }
 
    public void testScriptCallFromJavascript() throws Exception {
       String result = (String) scriptingManager.runScript("testInnerScriptCall.js",
-              new TaskContext().cache(cacheManager.getCache("test_cache")).addParameter("a", "ahoj")).get();
+              new TaskContext().cache(cacheManager.getCache(CACHE_NAME)).addParameter("a", "ahoj")).get();
 
       assertEquals("script1:additionFromJavascript", result);
       assertEquals("ahoj", cacheManager.getCache(CACHE_NAME).get("a"));
