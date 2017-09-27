@@ -48,6 +48,7 @@ final class ExternallyMarshallable {
             || className.equals("java.lang.Class")
             || className.equals("java.util.Date") // test
             || className.equals("org.infinispan.api.lazy.LazyCacheAPITest$CustomPojo")
+            || className.equals("org.infinispan.api.APINonTxOffHeapTest$CustomObjectKey")
             || className.equals("org.infinispan.atomic.TestDeltaAware")
             || className.equals("org.infinispan.atomic.TestDeltaAware$TestDelta")
             || className.equals("org.infinispan.configuration.override.XMLConfigurationOverridingTest$NonIndexedClass")
