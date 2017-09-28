@@ -49,7 +49,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *                  should be included
     * @return the new cache double stream
     */
-   DoubleCacheStream filter(SerializableDoublePredicate predicate);
+   default DoubleCacheStream filter(SerializableDoublePredicate predicate) {
+      return filter((DoublePredicate) predicate);
+   }
 
    /**
     * {@inheritDoc}
@@ -67,7 +69,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *               function to apply to each element
     * @return the new cache double stream
     */
-   DoubleCacheStream map(SerializableDoubleUnaryOperator mapper);
+   default DoubleCacheStream map(SerializableDoubleUnaryOperator mapper) {
+      return map((DoubleUnaryOperator) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -86,7 +90,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *               function to apply to each element
     * @return the new cache stream
     */
-   <U> CacheStream<U> mapToObj(SerializableDoubleFunction<? extends U> mapper);
+   default <U> CacheStream<U> mapToObj(SerializableDoubleFunction<? extends U> mapper) {
+      return mapToObj((DoubleFunction<? extends U>) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -104,7 +110,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *               function to apply to each element
     * @return the new cache int stream
     */
-   IntCacheStream mapToInt(SerializableDoubleToIntFunction mapper);
+   default IntCacheStream mapToInt(SerializableDoubleToIntFunction mapper) {
+      return mapToInt((DoubleToIntFunction) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -122,7 +130,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *               function to apply to each element
     * @return the new cache long stream
     */
-   LongCacheStream mapToLong(SerializableDoubleToLongFunction mapper);
+   default LongCacheStream mapToLong(SerializableDoubleToLongFunction mapper) {
+      return mapToLong((DoubleToLongFunction) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -141,7 +151,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *               {@code DoubleStream} of new values
     * @return the new cache double stream
     */
-   DoubleCacheStream flatMap(SerializableDoubleFunction<? extends DoubleStream> mapper);
+   default DoubleCacheStream flatMap(SerializableDoubleFunction<? extends DoubleStream> mapper) {
+      return flatMap((DoubleFunction<? extends DoubleStream>) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -173,7 +185,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *               they are consumed from the stream
     * @return the new cache double stream
     */
-   DoubleCacheStream peek(SerializableDoubleConsumer action);
+   default DoubleCacheStream peek(SerializableDoubleConsumer action) {
+      return peek((DoubleConsumer) action);
+   }
 
    /**
     * {@inheritDoc}
@@ -196,7 +210,9 @@ public interface DoubleCacheStream extends DoubleStream {
     * The compiler will pick this overload for lambda parameters, making them <code>Serializable</code>
     * @param action a non-interfering action to perform on the elements
     */
-   void forEach(SerializableDoubleConsumer action);
+   default void forEach(SerializableDoubleConsumer action) {
+      forEach((DoubleConsumer) action);
+   }
 
    /**
     * Same as {@link DoubleCacheStream#forEach(DoubleConsumer)} except that it takes an {@link ObjDoubleConsumer} that
@@ -217,7 +233,9 @@ public interface DoubleCacheStream extends DoubleStream {
     * @param <K> key type of the cache
     * @param <V> value type of the cache
     */
-   <K, V> void forEach(SerializableObjDoubleConsumer<Cache<K, V>> action);
+   default <K, V> void forEach(SerializableObjDoubleConsumer<Cache<K, V>> action) {
+      forEach((ObjDoubleConsumer<Cache<K, V>>) action);
+   }
 
    /**
     * Same as {@link DoubleCacheStream#reduce(double, DoubleBinaryOperator)} except that the DoubleBinaryOperator must
@@ -229,7 +247,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *           function for combining two values
     * @return the result of the reduction
     */
-   double reduce(double identity, SerializableDoubleBinaryOperator op);
+   default double reduce(double identity, SerializableDoubleBinaryOperator op) {
+      return reduce(identity, (DoubleBinaryOperator) op);
+   }
 
    /**
     * Same as {@link DoubleCacheStream#reduce(DoubleBinaryOperator)} except that the DoubleBinaryOperator must
@@ -240,7 +260,9 @@ public interface DoubleCacheStream extends DoubleStream {
     *           function for combining two values
     * @return the result of the reduction
     */
-   OptionalDouble reduce(SerializableDoubleBinaryOperator op);
+   default OptionalDouble reduce(SerializableDoubleBinaryOperator op) {
+      return reduce((DoubleBinaryOperator) op);
+   }
 
    /**
     * Same as {@link DoubleCacheStream#collect(Supplier, ObjDoubleConsumer, BiConsumer)} except that the arguments must
@@ -258,8 +280,10 @@ public interface DoubleCacheStream extends DoubleStream {
     *                    compatible with the accumulator function
     * @return the result of the reduction
     */
-   <R> R collect(SerializableSupplier<R> supplier, SerializableObjDoubleConsumer<R> accumulator,
-           SerializableBiConsumer<R, R> combiner);
+   default <R> R collect(SerializableSupplier<R> supplier, SerializableObjDoubleConsumer<R> accumulator,
+           SerializableBiConsumer<R, R> combiner) {
+      return collect((Supplier<R>) supplier, accumulator, combiner);
+   }
 
    /**
     * Same as {@link DoubleCacheStream#anyMatch(DoublePredicate)} except that the DoublePredicate must
@@ -271,7 +295,9 @@ public interface DoubleCacheStream extends DoubleStream {
     * @return {@code true} if any elements of the stream match the provided
     * predicate, otherwise {@code false}
     */
-   boolean anyMatch(SerializableDoublePredicate predicate);
+   default boolean anyMatch(SerializableDoublePredicate predicate) {
+      return anyMatch((DoublePredicate) predicate);
+   }
 
    /**
     * Same as {@link DoubleCacheStream#allMatch(DoublePredicate)} except that the DoublePredicate must
@@ -283,7 +309,9 @@ public interface DoubleCacheStream extends DoubleStream {
     * @return {@code true} if either all elements of the stream match the
     * provided predicate or the stream is empty, otherwise {@code false}
     */
-   boolean allMatch(SerializableDoublePredicate predicate);
+   default boolean allMatch(SerializableDoublePredicate predicate) {
+      return allMatch((DoublePredicate) predicate);
+   }
 
    /**
     * Same as {@link DoubleCacheStream#noneMatch(DoublePredicate)} except that the DoublePredicate must
@@ -295,7 +323,9 @@ public interface DoubleCacheStream extends DoubleStream {
     * @return {@code true} if either no elements of the stream match the
     * provided predicate or the stream is empty, otherwise {@code false}
     */
-   boolean noneMatch(SerializableDoublePredicate predicate);
+   default boolean noneMatch(SerializableDoublePredicate predicate) {
+      return noneMatch((DoublePredicate) predicate);
+   }
 
    /**
     * {@inheritDoc}

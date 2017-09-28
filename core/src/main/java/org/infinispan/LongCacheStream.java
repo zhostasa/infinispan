@@ -50,7 +50,9 @@ public interface LongCacheStream extends LongStream {
     *                  should be included
     * @return the new cache long stream
     */
-   LongCacheStream filter(SerializableLongPredicate predicate);
+   default LongCacheStream filter(SerializableLongPredicate predicate) {
+      return filter((LongPredicate) predicate);
+   }
 
    /**
     * {@inheritDoc}
@@ -69,7 +71,9 @@ public interface LongCacheStream extends LongStream {
     *               function to apply to each element
     * @return the new cache long stream
     */
-   LongCacheStream map(SerializableLongUnaryOperator mapper);
+   default LongCacheStream map(SerializableLongUnaryOperator mapper) {
+      return map((LongUnaryOperator) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -89,7 +93,9 @@ public interface LongCacheStream extends LongStream {
     *               function to apply to each element
     * @return the new cache stream
     */
-   <U> CacheStream<U> mapToObj(SerializableLongFunction<? extends U> mapper);
+   default <U> CacheStream<U> mapToObj(SerializableLongFunction<? extends U> mapper) {
+      return mapToObj((LongFunction<? extends U>) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -108,7 +114,9 @@ public interface LongCacheStream extends LongStream {
     *               function to apply to each element
     * @return the new cache int stream
     */
-   IntCacheStream mapToInt(SerializableLongToIntFunction mapper);
+   default IntCacheStream mapToInt(SerializableLongToIntFunction mapper) {
+      return mapToInt((LongToIntFunction) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -127,7 +135,9 @@ public interface LongCacheStream extends LongStream {
     *               function to apply to each element
     * @return the new cache double stream
     */
-   DoubleCacheStream mapToDouble(SerializableLongToDoubleFunction mapper);
+   default DoubleCacheStream mapToDouble(SerializableLongToDoubleFunction mapper) {
+      return mapToDouble((LongToDoubleFunction) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -147,7 +157,9 @@ public interface LongCacheStream extends LongStream {
     *               {@code LongStream} of new values
     * @return the new cache long stream
     */
-   LongCacheStream flatMap(SerializableLongFunction<? extends LongStream> mapper);
+   default LongCacheStream flatMap(SerializableLongFunction<? extends LongStream> mapper) {
+      return flatMap((LongFunction<? extends LongStream>) mapper);
+   }
 
    /**
     * {@inheritDoc}
@@ -180,7 +192,9 @@ public interface LongCacheStream extends LongStream {
     *               they are consumed from the stream
     * @return the new cache long stream
     */
-   LongCacheStream peek(SerializableLongConsumer action);
+   default LongCacheStream peek(SerializableLongConsumer action) {
+      return peek((LongConsumer) action);
+   }
 
    /**
     * {@inheritDoc}
@@ -204,7 +218,9 @@ public interface LongCacheStream extends LongStream {
     * a Serializable lambda.
     * @param action a non-interfering action to perform on the elements
     */
-   void forEach(SerializableLongConsumer action);
+   default void forEach(SerializableLongConsumer action) {
+      forEach((LongConsumer) action);
+   }
 
    /**
     * Same as {@link LongCacheStream#forEach(LongConsumer)} except that it takes an {@link ObjLongConsumer} that
@@ -225,7 +241,9 @@ public interface LongCacheStream extends LongStream {
     * @param <K> key type of the cache
     * @param <V> value type of the cache
     */
-   <K, V> void forEach(SerializableObjLongConsumer<Cache<K, V>> action);
+   default <K, V> void forEach(SerializableObjLongConsumer<Cache<K, V>> action) {
+      forEach((ObjLongConsumer<Cache<K, V>>) action);
+   }
 
    /**
     * Same as {@link LongCacheStream#reduce(long, LongBinaryOperator)} except that the LongBinaryOperator must
@@ -238,7 +256,9 @@ public interface LongCacheStream extends LongStream {
     *           function for combining two values
     * @return the result of the reduction
     */
-   long reduce(long identity, SerializableLongBinaryOperator op);
+   default long reduce(long identity, SerializableLongBinaryOperator op) {
+      return reduce(identity, (LongBinaryOperator) op);
+   }
 
    /**
     * Same as {@link LongCacheStream#reduce(LongBinaryOperator)} except that the LongBinaryOperator must
@@ -250,7 +270,9 @@ public interface LongCacheStream extends LongStream {
     *           function for combining two values
     * @return the result of the reduction
     */
-   OptionalLong reduce(SerializableLongBinaryOperator op);
+   default OptionalLong reduce(SerializableLongBinaryOperator op) {
+      return reduce((LongBinaryOperator) op);
+   }
 
    /**
     * Same as {@link LongCacheStream#collect(Supplier, ObjLongConsumer, BiConsumer)} except that the arguments must
@@ -269,8 +291,10 @@ public interface LongCacheStream extends LongStream {
     *                    compatible with the accumulator function
     * @return the result of the reduction
     */
-   <R> R collect(SerializableSupplier<R> supplier, SerializableObjLongConsumer<R> accumulator,
-           SerializableBiConsumer<R, R> combiner);
+   default <R> R collect(SerializableSupplier<R> supplier, SerializableObjLongConsumer<R> accumulator,
+           SerializableBiConsumer<R, R> combiner) {
+      return collect((Supplier<R>) supplier, accumulator, combiner);
+   }
 
    /**
     * Same as {@link LongCacheStream#anyMatch(LongPredicate)} except that the LongPredicate must
@@ -283,7 +307,9 @@ public interface LongCacheStream extends LongStream {
     * @return {@code true} if any elements of the stream match the provided
     * predicate, otherwise {@code false}
     */
-   boolean anyMatch(SerializableLongPredicate predicate);
+   default boolean anyMatch(SerializableLongPredicate predicate) {
+      return anyMatch((LongPredicate) predicate);
+   }
 
    /**
     * Same as {@link LongCacheStream#allMatch(LongPredicate)} except that the LongPredicate must
@@ -296,7 +322,9 @@ public interface LongCacheStream extends LongStream {
     * @return {@code true} if either all elements of the stream match the
     * provided predicate or the stream is empty, otherwise {@code false}
     */
-   boolean allMatch(SerializableLongPredicate predicate);
+   default boolean allMatch(SerializableLongPredicate predicate) {
+      return allMatch((LongPredicate) predicate);
+   }
 
    /**
     * Same as {@link LongCacheStream#noneMatch(LongPredicate)} except that the LongPredicate must
@@ -309,7 +337,9 @@ public interface LongCacheStream extends LongStream {
     * @return {@code true} if either no elements of the stream match the
     * provided predicate or the stream is empty, otherwise {@code false}
     */
-   boolean noneMatch(SerializableLongPredicate predicate);
+   default boolean noneMatch(SerializableLongPredicate predicate) {
+      return noneMatch((LongPredicate) predicate);
+   }
 
    /**
     * {@inheritDoc}
