@@ -131,6 +131,15 @@
                </properties>
             </configuration>
          </plugin>
+         <plugin>
+            <artifactId>maven-remote-resources-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>attach-license</id>
+                  <phase>none</phase>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
 
