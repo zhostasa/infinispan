@@ -6,8 +6,10 @@ import java.util.function.Predicate;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.infinispan.commons.dataconversion.GlobalMarshallerEncoder;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.util.CollectionFactory;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
@@ -56,7 +58,13 @@ public class RestCacheManager {
          Cache<String, byte[]> cache = name.equals(BasicCacheContainer.DEFAULT_CACHE_NAME) ? instance.getCache() :
                instance.getCache(name);
          tryRegisterMigrationManager(cache);
-         AdvancedCache<String, byte[]> restCache = (AdvancedCache<String, byte[]>) cache.getAdvancedCache().withEncoding(IdentityEncoder.class);
+         AdvancedCache<String, byte[]> restCache = cache.getAdvancedCache();
+         if(cache.getCacheConfiguration().compatibility().enabled()) {
+            restCache = (AdvancedCache<String, byte[]>) restCache.withEncoding(IdentityEncoder.class);
+         }
+         if(cache.getCacheConfiguration().memory().storageType() == StorageType.OFF_HEAP) {
+            restCache = (AdvancedCache<String, byte[]>) restCache.withEncoding(GlobalMarshallerEncoder.class);
+         }
          knownCaches.put(name, restCache);
          return restCache;
       }
