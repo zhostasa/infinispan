@@ -78,7 +78,7 @@
       <version.javax.cache>1.0.0.redhat-1</version.javax.cache>
       <version.cdi>1.2.0.redhat-2</version.cdi>
       <version.jboss.marshalling>1.4.10.Final-redhat-3</version.jboss.marshalling>
-      <version.jboss.logging>3.3.0.Final-redhat-1</version.jboss.logging>
+      <version.jboss.logging>3.3.1.Final-redhat-1</version.jboss.logging>
       <version.jgroups>4.0.4.Final-redhat-1</version.jgroups>
       <version.jta>1.0.1.Final-redhat-2</version.jta>
       <version.netty>4.1.8.Final</version.netty>
