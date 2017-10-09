@@ -29,24 +29,41 @@ final class RemoteQueryEngine extends BaseRemoteQueryEngine {
    }
 
    @Override
-   protected RowProcessor makeProjectionProcessor(Class<?>[] projectedTypes) {
+   protected RowProcessor makeProjectionProcessor(Class<?>[] projectedTypes, Object[] projectedNullMarkers) {
       // Protobuf's booleans are indexed as Strings, so we need to convert them.
       // Collect here the positions of all Boolean projections.
-      int[] pos = new int[projectedTypes.length];
-      int len = 0;
+      int[] booleanPositions = new int[projectedTypes.length];
+      int booleanColumnsNumber = 0;
       for (int i = 0; i < projectedTypes.length; i++) {
          if (projectedTypes[i] == Boolean.class) {
-            pos[len++] = i;
+            booleanPositions[booleanColumnsNumber++] = i;
          }
       }
-      if (len == 0) {
+      boolean hasNullMarkers = false;
+      if (projectedNullMarkers != null) {
+         for (Object projectedNullMarker : projectedNullMarkers) {
+            if (projectedNullMarker != null) {
+               hasNullMarkers = true;
+               break;
+            }
+         }
+      }
+      if (booleanColumnsNumber == 0 && !hasNullMarkers) {
          return null;
       }
-      final int[] cols = len < pos.length ? Arrays.copyOf(pos, len) : pos;
+      final boolean hasNullMarkers_ = hasNullMarkers;
+      final int[] booleanColumns = booleanColumnsNumber < booleanPositions.length ? Arrays.copyOf(booleanPositions, booleanColumnsNumber) : booleanPositions;
       return row -> {
-         for (int i : cols) {
+         if (hasNullMarkers_) {
+            for (int i = 0; i < projectedNullMarkers.length; i++) {
+               if (row[i] != null && row[i].equals(projectedNullMarkers[i])) {
+                  row[i] = null;
+               }
+            }
+         }
+         for (int i : booleanColumns) {
             if (row[i] != null) {
-               // the Boolean column is actually encoded as a String, so we convert it
+               // the Boolean column is actually encoded as a String, so we convert it to a boolean
                row[i] = "true".equals(row[i]);
             }
          }
