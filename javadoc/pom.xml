@@ -86,6 +86,31 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-cachestore-rocksdb</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-persistence-soft-index</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-lucene-directory</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-clustered-counter</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-clustered-lock</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-server-core</artifactId>
       </dependency>
 
@@ -183,6 +208,14 @@
                         <group>
                            <title>Distributed Executors and Map/Reduce API</title>
                            <packages>org.infinispan.distexec*</packages>
+                        </group>
+                        <group>
+                           <title>Clustered Counter API</title>
+                           <packages>org.infinispan.counter*</packages>
+                        </group>
+                        <group>
+                           <title>Clustered Lock API</title>
+                           <packages>org.infinispan.lock*</packages>
                         </group>
                         <group>
                            <title>Hot Rod Client API</title>

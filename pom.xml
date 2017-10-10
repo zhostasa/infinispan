@@ -34,6 +34,7 @@
       <module>extended-statistics</module>
       <module>multimap</module>
       <module>counter</module>
+      <module>lock</module>
       <module>tools</module>
       <module>query</module>
       <module>query-dsl</module>

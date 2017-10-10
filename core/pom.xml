@@ -203,6 +203,7 @@
                      !${project.groupId}.commons.*,
                      !${project.groupId}.multimap.*,
                      !${project.groupId}.counter.*,
+                     !${project.groupId}.lock.*,
                      org.infinispan.marshall.core,
                      ${project.groupId}.*;version=${project.version};-split-package:=error
                   </Export-Package>

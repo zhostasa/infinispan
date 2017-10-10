@@ -13,13 +13,13 @@ Since performance is a very important factor in this process, Infinispan uses JB
 === Support For Non-Serializable Objects
 From a users perspective, a very common concern is whether Infinispan supports storing non-Serializable objects. In 4.0, an Infinispan cache instance can only store non-Serializable key or value objects if, and only if:
 
-*  cache is configured to be a local cache _and..._ 
-*  cache is not configured with lazy serialization _and..._ 
+*  cache is configured to be a local cache _and..._
+*  cache is not configured with lazy serialization _and..._
 * cache is not configured with any write-behind cache store
 
 If either of these options is true, key/value pairs in the cache will need to be marshalled and currently they require to either to extend `java.io.Serializable` or `java.io.Externalizable`.
 
-TIP: Since Infinispan 5.0, marshalling non-Serializable key/value objects is supported as long as users can to provide meaningful Externalizer implementations for these non-Seralizable objects. <<_plugging_infinispan_with_user_defined_externalizers, This section>> has more details. 
+TIP: Since Infinispan 5.0, marshalling non-Serializable key/value objects is supported as long as users can to provide meaningful Externalizer implementations for these non-Seralizable objects. <<_plugging_infinispan_with_user_defined_externalizers, This section>> has more details.
 
 If you're unable to retrofit Serializable or Externalizable into the classes whose instances are stored in Infinispan, you could alternatively use something like link:http://x-stream.github.io/[XStream] to convert your Non-Serializable objects into a String that can be stored into Infinispan. You can find an example on how to use XStream link:http://anonsvn.jboss.org/repos/infinispan/trunk/core/src/test/java/org/infinispan/marshall/TestObjectStreamMarshaller.java[here] . The one caveat about using XStream is that it slows down the process of storing key/value objects due to the XML transformation that it needs to do.
 
@@ -58,11 +58,11 @@ The preference will be to compare object representations, unless the cache is li
 This will affect the way keys stored in the cache will work, when `storeAsBinary` is used, since comparisons happen on the key which will be wrapped by a MarshalledValue. Implementers of equals() methods on their keys need to be aware of the behavior of equality comparison, when a key is wrapped as a MarshalledValue, as detailed above.
 
 ===== Store-by-value via defensive copying
-The configuration `storeAsBinary` offers the possibility to enable defensive copying, which allows for store-by-value like behaviour. 
+The configuration `storeAsBinary` offers the possibility to enable defensive copying, which allows for store-by-value like behaviour.
 
 Infinispan marshalls objects the moment they're stored, hence changes made to object references are not stored in the cache, not even for local caches. This provides store-by-value like behaviour. Enabling `storeAsBinary` can be achieved:
 
-*  Via XML at the Cache level, either under `<*-cache />` or `<default />` elements: 
+*  Via XML at the Cache level, either under `<*-cache />` or `<default />` elements:
 
 [source,xml]
 ----
@@ -86,7 +86,7 @@ By default, Infinispan uses the link:{javadocroot}/org/infinispan/marshall/core/
 Optionally, Infinispan users can provide their own marshaller, for example:
 
 
-*  Via XML at the CacheManager level, under `<cache-manager />` element: 
+*  Via XML at the CacheManager level, under `<cache-manager />` element:
 
 [source,xml]
 ----
@@ -170,8 +170,8 @@ in object of type org.infinispan.marshall.DefaultMarshallerTest$1
 -> type classloader = sun.misc.Launcher$AppClassLoader@198dfaf
 ->...file:/opt/eclipse/configuration/org.eclipse.osgi/bundles/285/1/.cp/eclipse-testng.jar
 ->...file:/opt/eclipse/configuration/org.eclipse.osgi/bundles/285/1/.cp/lib/testng-jdk15.jar
-->...file:/home/galder/jboss/infinispan/code/trunk/core/target/test-classes/ 
-->...file:/home/galder/jboss/infinispan/code/trunk/core/target/classes/ 
+->...file:/home/galder/jboss/infinispan/code/trunk/core/target/test-classes/
+->...file:/home/galder/jboss/infinispan/code/trunk/core/target/classes/
 ->...file:/home/galder/.m2/repository/org/testng/testng/5.9/testng-5.9-jdk15.jar
 ->...file:/home/galder/.m2/repository/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar
 ->...file:/home/galder/.m2/repository/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar
@@ -204,7 +204,7 @@ Finding the root cause of marshalling/unmarshalling exceptions can sometimes be 
 ===  Plugging Infinispan With User Defined Externalizers
 One of the key aspects of Infinispan is that it often needs to marshall/unmarshall objects in order to provide some of its functionality. For example, if it needs to store objects in a write-through or write-behind cache store, the stored objects need marshalling. If a cluster of Infinispan nodes is formed, objects shipped around need marshalling. Even if you enable lazy deserialization, objects need to be marshalled so that they can be lazily unmarshalled with the correct classloader.
 
-Using standard JDK serialization is slow and produces payloads that are too big and can affect bandwidth usage. On top of that, JDK serialization does not work well with objects that are supposed to be immutable. In order to avoid these issues, Infinispan uses link:http://jboss.org/jbossmarshalling[JBoss Marshalling] for marshalling/unmarshalling objects. JBoss Marshalling is fast, produces very space efficient payloads, and on top of that  during unmarshalling, it enables users to have full control over how to construct objects, hence allowing objects to carry on being immutable. 
+Using standard JDK serialization is slow and produces payloads that are too big and can affect bandwidth usage. On top of that, JDK serialization does not work well with objects that are supposed to be immutable. In order to avoid these issues, Infinispan uses link:http://jboss.org/jbossmarshalling[JBoss Marshalling] for marshalling/unmarshalling objects. JBoss Marshalling is fast, produces very space efficient payloads, and on top of that  during unmarshalling, it enables users to have full control over how to construct objects, hence allowing objects to carry on being immutable.
 
 Starting with 5.0, users of Infinispan can now benefit from this marshalling framework as well, and they can provide their own externalizer implementations, but before finding out how to provide externalizers, let's look at the benefits they bring.
 
@@ -236,14 +236,14 @@ public class Person {
 
    public static class PersonExternalizer implements Externalizer<Person> {
       @Override
-      public void writeObject(ObjectOutput output, Person person) 
+      public void writeObject(ObjectOutput output, Person person)
             throws IOException {
          output.writeObject(person.name);
          output.writeInt(person.age);
       }
 
       @Override
-      public Person readObject(ObjectInput input) 
+      public Person readObject(ObjectInput input)
             throws IOException, ClassNotFoundException {
          return new Person((String) input.readObject(), input.readInt());
       }
@@ -441,6 +441,8 @@ This is the list of Externalizer identifiers that are used by Infinispan based m
 |Infinispan Server Event Logger Module:|1850 - 1899
 |Infinispan Remote Store:|1900 - 1999
 |Infinispan Counters:|2000 - 2049
+|Infinispan Multimap:|2050 - 2099
+|Infinispan Locks:|2100 - 2149
 |===============
 
 
