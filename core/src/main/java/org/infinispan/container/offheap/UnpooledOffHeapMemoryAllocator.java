@@ -15,7 +15,6 @@ import sun.misc.Unsafe;
  * @since 9.0
  */
 public class UnpooledOffHeapMemoryAllocator implements OffHeapMemoryAllocator {
-   private static final Unsafe UNSAFE = UnsafeHolder.UNSAFE;
    private static final Log log = LogFactory.getLog(UnpooledOffHeapMemoryAllocator.class, Log.class);
    private static final boolean trace = log.isTraceEnabled();
    private final AtomicLong amountAllocated = new AtomicLong();
@@ -23,16 +22,16 @@ public class UnpooledOffHeapMemoryAllocator implements OffHeapMemoryAllocator {
 
    @Inject
    public void inject(OffHeapEntryFactory offHeapEntryFactory) {
-      sizeCalculator = offHeapEntryFactory::determineSize;
+      sizeCalculator = offHeapEntryFactory::getSize;
    }
 
    @Override
    public long allocate(long memoryLength) {
-      long memoryLocation = UNSAFE.allocateMemory(memoryLength);
+      long memoryLocation = OffHeapMemory.allocate(memoryLength);
       long currentSize = amountAllocated.addAndGet(memoryLength);
       if (trace) {
-         log.tracef("Allocated off heap memory at %d with %d bytes.  Total size: %d", (Long) memoryLocation, (Long) memoryLength,
-               (Long) currentSize);
+         log.tracef("Allocated off heap memory at 0x%016x with %d bytes. Total size: %d", (Long) memoryLocation,
+               (Long) memoryLength, (Long) currentSize);
       }
       return memoryLocation;
    }
@@ -46,10 +45,10 @@ public class UnpooledOffHeapMemoryAllocator implements OffHeapMemoryAllocator {
    public void deallocate(long memoryAddress, long size) {
       long currentSize = amountAllocated.addAndGet(- size);
       if (trace) {
-         log.tracef("Deallocating off heap memory at %d with %d bytes.  Total size: %d", (Long) memoryAddress, (Long) size,
-               (Long) currentSize);
+         log.tracef("Deallocating off heap memory at 0x%016x with %d bytes. Total size: %d", (Long) memoryAddress,
+               (Long) size, (Long) currentSize);
       }
-      UNSAFE.freeMemory(memoryAddress);
+      OffHeapMemory.free(memoryAddress);
    }
 
    @Override
