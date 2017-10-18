@@ -25,14 +25,12 @@ public interface SearchManager {
    <E> CacheQuery<E> getQuery(Query luceneQuery, Class<?>... classes);
 
    /**
-    * Experimental.
     * Provides Hibernate Search DSL to build full text queries
     * @return
     */
    EntityContext buildQueryBuilderForClass(Class<?> entityType);
 
    /**
-    * Experimental!
     * Use it to try out the newly introduced distributed queries.
     *
     * @param luceneQuery
