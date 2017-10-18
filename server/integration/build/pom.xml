@@ -31,7 +31,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-${project.version}</finalName>
+        <finalName>${product.name}-${product.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.build</groupId>
@@ -85,7 +85,7 @@
                                 <descriptor>assembly.xml</descriptor>
                             </descriptors>
                             <recompressZippedFiles>true</recompressZippedFiles>
-                            <finalName>${server.output.dir.prefix}-${project.version}</finalName>
+                            <finalName>${product.name}-${product.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <workDirectory>${project.build.directory}/assembly/work</workDirectory>

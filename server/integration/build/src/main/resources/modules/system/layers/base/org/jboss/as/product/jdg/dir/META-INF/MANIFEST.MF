@@ -1,3 +1,4 @@
 JBoss-Product-Release-Name: Data Grid
-JBoss-Product-Release-Version: 7.2.0
+JBoss-Product-Release-Version: @product.version@
 JBoss-Product-Console-Slot: jdg
+

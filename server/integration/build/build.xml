@@ -49,6 +49,7 @@
             <fileset dir="src/main/resources"/>
             <filterset>
                 <filter token="project.version" value="${project.version}"/>
+                <filter token="product.version" value="${product.version}"/>
             </filterset>
         </copy>
     </target>
