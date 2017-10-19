@@ -19,8 +19,7 @@ public class PartitionHandlingConfiguration {
          .build();
    public static final AttributeDefinition<PartitionHandling> WHEN_SPLIT = AttributeDefinition.builder("whenSplit", PartitionHandling.ALLOW_READ_WRITES)
          .immutable().build();
-   public static final AttributeDefinition<EntryMergePolicy> MERGE_POLICY = AttributeDefinition.builder("mergePolicy",
-         null, EntryMergePolicy.class).immutable().build();
+   public static final AttributeDefinition<EntryMergePolicy> MERGE_POLICY = AttributeDefinition.builder("mergePolicy", MergePolicies.PREFERRED_ALWAYS).immutable().build();
 
    static AttributeSet attributeDefinitionSet() {
       return new AttributeSet(PartitionHandlingConfiguration.class, ENABLED, WHEN_SPLIT, MERGE_POLICY);

@@ -4,7 +4,6 @@ import static org.infinispan.test.TestingUtil.withCacheManager;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNotNull;
-import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
@@ -114,7 +113,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       ph = cm.getCacheConfiguration("repl").clustering().partitionHandling();
       assertFalse(ph.enabled());
       assertEquals(PartitionHandling.ALLOW_READ_WRITES, ph.whenSplit());
-      assertNull(ph.mergePolicy());
+      assertEquals(MergePolicies.PREFERRED_ALWAYS, ph.mergePolicy());
 
       MemoryConfiguration mc = cm.getCacheConfiguration("off-heap-memory").memory();
       assertEquals(StorageType.OFF_HEAP, mc.storageType());
