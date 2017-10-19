@@ -7,6 +7,7 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.infinispan.counter.api.CounterConfiguration;
 import org.infinispan.counter.api.CounterManager;
@@ -96,6 +98,49 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
       }
    }
 
+   public void testCompareAndSetConcurrent(Method method)
+         throws ExecutionException, InterruptedException, TimeoutException {
+      final int numThreadsPerNode = 2;
+      final int totalThreads = CLUSTER_SIZE * numThreadsPerNode;
+      final List<Future<Boolean>> workers = new ArrayList<>(totalThreads);
+      final String counterName = method.getName();
+      final CyclicBarrier barrier = new CyclicBarrier(totalThreads);
+      final AtomicIntegerArray retValues = new AtomicIntegerArray(totalThreads);
+      final long maxIterations = 100;
+      for (int i = 0; i < totalThreads; ++i) {
+         final int threadIndex = i;
+         final int cmIndex = i % CLUSTER_SIZE;
+         workers.add(fork(() -> {
+            long iteration = 0;
+            final long initialValue = 0;
+            long previousValue = initialValue;
+            CounterManager manager = counterManager(cmIndex);
+            StrongTestCounter counter = createCounter(manager, counterName, initialValue);
+            while (iteration < maxIterations) {
+               assertEquals(previousValue, counter.getValue());
+               long update = previousValue + 1;
+               barrier.await();
+               //all threads calling compareAndSet at the same time, only one should succeed
+               boolean ret = counter.compareAndSet(previousValue, update);
+               if (ret) {
+                  previousValue = update;
+               } else {
+                  previousValue = counter.getValue();
+               }
+               retValues.set(threadIndex, ret ? 1 : 0);
+               barrier.await();
+               assertUnique(retValues, iteration);
+               ++iteration;
+            }
+            return true;
+         }));
+      }
+
+      for (Future<?> w : workers) {
+         w.get(1, TimeUnit.MINUTES);
+      }
+   }
+
    public void testCompareAndSetMaxAndMinLong(Method method) {
       final String counterName = method.getName();
       StrongTestCounter counter = createCounter(counterManager(0), counterName, 0);
@@ -130,6 +175,22 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
    }
 
    @Override
+   protected StrongTestCounter createCounter(CounterManager counterManager, String counterName,
+         CounterConfiguration configuration) {
+      counterManager.defineCounter(counterName, configuration);
+      return new StrongTestCounter(counterManager.getStrongCounter(counterName));
+   }
+
+   @Override
+   protected List<CounterConfiguration> configurationToTest() {
+      return Arrays.asList(
+            CounterConfiguration.builder(CounterType.UNBOUNDED_STRONG).initialValue(10).build(),
+            CounterConfiguration.builder(CounterType.UNBOUNDED_STRONG).initialValue(20).build(),
+            CounterConfiguration.builder(CounterType.UNBOUNDED_STRONG).build()
+      );
+   }
+
+   @Override
    protected void assertMinValueAfterMinValue(StrongTestCounter counter, long delta) {
       assertEquals(Long.MIN_VALUE, counter.addAndGet(delta));
       assertEquals(Long.MIN_VALUE, counter.getValue());
@@ -138,5 +199,13 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
    @Override
    protected int clusterSize() {
       return CLUSTER_SIZE;
+   }
+
+   private void assertUnique(AtomicIntegerArray retValues, long it) {
+      int successCount = 0;
+      for (int ix = 0; ix != retValues.length(); ++ix) {
+         successCount += retValues.get(ix);
+      }
+      assertEquals("Multiple threads succeeded with update in iteration " + it, 1, successCount);
    }
 }
