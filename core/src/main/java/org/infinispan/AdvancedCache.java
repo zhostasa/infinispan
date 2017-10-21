@@ -636,4 +636,5 @@ public interface AdvancedCache<K, V> extends Cache<K, V> {
     */
    DataConversion getValueDataConversion();
 
+   AdvancedCache<?, ?> withKeyEncoding(Class<? extends Encoder> encoder);
 }

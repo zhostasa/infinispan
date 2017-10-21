@@ -464,13 +464,6 @@ class HotRodFunctionalTest extends HotRodSingleNodeTest {
       assertStatus(client.put(k(m), 0, 0, value), Success)
    }
 
-   def testQuery() {
-      val query = Array[Byte](1, 2, 3, 4, 5)
-      val resp = client.query(query)
-      assertStatus(resp, Success)
-      assertTrue(Arrays.equals(query, resp.result))
-   }
-
    def testSize(m: Method): Unit = {
       val sizeStart = client.size()
       assertStatus(sizeStart, Success)

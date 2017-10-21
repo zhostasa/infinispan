@@ -7,7 +7,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.commons.dataconversion.ByteArrayWrapper;
+import org.infinispan.commons.dataconversion.IdentityWrapper;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.entries.CacheEntry;
@@ -75,9 +78,10 @@ public class IndexWorker implements DistributedCallable<Object, Object, Void> {
    @Override
    @SuppressWarnings("unchecked")
    public Void call() throws Exception {
+      AdvancedCache iterationCache = cache.getAdvancedCache().withWrapping(ByteArrayWrapper.class, IdentityWrapper.class);
       preIndex();
       KeyValueFilter filter = getFilter();
-      try (Stream<CacheEntry<Object, Object>> stream = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL)
+      try (Stream<CacheEntry<Object, Object>> stream = iterationCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL)
               .cacheEntrySet().stream()) {
          Iterator<CacheEntry<Object, Object>> iterator = stream.filter(CacheFilters.predicate(filter)).iterator();
          while (iterator.hasNext()) {

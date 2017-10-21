@@ -45,6 +45,11 @@ public class ResponseAssertion {
       return this;
    }
 
+   public ResponseAssertion hasNoContentType() {
+      Assertions.assertThat(response.getHeaders().get("Content-Type")).isNull();
+      return this;
+   }
+
    public ResponseAssertion hasContentType(String contentType) {
       Assertions.assertThat(response.getHeaders().get("Content-Type").replace(" ", "")).contains(contentType.replace(" ", ""));
       return this;
@@ -67,6 +72,11 @@ public class ResponseAssertion {
       return this;
    }
 
+   public ResponseAssertion isError() {
+      Assertions.assertThat(response.getStatus()).isEqualTo(500);
+      return this;
+   }
+
    public ResponseAssertion isUnauthorized() {
       Assertions.assertThat(response.getStatus()).isEqualTo(401);
       Assertions.assertThat(response.getHeaders().get(HttpHeader.WWW_AUTHENTICATE)).isNotNull().isNotEmpty();
@@ -86,7 +96,7 @@ public class ResponseAssertion {
    public ResponseAssertion hasContentEqualToFile(String fileName) {
       try {
          Path path = Paths.get(this.getClass().getClassLoader().getResource(fileName).toURI());
-         byte [] loadedFile = Files.readAllBytes(path);
+         byte[] loadedFile = Files.readAllBytes(path);
          Assertions.assertThat(response.getContent()).isEqualTo(loadedFile);
       } catch (Exception e) {
          throw new AssertionError(e);
@@ -101,6 +111,11 @@ public class ResponseAssertion {
 
    public ResponseAssertion hasNoCharset() {
       Assertions.assertThat(response.getHeaders().get("Content-Type")).doesNotContain("charset");
+      return this;
+   }
+
+   public ResponseAssertion hasReturnedBytes(byte[] bytes) {
+      Assertions.assertThat(response.getContent()).containsExactly(bytes);
       return this;
    }
 }

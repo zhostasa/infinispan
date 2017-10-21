@@ -117,7 +117,7 @@ public class RemoteQueryWithProtostreamAnnotationsTest extends SingleHotRodServe
             .addProperty("default.directory_provider", "ram")
             .addProperty("lucene_version", "LUCENE_CURRENT");
 
-      return TestCacheManagerFactory.createCacheManager(builder);
+      return TestCacheManagerFactory.createServerModeCacheManager(builder);
    }
 
    @Override

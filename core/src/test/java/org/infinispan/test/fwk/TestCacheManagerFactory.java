@@ -225,9 +225,13 @@ public class TestCacheManagerFactory {
    }
 
    public static EmbeddedCacheManager createServerModeCacheManager() {
+      return createServerModeCacheManager(new ConfigurationBuilder());
+   }
+
+   public static EmbeddedCacheManager createServerModeCacheManager(ConfigurationBuilder builder) {
       GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder().nonClusteredDefault();
       globalBuilder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
-      return createCacheManager(globalBuilder, new ConfigurationBuilder());
+      return createCacheManager(globalBuilder, builder);
    }
 
    public static EmbeddedCacheManager createCacheManager(boolean start) {
@@ -251,16 +255,15 @@ public class TestCacheManagerFactory {
    public static EmbeddedCacheManager createCacheManager(CacheMode mode, boolean indexing) {
       ConfigurationBuilder builder = new ConfigurationBuilder();
       builder
-         .clustering()
+            .clustering()
             .cacheMode(mode)
-         .indexing()
+            .indexing()
             .index(indexing ? Index.ALL : Index.NONE)
             .addProperty("lucene_version", "LUCENE_CURRENT")
-         ;
+      ;
       if (mode.isClustered()) {
          return createClusteredCacheManager(builder);
-      }
-      else {
+      } else {
          return createCacheManager(builder);
       }
    }
@@ -323,7 +326,7 @@ public class TestCacheManagerFactory {
    public static EmbeddedCacheManager createCacheManagerEnforceJmxDomain(String jmxDomain, String cacheManagerName, boolean exposeGlobalJmx, boolean exposeCacheJmx) {
       GlobalConfigurationBuilder globalConfiguration = new GlobalConfigurationBuilder();
       globalConfiguration
-         .globalJmxStatistics()
+            .globalJmxStatistics()
             .jmxDomain(jmxDomain)
             .mBeanServerLookup(new PerThreadMBeanServerLookup())
             .enabled(exposeGlobalJmx);
