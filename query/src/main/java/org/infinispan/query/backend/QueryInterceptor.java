@@ -257,8 +257,8 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
       return valueDataConversion.extractIndexable(storedValue);
    }
 
-   private Object extractKey(Object storedValue) {
-      return keyDataConversion.extractIndexable(storedValue);
+   private Object extractKey(Object storedKey) {
+      return keyDataConversion.extractIndexable(storedKey);
    }
 
    public void enableClasses(Class[] classes) {
@@ -274,7 +274,7 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    }
 
    private String keyToString(Object key) {
-      return keyTransformationHandler.keyToString(extractValue(key));
+      return keyTransformationHandler.keyToString(extractKey(key));
    }
 
    public KeyTransformationHandler getKeyTransformationHandler() {
@@ -424,7 +424,7 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
       // Loop through all the keys and put those key-value pairings into lucene.
       for (Map.Entry<Object, Object> entry : previousValues.entrySet()) {
          Object originalKey = entry.getKey();
-         final Object key = extractValue(originalKey);
+         final Object key = extractKey(originalKey);
          final Object value = extractValue(dataMap.get(originalKey));
          final Object previousValue = extractValue(entry.getValue());
          if (!usingSkipIndexCleanupFlag && updateKnownTypesIfNeeded(previousValue)) {
