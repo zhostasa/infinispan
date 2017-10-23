@@ -16,6 +16,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.container.DataContainer;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.distribution.rehash.XAResourceAdapter;
@@ -23,7 +24,6 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.infinispan.test.fwk.TestResourceTracker;
 import org.infinispan.test.fwk.TransportFlags;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.util.concurrent.locks.LockManager;
@@ -258,16 +258,30 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    }
 
    protected <K, V> List<Cache<K, V>> createClusteredCaches(int numMembersInCluster,
-                                                            ConfigurationBuilder defaultConfigBuilder) {
+                                                            ConfigurationBuilder defaultConfigBuilder,
+                                                            boolean serverMode) {
       List<Cache<K, V>> caches = new ArrayList<>(numMembersInCluster);
       for (int i = 0; i < numMembersInCluster; i++) {
-         EmbeddedCacheManager cm = addClusterEnabledCacheManager(defaultConfigBuilder);
+         EmbeddedCacheManager cm;
+         if (serverMode) {
+            GlobalConfigurationBuilder globalConfigurationBuilder = new GlobalConfigurationBuilder();
+            globalConfigurationBuilder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
+            globalConfigurationBuilder.transport().defaultTransport();
+            cm = addClusterEnabledCacheManager(globalConfigurationBuilder, defaultConfigBuilder);
+         } else {
+            cm = addClusterEnabledCacheManager(defaultConfigBuilder);
+         }
          Cache<K, V> cache = cm.getCache();
          caches.add(cache);
 
       }
       waitForClusterToForm();
       return caches;
+   }
+
+   protected <K, V> List<Cache<K, V>> createClusteredCaches(int numMembersInCluster,
+                                                            ConfigurationBuilder defaultConfigBuilder) {
+      return createClusteredCaches(numMembersInCluster, defaultConfigBuilder, false);
    }
 
    protected <K, V> List<Cache<K, V>> createClusteredCaches(int numMembersInCluster,

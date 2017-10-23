@@ -22,8 +22,11 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.commons.dataconversion.Encoder;
+import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.EncoderRegistry;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
@@ -127,6 +130,16 @@ public class CompatibilityCacheFactory<K, V> {
    }
 
    private void createEmbeddedCache() {
+      GlobalConfigurationBuilder globalBuilder;
+
+      if (cacheMode.isClustered()) {
+         globalBuilder = new GlobalConfigurationBuilder();
+         globalBuilder.transport().defaultTransport();
+      } else {
+         globalBuilder = new GlobalConfigurationBuilder().nonClusteredDefault();
+      }
+      globalBuilder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
+
       org.infinispan.configuration.cache.ConfigurationBuilder builder =
             new org.infinispan.configuration.cache.ConfigurationBuilder();
       builder.clustering().cacheMode(cacheMode)
@@ -141,8 +154,8 @@ public class CompatibilityCacheFactory<K, V> {
       }
 
       cacheManager = cacheMode.isClustered()
-            ? TestCacheManagerFactory.createClusteredCacheManager(builder)
-            : TestCacheManagerFactory.createCacheManager(builder);
+            ? TestCacheManagerFactory.createClusteredCacheManager(globalBuilder, builder)
+            : TestCacheManagerFactory.createCacheManager(globalBuilder, builder);
 
       embeddedCache = cacheName.isEmpty()
             ? cacheManager.<K, V>getCache()
@@ -228,8 +241,12 @@ public class CompatibilityCacheFactory<K, V> {
       }
    }
 
-   Cache<K, V> getEmbeddedCache() {
-      return embeddedCache;
+   public Marshaller getMarshaller() {
+      return marshaller;
+   }
+
+   public Cache<K, V> getEmbeddedCache() {
+      return (Cache<K, V>) embeddedCache.getAdvancedCache().withEncoding(IdentityEncoder.class);
    }
 
    RemoteCache<K, V> getHotRodCache() {
