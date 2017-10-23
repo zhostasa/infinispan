@@ -31,10 +31,9 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
-import org.infinispan.configuration.cache.StorageType;
-
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.FetchOptions;
 import org.infinispan.query.ResultIterator;
@@ -46,8 +45,6 @@ import org.infinispan.query.spi.SearchManagerImplementor;
 import org.infinispan.query.test.CustomKey3;
 import org.infinispan.query.test.CustomKey3Transformer;
 import org.infinispan.query.test.Person;
-import org.infinispan.remoting.rpc.RpcManager;
-import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.AssertJUnit;
@@ -62,6 +59,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
 
    Cache cache1;
    Cache cache2;
+   protected StorageType storageType;
    Person person1;
    Person person2;
    Person person3;
@@ -79,7 +77,6 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       cleanup = CleanupPhase.AFTER_METHOD;
    }
 
-   private StorageType storageType;
 
    public Object[] factory() {
       return new Object[] {

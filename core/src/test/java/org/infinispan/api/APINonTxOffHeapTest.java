@@ -165,6 +165,13 @@ public class APINonTxOffHeapTest extends APINonTxTest {
       assertEquals("blah", cache.get(ck));
    }
 
+   @Test(enabled = false) //ISPN-8348
+   public void testFalseEqualsKey() {
+      assertNull(cache.get(new APINonTxOffHeapTest.FalseEqualsKey("boo", 1)));
+      cache.put(new APINonTxOffHeapTest.FalseEqualsKey("boo", 1), "blah");
+      assertNull(cache.get(new APINonTxOffHeapTest.FalseEqualsKey("boo", 1)));
+   }
+
    private void assertCacheSize(int expectedSize) {
       assertEquals(expectedSize, cache.size());
       assertEquals(expectedSize, cache.keySet().size());
@@ -193,4 +200,27 @@ public class APINonTxOffHeapTest extends APINonTxTest {
          this.value = value;
       }
    }
+
+   static class FalseEqualsKey implements Serializable {
+      private static final long serialVersionUID = 1L;
+
+      final String name;
+      final int value;
+
+      FalseEqualsKey(String name, int value) {
+         this.name = name;
+         this.value = value;
+      }
+
+      @Override
+      public int hashCode() {
+         return 0;
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+         return false;
+      }
+   }
+
 }
