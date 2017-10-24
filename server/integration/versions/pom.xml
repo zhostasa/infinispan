@@ -18,10 +18,11 @@
    <description>Infinispan Server - BOM</description>
 
    <properties>
-      <product.version>7.2.0</product.version>
-      <product.name>jboss-datagrid</product.name>
+      <product.version>${project.version}</product.version>
+      <product.name>infinispan-server</product.name>
       <maven.compiler.target>1.8</maven.compiler.target>
       <maven.compiler.source>1.8</maven.compiler.source>
+      <server.output.dir.prefix>infinispan-server</server.output.dir.prefix>
 
       <version.aesh>0.66.12.redhat-1</version.aesh>
       <version.ant-contrib>1.0b3</version.ant-contrib>
