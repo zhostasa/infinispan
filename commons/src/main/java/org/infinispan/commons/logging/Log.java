@@ -4,6 +4,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.infinispan.commons.CacheConfigurationException;
+import org.infinispan.commons.dataconversion.EncodingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -106,4 +107,21 @@ public interface Log extends BasicLogger {
    @Message(value = "The alias '%s' does not exist in the key store '%s'", id = 918)
    SecurityException noSuchAliasInKeyStore(String keyAlias, String keyStoreFileName);
 
+   @Message(value = "MediaType cannot be empty or null!", id = 929)
+   EncodingException missingMediaType();
+
+   @Message(value = "MediaType must contain a type and a subtype separated by '/'", id = 930)
+   EncodingException invalidMediaTypeSubtype();
+
+   @Message(value = "Failed to parse MediaType: Invalid param description '%s'", id = 931)
+   EncodingException invalidMediaTypeParam(String param);
+
+   @Message(value = "Unclosed param value quote", id = 932)
+   EncodingException unquotedMediaTypeParam();
+
+   @Message(value = "Invalid character '%s' found in token '%s'", id = 933)
+   EncodingException invalidCharMediaType(char character, String token);
+
+   @Message(value = "Unsupported content '%s'", id = 934)
+   EncodingException unsupportedContent(Object content);
 }
