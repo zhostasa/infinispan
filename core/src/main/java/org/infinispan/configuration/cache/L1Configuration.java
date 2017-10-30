@@ -5,16 +5,17 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.commons.configuration.attributes.Attribute;
 import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
+import org.infinispan.commons.configuration.attributes.Matchable;
 
 /**
  * Configures the L1 cache behavior in 'distributed' caches instances. In any other cache modes,
  * this element is ignored.
  */
 
-public class L1Configuration {
-   public static final AttributeDefinition<Boolean> ENABLED = AttributeDefinition.builder("enabled", false).immutable().build();
-   public static final AttributeDefinition<Integer> INVALIDATION_THRESHOLD = AttributeDefinition.builder("invalidationThreshold", 0).immutable().build();
-   public static final AttributeDefinition<Long> LIFESPAN = AttributeDefinition.builder("lifespan", TimeUnit.MINUTES.toMillis(10)).immutable().build();
+public class L1Configuration implements Matchable<L1Configuration> {
+   public static final AttributeDefinition<Boolean> ENABLED = AttributeDefinition.builder("enabled", false).immutable().autoPersist(false).build();
+   public static final AttributeDefinition<Integer> INVALIDATION_THRESHOLD = AttributeDefinition.builder("invalidationThreshold", 0).immutable().autoPersist(false).build();
+   public static final AttributeDefinition<Long> LIFESPAN = AttributeDefinition.builder("lifespan", TimeUnit.MINUTES.toMillis(10)).xmlName("l1-lifespan").immutable().build();
    public static final AttributeDefinition<Long> CLEANUP_TASK_FREQUENCY = AttributeDefinition.builder("cleanupTaskFrequency", TimeUnit.MINUTES.toMillis(1)).xmlName("l1-cleanup-interval").immutable().build();
    static AttributeSet attributeDefinitionSet() {
       return new AttributeSet(L1Configuration.class, ENABLED, INVALIDATION_THRESHOLD, LIFESPAN, CLEANUP_TASK_FREQUENCY);

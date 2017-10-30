@@ -3,6 +3,8 @@ package org.infinispan.configuration.cache;
 import java.util.Collections;
 import java.util.List;
 
+import org.infinispan.commons.configuration.attributes.Matchable;
+
 /**
  * Configures custom interceptors to be added to the cache.
  *
@@ -10,8 +12,7 @@ import java.util.List;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public class CustomInterceptorsConfiguration {
-
+public class CustomInterceptorsConfiguration implements Matchable<CustomInterceptorsConfiguration> {
    private List<InterceptorConfiguration> interceptors;
 
    CustomInterceptorsConfiguration(List<InterceptorConfiguration> interceptors) {

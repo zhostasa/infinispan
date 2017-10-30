@@ -5,6 +5,7 @@ import org.infinispan.commons.configuration.attributes.Attribute;
 import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.commons.configuration.attributes.IdentityAttributeCopier;
+import org.infinispan.commons.configuration.attributes.Matchable;
 import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.container.DataContainer;
@@ -15,7 +16,8 @@ import org.infinispan.container.DataContainer;
  * @author pmuir
  * @Deprecated Please use {@link MemoryConfiguration}
  */
-public class DataContainerConfiguration extends AbstractTypedPropertiesConfiguration {
+@Deprecated
+public class DataContainerConfiguration extends AbstractTypedPropertiesConfiguration implements Matchable<DataContainerConfiguration> {
    public static final AttributeDefinition<DataContainer> DATA_CONTAINER = AttributeDefinition
          .builder("dataContainer", null, DataContainer.class).xmlName("class").copier(IdentityAttributeCopier.INSTANCE).immutable().build();
 
