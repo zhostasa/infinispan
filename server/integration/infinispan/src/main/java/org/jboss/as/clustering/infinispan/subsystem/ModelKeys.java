@@ -84,6 +84,8 @@ public class ModelKeys {
     static final String CONFIGURATIONS_NAME = "CONFIGURATIONS";
     static final String CONNECTION_POOL = "connection-pool";
     static final String CONNECTION_TIMEOUT = "connection-timeout";
+    static final String COUNTERS = "counters";
+    static final String COUNTERS_NAME = "COUNTERS";
     static final String CREATE_ON_START = "create-on-start";
     static final String CUSTOM_ROLE_MAPPER = "custom-role-mapper";
     static final String DATA_COLUMN = "data-column";
@@ -130,6 +132,7 @@ public class ModelKeys {
     static final String INDEXING_PROPERTIES = "indexing-properties";
     static final String INITIAL_CLUSTER_SIZE = "initial-cluster-size";
     static final String INITIAL_CLUSTER_TIMEOUT = "initial-cluster-timeout";
+    static final String INITIAL_VALUE = "initial-value";
     static final String INTERVAL = "interval";
     static final String INVALIDATION_CACHE = "invalidation-cache";
     static final String INVALIDATION_CACHE_CONFIGURATION = INVALIDATION_CACHE + CONFIGURATION_SUFFIX;
@@ -159,6 +162,7 @@ public class ModelKeys {
     static final String LOCK_TIMEOUT = "lock-timeout";
     static final String LOCKING = "locking";
     static final String LOCKING_NAME = "LOCKING";
+    static final String LOWER_BOUND = "lower-bound";
     static final String MACHINE = "machine";
     static final String MAPPER = "mapper";
     static final String MARSHALLER = "marshaller";
@@ -182,6 +186,7 @@ public class ModelKeys {
     static final String MODULES = "modules";
     static final String MODULES_NAME = "MODULES";
     static final String NAME = "name";
+    static final String NUM_OWNERS = "num_owners";
     static final String NOTIFICATIONS = "notifications";
     static final String OBJECT_NAME = "OBJECT";
     static final String OFF_HEAP_NAME = "OFF-HEAP";
@@ -195,6 +200,7 @@ public class ModelKeys {
     static final String PERMISSIONS = "permissions";
     static final String PERSISTENCE = "persistence";
     static final String PERSISTENT_LOCATION = "persistent-location";
+    static final String RELIABILITY = "reliability";
     static final String PLAIN = "plain";
     static final String PREFIX = "prefix";
     static final String PRELOAD = "preload";
@@ -248,6 +254,7 @@ public class ModelKeys {
     static final String STATISTICS = "statistics";
     static final String STATISTICS_AVAILABLE = "statistics-available";
     static final String STOP_TIMEOUT = "stop-timeout";
+    static final String STORAGE = "storage";
     static final String STORE = "store";
     static final String STORE_NAME = "STORE";
     static final String STRICT_PEER_TO_PEER = "strict-peer-to-peer";
@@ -272,6 +279,7 @@ public class ModelKeys {
     static final String TYPE = "type";
     static final String TX_INTERNAL_ID = "internal-id";
     static final String USERNAME = "username";
+    static final String UPPER_BOUND = "upper-bound";
     static final String VALUE = "value";
     static final String WAIT = "wait";
     static final String WAIT_TIME = "wait-time";
@@ -289,4 +297,6 @@ public class ModelKeys {
     static final String TRANSPORT_THREAD_POOL = "transport-thread-pool";
     static final String READ_BATCH = "read-batch";
     static final String WRITE_THREADS = "write-threads";
+    static final String STRONG_COUNTER = "strong-counter";
+    static final String WEAK_COUNTER = "weak-counter";
 }
