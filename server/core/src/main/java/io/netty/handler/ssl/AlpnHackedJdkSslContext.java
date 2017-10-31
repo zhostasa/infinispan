@@ -10,7 +10,7 @@ import javax.net.ssl.SSLContext;
 public class AlpnHackedJdkSslContext extends JdkSslContext {
 
    public AlpnHackedJdkSslContext(SSLContext sslContext, boolean isClient, Iterable<String> ciphers, CipherSuiteFilter cipherFilter, ApplicationProtocolConfig apn, ClientAuth clientAuth) {
-      super(sslContext, isClient, ciphers, cipherFilter, createNegotiator(apn), clientAuth, null, false);
+      super(sslContext, isClient, ciphers, cipherFilter, createNegotiator(apn), clientAuth, false);
    }
 
    private final static JdkApplicationProtocolNegotiator createNegotiator(ApplicationProtocolConfig apn) {
