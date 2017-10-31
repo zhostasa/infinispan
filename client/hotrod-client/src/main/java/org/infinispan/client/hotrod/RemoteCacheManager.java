@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -29,6 +30,7 @@ import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.client.hotrod.near.NearCacheService;
+import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.executors.ExecutorFactory;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.FileLookupFactory;
@@ -334,7 +336,14 @@ public class RemoteCacheManager implements RemoteCacheContainer {
 
    public RemoteCacheManagerAdmin administration() {
       OperationsFactory operationsFactory = new OperationsFactory(transportFactory, codec, asyncExecutorService, configuration);
-      return new RemoteCacheManagerAdminImpl(operationsFactory);
+      return new RemoteCacheManagerAdminImpl(operationsFactory, EnumSet.noneOf(CacheContainerAdmin.AdminFlag.class),
+            name -> {
+               synchronized (cacheName2RemoteCache) {
+                  // Remove any mappings
+                  cacheName2RemoteCache.remove(new RemoteCacheKey(name, true));
+                  cacheName2RemoteCache.remove(new RemoteCacheKey(name, false));
+               }
+            });
    }
 
    private static class RemoteCacheKey {

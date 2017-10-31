@@ -5,6 +5,7 @@ import static org.infinispan.factories.KnownComponentNames.CACHE_DEPENDENCY_GRAP
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -26,9 +27,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.infinispan.Cache;
 import org.infinispan.IllegalLifecycleStateException;
 import org.infinispan.Version;
-import org.infinispan.commands.RemoveCacheCommand;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.commons.util.FileLookupFactory;
@@ -64,9 +65,6 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.impl.ClusterExecutorImpl;
 import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
 import org.infinispan.registry.InternalCacheRegistry;
-import org.infinispan.remoting.inboundhandler.DeliverOrder;
-import org.infinispan.remoting.responses.Response;
-import org.infinispan.remoting.rpc.ResponseMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
@@ -77,7 +75,6 @@ import org.infinispan.security.impl.PrincipalRoleMapperContextImpl;
 import org.infinispan.security.impl.SecureCacheImpl;
 import org.infinispan.stats.CacheContainerStats;
 import org.infinispan.stats.impl.CacheContainerStatsImpl;
-import org.infinispan.util.ByteString;
 import org.infinispan.util.CyclicDependencyException;
 import org.infinispan.util.DependencyGraph;
 import org.infinispan.util.logging.Log;
@@ -118,7 +115,7 @@ import org.infinispan.util.logging.LogFactory;
  *
  *    ConfigurationBuilder confBuilder = new ConfigurationBuilder();
  *    confBuilder.clustering().cacheMode(CacheMode.REPL_SYNC);
- *    manager.defineConfiguration("myReplicatedCache", confBuilder.build());
+ *    manager.createCache("myReplicatedCache", confBuilder.build());
  *    Cache&lt;String, String&gt; replicatedCache = manager.getCache("myReplicatedCache");
  * </code></pre>
  *
@@ -143,6 +140,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
    private final String defaultCacheName;
 
    private final Lock lifecycleLock = new ReentrantLock();
+   private final DefaultCacheManagerAdmin cacheManagerAdmin;
    private volatile boolean stopping;
 
    /**
@@ -256,6 +254,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
       this.stats = new CacheContainerStatsImpl(this);
       health = new HealthImpl(this);
       globalComponentRegistry.registerComponent(new HealthJMXExposerImpl(health), HealthJMXExposer.class);
+      this.cacheManagerAdmin = new DefaultCacheManagerAdmin(this, authzHelper, EnumSet.noneOf(CacheContainerAdmin.AdminFlag.class));
       if (start)
          start();
    }
@@ -327,6 +326,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
          stats = new CacheContainerStatsImpl(this);
          health = new HealthImpl(this);
          globalComponentRegistry.registerComponent(new HealthJMXExposerImpl(health), HealthJMXExposer.class);
+         cacheManagerAdmin = new DefaultCacheManagerAdmin(this, authzHelper, EnumSet.noneOf(CacheContainerAdmin.AdminFlag.class));
       } catch (CacheConfigurationException ce) {
          throw ce;
       } catch (RuntimeException re) {
@@ -395,6 +395,12 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
          }
          configurationManager.removeConfiguration(configurationName);
       }
+   }
+
+   @Override
+   public <K, V> Cache<K, V> createCache(String name, Configuration configuration) {
+      defineConfiguration(name, configuration);
+      return getCache(name);
    }
 
    /**
@@ -518,29 +524,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
 
    @Override
    public void removeCache(String cacheName) {
-      authzHelper.checkPermission(AuthorizationPermission.ADMIN);
-      ComponentRegistry cacheComponentRegistry = globalComponentRegistry.getNamedComponentRegistry(cacheName);
-      if (cacheComponentRegistry != null) {
-         RemoveCacheCommand cmd = new RemoveCacheCommand(ByteString.fromString(cacheName), this);
-         Transport transport = getTransport();
-         try {
-            CompletableFuture<?> future;
-            if (transport != null) {
-               Configuration c = configurationManager.getConfiguration(cacheName, defaultCacheName);
-               // Use sync replication timeout
-               CompletableFuture<Map<Address, Response>> remoteFuture =
-                     transport.invokeRemotelyAsync(null, cmd, ResponseMode.SYNCHRONOUS_IGNORE_LEAVERS,
-                           c.clustering().remoteTimeout(), null, DeliverOrder.NONE, false);
-               future = cmd.invokeAsync().thenCompose(o -> remoteFuture);
-            } else {
-               future = cmd.invokeAsync();
-            }
-
-            future.get();
-         } catch (Throwable t) {
-            throw new CacheException("Error removing cache", t);
-         }
-      }
+      cacheManagerAdmin.removeCache(cacheName);
    }
 
    /**
@@ -668,6 +652,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
       authzHelper.checkPermission(AuthorizationPermission.LIFECYCLE);
       lifecycleLock.lock();
       try {
+         stopping = false;
          final GlobalConfiguration globalConfiguration = configurationManager.getGlobalConfiguration();
          if (globalConfiguration.security().authorization().enabled() && System.getSecurityManager() == null) {
             log.authorizationEnabledWithoutSecurityManager();
@@ -1020,5 +1005,10 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
       } else {
          return new ClusterExecutorImpl(null, this, null, -1, TimeUnit.MILLISECONDS, ForkJoinPool.commonPool());
       }
+   }
+
+   public EmbeddedCacheManagerAdmin administration() {
+      authzHelper.checkPermission(AuthorizationPermission.ADMIN);
+      return cacheManagerAdmin;
    }
 }

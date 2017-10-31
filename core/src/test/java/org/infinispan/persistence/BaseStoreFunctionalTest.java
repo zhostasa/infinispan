@@ -237,7 +237,7 @@ public abstract class BaseStoreFunctionalTest extends SingleCacheManagerTest {
          assertTrue(local.isRunning(cacheName));
          cache.put("1", wrap("1", "v1"));
          assertCacheEntry(cache, "1", "v1", -1, -1);
-         local.removeCache(cacheName);
+         local.administration().removeCache(cacheName);
          assertFalse(local.isRunning(cacheName));
       } finally {
          TestingUtil.killCacheManagers(local);
@@ -269,7 +269,7 @@ public abstract class BaseStoreFunctionalTest extends SingleCacheManagerTest {
             }
          };
          TestingUtil.replaceComponent(cache, PersistenceManager.class, stub, true);
-         local.removeCache(cacheName);
+         local.administration().removeCache(cacheName);
          assertFalse(local.isRunning(cacheName));
          assertFalse(passivate.get());
          assertEquals(0, actual.size());

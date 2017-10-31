@@ -19,6 +19,7 @@ import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
@@ -96,7 +97,7 @@ public abstract class BaseOperationsDuringStateTransferTest extends MultipleCach
       // add an interceptor on second node that will block REMOVE commands right after EntryWrappingInterceptor until we are ready
       final CountDownLatch removeStartedLatch = new CountDownLatch(1);
       final CountDownLatch removeProceedLatch = new CountDownLatch(1);
-      boolean isVersioningEnabled = cache(0).getCacheConfiguration().versioning().enabled();
+      boolean isVersioningEnabled = Configurations.isTxVersioned(cache(0).getCacheConfiguration());
       cacheConfigBuilder.customInterceptors().addInterceptor().after(isVersioningEnabled ? VersionedEntryWrappingInterceptor.class : EntryWrappingInterceptor.class).interceptor(new CommandInterceptor() {
          @Override
          protected Object handleDefault(InvocationContext ctx, VisitableCommand cmd) throws Throwable {
@@ -178,7 +179,7 @@ public abstract class BaseOperationsDuringStateTransferTest extends MultipleCach
       // add an interceptor on second node that will block PUT commands right after EntryWrappingInterceptor until we are ready
       final CountDownLatch putStartedLatch = new CountDownLatch(1);
       final CountDownLatch putProceedLatch = new CountDownLatch(1);
-      boolean isVersioningEnabled = cache(0).getCacheConfiguration().versioning().enabled();
+      boolean isVersioningEnabled = Configurations.isTxVersioned(cache(0).getCacheConfiguration());
       cacheConfigBuilder.customInterceptors().addInterceptor().after(isVersioningEnabled ? VersionedEntryWrappingInterceptor.class : EntryWrappingInterceptor.class).interceptor(new CommandInterceptor() {
          @Override
          protected Object handleDefault(InvocationContext ctx, VisitableCommand cmd) throws Throwable {
@@ -261,7 +262,7 @@ public abstract class BaseOperationsDuringStateTransferTest extends MultipleCach
       // add an interceptor on second node that will block REPLACE commands right after EntryWrappingInterceptor until we are ready
       final CountDownLatch replaceStartedLatch = new CountDownLatch(1);
       final CountDownLatch replaceProceedLatch = new CountDownLatch(1);
-      boolean isVersioningEnabled = cache(0).getCacheConfiguration().versioning().enabled();
+      boolean isVersioningEnabled = Configurations.isTxVersioned(cache(0).getCacheConfiguration());
       cacheConfigBuilder.customInterceptors().addInterceptor().after(isVersioningEnabled ? VersionedEntryWrappingInterceptor.class : EntryWrappingInterceptor.class).interceptor(new CommandInterceptor() {
          @Override
          protected Object handleDefault(InvocationContext ctx, VisitableCommand cmd) throws Throwable {

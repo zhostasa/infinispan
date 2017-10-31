@@ -15,6 +15,7 @@ import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.RemoteCommandsFactory;
 import org.infinispan.commons.hash.MurmurHash3;
 import org.infinispan.commons.io.ByteBufferImpl;
+import org.infinispan.commons.marshall.AdminFlagExternalizer;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.marshall.exts.EquivalenceExternalizer;
@@ -58,6 +59,8 @@ import org.infinispan.filter.KeyValueFilterAsKeyFilter;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.MetaParams;
 import org.infinispan.functional.impl.MetaParamsInternalMetadata;
+import org.infinispan.globalstate.ScopeFilter;
+import org.infinispan.globalstate.ScopedState;
 import org.infinispan.marshall.exts.CacheRpcCommandExternalizer;
 import org.infinispan.marshall.exts.CollectionExternalizer;
 import org.infinispan.marshall.exts.DoubleSummaryStatisticsExternalizer;
@@ -238,6 +241,9 @@ final class InternalExternalizers {
       addInternalExternalizer(new EncoderValueMapper.Externalizer(), exts);
       addInternalExternalizer(new EncoderEntryMapper.Externalizer(), exts);
       addInternalExternalizer(new DataConversion.Externalizer(), exts);
+      addInternalExternalizer(new ScopedState.Externalizer(), exts);
+      addInternalExternalizer(new ScopeFilter.Externalizer(), exts);
+      addInternalExternalizer(new AdminFlagExternalizer(), exts);
 
       return exts;
    }

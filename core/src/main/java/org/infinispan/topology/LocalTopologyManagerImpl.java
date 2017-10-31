@@ -107,9 +107,7 @@ public class LocalTopologyManagerImpl implements LocalTopologyManager, GlobalSta
       }
       if (persistentUUID == null) {
          persistentUUID = PersistentUUID.randomUUID();
-
-         if (globalStateManager != null)
-            globalStateManager.writeGlobalState();
+         globalStateManager.writeGlobalState();
       }
       persistentUUIDManager.addPersistentAddressMapping(transport.getAddress(), persistentUUID);
       running = true;
