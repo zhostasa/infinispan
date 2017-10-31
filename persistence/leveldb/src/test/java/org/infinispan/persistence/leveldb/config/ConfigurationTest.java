@@ -7,7 +7,8 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.io.IOException;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.test.skip.SkipOnOs;
+import org.infinispan.commons.test.skip.OS;
+import org.infinispan.commons.test.skip.SkipTestNG;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -21,6 +22,7 @@ import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguratio
 import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -29,11 +31,15 @@ import org.testng.annotations.Test;
  *
  */
 @Test(groups = "unit", testName = "persistence.leveldb.configuration.ConfigurationTest")
-@SkipOnOs({SkipOnOs.OS.SOLARIS, SkipOnOs.OS.WINDOWS})
 public class ConfigurationTest extends AbstractInfinispanTest {
    private String tmpDirectory = TestingUtil.tmpDirectory(this.getClass());
    private String tmpDataDirectory = tmpDirectory + "/data";
    private String tmpExpiredDirectory = tmpDirectory + "/expired";
+
+   @BeforeClass
+   public void skipOnOS() {
+      SkipTestNG.skipOnOS(OS.SOLARIS, OS.WINDOWS);
+   }
 
    @AfterClass(alwaysRun = true)
    protected void clearTempDir() {

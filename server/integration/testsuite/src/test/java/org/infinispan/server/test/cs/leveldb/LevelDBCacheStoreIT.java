@@ -20,7 +20,8 @@ import org.infinispan.commons.io.ByteBufferImpl;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.AbstractMarshaller;
-import org.infinispan.commons.test.skip.SkipOnOs;
+import org.infinispan.commons.test.skip.OS;
+import org.infinispan.commons.test.skip.SkipJunit;
 import org.infinispan.commons.util.Util;
 import org.infinispan.server.test.category.CacheStore;
 import org.infinispan.server.test.util.ITestUtils;
@@ -30,6 +31,7 @@ import org.iq80.leveldb.impl.Iq80DBFactory;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -41,9 +43,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(CacheStore.class)
-@SkipOnOs({SkipOnOs.OS.SOLARIS, SkipOnOs.OS.WINDOWS})
 public class LevelDBCacheStoreIT {
     private static final Log log = LogFactory.getLog(LevelDBCacheStoreIT.class);
+
+    @ClassRule
+    public static final SkipJunit skipRule = new SkipJunit(OS.SOLARIS, OS.WINDOWS);
 
     @InfinispanResource("leveldb")
     RemoteInfinispanServer server;

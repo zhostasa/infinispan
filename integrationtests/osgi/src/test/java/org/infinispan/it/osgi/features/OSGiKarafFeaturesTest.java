@@ -7,13 +7,11 @@ import java.net.URI;
 import java.util.Properties;
 
 import org.apache.karaf.features.FeaturesService;
-import org.infinispan.commons.test.skip.SkipOnOs;
-import org.infinispan.commons.test.skip.SkipOnOsRule;
+import org.infinispan.commons.test.skip.OS;
+import org.infinispan.commons.test.skip.SkipJunit;
 import org.infinispan.it.osgi.util.MavenUtils;
 import org.infinispan.it.osgi.util.PaxExamUtils;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -37,9 +35,6 @@ import org.osgi.framework.ServiceReference;
 @Category(PerClass.class)
 public class OSGiKarafFeaturesTest {
 
-   @Rule
-   public final SkipOnOsRule skipOnOsRule = new SkipOnOsRule();
-
    private static final String PROP_PROJECT_VERSION = "project.version";
 
 
@@ -57,10 +52,8 @@ public class OSGiKarafFeaturesTest {
     * Verifies that Karaf Features install correctly on clean containers.
     */
    @Test
-   @SkipOnOs({SkipOnOs.OS.WINDOWS, SkipOnOs.OS.SOLARIS})
    public void testCleanInstall() throws Exception {
-      //ignore this test on SunOS, there is no binary for LevelDB
-      Assume.assumeFalse(System.getProperty("os.name").startsWith("sunos"));
+      SkipJunit.skipOnOS(OS.SOLARIS, OS.WINDOWS);
 
       Bundle bundle = FrameworkUtil.getBundle(getClass());
       Assert.assertNotNull("Failed to find class bundle.", bundle);
@@ -84,7 +77,10 @@ public class OSGiKarafFeaturesTest {
       checkInstall(service, "infinispan-client-hotrod", "infinispan-client-hotrod-with-query", version);
       checkInstall(service, "infinispan-cachestore-jdbc", "infinispan-cachestore-jdbc", version);
       checkInstall(service, "infinispan-cachestore-remote", "infinispan-cachestore-remote", version);
-      checkInstall(service, "infinispan-cachestore-leveldb", "infinispan-cachestore-leveldb-jni", version);
+      //ignore this test on SunOS, there is no binary for LevelDB
+      if (!System.getProperty("os.name").startsWith("sunos")) {
+         checkInstall(service, "infinispan-cachestore-leveldb", "infinispan-cachestore-leveldb-jni", version);
+      }
       checkInstall(service, "infinispan-cachestore-leveldb", "infinispan-cachestore-leveldb-java", version);
       checkInstall(service, "infinispan-cachestore-jpa", "infinispan-cachestore-jpa", version);
       checkInstall(service, "infinispan-osgi", "infinispan-osgi", version);
@@ -99,7 +95,7 @@ public class OSGiKarafFeaturesTest {
       try {
          service.installFeature(feature, version);
          Assert.fail("Feature install should fail before the repository is added.");
-      } catch (Exception ex) {
+      } catch (Exception ignored) {
       }
 
       URI repoUri = new URI(String.format("mvn:org.infinispan/%s/%s/xml/features", artifactId, version));
