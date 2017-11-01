@@ -20,6 +20,7 @@ import org.infinispan.commands.module.ModuleCommandInitializer;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
+import org.infinispan.conflict.EntryMergePolicyFactoryRegistry;
 import org.infinispan.factories.annotations.SurvivesRestarts;
 import org.infinispan.factories.components.ComponentMetadataRepo;
 import org.infinispan.factories.scopes.Scope;
@@ -118,6 +119,7 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
          registerComponent(new CacheManagerNotifierImpl(), CacheManagerNotifier.class);
          registerComponent(new InternalCacheRegistryImpl(), InternalCacheRegistry.class);
          registerComponent(new CacheStoreFactoryRegistry(), CacheStoreFactoryRegistry.class);
+         registerComponent(new EntryMergePolicyFactoryRegistry(), EntryMergePolicyFactoryRegistry.class);
          registerComponent(new GlobalXSiteAdminOperations(), GlobalXSiteAdminOperations.class);
 
          moduleProperties.loadModuleCommandHandlers(configuredClassLoader);
