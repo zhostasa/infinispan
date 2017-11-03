@@ -43,7 +43,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "partitionhandling.BasePartitionHandlingTest")
 public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
-   private static Log log = LogFactory.getLog(BasePartitionHandlingTest.class);
+   protected static Log log = LogFactory.getLog(BasePartitionHandlingTest.class);
 
    private final AtomicInteger viewId = new AtomicInteger(5);
    protected int numMembersInCluster = 4;
