@@ -17,10 +17,10 @@ import org.infinispan.counter.util.WeakTestCounter;
 import org.testng.annotations.Test;
 
 /**
- * // TODO: Document this
+ * Test for remote operation.
  *
  * @author Pedro Ruivo
- * @since 9.2
+ * @since 8.5
  */
 @Test(groups = "functional", testName = "counter.RemoveCounterTest")
 public class RemoveCounterTest extends BaseCounterTest {

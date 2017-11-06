@@ -22,7 +22,7 @@ import org.infinispan.functional.EntryView;
  *
  * @author Pedro Ruivo
  * @see CompareAndSetFunction
- * @since 9.2
+ * @since 8.5
  */
 public class CreateAndCASFunction<K extends CounterKey> extends BaseCreateFunction<K, Object> {
 

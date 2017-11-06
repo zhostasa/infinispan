@@ -17,7 +17,7 @@ import org.infinispan.functional.EntryView;
  * It removes the {@link CounterValue} from the cache.
  *
  * @author Pedro Ruivo
- * @since 9.2
+ * @since 8.5
  */
 public class RemoveFunction<K extends CounterKey> implements
       Function<EntryView.ReadWriteEntryView<K, CounterValue>, Void> {

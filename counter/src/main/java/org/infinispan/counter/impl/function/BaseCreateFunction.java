@@ -14,7 +14,7 @@ import org.infinispan.functional.EntryView;
  * If the counter doesn't exist, it is created based on the configuration.
  *
  * @author Pedro Ruivo
- * @since 9.2
+ * @since 8.5
  */
 abstract class BaseCreateFunction<K extends CounterKey, R> implements
       Function<EntryView.ReadWriteEntryView<K, CounterValue>, R> {

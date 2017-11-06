@@ -21,7 +21,7 @@ import org.infinispan.functional.EntryView;
  * class.
  *
  * @author Pedro Ruivo
- * @since 9.2
+ * @since 8.5
  */
 public class CreateAndAddFunction<K extends CounterKey> extends BaseCreateFunction<K, CounterValue> {
 

@@ -14,7 +14,7 @@ import org.infinispan.functional.EntryView;
  * It avoids duplicate code between the functions and the create-functions.
  *
  * @author Pedro Ruivo
- * @since 9.2
+ * @since 8.5
  */
 final class FunctionHelper {
 
