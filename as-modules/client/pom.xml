@@ -144,30 +144,6 @@
            </executions>
          </plugin>
 
-         <plugin>
-           <groupId>org.codehaus.mojo</groupId>
-           <artifactId>build-helper-maven-plugin</artifactId>
-           <version>1.8</version>
-           <executions>
-             <execution>
-               <id>attach-artifacts</id>
-               <phase>package</phase>
-               <goals>
-                 <goal>attach-artifact</goal>
-               </goals>
-               <configuration>
-                 <artifacts>
-                   <artifact>
-                     <file>${project.build.directory}/raw-licenses-xml/licenses.xml</file>
-                     <type>xml</type>
-                     <classifier>raw-licenses-xml</classifier>
-                   </artifact>
-                 </artifacts>
-               </configuration>
-             </execution>
-           </executions>
-         </plugin>
-
       </plugins>
    </build>
 </project>
