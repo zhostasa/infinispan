@@ -18,6 +18,7 @@ import org.infinispan.partitionhandling.impl.PartitionHandlingManager;
 import org.infinispan.remoting.inboundhandler.DeliverOrder;
 import org.infinispan.remoting.inboundhandler.PerCacheInboundInvocationHandler;
 import org.infinispan.remoting.inboundhandler.Reply;
+import org.infinispan.test.TestingUtil;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.util.concurrent.ReclosableLatch;
 import org.infinispan.util.concurrent.TimeoutException;
@@ -151,6 +152,8 @@ public abstract class BaseTxPartitionAndMergeTest extends BasePartitionHandlingT
          public void split(BaseTxPartitionAndMergeTest test) {
             test.getLog().debug("Splitting cluster isolating the originator.");
             test.splitCluster(new int[]{0}, new int[]{1, 2, 3});
+            assertDegradedPartition(test, 0);
+            TestingUtil.waitForNoRebalance(test.cache(1), test.cache(2), test.cache(3));
             test.getLog().debug("Cluster split.");
          }
       },
@@ -159,6 +162,7 @@ public abstract class BaseTxPartitionAndMergeTest extends BasePartitionHandlingT
          public void split(BaseTxPartitionAndMergeTest test) {
             test.getLog().debug("Splitting cluster in equal partition");
             test.splitCluster(new int[]{0, 1}, new int[]{2, 3});
+            assertDegradedPartition(test, 0, 1);
             test.getLog().debug("Cluster split.");
          }
       },
@@ -167,11 +171,18 @@ public abstract class BaseTxPartitionAndMergeTest extends BasePartitionHandlingT
          public void split(BaseTxPartitionAndMergeTest test) {
             test.getLog().debug("Splitting cluster isolating a primary owner.");
             test.splitCluster(new int[]{2}, new int[]{0, 1, 3});
+            assertDegradedPartition(test, 0);
+            TestingUtil.waitForNoRebalance(test.cache(0), test.cache(1), test.cache(3));
             test.getLog().debug("Cluster split.");
          }
       };
 
       public abstract void split(BaseTxPartitionAndMergeTest test);
+
+      private static void assertDegradedPartition(BaseTxPartitionAndMergeTest test, int... partitionIndexes) {
+         for (int i = 0; i < partitionIndexes.length; i++)
+            test.partition(i).assertDegradedMode();
+      }
    }
 
    private interface AwaitAndUnblock {

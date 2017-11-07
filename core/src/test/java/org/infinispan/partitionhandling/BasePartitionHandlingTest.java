@@ -43,7 +43,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "partitionhandling.BasePartitionHandlingTest")
 public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
-   protected static Log log = LogFactory.getLog(BasePartitionHandlingTest.class);
+   protected Log log = LogFactory.getLog(getClass());
 
    private final AtomicInteger viewId = new AtomicInteger(5);
    protected int numMembersInCluster = 4;
@@ -94,8 +94,14 @@ public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
 
    public static class PartitionDescriptor {
       int[] nodes;
+      AvailabilityMode expectedMode;
 
       public PartitionDescriptor(int... nodes) {
+         this(null, nodes);
+      }
+
+      public PartitionDescriptor(AvailabilityMode expectedMode, int... nodes) {
+         this.expectedMode = expectedMode;
          this.nodes = nodes;
       }
 
@@ -105,6 +111,19 @@ public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
 
       public int node(int i) {
          return nodes[i];
+      }
+
+      public void assertAvailabilityMode(Partition partition) {
+         partition.assertAvailabilityMode(expectedMode);
+      }
+
+      public AvailabilityMode getExpectedMode() {
+         return expectedMode;
+      }
+
+      @Override
+      public String toString() {
+         return Arrays.toString(nodes);
       }
    }
 
@@ -309,7 +328,7 @@ public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
             assertKeyNotAvailableForRead(k);
       }
 
-      protected void assertKeyNotAvailableForRead(Object key) {
+      public void assertKeyNotAvailableForRead(Object key) {
          for (Cache<Object, ?> c : cachesInThisPartition()) {
             try {
                c.get(key);
