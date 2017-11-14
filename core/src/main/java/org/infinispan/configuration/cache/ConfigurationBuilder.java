@@ -219,7 +219,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
       for (Builder<?> validatable:
             asList(clustering, customInterceptors, dataContainer, deadlockDetection, eviction, expiration, indexing,
                    invocationBatching, jmxStatistics, persistence, locking, storeAsBinary, transaction,
-                   versioning, unsafe, sites, compatibility)) {
+                   versioning, unsafe, sites, compatibility, memory)) {
          validatable.validate();
       }
       for (Builder<?> m : modules) {
@@ -245,7 +245,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
       for (ConfigurationChildBuilder validatable:
             asList(clustering, customInterceptors, dataContainer, deadlockDetection, eviction, expiration, indexing,
                    invocationBatching, jmxStatistics, persistence, locking, storeAsBinary, transaction,
-                   versioning, unsafe, sites, compatibility, security)) {
+                   versioning, unsafe, sites, compatibility, security, memory)) {
          validatable.validate(globalConfig);
       }
       // Modules cannot be checked with GlobalConfiguration
