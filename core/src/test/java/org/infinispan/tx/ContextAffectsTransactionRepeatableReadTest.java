@@ -1,7 +1,9 @@
 package org.infinispan.tx;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
 /**
@@ -12,6 +14,16 @@ import org.testng.annotations.Test;
  */
 @Test (groups = "functional", testName = "tx.ContextAffectsTransactionRepeatableReadTest")
 public class ContextAffectsTransactionRepeatableReadTest extends ContextAffectsTransactionReadCommittedTest {
+
+   @Factory
+   public Object[] factory() {
+      return new Object[] {
+            new ContextAffectsTransactionRepeatableReadTest().withStorage(StorageType.BINARY),
+            new ContextAffectsTransactionRepeatableReadTest().withStorage(StorageType.OBJECT),
+            new ContextAffectsTransactionRepeatableReadTest().withStorage(StorageType.OFF_HEAP)
+      };
+   }
+
    @Override
    protected void configure(ConfigurationBuilder builder) {
       builder.locking().isolationLevel(IsolationLevel.REPEATABLE_READ);

@@ -232,7 +232,7 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    }
 
    protected <K, V> List<Cache<K, V>> getCaches(String cacheName) {
-      List<Cache<K, V>> caches = new ArrayList<Cache<K, V>>();
+      List<Cache<K, V>> caches = new ArrayList<>();
       List<EmbeddedCacheManager> managers = new ArrayList<>(cacheManagers);
       for (EmbeddedCacheManager cm : managers) {
          Cache<K, V> c;
@@ -433,7 +433,6 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
       return advancedCache(index).getDataContainer();
    }
 
-
    /**
     * Create the cache managers you need for your test.  Note that the cache managers you create *must* be created using
     * {@link #addClusterEnabledCacheManager()}
@@ -541,7 +540,7 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    }
 
    protected void assertNotLocked(final Object key) {
-      assertNotLocked((String) null, key);
+      assertNotLocked(null, key);
    }
 
    protected boolean checkTxCount(int cacheIndex, int localTx, int remoteTx) {
@@ -599,7 +598,7 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    }
 
    private <K, V> Cache<K, V> getCache(int index, String name) {
-      return name == null ? this.<K, V>cache(index) : this.<K, V>cache(index, name);
+      return name == null ? this.cache(index) : this.cache(index, name);
    }
 
    protected void forceTwoPhase(int cacheIndex) throws SystemException, RollbackException {
@@ -613,21 +612,18 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    }
 
    protected void assertNoTransactions(final String cacheName) {
-      eventually("There are pending transactions!", new Condition() {
-         @Override
-         public boolean isSatisfied() throws Exception {
-            for (Cache<?, ?> cache : caches(cacheName)) {
-               final TransactionTable transactionTable = TestingUtil.extractComponent(cache, TransactionTable.class);
-               int localTxCount = transactionTable.getLocalTxCount();
-               int remoteTxCount = transactionTable.getRemoteTxCount();
-               if (localTxCount != 0 || remoteTxCount != 0) {
-                  log.tracef("Local tx=%s, remote tx=%s, for cache %s ", transactionTable.getLocalGlobalTransaction(),
-                        transactionTable.getRemoteGlobalTransaction(), address(cache));
-                  return false;
-               }
+      eventually("There are pending transactions!", () -> {
+         for (Cache<?, ?> cache : caches(cacheName)) {
+            final TransactionTable transactionTable = TestingUtil.extractComponent(cache, TransactionTable.class);
+            int localTxCount = transactionTable.getLocalTxCount();
+            int remoteTxCount = transactionTable.getRemoteTxCount();
+            if (localTxCount != 0 || remoteTxCount != 0) {
+               log.tracef("Local tx=%s, remote tx=%s, for cache %s ", transactionTable.getLocalGlobalTransaction(),
+                          transactionTable.getRemoteGlobalTransaction(), address(cache));
+               return false;
             }
-            return true;
          }
+         return true;
       });
    }
 
@@ -638,14 +634,8 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
 
    protected void assertEventuallyEquals(
          final int cacheIndex, final Object key, final Object value) {
-      eventually(new Condition() {
-         @Override
-         public boolean isSatisfied() throws Exception {
-            return value == null
-                  ? null == cache(cacheIndex).get(key)
-                  : value.equals(cache(cacheIndex).get(key));
-         }
-      });
+      eventually(() -> value == null
+            ? null == cache(cacheIndex).get(key)
+            : value.equals(cache(cacheIndex).get(key)));
    }
-
 }

@@ -51,7 +51,7 @@ public class AbstractInfinispanTest {
    private final ThreadFactory defaultThreadFactory = getTestThreadFactory("ForkThread");
    private final ThreadPoolExecutor defaultExecutorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
                                                                                  60L, TimeUnit.SECONDS,
-                                                                                 new SynchronousQueue<Runnable>(),
+                                                                                 new SynchronousQueue<>(),
                                                                                  defaultThreadFactory);
 
    public static final TimeService TIME_SERVICE = new DefaultTimeService();
@@ -446,10 +446,9 @@ public class AbstractInfinispanTest {
    }
 
    public final class RunnableWrapper implements Runnable {
-
       final Runnable realOne;
 
-      public RunnableWrapper(Runnable realOne) {
+      RunnableWrapper(Runnable realOne) {
          this.realOne = realOne;
       }
 
