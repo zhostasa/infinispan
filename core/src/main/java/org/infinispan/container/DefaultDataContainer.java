@@ -534,8 +534,9 @@ public class DefaultDataContainer<K, V> implements DataContainer<K, V> {
       if (action == null)
          throw new IllegalArgumentException("No action specified");
 
+      long now = timeService.wallClockTime();
       entries.forEach((K key, InternalCacheEntry<K, V> value) -> {
-         if (filter.accept(key)) {
+         if (filter.accept(key) && !value.isExpired(now)) {
             action.accept(key, value);
          }
       });
@@ -553,8 +554,9 @@ public class DefaultDataContainer<K, V> implements DataContainer<K, V> {
       if (action == null)
          throw new IllegalArgumentException("No action specified");
 
+      long now = timeService.wallClockTime();
       entries.forEach((K key, InternalCacheEntry<K, V> value) -> {
-         if (filter.accept(key, value.getValue(), value.getMetadata())) {
+         if (filter.accept(key, value.getValue(), value.getMetadata()) && !value.isExpired(now)) {
             action.accept(key, value);
          }
       });
