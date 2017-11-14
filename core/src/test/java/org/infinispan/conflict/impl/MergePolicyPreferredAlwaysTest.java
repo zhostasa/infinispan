@@ -1,7 +1,7 @@
 package org.infinispan.conflict.impl;
 
-import org.infinispan.conflict.MergePolicies;
 import org.testng.annotations.Factory;
+import org.infinispan.conflict.MergePolicy;
 import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "partitionhandling.MergePolicyPreferredAlwaysTest")
@@ -18,6 +18,6 @@ public class MergePolicyPreferredAlwaysTest extends BaseMergePolicyTest {
 
    public MergePolicyPreferredAlwaysTest() {
       super();
-      this.mergePolicy = MergePolicies.PREFERRED_ALWAYS;
+      this.mergePolicy = MergePolicy.PREFERRED_ALWAYS;
    }
 }
