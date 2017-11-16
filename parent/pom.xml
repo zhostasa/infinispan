@@ -176,7 +176,7 @@
       <version.weld>2.3.3.Final-redhat-1</version.weld>
       <version.weld-se>2.2.0.SP1</version.weld-se>
       <version.jmh>1.12</version.jmh>
-      <version.jgroups.kubernetes>1.0.0.Beta1-redhat-1</version.jgroups.kubernetes>
+      <version.jgroups.kubernetes>1.0.5.Final-redhat-1</version.jgroups.kubernetes>
       <version.oauth.core>20100527</version.oauth.core>
 
       <version.org.wildfly>7.0.8.GA-redhat-1</version.org.wildfly>
