@@ -253,6 +253,10 @@ class EndpointSubsystemReader implements XMLStreamConstants, XMLElementReader<Li
             name = value;
             break;
          }
+         case MAX_CONTENT_LENGTH: {
+            RestConnectorResource.MAX_CONTENT_LENGTH.parseAndSetParameter(value, connector, reader);
+            break;
+         }
          case SECURITY_DOMAIN: {
             if (namespace.since(Namespace.INFINISPAN_ENDPOINT_8_1)) {
                throw ParseUtils.unexpectedAttribute(reader, i);

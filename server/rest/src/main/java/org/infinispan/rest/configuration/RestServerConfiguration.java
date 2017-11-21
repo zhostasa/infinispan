@@ -9,12 +9,14 @@ import org.infinispan.server.core.configuration.SslConfiguration;
 @BuiltBy(RestServerConfigurationBuilder.class)
 public class RestServerConfiguration extends ProtocolServerConfiguration {
    private final ExtendedHeaders extendedHeaders;
+   private final int maxContentLength;
    private final String contextPath;
 
-   RestServerConfiguration(String defaultCacheName, String name, ExtendedHeaders extendedHeaders, String host, int port, Set<String> ignoredCaches, SslConfiguration ssl, String contextPath) {
+   RestServerConfiguration(String defaultCacheName, String name, ExtendedHeaders extendedHeaders, String host, int port, Set<String> ignoredCaches, SslConfiguration ssl, String contextPath, int maxContentLength) {
       super(defaultCacheName, name, host, port, -1, -1, -1, ssl, false, -1, ignoredCaches);
       this.extendedHeaders = extendedHeaders;
       this.contextPath = contextPath;
+      this.maxContentLength = maxContentLength;
    }
 
    public ExtendedHeaders extendedHeaders() {
@@ -35,5 +37,9 @@ public class RestServerConfiguration extends ProtocolServerConfiguration {
 
    public String contextPath() {
       return contextPath;
+   }
+
+   public int maxContentLength() {
+      return maxContentLength;
    }
 }

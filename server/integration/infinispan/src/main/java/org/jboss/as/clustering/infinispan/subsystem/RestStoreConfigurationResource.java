@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.persistence.rest.configuration.ConnectionPoolConfiguration;
+import org.infinispan.persistence.rest.configuration.RestStoreConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -55,8 +57,15 @@ public class RestStoreConfigurationResource extends BaseStoreConfigurationResour
                     .setXmlName(Attribute.APPEND_CACHE_NAME_TO_PATH.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode().set(false))
+                    .setDefaultValue(new ModelNode().set(RestStoreConfiguration.APPEND_CACHE_NAME_TO_PATH.getDefaultValue().booleanValue()))
                     .build();
+    static final SimpleAttributeDefinition MAX_CONTENT_LENGTH =
+          new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_CONTENT_LENGTH, ModelType.INT, true)
+                .setXmlName(Attribute.MAX_CONTENT_LENGTH.getLocalName())
+                .setAllowExpression(true)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setDefaultValue(new ModelNode().set(RestStoreConfiguration.MAX_CONTENT_LENGTH.getDefaultValue().intValue()))
+                .build();
     // connection pool attributes
     static final SimpleAttributeDefinition BUFFER_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.BUFFER_SIZE, ModelType.INT, true)
@@ -126,7 +135,7 @@ public class RestStoreConfigurationResource extends BaseStoreConfigurationResour
             setAllowNull(false).
             build();
 
-    static final AttributeDefinition[] REST_STORE_ATTRIBUTES = {PATH, APPEND_CACHE_NAME_TO_PATH, CONNECTION_POOL, REMOTE_SERVERS};
+    static final AttributeDefinition[] REST_STORE_ATTRIBUTES = {PATH, APPEND_CACHE_NAME_TO_PATH, MAX_CONTENT_LENGTH, CONNECTION_POOL, REMOTE_SERVERS};
 
     public RestStoreConfigurationResource(CacheConfigurationResource parent) {
         super(REST_STORE_PATH, ModelKeys.REST_STORE, parent, REST_STORE_ATTRIBUTES);
