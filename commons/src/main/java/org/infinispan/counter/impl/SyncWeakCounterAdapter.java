@@ -1,10 +1,12 @@
-package org.infinispan.counter;
+package org.infinispan.counter.impl;
+
+import static org.infinispan.counter.impl.Util.awaitCounterOperation;
 
 import java.util.Objects;
 
 import org.infinispan.counter.api.CounterConfiguration;
+import org.infinispan.counter.api.SyncWeakCounter;
 import org.infinispan.counter.api.WeakCounter;
-import org.infinispan.counter.util.Utils;
 
 /**
  * A {@link WeakCounter} decorator that waits for the operation to complete.
@@ -13,17 +15,18 @@ import org.infinispan.counter.util.Utils;
  * @see WeakCounter
  * @since 8.5
  */
-public class SyncWeakCounter {
+public class SyncWeakCounterAdapter implements SyncWeakCounter {
 
    private final WeakCounter counter;
 
-   public SyncWeakCounter(WeakCounter counter) {
+   public SyncWeakCounterAdapter(WeakCounter counter) {
       this.counter = Objects.requireNonNull(counter);
    }
 
    /**
     * @see WeakCounter#getName()
     */
+   @Override
    public String getName() {
       return counter.getName();
    }
@@ -31,41 +34,31 @@ public class SyncWeakCounter {
    /**
     * @see WeakCounter#getValue()
     */
+   @Override
    public long getValue() {
       return counter.getValue();
    }
 
    /**
-    * @see WeakCounter#increment()
-    */
-   public void increment() {
-      Utils.awaitCounterOperation(counter.increment());
-   }
-
-   /**
-    * @see WeakCounter#decrement()
-    */
-   public void decrement() {
-      Utils.awaitCounterOperation(counter.decrement());
-   }
-
-   /**
     * @see WeakCounter#add(long)
     */
+   @Override
    public void add(long delta) {
-      Utils.awaitCounterOperation(counter.add(delta));
+      awaitCounterOperation(counter.add(delta));
    }
 
    /**
     * @see WeakCounter#reset()
     */
+   @Override
    public void reset() {
-      Utils.awaitCounterOperation(counter.reset());
+      awaitCounterOperation(counter.reset());
    }
 
    /**
     * @see WeakCounter#getConfiguration()
     */
+   @Override
    public CounterConfiguration getConfiguration() {
       return counter.getConfiguration();
    }
@@ -73,14 +66,15 @@ public class SyncWeakCounter {
    /**
     * @see WeakCounter#remove()
     */
+   @Override
    public void remove() {
-      Utils.awaitCounterOperation(counter.remove());
+      awaitCounterOperation(counter.remove());
    }
 
    @Override
    public String toString() {
       return "SyncWeakCounter{" +
-            "counter=" + counter +
-            '}';
+             "counter=" + counter +
+             '}';
    }
 }

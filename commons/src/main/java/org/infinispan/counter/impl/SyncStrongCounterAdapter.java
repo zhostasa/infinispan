@@ -1,10 +1,12 @@
-package org.infinispan.counter;
+package org.infinispan.counter.impl;
+
+import static org.infinispan.counter.impl.Util.awaitCounterOperation;
 
 import java.util.Objects;
 
 import org.infinispan.counter.api.CounterConfiguration;
 import org.infinispan.counter.api.StrongCounter;
-import org.infinispan.counter.util.Utils;
+import org.infinispan.counter.api.SyncStrongCounter;
 
 /**
  * A {@link StrongCounter} decorator that waits for the operation to complete.
@@ -13,59 +15,47 @@ import org.infinispan.counter.util.Utils;
  * @see StrongCounter
  * @since 8.5
  */
-public class SyncStrongCounter {
+public class SyncStrongCounterAdapter implements SyncStrongCounter {
 
    private final StrongCounter counter;
 
-   public SyncStrongCounter(StrongCounter counter) {
+   public SyncStrongCounterAdapter(StrongCounter counter) {
       this.counter = Objects.requireNonNull(counter);
-   }
-
-   /**
-    * @see StrongCounter#incrementAndGet()
-    */
-   public long incrementAndGet() {
-      return Utils.awaitCounterOperation(counter.incrementAndGet());
-   }
-
-   /**
-    * @see StrongCounter#decrementAndGet()
-    */
-   public long decrementAndGet() {
-      return Utils.awaitCounterOperation(counter.decrementAndGet());
    }
 
    /**
     * @see StrongCounter#addAndGet(long)
     */
+   @Override
    public long addAndGet(long delta) {
-      return Utils.awaitCounterOperation(counter.addAndGet(delta));
+      return awaitCounterOperation(counter.addAndGet(delta));
    }
 
    /**
     * @see StrongCounter#reset()
     */
+   @Override
    public void reset() {
-      Utils.awaitCounterOperation(counter.reset());
+      awaitCounterOperation(counter.reset());
    }
 
    /**
     * @see StrongCounter#decrementAndGet()
     */
+   @Override
    public long getValue() {
-      return Utils.awaitCounterOperation(counter.getValue());
+      return awaitCounterOperation(counter.getValue());
    }
 
-   /**
-    * @see StrongCounter#compareAndSet(long, long)
-    */
-   public boolean compareAndSet(long expect, long update) {
-      return Utils.awaitCounterOperation(counter.compareAndSet(expect, update));
+   @Override
+   public long compareAndSwap(long expect, long update) {
+      return awaitCounterOperation(counter.compareAndSwap(expect, update));
    }
 
    /**
     * @see StrongCounter#getName()
     */
+   @Override
    public String getName() {
       return counter.getName();
    }
@@ -73,6 +63,7 @@ public class SyncStrongCounter {
    /**
     * @see StrongCounter#getConfiguration()
     */
+   @Override
    public CounterConfiguration getConfiguration() {
       return counter.getConfiguration();
    }
@@ -80,14 +71,15 @@ public class SyncStrongCounter {
    /**
     * @see StrongCounter#remove()
     */
+   @Override
    public void remove() {
-      Utils.awaitCounterOperation(counter.remove());
+      awaitCounterOperation(counter.remove());
    }
 
    @Override
    public String toString() {
       return "SyncStrongCounter{" +
-            "counter=" + counter +
-            '}';
+             "counter=" + counter +
+             '}';
    }
 }
