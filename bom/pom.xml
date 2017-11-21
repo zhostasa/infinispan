@@ -326,6 +326,16 @@
             <artifactId>infinispan-jcache-remote</artifactId>
             <version>${project.version}</version>
          </dependency>
+         <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-clustered-counter</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-clustered-lock</artifactId>
+            <version>${project.version}</version>
+         </dependency>
 
 
          <dependency>
