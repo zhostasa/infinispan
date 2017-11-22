@@ -31,24 +31,12 @@ final class SecurityActions {
       SysProps PRIVILEGED = new SysProps() {
          @Override
          public String getProperty(final String name, final String defaultValue) {
-            PrivilegedAction<String> action = new PrivilegedAction<String>() {
-               @Override
-               public String run() {
-                  return System.getProperty(name, defaultValue);
-               }
-            };
-            return AccessController.doPrivileged(action);
+            return AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(name, defaultValue));
          }
 
          @Override
          public String getProperty(final String name) {
-            PrivilegedAction<String> action = new PrivilegedAction<String>() {
-               @Override
-               public String run() {
-                  return System.getProperty(name);
-               }
-            };
-            return AccessController.doPrivileged(action);
+            return AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(name));
          }
       };
 
