@@ -1006,7 +1006,7 @@
                         <xs:documentation>The path portion of the URI of the remote REST endpoint.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="max-content-length" type="xs:int" default="${Server.RestStore.max-content-length}">
+                <xs:attribute name="max-content-length" type="xs:int" default="10485760">
                     <xs:annotation>
                         <xs:documentation>The maximum allowed content length of a POST/PUT request.</xs:documentation>
                     </xs:annotation>
