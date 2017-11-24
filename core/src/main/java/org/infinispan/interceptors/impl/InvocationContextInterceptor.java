@@ -99,7 +99,7 @@ public class InvocationContextInterceptor extends BaseAsyncInterceptor {
          return true;
       } else {
          if (status.isTerminated()) {
-            throw log.cacheIsTerminated(getCacheNamePrefix());
+            throw log.cacheIsTerminated(getCacheNamePrefix(), status.toString());
          } else if (stoppingAndNotAllowed(status, ctx)) {
             throw log.cacheIsStopping(getCacheNamePrefix());
          }
