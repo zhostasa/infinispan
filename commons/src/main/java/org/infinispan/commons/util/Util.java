@@ -1050,4 +1050,13 @@ public final class Util {
   public static char[] toCharArray(String s) {
      return s == null ? null : s.toCharArray();
   }
+
+  public static boolean isClassAvailable(String name, ClassLoader classLoader) {
+     try {
+        Util.loadClassStrict(name, classLoader);
+        return true;
+     } catch (ClassNotFoundException e) {
+        return false;
+     }
+  }
 }

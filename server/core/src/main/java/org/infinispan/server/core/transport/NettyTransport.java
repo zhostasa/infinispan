@@ -63,6 +63,7 @@ public class NettyTransport implements Transport {
 
    static private final Log log = LogFactory.getLog(NettyTransport.class, Log.class);
    static private final boolean isLog4jAvailable;
+   static private final boolean isNettyEpollAvailable;
 
    private static final String USE_EPOLL_PROPERTY = "infinispan.server.channel.epoll";
    private static final boolean IS_LINUX = System.getProperty("os.name").toLowerCase().startsWith("linux");
@@ -70,21 +71,19 @@ public class NettyTransport implements Transport {
    private static final boolean USE_NATIVE_EPOLL;
 
    static {
-      boolean exception;
-      try {
-         Util.loadClassStrict("org.apache.log4j.Logger", Thread.currentThread().getContextClassLoader());
-         exception = false;
-      } catch (ClassNotFoundException e) {
-         exception = true;
-      }
-      isLog4jAvailable = !exception;
+      isLog4jAvailable = Util.isClassAvailable("org.apache.log4j.Logger", NettyTransport.class.getClassLoader());
+      isNettyEpollAvailable = Util.isClassAvailable("io.netty.channel.epoll.Epoll", NettyTransport.class.getClassLoader());
 
-      if (Epoll.isAvailable()) {
-         USE_NATIVE_EPOLL = !EPOLL_DISABLED && IS_LINUX;
-      } else {
-         if (IS_LINUX) {
-            log.epollNotAvailable(Epoll.unavailabilityCause().toString());
+      if (isNettyEpollAvailable) {
+         if (Epoll.isAvailable()) {
+            USE_NATIVE_EPOLL = !EPOLL_DISABLED && IS_LINUX;
+         } else {
+            if (IS_LINUX) {
+               log.epollNotAvailable(Epoll.unavailabilityCause().toString());
+            }
+            USE_NATIVE_EPOLL = false;
          }
+      } else {
          USE_NATIVE_EPOLL = false;
       }
    }
