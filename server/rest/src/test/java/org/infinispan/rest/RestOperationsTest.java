@@ -5,8 +5,10 @@ import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OCTET_
 import static org.infinispan.commons.dataconversion.MediaType.TEXT_PLAIN_TYPE;
 import static org.infinispan.rest.JSONConstants.TYPE;
 
+import org.assertj.core.api.Assertions;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpMethod;
 import org.infinispan.Cache;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.dataconversion.MediaType;
@@ -219,4 +221,18 @@ public class RestOperationsTest extends BaseRestOperationsTest {
       ResponseAssertion.assertThat(response).isOk();
    }
 
+   @Test
+   public void shouldDeleteExistingValueEvenWithoutMetadata() throws Exception {
+      putValueInCache("default", "test", "test");
+
+      //when
+      ContentResponse response = client
+            .newRequest(String.format("http://localhost:%d/rest/%s/%s", restServer.getPort(), "default", "test"))
+            .method(HttpMethod.DELETE)
+            .send();
+
+      //then
+      ResponseAssertion.assertThat(response).isOk();
+      Assertions.assertThat(restServer.getCacheManager().getCache("default")).isEmpty();
+   }
 }
