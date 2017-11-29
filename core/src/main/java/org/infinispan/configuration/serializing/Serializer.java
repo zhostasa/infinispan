@@ -199,6 +199,7 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
          writeSerialization(writer, globalConfiguration);
          writeJMX(writer, globalConfiguration);
          writeGlobalState(writer, globalConfiguration);
+         writeSecurity(writer, globalConfiguration);
          writeExtraConfiguration(writer, globalConfiguration.modules());
       }
       for (Entry<String, Configuration> configuration : holder.getConfigurations().entrySet()) {

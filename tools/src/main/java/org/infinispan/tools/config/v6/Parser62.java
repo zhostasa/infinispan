@@ -15,6 +15,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.infinispan.commons.CacheConfigurationException;
+import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.equivalence.Equivalence;
@@ -153,12 +154,15 @@ public class Parser62 implements ConfigurationParser {
       if (builder == null) {
           builder = holder.newConfigurationBuilder(name);
       }
+      builder.read(holder.getDefaultConfigurationBuilder().build());
       parseCache(reader, holder);
 
    }
 
    private void parseDefaultCache(final XMLExtendedStreamReader reader, final ConfigurationBuilderHolder holder) throws XMLStreamException {
       ParseUtils.requireNoAttributes(reader);
+      holder.getGlobalConfigurationBuilder().defaultCacheName(BasicCacheContainer.DEFAULT_CACHE_NAME);
+      holder.newConfigurationBuilder(BasicCacheContainer.DEFAULT_CACHE_NAME);
       parseCache(reader, holder);
    }
 

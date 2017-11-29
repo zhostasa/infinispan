@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan>
 
-   <cache-container default-cache="default">
-   <local-cache name="default">
+   <cache-container default-cache="first">
+   <local-cache-configuration name="default">
       <persistence>
          <mixed-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.infinispan.persistence.keymappers.DefaultTwoWayKey2StringMapper" dialect="H2">
             <simple-connection connection-url="jdbc:h2:mem:infinispan_binary_based;DB_CLOSE_DELAY=-1" driver="org.h2.Driver" username="sa"/>
@@ -18,9 +18,9 @@
             </binary-keyed-table>
          </mixed-keyed-jdbc-store>
       </persistence>
-   </local-cache>
-      <local-cache name="first"/>
-      <local-cache name="second"/>
+   </local-cache-configuration>
+      <local-cache name="first" configuration="default"/>
+      <local-cache name="second" configuration="default"/>
    </cache-container>
 
 </infinispan>

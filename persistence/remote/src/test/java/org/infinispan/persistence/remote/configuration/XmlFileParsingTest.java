@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = "unit", testName = "persistence.remote.configuration.XmlFileParsingTest")
 public class XmlFileParsingTest extends AbstractInfinispanTest {
+   private static final String REMOTE_VERSION = "8.0";
 
    private EmbeddedCacheManager cacheManager;
 
@@ -28,7 +29,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
             "<cache-container default-cache=\"default\">" +
             "   <local-cache name=\"default\">\n" +
             "     <persistence>\n" +
-            "       <remote-store xmlns=\"urn:infinispan:config:store:remote:"+ InfinispanStartTag.LATEST.majorMinor()+"\" >\n" +
+            "       <remote-store xmlns=\"urn:infinispan:config:store:remote:"+ REMOTE_VERSION + "\" >\n" +
             "         <remote-server host=\"one\" />\n" +
             "         <remote-server host=\"two\" />\n" +
             "         <connection-pool max-active=\"10\" exhausted-action=\"CREATE_NEW\" />\n" +

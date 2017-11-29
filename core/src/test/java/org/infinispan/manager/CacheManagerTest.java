@@ -178,7 +178,9 @@ public class CacheManagerTest extends AbstractInfinispanTest {
 
    @Test(expectedExceptions = CacheConfigurationException.class, expectedExceptionsMessageRegExp = "ISPN000436:.*")
    public void testMissingDefaultConfiguration() {
-      EmbeddedCacheManager cm = new DefaultCacheManager();
+      GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
+      builder.globalJmxStatistics().allowDuplicateDomains(true);
+      EmbeddedCacheManager cm = new DefaultCacheManager(builder.build());
       try {
          cm.getCache("someCache");
       } finally {
