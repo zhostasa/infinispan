@@ -1671,6 +1671,10 @@
                            <key>infinispan.isCoreModule</key>
                            <value>${module.metadata.isCoreModule}</value>
                         </systemProperty>
+                        <systemProperty>
+                           <key>org.jboss.logging.provider</key>
+                           <value>jdk</value>
+                        </systemProperty>
                      </systemProperties>
                   </configuration>
                </execution>
@@ -1688,6 +1692,12 @@
                         <argument>${project.build.testOutputDirectory}</argument>
                         <argument>${basedir}/src/test/resources/${project.artifactId}-tests-component-metadata.dat</argument>
                      </arguments>
+                     <systemProperties>
+                        <systemProperty>
+                           <key>org.jboss.logging.provider</key>
+                           <value>jdk</value>
+                        </systemProperty>
+                     </systemProperties>
                   </configuration>
                </execution>
             </executions>
