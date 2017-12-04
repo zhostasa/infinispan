@@ -77,7 +77,7 @@
       <!-- Hibernate ORM version aligned with Hibernate Search for test purposes only -->
       <version.hibernate.core.test>5.2.8.Final</version.hibernate.core.test>
       <version.hibernate.search>5.7.3.Final-redhat-1</version.hibernate.search>
-      <version.javax.cache>1.0.0.redhat-1</version.javax.cache>
+      <version.javax.cache>1.1.0.redhat-1</version.javax.cache>
       <version.cdi>1.2.0.redhat-2</version.cdi>
       <version.jboss.marshalling>1.4.10.Final-redhat-3</version.jboss.marshalling>
       <version.jboss.logging>3.3.1.Final-redhat-1</version.jboss.logging>

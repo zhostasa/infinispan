@@ -2,6 +2,7 @@ package org.infinispan.client.hotrod.event.impl;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
@@ -395,6 +396,9 @@ public class ClientListenerNotifier {
       public void invoke(ClientEvent event) {
          try {
             method.invoke(listener, event);
+         } catch (InvocationTargetException e) {
+            throw log.exceptionInvokingListener(
+               e.getClass().getName(), method, listener, e.getTargetException());
          } catch (Exception e) {
             throw log.exceptionInvokingListener(
                   e.getClass().getName(), method, listener, e);
