@@ -427,7 +427,7 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
          } else {
             availabilityStrategy = new PreferAvailabilityStrategy(eventLogManager, persistentUUIDManager, resolveConflictsOnMerge);
          }
-         Optional<GlobalStateManager> globalStateManager = cacheManager.getGlobalComponentRegistry().getOptionalComponent(GlobalStateManager.class);
+         Optional<GlobalStateManager> globalStateManager = gcr.getOptionalComponent(GlobalStateManager.class);
          Optional<ScopedPersistentState> persistedState = globalStateManager.flatMap(gsm -> gsm.readScopedState(cacheName));
          return new ClusterCacheStatus(cacheManager, cacheName, availabilityStrategy, this, transport,
                persistedState, persistentUUIDManager, resolveConflictsOnMerge);
