@@ -107,7 +107,8 @@ public class RemoveCommand extends AbstractDataWriteCommand {
    }
 
    public void notify(InvocationContext ctx, Object removedValue, Metadata removedMetadata, boolean isPre) {
-      notifier.notifyCacheEntryRemoved(key, removedValue, removedMetadata, isPre, ctx, this);
+      if (removedValue != null)
+         notifier.notifyCacheEntryRemoved(key, removedValue, removedMetadata, isPre, ctx, this);
    }
 
    @Override
