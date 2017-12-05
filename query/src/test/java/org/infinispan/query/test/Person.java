@@ -51,6 +51,7 @@ public class Person implements Serializable {
       this.name = name;
       this.blurb = blurb;
       this.age = age;
+      this.nonSearchableField = name.substring(0, 2);
    }
 
    public Person(String name, String blurb, int age, Date dateOfGraduation) {
