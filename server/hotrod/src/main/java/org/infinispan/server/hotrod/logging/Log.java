@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.counter.exception.CounterException;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.server.hotrod.MissingFactoryException;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -90,4 +91,7 @@ public interface Log extends org.infinispan.server.core.logging.Log {
 
    @Message(value = "A host or proxyHost address has not been specified", id = 6019)
    CacheConfigurationException missingHostAddress();
+
+   @Message(value = "Expects a STRONG counter for '%s'", id = 28023)
+   CounterException invalidWeakCounter(String name);
 }

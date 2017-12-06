@@ -1,5 +1,7 @@
 package org.infinispan.server.hotrod;
 
+import static org.infinispan.server.hotrod.transport.ExtendedByteBuf.readMaybeString;
+
 import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.infinispan.AdvancedCache;
@@ -25,6 +28,11 @@ import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
 import org.infinispan.server.core.transport.ExtendedByteBufJava;
 import org.infinispan.server.core.transport.NettyTransport;
+import org.infinispan.server.hotrod.counter.CounterAddDecodeContext;
+import org.infinispan.server.hotrod.counter.CounterCompareAndSetDecodeContext;
+import org.infinispan.server.hotrod.counter.CounterCreateDecodeContext;
+import org.infinispan.server.hotrod.counter.CounterDecodeContext;
+import org.infinispan.server.hotrod.counter.CounterListenerDecodeContext;
 import org.infinispan.server.hotrod.logging.Log;
 import org.infinispan.server.hotrod.transport.ExtendedByteBuf;
 import org.infinispan.stats.ClusterCacheStats;
@@ -46,6 +54,7 @@ import io.netty.util.CharsetUtil;
 class Decoder2x implements VersionedDecoder {
 
    private static final Log log = LogFactory.getLog(Decoder2x.class, Log.class);
+   private static final boolean trace = log.isTraceEnabled();
 
    private static final long EXPIRATION_NONE = -1;
    private static final long EXPIRATION_DEFAULT = -2;
@@ -332,10 +341,50 @@ class Decoder2x implements VersionedDecoder {
                }
             }
             break;
+         case COUNTER_CREATE:
+            decodeCounterOperation(buffer, hrCtx, out, CounterCreateDecodeContext::new);
+            break;
+         case COUNTER_GET_CONFIGURATION:
+         case COUNTER_IS_DEFINED:
+         case COUNTER_RESET:
+         case COUNTER_GET:
+         case COUNTER_REMOVE:
+            decodeStringOnlyOperation(buffer, hrCtx, out);
+            break;
+         case COUNTER_ADD_AND_GET:
+            decodeCounterOperation(buffer, hrCtx, out, CounterAddDecodeContext::new);
+            break;
+         case COUNTER_CAS:
+            decodeCounterOperation(buffer, hrCtx, out, CounterCompareAndSetDecodeContext::new);
+            break;
+         case COUNTER_ADD_LISTENER:
+         case COUNTER_REMOVE_LISTENER:
+            decodeCounterOperation(buffer, hrCtx, out, CounterListenerDecodeContext::new);
+            break;
+         case COUNTER_GET_NAMES:
          default:
             // This operation doesn't need additional reads - has everything to process
             out.add(hrCtx);
       }
+   }
+
+   private <T extends CounterDecodeContext>  void decodeCounterOperation(ByteBuf buffer, CacheDecodeContext context, List<Object> out, Supplier<T> decodeContextFactory) {
+      T decodeContext = context.operationContext(decodeContextFactory);
+      if (decodeContext.decode(buffer)) {
+         out.add(context);
+      }
+   }
+
+   private void decodeStringOnlyOperation(ByteBuf buffer, CacheDecodeContext context, List<Object> out) {
+      Optional<String> optName = readMaybeString(buffer);
+      optName.ifPresent(s -> {
+         if (trace) {
+            log.tracef("Decoded counter's name '%s'", s);
+         }
+         context.operationDecodeContext = s;
+         buffer.markReaderIndex();
+         out.add(context);
+      });
    }
 
    @Override

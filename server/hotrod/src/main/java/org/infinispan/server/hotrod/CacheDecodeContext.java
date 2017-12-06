@@ -1,5 +1,13 @@
 package org.infinispan.server.hotrod;
 
+import static java.lang.String.format;
+import static org.infinispan.server.hotrod.Response.createEmptyResponse;
+import static org.infinispan.util.concurrent.CompletableFutures.extractException;
+
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import javax.security.auth.Subject;
 
 import org.infinispan.AdvancedCache;
@@ -11,6 +19,14 @@ import org.infinispan.container.versioning.NumericVersionGenerator;
 import org.infinispan.container.versioning.SimpleClusteredVersion;
 import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.context.Flag;
+import org.infinispan.counter.EmbeddedCounterManagerFactory;
+import org.infinispan.counter.api.CounterConfiguration;
+import org.infinispan.counter.api.CounterManager;
+import org.infinispan.counter.api.StrongCounter;
+import org.infinispan.counter.api.WeakCounter;
+import org.infinispan.counter.exception.CounterOutOfBoundsException;
+import org.infinispan.counter.impl.CounterModuleLifecycle;
+import org.infinispan.counter.impl.manager.EmbeddedCounterManager;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.metadata.EmbeddedMetadata;
@@ -18,8 +34,19 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.registry.InternalCacheRegistry;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.server.core.ServerConstants;
+import org.infinispan.server.hotrod.counter.CounterAddDecodeContext;
+import org.infinispan.server.hotrod.counter.CounterCompareAndSetDecodeContext;
+import org.infinispan.server.hotrod.counter.CounterCreateDecodeContext;
+import org.infinispan.server.hotrod.counter.CounterListenerDecodeContext;
+import org.infinispan.server.hotrod.counter.listener.ClientCounterManagerNotificationManager;
+import org.infinispan.server.hotrod.counter.listener.ListenerOperationStatus;
+import org.infinispan.server.hotrod.counter.response.CounterConfigurationResponse;
+import org.infinispan.server.hotrod.counter.response.CounterNamesResponse;
+import org.infinispan.server.hotrod.counter.response.CounterValueResponse;
 import org.infinispan.server.hotrod.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+
+import io.netty.channel.Channel;
 
 /**
  * Invokes operations against the cache based on the state kept during decoding process
@@ -35,6 +62,7 @@ public final class CacheDecodeContext {
       this.server = server;
    }
 
+   private CounterManager counterManager;
    VersionedDecoder decoder;
    HotRodHeader header;
    Subject subject;
@@ -55,6 +83,146 @@ public final class CacheDecodeContext {
       return params;
    }
 
+   Response removeCounterListener(HotRodServer server) {
+      ClientCounterManagerNotificationManager notificationManager = server.getClientCounterNotificationManager();
+      CounterListenerDecodeContext opCtx = operationContext();
+      return createResponseFrom(
+            notificationManager.removeCounterListener(opCtx.getListenerId(), opCtx.getCounterName()));
+   }
+
+   Response addCounterListener(HotRodServer server, Channel channel) {
+      ClientCounterManagerNotificationManager notificationManager = server.getClientCounterNotificationManager();
+      CounterListenerDecodeContext opCtx = operationContext();
+      return createResponseFrom(notificationManager
+            .addCounterListener(opCtx.getListenerId(), header.getVersion(), opCtx.getCounterName(), channel));
+   }
+
+   Response getCounterNames() {
+      return new CounterNamesResponse(header, counterManager.getCounterNames());
+   }
+
+   Response counterRemove() {
+      String counterName = operationContext();
+      counterManager.remove(counterName);
+      return createEmptyResponse(header, OperationStatus.Success);
+   }
+
+   void counterCompareAndSwap(Consumer<Response> sendResponse) {
+      CounterCompareAndSetDecodeContext decodeContext = operationContext();
+      final long expect = decodeContext.getExpected();
+      final long update = decodeContext.getUpdate();
+      final String name = decodeContext.getCounterName();
+
+      applyCounter(name, sendResponse,
+            (counter, responseConsumer) -> counter.compareAndSwap(expect, update)
+                  .whenComplete(longResultHandler(responseConsumer)),
+            (counter, responseConsumer) -> responseConsumer
+                  .accept(createExceptionResponse(log.invalidWeakCounter(name)))
+      );
+   }
+
+   void counterGet(Consumer<Response> sendResponse) {
+      applyCounter(operationContext(), sendResponse,
+            (counter, responseConsumer) -> counter.getValue().whenComplete(longResultHandler(responseConsumer)),
+            (counter, responseConsumer) -> longResultHandler(responseConsumer).accept(counter.getValue(), null)
+      );
+   }
+
+   void counterReset(Consumer<Response> sendResponse) {
+      applyCounter(operationContext(), sendResponse,
+            (counter, responseConsumer) -> counter.reset().whenComplete(voidResultHandler(responseConsumer)),
+            (counter, responseConsumer) -> counter.reset().whenComplete(voidResultHandler(responseConsumer))
+      );
+   }
+
+   void counterAddAndGet(Consumer<Response> sendResponse) {
+      CounterAddDecodeContext decodeContext = operationContext();
+      final long value = decodeContext.getValue();
+      applyCounter(decodeContext.getCounterName(), sendResponse,
+            (counter, responseConsumer) -> counter.addAndGet(value).whenComplete(longResultHandler(responseConsumer)),
+            (counter, responseConsumer) -> counter.add(value)
+                  .whenComplete((aVoid, throwable) -> longResultHandler(responseConsumer).accept(0L, throwable))
+      );
+   }
+
+   void getCounterConfiguration(Consumer<Response> sendResponse) {
+      ((EmbeddedCounterManager) counterManager).getConfigurationAsync(operationContext())
+            .whenComplete((configuration, throwable) -> {
+               if (throwable != null) {
+                  checkCounterThrowable(sendResponse, throwable);
+               } else {
+                  sendResponse.accept(configuration == null ? missingCounterResponse()
+                                                            : new CounterConfigurationResponse(header, configuration));
+               }
+            });
+   }
+
+   void isCounterDefined(Consumer<Response> sendResponse) {
+      ((EmbeddedCounterManager) counterManager).isDefinedAsync(operationContext())
+            .whenComplete(booleanResultHandler(sendResponse));
+   }
+
+   void createCounter(Consumer<Response> sendResponse) {
+      CounterCreateDecodeContext decodeContext = operationContext();
+      ((EmbeddedCounterManager) counterManager)
+            .defineCounterAsync(decodeContext.getCounterName(), decodeContext.getConfiguration())
+            .whenComplete(booleanResultHandler(sendResponse));
+   }
+
+   <T> T operationContext(Supplier<T> constructor) {
+      T opCtx = operationContext();
+      if (opCtx == null) {
+         opCtx = constructor.get();
+         operationDecodeContext = opCtx;
+         return opCtx;
+      } else {
+         return opCtx;
+      }
+   }
+
+   <T> T operationContext() {
+      //noinspection unchecked
+      return (T) operationDecodeContext;
+   }
+
+   private void checkCounterThrowable(Consumer<Response> send, Throwable throwable) {
+      Throwable cause = extractException(throwable);
+      if (cause instanceof CounterOutOfBoundsException) {
+         send.accept(createEmptyResponse(header, OperationStatus.NotExecutedWithPrevious));
+      } else {
+         send.accept(createExceptionResponse(cause));
+      }
+   }
+
+   private Response createCounterBooleanResponse(boolean result) {
+      return createEmptyResponse(header, result ? OperationStatus.Success : OperationStatus.OperationNotExecuted);
+   }
+
+   private Response missingCounterResponse() {
+      return createEmptyResponse(header, OperationStatus.KeyDoesNotExist);
+   }
+
+   private BiConsumer<Boolean, Throwable> booleanResultHandler(Consumer<Response> sendResponse) {
+      return (aBoolean, throwable) -> {
+         if (throwable != null) {
+            checkCounterThrowable(sendResponse, throwable);
+         } else {
+            sendResponse.accept(createCounterBooleanResponse(aBoolean));
+         }
+      };
+   }
+
+   private BiConsumer<Long, Throwable> longResultHandler(Consumer<Response> sendResponse) {
+      return (value, throwable) -> {
+         if (throwable != null) {
+            checkCounterThrowable(sendResponse, throwable);
+         } else {
+            sendResponse.accept(new CounterValueResponse(header, value));
+         }
+      };
+   }
+
+
    ErrorResponse createExceptionResponse(Throwable e) {
       if (e instanceof InvalidMagicIdException) {
          log.exceptionReported(e);
@@ -69,7 +237,7 @@ public final class CacheDecodeContext {
          return new ErrorResponse(uve.version, uve.messageId, "", (short) 1, OperationStatus.UnknownVersion, 0, e.toString());
       } else if (e instanceof RequestParsingException) {
          log.exceptionReported(e);
-         String msg = e.getCause() == null ? e.toString() : String.format("%s: %s", e.getMessage(), e.getCause().toString());
+         String msg = e.getCause() == null ? e.toString() : format("%s: %s", e.getMessage(), e.getCause().toString());
          RequestParsingException rpe = (RequestParsingException) e;
          return new ErrorResponse(rpe.version, rpe.messageId, "", (short) 1, OperationStatus.ParseError, 0, msg);
       } else if (e instanceof IllegalStateException) {
@@ -95,10 +263,26 @@ public final class CacheDecodeContext {
       if (prev != null)
          return successResp(prev);
       else
-         return notExecutedResp(prev);
+         return notExecutedResp(null);
    }
 
    void obtainCache(EmbeddedCacheManager cacheManager, boolean loopback) throws RequestParsingException {
+      switch (header.op) {
+         case COUNTER_CREATE:
+         case COUNTER_ADD_AND_GET:
+         case COUNTER_ADD_LISTENER:
+         case COUNTER_CAS:
+         case COUNTER_GET:
+         case COUNTER_RESET:
+         case COUNTER_IS_DEFINED:
+         case COUNTER_REMOVE_LISTENER:
+         case COUNTER_GET_CONFIGURATION:
+         case COUNTER_REMOVE:
+         case COUNTER_GET_NAMES:
+            header.cacheName = CounterModuleLifecycle.COUNTER_CACHE_NAME;
+            this.counterManager = EmbeddedCounterManagerFactory.asCounterManager(cacheManager);
+            return;
+      }
       String cacheName = header.cacheName;
       // Try to avoid calling cacheManager.getCacheNames() if possible, since this creates a lot of unnecessary garbage
       AdvancedCache<byte[], byte[]> cache = server.getKnownCacheInstance(cacheName);
@@ -108,12 +292,12 @@ public final class CacheDecodeContext {
          InternalCacheRegistry icr = cacheManager.getGlobalComponentRegistry().getComponent(InternalCacheRegistry.class);
          if (icr.isPrivateCache(cacheName)) {
             throw new RequestParsingException(
-                  String.format("Remote requests are not allowed to private caches. Do no send remote requests to cache '%s'", cacheName),
+                  format("Remote requests are not allowed to private caches. Do no send remote requests to cache '%s'", cacheName),
                   header.version, header.messageId);
          } else if (icr.internalCacheHasFlag(cacheName, InternalCacheRegistry.Flag.PROTECTED)) {
             if (!cacheManager.getCacheManagerConfiguration().security().authorization().enabled() && !loopback) {
                throw new RequestParsingException(
-                     String.format("Remote requests are allowed to protected caches only over loopback or if authorization is enabled. Do no send remote requests to cache '%s'", cacheName),
+                     format("Remote requests are allowed to protected caches only over loopback or if authorization is enabled. Do no send remote requests to cache '%s'", cacheName),
                      header.version, header.messageId);
             } else {
                // We want to make sure the cache access is checked everytime, so don't store it as a "known" cache. More
@@ -122,7 +306,7 @@ public final class CacheDecodeContext {
             }
          } else if (!cacheName.isEmpty() && !cacheManager.getCacheNames().contains(cacheName)) {
             throw new CacheNotFoundException(
-                  String.format("Cache with name '%s' not found amongst the configured caches", cacheName),
+                  format("Cache with name '%s' not found amongst the configured caches", cacheName),
                   header.version, header.messageId);
          } else {
             cache = server.getCacheInstance(cacheName, cacheManager, true, true);
@@ -160,7 +344,7 @@ public final class CacheDecodeContext {
                   header.op, OperationStatus.Success, header.topologyId, v, version,
                   ce.getCreated(), lifespan, ce.getLastUsed(), maxIdle);
          } else {
-            int offset = ((Integer) operationDecodeContext).intValue();
+            int offset = (Integer) operationDecodeContext;
             return new GetStreamResponse(header.version, header.messageId, header.cacheName, header.clientIntel,
                   header.op, OperationStatus.Success, header.topologyId, v, offset, version,
                   ce.getCreated(), lifespan, ce.getLastUsed(), maxIdle);
@@ -221,7 +405,7 @@ public final class CacheDecodeContext {
          prev = cache.putIfAbsent(key, (byte[]) operationDecodeContext, buildMetadata());
       }
       if (prev == null)
-         return successResp(prev);
+         return successResp(null);
       else
          return notExecutedResp(prev);
    }
@@ -341,6 +525,49 @@ public final class CacheDecodeContext {
          sb.append('}');
          return sb.toString();
       }
+   }
+
+   private void applyCounter(String counterName,
+         Consumer<Response> sendResponse,
+         BiConsumer<StrongCounter, Consumer<Response>> applyStrong,
+         BiConsumer<WeakCounter, Consumer<Response>> applyWeak) {
+      CounterConfiguration config = counterManager.getConfiguration(counterName);
+      if (config == null) {
+         sendResponse.accept(missingCounterResponse());
+         return;
+      }
+      switch (config.type()) {
+         case UNBOUNDED_STRONG:
+         case BOUNDED_STRONG:
+            applyStrong.accept(counterManager.getStrongCounter(counterName), sendResponse);
+            break;
+         case WEAK:
+            applyWeak.accept(counterManager.getWeakCounter(counterName), sendResponse);
+            break;
+      }
+   }
+
+   private Response createResponseFrom(ListenerOperationStatus status) {
+      switch (status) {
+         case OK:
+            return createEmptyResponse(header, OperationStatus.OperationNotExecuted);
+         case OK_AND_CHANNEL_IN_USE:
+            return createEmptyResponse(header, OperationStatus.Success);
+         case COUNTER_NOT_FOUND:
+            return missingCounterResponse();
+         default:
+            throw new IllegalStateException();
+      }
+   }
+
+   private BiConsumer<Void, Throwable> voidResultHandler(Consumer<Response> sendResponse) {
+      return (value, throwable) -> {
+         if (throwable != null) {
+            checkCounterThrowable(sendResponse, throwable);
+         } else {
+            sendResponse.accept(createEmptyResponse(header, OperationStatus.Success));
+         }
+      };
    }
 
    /**

@@ -86,7 +86,8 @@
             <configuration>
                <instructions>
                   <Export-Package>
-                     ${project.groupId}.commons.*;version=${project.version};-split-package:=error
+                     ${project.groupId}.commons.*;version=${project.version};-split-package:=error,
+                     ${project.groupId}.counter.*;version=${project.version};-split-package:=error
                   </Export-Package>
                   
                   <Import-Package>

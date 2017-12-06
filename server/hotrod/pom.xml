@@ -44,6 +44,10 @@
          <optional>true</optional>
       </dependency>
       <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-clustered-counter</artifactId>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.sasl</groupId>
          <artifactId>jboss-sasl</artifactId>
          <scope>test</scope>
@@ -62,7 +66,10 @@
                </execution>
                <execution>
                   <id>test-compile</id>
-                  <phase>test-compile</phase>
+                  <goals>
+                     <goal>testCompile</goal>
+                  </goals>
+                  <phase>process-test-resources</phase>
                </execution>
                <execution>
                   <phase>process-resources</phase>

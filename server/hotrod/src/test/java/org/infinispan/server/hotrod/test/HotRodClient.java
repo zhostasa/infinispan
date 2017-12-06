@@ -1,5 +1,6 @@
 package org.infinispan.server.hotrod.test;
 
+import static org.infinispan.counter.util.EncodeUtil.decodeConfiguration;
 import static org.infinispan.server.hotrod.OperationStatus.NotExecutedWithPrevious;
 import static org.infinispan.server.hotrod.OperationStatus.Success;
 import static org.infinispan.server.hotrod.OperationStatus.SuccessWithPrevious;
@@ -42,6 +43,12 @@ import org.infinispan.server.hotrod.OperationStatus;
 import org.infinispan.server.hotrod.ProtocolFlag;
 import org.infinispan.server.hotrod.Response;
 import org.infinispan.server.hotrod.ServerAddress;
+import org.infinispan.server.hotrod.counter.impl.TestCounterNotificationManager;
+import org.infinispan.server.hotrod.counter.impl.TestCounterEventResponse;
+import org.infinispan.server.hotrod.counter.op.CounterOp;
+import org.infinispan.server.hotrod.counter.response.CounterConfigurationTestResponse;
+import org.infinispan.server.hotrod.counter.response.CounterNamesTestResponse;
+import org.infinispan.server.hotrod.counter.response.CounterValueTestResponse;
 import org.infinispan.server.hotrod.logging.Log;
 import org.infinispan.server.hotrod.transport.ExtendedByteBuf;
 import org.infinispan.test.TestingUtil;
@@ -100,6 +107,10 @@ public class HotRodClient {
       ch = initializeChannel();
    }
 
+   public byte protocolVersion() {
+      return protocolVersion;
+   }
+
    public String defaultCacheName() {
       return defaultCacheName;
    }
@@ -108,6 +119,11 @@ public class HotRodClient {
    SaslClient saslClient = null;
    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
    private static final Log log = LogFactory.getLog(HotRodClient.class, Log.class);
+
+   public TestResponse getResponse(Op op) {
+      ClientHandler handler = (ClientHandler) ch.pipeline().last();
+      return handler.getResponse(op.id);
+   }
 
    private Channel initializeChannel() {
       Bootstrap bootstrap = new Bootstrap();
@@ -137,7 +153,7 @@ public class HotRodClient {
       return execute(0xA0, (byte) 0x01, defaultCacheName, k, lifespan, maxIdle, v, 0, clientIntelligence, topologyId);
    }
 
-   private boolean assertStatus(TestResponse resp, OperationStatus expected) {
+   private void assertStatus(TestResponse resp, OperationStatus expected) {
       OperationStatus status = resp.getStatus();
       boolean isSuccess = status == expected;
       if (resp instanceof TestErrorResponse) {
@@ -147,7 +163,6 @@ public class HotRodClient {
          assertTrue(String.format(
                "Status should have been '%s' but instead was: '%s'", expected, status), isSuccess);
       }
-      return isSuccess;
    }
 
    private byte[] k(Method m) {
@@ -448,6 +463,11 @@ public class HotRodClient {
       ClientHandler handler = (ClientHandler) ch.pipeline().last();
       return (TestPutStreamResponse) handler.getResponse(op.id);
    }*/
+
+   public void registerCounterNotificationManager(TestCounterNotificationManager manager) {
+      ClientHandler handler = (ClientHandler) ch.pipeline().last();
+      handler.registerCounterNotificationManager(manager);
+   }
 }
 
 
@@ -506,9 +526,16 @@ class Encoder extends MessageToByteEncoder<Object> {
          RemoveClientListenerOp op = (RemoveClientListenerOp) msg;
          writeHeader(op, buffer);
          writeRangedBytes(op.listenerId, buffer);
+      } else if (msg instanceof CounterOp) {
+         writeHeader((Op) msg, buffer);
+         ((CounterOp) msg).writeTo(buffer);
       } else if (msg instanceof Op) {
          Op op = (Op) msg;
          writeHeader(op, buffer);
+         if (op.code == HotRodOperation.COUNTER_GET_NAMES.getRequestOpCode()) {
+            //nothing more to add
+            return;
+         }
          if (protocolVersion < 20)
             writeRangedBytes(new byte[0], buffer); // transaction id
          if (op.code != 0x13 && op.code != 0x15
@@ -808,10 +835,46 @@ class Decoder extends ReplayingDecoder<Void> {
          case ERROR:
             if (op == null)
                resp = new TestErrorResponse((byte) 10, id, "", (short) 0, status, 0,
-                     topologyChangeResponse, readString(buf));
+                     null, readString(buf));
             else
                resp = new TestErrorResponse(op.version, id, op.cacheName, op.clientIntel,
                      status, op.topologyId, topologyChangeResponse, readString(buf));
+            break;
+         case COUNTER_REMOVE:
+         case COUNTER_CREATE:
+         case COUNTER_IS_DEFINED:
+         case COUNTER_RESET:
+         case COUNTER_ADD_LISTENER:
+         case COUNTER_REMOVE_LISTENER:
+            resp = new TestResponse(op.version, id, op.cacheName, op.clientIntel,
+                  opCode, status, op.topologyId, topologyChangeResponse);
+            break;
+         case COUNTER_GET_CONFIGURATION:
+            resp = status == OperationStatus.Success ?
+                   new CounterConfigurationTestResponse(op.version, id, op.cacheName, op.clientIntel,
+                         opCode, status, op.topologyId, topologyChangeResponse,
+                         decodeConfiguration(buf::readByte, buf::readLong, () -> readUnsignedInt(buf))) :
+                   new TestResponse(op.version, id, op.cacheName, op.clientIntel,
+                         opCode, status, op.topologyId, topologyChangeResponse);
+            break;
+         case COUNTER_GET:
+         case COUNTER_ADD_AND_GET:
+         case COUNTER_CAS:
+            resp = status == OperationStatus.Success ?
+                   new CounterValueTestResponse(op.version, id, op.cacheName, op.clientIntel,
+                         opCode, status, op.topologyId, topologyChangeResponse, buf.readLong()) :
+                   new TestResponse(op.version, id, op.cacheName, op.clientIntel,
+                         opCode, status, op.topologyId, topologyChangeResponse);
+            break;
+         case COUNTER_GET_NAMES:
+            resp = status == OperationStatus.Success ?
+                   new CounterNamesTestResponse(op.version, id, op.cacheName, op.clientIntel,
+                         opCode, status, op.topologyId, topologyChangeResponse, buf) :
+                   new TestResponse(op.version, id, op.cacheName, op.clientIntel,
+                         opCode, status, op.topologyId, topologyChangeResponse);
+            break;
+         case COUNTER_EVENT:
+            resp = new TestCounterEventResponse(client.protocolVersion, id, opCode, buf);
             break;
          default:
             resp = null;
@@ -934,6 +997,11 @@ class ClientHandler extends ChannelInboundHandlerAdapter {
 
    private Map<Long, TestResponse> responses = new ConcurrentHashMap<>();
    private Map<WrappedByteArray, TestClientListener> clientListeners = new ConcurrentHashMap<>();
+   private Map<WrappedByteArray, TestCounterNotificationManager> clientCounterListeners = new ConcurrentHashMap<>();
+
+   void registerCounterNotificationManager(TestCounterNotificationManager manager) {
+      clientCounterListeners.putIfAbsent(manager.getListenerId(), manager);
+   }
 
    void addClientListener(TestClientListener listener) {
       clientListeners.put(new WrappedByteArray(listener.getId()), listener);
@@ -961,6 +1029,9 @@ class ClientHandler extends ChannelInboundHandlerAdapter {
       } else if (msg instanceof TestCustomEvent) {
          TestCustomEvent e = (TestCustomEvent) msg;
          clientListeners.get(new WrappedByteArray(e.listenerId)).onCustom(e);
+      } else if (msg instanceof TestCounterEventResponse) {
+         log.tracef("Put %s in counter events", msg);
+         clientCounterListeners.get(((TestCounterEventResponse) msg).getListenerId()).accept((TestCounterEventResponse) msg);
       } else if (msg instanceof TestResponse) {
          TestResponse resp = (TestResponse) msg;
          log.tracef("Put %s in responses", resp);
@@ -973,7 +1044,7 @@ class ClientHandler extends ChannelInboundHandlerAdapter {
    TestResponse getResponse(long messageId) {
       // Very TODO very primitive way of waiting for a response. Convert to a Future
       int i = 0;
-      TestResponse v = null;
+      TestResponse v;
       do {
          v = responses.get(messageId);
          if (v == null) {

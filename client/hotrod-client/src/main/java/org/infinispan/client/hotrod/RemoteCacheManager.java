@@ -1,5 +1,7 @@
 package org.infinispan.client.hotrod;
 
+import static java.util.Arrays.asList;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
+import org.infinispan.client.hotrod.counter.impl.RemoteCounterManager;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.impl.InvalidatedNearRemoteCache;
@@ -29,6 +32,7 @@ import org.infinispan.commons.executors.ExecutorFactory;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.FileLookupFactory;
 import org.infinispan.commons.util.Util;
+import org.infinispan.counter.api.CounterManager;
 
 /**
  * Factory for {@link org.infinispan.client.hotrod.RemoteCache}s. <p/> <p> <b>Lifecycle:</b> </p> In order to be able to
@@ -66,6 +70,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    protected TransportFactory transportFactory;
    private ExecutorService asyncExecutorService;
    protected ClientListenerNotifier listenerNotifier;
+   private final RemoteCounterManager counterManager;
 
    /**
     *
@@ -90,6 +95,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
     */
    public RemoteCacheManager(Configuration configuration, boolean start) {
       this.configuration = configuration;
+      this.counterManager = new RemoteCounterManager();
       if (start) start();
    }
 
@@ -133,6 +139,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
          }
       }
       this.configuration = builder.build();
+      this.counterManager = new RemoteCounterManager();
       if (start) start();
    }
 
@@ -203,7 +210,9 @@ public class RemoteCacheManager implements RemoteCacheContainer {
       }
 
       listenerNotifier = ClientListenerNotifier.create(codec, marshaller, transportFactory, configuration.serialWhitelist());
-      transportFactory.start(codec, configuration, defaultCacheTopologyId, listenerNotifier);
+      transportFactory.start(codec, configuration, defaultCacheTopologyId, listenerNotifier,
+            asList(listenerNotifier::failoverClientListeners, counterManager));
+      counterManager.start(transportFactory, codec, configuration, asyncExecutorService);
 
       synchronized (cacheName2RemoteCache) {
          for (RemoteCacheHolder rcc : cacheName2RemoteCache.values()) {
@@ -226,6 +235,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    public void stop() {
       if (isStarted()) {
          listenerNotifier.stop();
+         counterManager.stop();
          transportFactory.destroy();
          asyncExecutorService.shutdownNow();
       }
@@ -263,7 +273,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
          RemoteCacheKey key = new RemoteCacheKey(cacheName, forceReturnValueOverride);
          if (!cacheName2RemoteCache.containsKey(key)) {
             RemoteCacheImpl<K, V> result = createRemoteCache(cacheName);
-            RemoteCacheHolder rcc = new RemoteCacheHolder(result, forceReturnValueOverride == null ? configuration.forceReturnValues() : forceReturnValueOverride);
+            RemoteCacheHolder rcc = new RemoteCacheHolder(result, forceReturnValueOverride);
             startRemoteCache(rcc);
 
             PingResult pingResult = result.resolveCompatibility();
@@ -320,6 +330,10 @@ public class RemoteCacheManager implements RemoteCacheContainer {
 
    public static byte[] cacheNameBytes() {
       return HotRodConstants.DEFAULT_CACHE_NAME_BYTES;
+   }
+
+   CounterManager getCounterManager() {
+      return counterManager;
    }
 
 }

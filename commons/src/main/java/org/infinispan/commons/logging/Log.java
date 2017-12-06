@@ -5,6 +5,8 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.dataconversion.EncodingException;
+import org.infinispan.counter.exception.CounterException;
+import org.infinispan.counter.exception.CounterOutOfBoundsException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -62,7 +64,7 @@ public interface Log extends BasicLogger {
    CacheConfigurationException sslInitializationException(@Cause Throwable e);
 
    @LogMessage(level = ERROR)
-   @Message(value = "Unable to load %s from any of the following classloaders: %s", id=905)
+   @Message(value = "Unable to load %s from any of the following classloaders: %s", id = 905)
    void unableToLoadClass(String classname, String classloaders, @Cause Throwable cause);
 
    @LogMessage(level = WARN)
@@ -124,4 +126,21 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Unsupported content '%s'", id = 934)
    EncodingException unsupportedContent(Object content);
+
+   //----- counters exceptions ------
+
+   @Message(value = CounterOutOfBoundsException.FORMAT_MESSAGE, id = 28001)
+   CounterOutOfBoundsException counterOurOfBounds(String bound);
+
+   @Message(value = "Invalid counter type. Expected=%s but got %s", id = 28014)
+   CounterException invalidCounterType(String expected, String actual);
+
+   @Message(value = "Counter '%s' is not defined.", id = 28016)
+   CounterException undefinedCounter(String name);
+
+   @Message(value = "WEAK and BOUNDED encoded flag isn't supported!", id = 28022)
+   CounterException invalidCounterTypeEncoded();
+
+   //----- counters exceptions ------
+
 }
