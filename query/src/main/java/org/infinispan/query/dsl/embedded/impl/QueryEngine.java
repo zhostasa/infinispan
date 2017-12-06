@@ -729,12 +729,12 @@ public class QueryEngine<TypeMetadata> {
       return (CacheQuery<E>) cacheQuery;
    }
 
-   public HsQueryRequest createHsQuery(String queryString) {
+   public HsQueryRequest createHsQuery(String queryString, Map<String, Object> nameParameters) {
       IckleParsingResult<TypeMetadata> parsingResult = parse(queryString);
       if (parsingResult.hasGroupingOrAggregations()) {
          throw log.groupAggregationsNotSupported();
       }
-      LuceneQueryParsingResult luceneParsingResult = transformParsingResult(parsingResult, emptyMap());
+      LuceneQueryParsingResult luceneParsingResult = transformParsingResult(parsingResult, nameParameters);
       org.apache.lucene.search.Query luceneQuery = makeTypeQuery(luceneParsingResult.getQuery(), luceneParsingResult.getTargetEntityName());
       SearchIntegrator searchFactory = getSearchFactory();
       HSQuery hsQuery = searchFactory.createHSQuery(luceneQuery);
@@ -830,7 +830,7 @@ public class QueryEngine<TypeMetadata> {
          log.debugf("The resulting Lucene query is : %s", luceneQuery.toString());
       }
 
-      CacheQuery<?> cacheQuery = makeCacheQuery(ickleParsingResult, luceneQuery, queryMode);
+      CacheQuery<?> cacheQuery = makeCacheQuery(ickleParsingResult, luceneQuery, queryMode, namedParameters);
       // No need to set sort and projection if BROADCAST, as both are part of the query string already.
       if (queryMode != IndexedQueryMode.BROADCAST) {
          if (luceneParsingResult.getSort() != null) {
@@ -869,9 +869,10 @@ public class QueryEngine<TypeMetadata> {
       return (Class<?>) parsingResult.getTargetEntityMetadata();
    }
 
-   protected CacheQuery<?> makeCacheQuery(IckleParsingResult<TypeMetadata> ickleParsingResult, org.apache.lucene.search.Query luceneQuery, IndexedQueryMode queryMode) {
+   protected CacheQuery<?> makeCacheQuery(IckleParsingResult<TypeMetadata> ickleParsingResult, org.apache.lucene.search.Query luceneQuery, IndexedQueryMode queryMode, Map<String, Object> namedParameters) {
       if (queryMode == IndexedQueryMode.BROADCAST) {
          QueryDefinition queryDefinition = new QueryDefinition(ickleParsingResult.getQueryString());
+         queryDefinition.setNamedParameters(namedParameters);
          return getSearchManager().getQuery(queryDefinition, queryMode);
       }
       return getSearchManager().getQuery(luceneQuery, queryMode, getTargetedClass(ickleParsingResult));

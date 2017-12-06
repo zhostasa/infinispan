@@ -83,13 +83,14 @@ final class RemoteQueryEngine extends BaseRemoteQueryEngine {
    }
 
    @Override
-   protected CacheQuery<?> makeCacheQuery(IckleParsingResult<Descriptor> ickleParsingResult, Query luceneQuery, IndexedQueryMode queryMode) {
+   protected CacheQuery<?> makeCacheQuery(IckleParsingResult<Descriptor> ickleParsingResult, Query luceneQuery, IndexedQueryMode queryMode, Map<String, Object> namedParameters) {
       RemoteQueryDefinition queryDefinition;
       if (queryMode == IndexedQueryMode.BROADCAST) {
          queryDefinition = new RemoteQueryDefinition(ickleParsingResult.getQueryString());
       } else {
          queryDefinition = new RemoteQueryDefinition(getSearchFactory().createHSQuery(luceneQuery));
       }
+      queryDefinition.setNamedParameters(namedParameters);
       return getSearchManager().getQuery(queryDefinition, queryMode);
    }
 

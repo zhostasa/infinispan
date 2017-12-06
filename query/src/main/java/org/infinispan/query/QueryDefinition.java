@@ -1,5 +1,7 @@
 package org.infinispan.query;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.lucene.search.Filter;
@@ -28,6 +30,7 @@ public class QueryDefinition {
    private int maxResults = 100;
    private int firstResult;
 
+   private final Map<String, Object> namedParameters = new HashMap<>();
    private transient Sort sort;
 
    public QueryDefinition(String queryString) {
@@ -49,7 +52,7 @@ public class QueryDefinition {
    public void initialize(AdvancedCache<?, ?> cache) {
       if (hsQuery == null) {
          QueryEngine queryEngine = getQueryEngine(cache);
-         HsQueryRequest hsQueryRequest = queryEngine.createHsQuery(queryString);
+         HsQueryRequest hsQueryRequest = queryEngine.createHsQuery(queryString, namedParameters);
          this.hsQuery = hsQueryRequest.getHsQuery();
          this.sort = hsQueryRequest.getSort();
          hsQuery.firstResult(firstResult);
@@ -74,6 +77,18 @@ public class QueryDefinition {
       if (hsQuery != null) {
          hsQuery.maxResults(maxResults);
       }
+   }
+
+   public void setNamedParameters(Map<String, Object> params) {
+      if (params == null) {
+         namedParameters.clear();
+      } else {
+         namedParameters.putAll(params);
+      }
+   }
+
+   public Map<String, Object> getNamedParameters() {
+      return namedParameters;
    }
 
    public int getFirstResult() {

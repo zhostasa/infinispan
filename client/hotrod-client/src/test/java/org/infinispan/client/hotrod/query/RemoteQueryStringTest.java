@@ -97,10 +97,14 @@ public class RemoteQueryStringTest extends QueryStringTest {
       return cache;
    }
 
+   protected int getNodesCount() {
+      return 1;
+   }
+
    @Override
    protected void createCacheManagers() throws Throwable {
       ConfigurationBuilder cfg = getConfigurationBuilder();
-      createClusteredCaches(1, cfg, true);
+      createClusteredCaches(getNodesCount(), cfg, true);
 
       cache = manager(0).getCache();
 
@@ -192,10 +196,8 @@ public class RemoteQueryStringTest extends QueryStringTest {
     * timestamps).
     */
    @Override
-   public void testInstant1() {
-      QueryFactory qf = getQueryFactory();
-
-      Query q = qf.create("from " + getModelFactory().getUserTypeName() + " u where u.creationDate = " + Instant.parse("2011-12-03T10:15:30Z").toEpochMilli());
+   public void testInstant1() throws Exception {
+      Query q = createQueryFromString("from " + getModelFactory().getUserTypeName() + " u where u.creationDate = " + Instant.parse("2011-12-03T10:15:30Z").toEpochMilli());
 
       List<User> list = q.list();
       assertEquals(3, list.size());
@@ -206,19 +208,15 @@ public class RemoteQueryStringTest extends QueryStringTest {
     * timestamps).
     */
    @Override
-   public void testInstant2() {
-      QueryFactory qf = getQueryFactory();
-
-      Query q = qf.create("from " + getModelFactory().getUserTypeName() + " u where u.passwordExpirationDate = " + Instant.parse("2011-12-03T10:15:30Z").toEpochMilli());
+   public void testInstant2() throws Exception {
+      Query q = createQueryFromString("from " + getModelFactory().getUserTypeName() + " u where u.passwordExpirationDate = " + Instant.parse("2011-12-03T10:15:30Z").toEpochMilli());
 
       List<User> list = q.list();
       assertEquals(3, list.size());
    }
 
-   public void testCustomFieldAnalyzer() {
-      QueryFactory qf = getQueryFactory();
-
-      Query q = qf.create("from sample_bank_account.AnalyzerTestEntity where f1:'test'");
+   public void testCustomFieldAnalyzer() throws Exception {
+      Query q = createQueryFromString("from sample_bank_account.AnalyzerTestEntity where f1:'test'");
 
       List<AnalyzerTestEntity> list = q.list();
       assertEquals(2, list.size());
