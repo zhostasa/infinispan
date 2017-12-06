@@ -121,9 +121,9 @@ public class RemoteNonIndexedQueryStringTest extends RemoteQueryStringTest {
       super.testFullTextRegexp();
    }
 
-   @Test(enabled = false, description = "Not applicable to non-indexed caches")
+   @Override
    public void testExactMatchOnAnalyzedFieldNotAllowed() {
-      // this test does not make sense in non-indexed mode
+      // Not applicable to non-indexed caches
    }
 
    @Test(expectedExceptions = HotRodClientException.class, expectedExceptionsMessageRegExp = "org.infinispan.objectfilter.ParsingException: ISPN028521: Full-text queries cannot be applied to property 'description' in type sample_bank_account.Transaction unless the property is indexed and analyzed.")
@@ -138,8 +138,8 @@ public class RemoteNonIndexedQueryStringTest extends RemoteQueryStringTest {
       super.testFullTextRegexp2();
    }
 
-   @Test(enabled = false, description = "Not applicable to non-indexed caches")
+   @Override
    public void testCustomFieldAnalyzer() {
-      //not working with non-indexed caches
+      // Not applicable to non-indexed caches
    }
 }

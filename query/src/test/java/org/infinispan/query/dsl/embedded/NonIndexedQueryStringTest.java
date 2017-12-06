@@ -124,9 +124,9 @@ public class NonIndexedQueryStringTest extends QueryStringTest {
       super.testFullTextRegexp();
    }
 
-   @Test(enabled = false, description = "Not applicable in non-indexed mode")
+   @Override
    public void testExactMatchOnAnalyzedFieldNotAllowed() {
-      // this test does not make sense in non-indexed mode
+      // Not applicable to non-indexed caches
    }
 
    @Test(expectedExceptions = ParsingException.class, expectedExceptionsMessageRegExp = "ISPN028521: Full-text queries cannot be applied to property 'description' in type org.infinispan.query.dsl.embedded.testdomain.hsearch.TransactionHS unless the property is indexed and analyzed.")

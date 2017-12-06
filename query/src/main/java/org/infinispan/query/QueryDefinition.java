@@ -114,7 +114,6 @@ public class QueryDefinition {
       this.sort = sort;
    }
 
-
    public void filter(Filter filter) {
       if (queryString != null) throw log.filterNotSupportedWithQueryString();
       hsQuery.filter(filter);

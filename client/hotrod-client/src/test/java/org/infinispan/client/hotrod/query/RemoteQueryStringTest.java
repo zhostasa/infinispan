@@ -196,7 +196,7 @@ public class RemoteQueryStringTest extends QueryStringTest {
     * timestamps).
     */
    @Override
-   public void testInstant1() throws Exception {
+   public void testInstant1() {
       Query q = createQueryFromString("from " + getModelFactory().getUserTypeName() + " u where u.creationDate = " + Instant.parse("2011-12-03T10:15:30Z").toEpochMilli());
 
       List<User> list = q.list();
@@ -208,14 +208,14 @@ public class RemoteQueryStringTest extends QueryStringTest {
     * timestamps).
     */
    @Override
-   public void testInstant2() throws Exception {
+   public void testInstant2() {
       Query q = createQueryFromString("from " + getModelFactory().getUserTypeName() + " u where u.passwordExpirationDate = " + Instant.parse("2011-12-03T10:15:30Z").toEpochMilli());
 
       List<User> list = q.list();
       assertEquals(3, list.size());
    }
 
-   public void testCustomFieldAnalyzer() throws Exception {
+   public void testCustomFieldAnalyzer() {
       Query q = createQueryFromString("from sample_bank_account.AnalyzerTestEntity where f1:'test'");
 
       List<AnalyzerTestEntity> list = q.list();

@@ -13,7 +13,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.objectfilter.ParsingException;
 import org.infinispan.query.dsl.Query;
-import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.embedded.testdomain.Address;
 import org.infinispan.query.dsl.embedded.testdomain.Transaction;
 import org.infinispan.query.dsl.embedded.testdomain.User;
@@ -178,7 +177,7 @@ public class QueryStringTest extends AbstractQueryDslTest {
       }
    }
 
-   public void testParam() throws Exception {
+   public void testParam() {
       Query q = createQueryFromString("from " + getModelFactory().getTransactionTypeName() + " where id = :idParam");
 
       q.setParameter("idParam", 1);
@@ -197,14 +196,14 @@ public class QueryStringTest extends AbstractQueryDslTest {
    }
 
    @Test(enabled = false)
-   public void testParamWithSpacePadding() throws Exception {
+   public void testParamWithSpacePadding() {
       //todo [anistor] need special tree nodes for all literal types (and for params) to be able to distinguish them better; QueryRendererDelegate.predicateXXX should receive such a tree node instead of a string
       Query q = createQueryFromString("from " + getModelFactory().getTransactionTypeName() + " where id = :  idParam");
       List<Transaction> list = q.list();
       assertEquals(1, list.size());
    }
 
-   public void testExactMatch() throws Exception {
+   public void testExactMatch() {
       Query q = createQueryFromString("from " + getModelFactory().getTransactionTypeName() + " where description = 'Birthday present'");
 
       List<Transaction> list = q.list();
@@ -374,14 +373,14 @@ public class QueryStringTest extends AbstractQueryDslTest {
       assertEquals(1, list.size());
    }
 
-   public void testInstant1() throws Exception {
+   public void testInstant1() {
       Query q = createQueryFromString("from " + getModelFactory().getUserTypeName() + " u where u.creationDate = '2011-12-03T10:15:30Z'");
 
       List<User> list = q.list();
       assertEquals(3, list.size());
    }
 
-   public void testInstant2() throws Exception {
+   public void testInstant2() {
       Query q = createQueryFromString("from " + getModelFactory().getUserTypeName() + " u where u.passwordExpirationDate = '2011-12-03T10:15:30Z'");
 
       List<User> list = q.list();
@@ -389,7 +388,6 @@ public class QueryStringTest extends AbstractQueryDslTest {
    }
 
    protected Query createQueryFromString(String q) {
-      QueryFactory qf = getQueryFactory();
-      return qf.create(q);
+      return getQueryFactory().create(q);
    }
 }
