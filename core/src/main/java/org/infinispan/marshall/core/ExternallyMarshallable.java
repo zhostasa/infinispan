@@ -119,8 +119,7 @@ final class ExternallyMarshallable {
             || className.equals("org.infinispan.stream.BaseStreamTest$ForEachIntInjected")
             || className.equals("org.infinispan.stream.BaseStreamTest$ForEachLongInjected")
             || className.equals("org.infinispan.stream.DistributedStreamIteratorWithStoreAsBinaryTest$MagicKeyStringFilter")
-            || className.equals("org.infinispan.test.data.Key")
-            || className.equals("org.infinispan.test.data.Person")
+            || className.startsWith("org.infinispan.test.data")
             || className.equals("org.infinispan.xsite.BackupSender$TakeSiteOfflineResponse") // prod
             || className.equals("org.infinispan.xsite.BackupSender$BringSiteOnlineResponse") // prod
             || className.equals("org.infinispan.xsite.XSiteAdminCommand$Status") // prod

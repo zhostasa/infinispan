@@ -6,8 +6,14 @@ import static org.infinispan.multimap.impl.MultimapTestUtils.JULIEN;
 import static org.infinispan.multimap.impl.MultimapTestUtils.NAMES_KEY;
 import static org.infinispan.multimap.impl.MultimapTestUtils.OIHANA;
 import static org.infinispan.multimap.impl.MultimapTestUtils.RAMON;
+import static org.infinispan.multimap.impl.MultimapTestUtils.KOLDO;
+import static org.infinispan.multimap.impl.MultimapTestUtils.NULL_KEY;
+import static org.infinispan.multimap.impl.MultimapTestUtils.NULL_USER;
+import static org.infinispan.multimap.impl.MultimapTestUtils.EMPTY_KEY;
+import static org.infinispan.multimap.impl.MultimapTestUtils.PEPE;
 import static org.infinispan.multimap.impl.MultimapTestUtils.assertMultimapCacheSize;
 import static org.infinispan.multimap.impl.MultimapTestUtils.putValuesOnMultimapCache;
+import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNotNull;
@@ -19,7 +25,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 
+import org.apache.logging.log4j.core.impl.ExtendedClassInfo;
 import org.infinispan.Cache;
 import org.infinispan.distribution.BaseDistFunctionalTest;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -28,7 +37,9 @@ import org.infinispan.multimap.api.MultimapCache;
 import org.infinispan.multimap.api.MultimapCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.data.Person;
+import org.junit.Ignore;
 import org.testng.annotations.Test;
+import static org.infinispan.test.Exceptions.expectException;
 
 @Test(groups = "functional", testName = "distribution.DistributedMultimapCacheTest")
 public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String, Collection<Person>> {
@@ -59,7 +70,43 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
       putValuesOnMultimapCache(multimapCache, NAMES_KEY, JULIEN);
 
       assertValuesAndOwnership(NAMES_KEY, JULIEN);
+      
+      putValuesOnMultimapCache(multimapCache, EMPTY_KEY, RAMON);
+
+      assertValuesAndOwnership(EMPTY_KEY, RAMON);
+      
+      putValuesOnMultimapCache(multimapCache, NAMES_KEY, PEPE);
+
+      assertValuesAndOwnership(NAMES_KEY, PEPE);
    }
+   
+   public void testPutDuplicates() {
+       initAndTest();
+       MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+       
+       putValuesOnMultimapCache(multimapCache, NAMES_KEY, JULIEN);
+       putValuesOnMultimapCache(multimapCache, NAMES_KEY, RAMON);
+       
+       assertValuesAndOwnership(NAMES_KEY, JULIEN);
+       assertValuesAndOwnership(NAMES_KEY, RAMON);
+       
+       assertEquals(3, await(multimapCache.size()).intValue());
+       
+       putValuesOnMultimapCache(multimapCache, NAMES_KEY, JULIEN);
+       
+       assertValuesAndOwnership(NAMES_KEY, JULIEN);
+       assertValuesAndOwnership(NAMES_KEY, RAMON);
+       
+       assertEquals(3, await(multimapCache.size()).intValue());
+       
+       putValuesOnMultimapCache(multimapCache, NAMES_KEY, JULIEN);
+       
+       assertValuesAndOwnership(NAMES_KEY, JULIEN);
+       assertValuesAndOwnership(NAMES_KEY, RAMON);
+       
+       assertEquals(3, await(multimapCache.size()).intValue());
+    }
+   
 
    public void testRemoveKey() {
       initAndTest();
@@ -73,6 +120,13 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
       );
 
       assertRemovedOnAllCaches(NAMES_KEY);
+      
+      putValuesOnMultimapCache(multimapCache, EMPTY_KEY, RAMON);
+      
+      await(multimapCache.remove(EMPTY_KEY).thenCompose(r1 -> {
+            assertTrue(r1);
+            return multimapCache.get(EMPTY_KEY).thenAccept(v -> assertTrue(v.isEmpty()));
+      }));
    }
 
    public void testRemoveKeyValue() {
@@ -91,8 +145,24 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
       );
 
       assertRemovedOnAllCaches(NAMES_KEY);
+
+      putValuesOnMultimapCache(multimapCache, EMPTY_KEY, RAMON);
+
+        await(multimapCache.remove(EMPTY_KEY, RAMON).thenCompose(r1 -> {
+            assertTrue(r1);
+            return multimapCache.get(EMPTY_KEY).thenAccept(v -> assertTrue(v.isEmpty()));
+        }));
+
+      
+      putValuesOnMultimapCache(multimapCache, NAMES_KEY, PEPE);
+      
+        await(multimapCache.remove(NAMES_KEY, PEPE).thenCompose(r1 -> {
+            assertTrue(r1);
+            return multimapCache.get(NAMES_KEY).thenAccept(v -> assertTrue(v.isEmpty()));
+        }));
    }
 
+   
    public void testRemoveWithPredicate() {
       MultimapCache<String, Person> multimapCache = getMultimapCacheMember();
 
@@ -140,6 +210,22 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
       assertRemovedOnAllCaches(NAMES_KEY);
    }
 
+    public void testGet() {
+        initAndTest();
+        MultimapCache<String, Person> multimapCache = getMultimapCacheMember();
+
+        await(multimapCache.get(NAMES_KEY).thenAccept(v -> {
+            assertTrue(v.contains(OIHANA));
+        }));
+
+        await(multimapCache.getEntry(NAMES_KEY).thenAccept(v -> {
+            assertTrue(!v.isNull() && v.getKey().equals(NAMES_KEY) && v.getValue().contains(OIHANA));
+        }));
+        await(multimapCache.put(EMPTY_KEY, RAMON).thenCompose(r3 -> multimapCache.get(EMPTY_KEY)).thenAccept(v -> {
+           assertTrue(v.contains(RAMON));
+        }));
+    }
+  
    public void testGetEmpty() {
       MultimapCache<String, Person> multimapCache = getMultimapCacheMember();
 
@@ -150,6 +236,10 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
                         }
                   )
       );
+
+      await(multimapCache.getEntry(NAMES_KEY).thenAccept(v -> {
+          assertTrue(v == null);
+      }));
    }
 
    public void testGetAndModifyResults() {
@@ -182,11 +272,17 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
                mc.containsKey(NAMES_KEY)
                      .thenAccept(containsKey -> assertTrue(containsKey))
          );
+         await(
+               mc.containsKey(EMPTY_KEY)
+                     .thenAccept(containsKey -> assertFalse(containsKey))
+         );
       });
    }
 
    public void testContainsValue() {
       initAndTest();
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      putValuesOnMultimapCache(multimapCache, NAMES_KEY, PEPE);
 
       multimapCacheCluster.values().forEach(mc -> {
          await(
@@ -197,11 +293,17 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
                mc.containsValue(OIHANA)
                      .thenAccept(containsValue -> assertTrue(containsValue))
          );
+         await(
+               mc.containsValue(PEPE)
+                     .thenAccept(containsValue -> assertTrue(containsValue))
+         );
       });
    }
 
    public void testContainEntry() {
       initAndTest();
+      
+      putValuesOnMultimapCache(multimapCacheCluster, EMPTY_KEY, PEPE);
 
       multimapCacheCluster.values().forEach(mc -> {
          await(
@@ -210,6 +312,14 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
          );
          await(
                mc.containsEntry(NAMES_KEY, OIHANA)
+                     .thenAccept(containsValue -> assertTrue(containsValue))
+         );
+         await(
+               mc.containsEntry(EMPTY_KEY, RAMON)
+                     .thenAccept(containsValue -> assertFalse(containsValue))
+         );
+         await(
+               mc.containsEntry(EMPTY_KEY, PEPE)
                      .thenAccept(containsValue -> assertTrue(containsValue))
          );
       });
@@ -232,7 +342,18 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
                      assertValuesAndOwnership(anotherKey, JULIEN);
                      assertValuesAndOwnership(anotherKey, OIHANA);
                   })
+                  .thenCompose(r1 -> multimapCache.remove(NAMES_KEY, JULIEN))
+                  .thenCompose(r2 -> multimapCache.remove(NAMES_KEY, OIHANA))
+                  .thenCompose(r2 -> multimapCache.remove(NAMES_KEY, JULIEN))
+                  .thenCompose(r3 -> multimapCache.put(anotherKey, JULIEN))
+                  .thenCompose(r4 -> multimapCache.size())
+                  .thenAccept(s -> {
+                     assertEquals(2, s.intValue());
+                     assertValuesAndOwnership(anotherKey, JULIEN);
+                     assertValuesAndOwnership(anotherKey, OIHANA);
+                  })
       );
+      
    }
 
    public void testGetEntry() {
@@ -254,6 +375,58 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
                         }
                   )
       );
+      
+      await(multimapCache.put(EMPTY_KEY, RAMON).thenCompose(r3 -> multimapCache.getEntry(EMPTY_KEY)).thenAccept(v -> {
+         assertTrue(!v.isNull() && v.getKey().equals(EMPTY_KEY) && v.getValue().contains(RAMON));
+      }));
+   }
+   
+   public void testPutWithNull() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.put(NULL_KEY, OIHANA));
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.put(NAMES_KEY, NULL_USER));
+   }
+
+   public void testGetWithNull() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.get(NULL_KEY));
+   }
+
+   public void testGetEntryWithNull() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.getEntry(NULL_KEY));
+   }
+
+   public void testRemoveKeyValueWithNull() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.remove(NULL_KEY, RAMON));
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.remove(NAMES_KEY, NULL_USER));
+   }
+
+   public void testRemoveKeyWithNulll() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.remove((String) NULL_KEY));
+   }
+
+   public void testRemoveWithNullPredicate() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "predicate can't be null", () -> multimapCache.remove((Predicate<? super Person>) null));
+   }
+
+   public void testContainsKeyWithNull() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.containsKey(NULL_KEY));
+   }
+
+   public void testContainsValueWithNull() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.containsValue(NULL_USER));
+   }
+
+   public void testContainsEntryWithNull() {
+      MultimapCache<String, Person> multimapCache = getMultimapCacheMember(NAMES_KEY);
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.containsEntry(NULL_KEY, OIHANA));
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.containsEntry(NAMES_KEY, NULL_USER));
    }
 
    protected MultimapCache getMultimapCacheMember() {
@@ -308,7 +481,8 @@ public class DistributedMultimapCacheTest extends BaseDistFunctionalTest<String,
       for (Map.Entry<Address, MultimapCache<String, Person>> entry : multimapCacheCluster.entrySet()) {
          await(entry.getValue().get((String) key).thenAccept(v -> {
                   assertNotNull(format("values on the key %s must be not null", key), v);
-                  assertTrue(format("values on the key '%s' must contain '%s' on node '%s'", key, value, entry.getKey()), v.contains(value));
+                  assertTrue(format("values on the key '%s' must contain '%s' on node '%s'", key, value, entry.getKey()), 
+                          v.contains(value));
                })
          );
       }
