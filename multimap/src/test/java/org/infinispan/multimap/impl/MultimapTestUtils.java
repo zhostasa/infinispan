@@ -13,13 +13,18 @@ import javax.transaction.TransactionManager;
 import org.infinispan.multimap.api.MultimapCache;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.data.Person;
+import org.infinispan.test.data.SuperPerson;
 
 public class MultimapTestUtils {
    public static final String NAMES_KEY = "names";
+   public static final String EMPTY_KEY = "";
+   public static final String NULL_KEY = null;
    public static final Person JULIEN = new Person("Julien");
    public static final Person OIHANA = new Person("Oihana");
    public static final Person RAMON = new Person("Ramon");
    public static final Person KOLDO = new Person("Koldo");
+   public static final SuperPerson PEPE = new SuperPerson("Pepe");
+   public static final SuperPerson NULL_USER = null;
 
 
    public static TransactionManager getTransactionManager(MultimapCache multimapCache) {

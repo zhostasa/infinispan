@@ -1,10 +1,14 @@
 package org.infinispan.multimap.impl;
 
 import static org.infinispan.functional.FunctionalTestUtils.await;
+import static org.infinispan.multimap.impl.MultimapTestUtils.EMPTY_KEY;
 import static org.infinispan.multimap.impl.MultimapTestUtils.JULIEN;
 import static org.infinispan.multimap.impl.MultimapTestUtils.KOLDO;
 import static org.infinispan.multimap.impl.MultimapTestUtils.NAMES_KEY;
+import static org.infinispan.multimap.impl.MultimapTestUtils.NULL_KEY;
+import static org.infinispan.multimap.impl.MultimapTestUtils.NULL_USER;
 import static org.infinispan.multimap.impl.MultimapTestUtils.OIHANA;
+import static org.infinispan.multimap.impl.MultimapTestUtils.PEPE;
 import static org.infinispan.multimap.impl.MultimapTestUtils.RAMON;
 import static org.infinispan.multimap.impl.MultimapTestUtils.putValuesOnMultimapCache;
 import static org.infinispan.test.Exceptions.expectException;
@@ -70,27 +74,85 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
                   }
             )
       );
+      
+      await(
+            multimapCache.put(EMPTY_KEY, RAMON)
+                  .thenCompose(r1 -> multimapCache.get(EMPTY_KEY)
+                  .thenAccept(v -> {
+                     assertTrue(v.contains(RAMON));
+                     assertEquals(1, v.stream().filter(n -> n.equals(RAMON)).count());
+                  }))
+      );
+      
+      await(
+            multimapCache.put(NAMES_KEY, PEPE)
+                  .thenCompose(r1 -> multimapCache.get(NAMES_KEY)
+                  .thenAccept(v -> {
+                     assertTrue(v.contains(PEPE));
+                     assertEquals(1, v.stream().filter(n -> n.equals(PEPE)).count());
+                  }))
+      );
+   }
+   
+   public void testPutDuplicates() {
+
+      await(multimapCache.put(NAMES_KEY, JULIEN)
+            .thenCompose(r1 -> multimapCache.put(NAMES_KEY, RAMON).thenCompose(r2 -> multimapCache.get(NAMES_KEY).thenAccept(v -> {
+               assertTrue(v.contains(JULIEN));
+               assertEquals(1, v.stream().filter(n -> n.equals(JULIEN)).count());
+               assertTrue(v.contains(RAMON));
+               assertEquals(1, v.stream().filter(n -> n.equals(RAMON)).count());
+            }).thenCompose(r3 -> multimapCache.size()).thenAccept(v -> {
+               assertEquals(2, v.intValue());
+            }).thenCompose(r4 -> multimapCache.put(NAMES_KEY, JULIEN).thenCompose(r5 -> multimapCache.get(NAMES_KEY)).thenAccept(v -> {
+               assertTrue(v.contains(JULIEN));
+               assertEquals(1, v.stream().filter(n -> n.equals(JULIEN)).count());
+               assertTrue(v.contains(RAMON));
+               assertEquals(1, v.stream().filter(n -> n.equals(RAMON)).count());
+            }).thenCompose(r3 -> multimapCache.size()).thenAccept(v -> {
+               assertEquals(2, v.intValue());
+            }).thenCompose(r5 -> multimapCache.put(NAMES_KEY, JULIEN).thenCompose(r6 -> multimapCache.get(NAMES_KEY)).thenAccept(v -> {
+               assertTrue(v.contains(JULIEN));
+               assertEquals(1, v.stream().filter(n -> n.equals(JULIEN)).count());
+               assertTrue(v.contains(RAMON));
+               assertEquals(1, v.stream().filter(n -> n.equals(RAMON)).count());
+            }).thenCompose(r7 -> multimapCache.size()).thenAccept(v -> {
+               assertEquals(2, v.intValue());
+            })
+      )))));
+         
    }
 
    public void testRemoveKey() {
-      String key = NAMES_KEY;
-
       await(
-            multimapCache.put(key, OIHANA)
+            multimapCache.put(NAMES_KEY, OIHANA)
                   .thenCompose(r1 -> multimapCache.size())
                   .thenAccept(s -> assertEquals(1, s.intValue()))
       );
 
       await(
-            multimapCache.remove(key, OIHANA).thenCompose(r1 -> {
+            multimapCache.remove(NAMES_KEY, OIHANA).thenCompose(r1 -> {
                assertTrue(r1);
-               return multimapCache.get(key).thenAccept(v -> assertTrue(v.isEmpty()));
+               return multimapCache.get(NAMES_KEY).thenAccept(v -> assertTrue(v.isEmpty()));
             })
       );
 
-      await(multimapCache.remove(key).thenAccept(r -> assertFalse(r)));
-   }
+      await(multimapCache.remove(NAMES_KEY).thenAccept(r -> assertFalse(r)));
+      
+      await(
+            multimapCache.put(EMPTY_KEY, RAMON)
+                  .thenCompose(r1 -> multimapCache.size())
+                  .thenAccept(s -> assertEquals(1, s.intValue()))
+      );
 
+      await(
+            multimapCache.remove(EMPTY_KEY, RAMON).thenCompose(r1 -> {
+               assertTrue(r1);
+               return multimapCache.get(EMPTY_KEY).thenAccept(v -> assertTrue(v.isEmpty()));
+            })
+      );
+   }
+   
    public void testRemoveKeyValue() {
 
       await(
@@ -118,6 +180,32 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
       );
 
       await(multimapCache.size().thenAccept(s -> assertEquals(0, s.intValue())));
+      
+      await(
+            multimapCache.put(EMPTY_KEY, RAMON)
+                  .thenCompose(r1 -> multimapCache.size())
+                  .thenAccept(s -> assertEquals(1, s.intValue()))
+      );
+      await(
+            multimapCache.remove(EMPTY_KEY, RAMON).thenCompose(r1 -> {
+                     assertTrue(r1);
+                     return multimapCache.get(EMPTY_KEY).thenAccept(v -> assertTrue(v.isEmpty()));
+                  }
+            )
+      );
+      
+      await(
+            multimapCache.put(NAMES_KEY, PEPE)
+                  .thenCompose(r1 -> multimapCache.size())
+                  .thenAccept(s -> assertEquals(1, s.intValue()))
+      );
+      await(
+            multimapCache.remove(NAMES_KEY, PEPE).thenCompose(r1 -> {
+                     assertTrue(r1);
+                     return multimapCache.get(NAMES_KEY).thenAccept(v -> assertTrue(v.isEmpty()));
+                  }
+            )
+      );
    }
 
    public void testRemoveWithPredicate() {
@@ -183,14 +271,24 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
 
    public void testSize() {
       String anotherKey = "firstNames";
-
+      
       await(
             multimapCache.put(NAMES_KEY, OIHANA)
                   .thenCompose(r1 -> multimapCache.put(NAMES_KEY, JULIEN))
                   .thenCompose(r2 -> multimapCache.put(anotherKey, OIHANA))
                   .thenCompose(r3 -> multimapCache.put(anotherKey, JULIEN))
                   .thenCompose(r4 -> multimapCache.size())
-                  .thenAccept(s -> assertEquals(4, s.intValue()))
+                  .thenAccept(s -> {
+                     assertEquals(4, s.intValue());
+                  })
+                  .thenCompose(r1 -> multimapCache.remove(NAMES_KEY, JULIEN))
+                  .thenCompose(r2 -> multimapCache.remove(NAMES_KEY, OIHANA))
+                  .thenCompose(r2 -> multimapCache.remove(NAMES_KEY, JULIEN))
+                  .thenCompose(r3 -> multimapCache.put(anotherKey, JULIEN))
+                  .thenCompose(r4 -> multimapCache.size())
+                  .thenAccept(s -> {
+                     assertEquals(2, s.intValue());
+                  })
       );
    }
 
@@ -205,6 +303,12 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
                   .thenCompose(r -> multimapCache.containsKey(NAMES_KEY))
                   .thenAccept(containsKey -> assertTrue(containsKey))
       );
+
+      await(
+            multimapCache.put(EMPTY_KEY, KOLDO)
+                  .thenCompose(r -> multimapCache.containsKey(EMPTY_KEY))
+                  .thenAccept(containsKey -> assertTrue(containsKey))
+      );
    }
 
    public void testContainsValue() {
@@ -213,10 +317,15 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
                   .thenAccept(containsValue -> assertFalse(containsValue))
       );
 
-      putValuesOnMultimapCache(multimapCache, NAMES_KEY, OIHANA, JULIEN, RAMON, KOLDO);
+      putValuesOnMultimapCache(multimapCache, NAMES_KEY, OIHANA, JULIEN, RAMON, KOLDO, PEPE);
 
       await(
             multimapCache.containsValue(RAMON)
+                  .thenAccept(containsValue -> assertTrue(containsValue))
+      );
+      
+      await(
+            multimapCache.containsValue(PEPE)
                   .thenAccept(containsValue -> assertTrue(containsValue))
       );
    }
@@ -237,6 +346,12 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
             multimapCache.put(NAMES_KEY, OIHANA)
                   .thenCompose(r -> multimapCache.containsEntry(NAMES_KEY, JULIEN))
                   .thenAccept(containsEntry -> assertFalse(containsEntry))
+      );
+      
+      await(
+            multimapCache.put(NAMES_KEY, PEPE)
+                  .thenCompose(r -> multimapCache.containsEntry(NAMES_KEY, PEPE))
+                  .thenAccept(containsEntry -> assertTrue(containsEntry))
       );
    }
 
@@ -259,28 +374,32 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
                         }
                   )
       );
+      
+      await(multimapCache.put(EMPTY_KEY, RAMON).thenCompose(r3 -> multimapCache.getEntry(EMPTY_KEY)).thenAccept(v -> {
+         assertTrue(!v.isNull() && v.getKey().equals(EMPTY_KEY) && v.getValue().contains(RAMON));
+      }));
    }
 
    public void testPutWithNull() {
-      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.put(null, OIHANA));
-      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.put(NAMES_KEY, null));
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.put(NULL_KEY, OIHANA));
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.put(NAMES_KEY, NULL_USER));
    }
 
    public void testGetWithNull() {
-      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.get(null));
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.get(NULL_KEY));
    }
 
    public void testGetEntryWithNull() {
-      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.getEntry(null));
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.getEntry(NULL_KEY));
    }
 
    public void testRemoveKeyValueWithNull() {
-      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.remove(null, RAMON));
-      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.remove(NAMES_KEY, null));
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.remove(NULL_KEY, RAMON));
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.remove(NAMES_KEY, NULL_USER));
    }
 
    public void testRemoveKeyWithNulll() {
-      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.remove((String) null));
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.remove((String) NULL_KEY));
    }
 
    public void testRemoveWithNullPredicate() {
@@ -288,15 +407,15 @@ public class EmbeddedMultimapCacheTest extends SingleCacheManagerTest {
    }
 
    public void testContainsKeyWithNull() {
-      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.containsKey(null));
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.containsKey(NULL_KEY));
    }
 
    public void testContainsValueWithNull() {
-      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.containsValue(null));
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.containsValue(NULL_USER));
    }
 
    public void testContainsEntryWithNull() {
-      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.containsEntry(null, OIHANA));
-      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.containsEntry(NAMES_KEY, null));
+      expectException(NullPointerException.class, "key can't be null", () -> multimapCache.containsEntry(NULL_KEY, OIHANA));
+      expectException(NullPointerException.class, "value can't be null", () -> multimapCache.containsEntry(NAMES_KEY, NULL_USER));
    }
 }
