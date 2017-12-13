@@ -11,6 +11,7 @@ import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.container.entries.MVCCEntry;
+import org.infinispan.container.versioning.IncrementableEntryVersion;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -32,18 +33,20 @@ public class RemoveExpiredCommand extends RemoveCommand {
    private static final Log log = LogFactory.getLog(RemoveExpiredCommand.class);
 
    private Long lifespan;
+   private IncrementableEntryVersion nonExistentVersion;
 
    public RemoveExpiredCommand() {
       // The value matcher will always be the same, so we don't need to serialize it like we do for the other commands
       this.valueMatcher = ValueMatcher.MATCH_EXPECTED_OR_NULL;
    }
 
-   public RemoveExpiredCommand(Object key, Object value, Long lifespan, CacheNotifier notifier,
-                               Equivalence valueEquivalence, CommandInvocationId commandInvocationId) {
+   public RemoveExpiredCommand(Object key, Object value, Long lifespan, CacheNotifier notifier, Equivalence valueEquivalence,
+                               CommandInvocationId commandInvocationId, IncrementableEntryVersion nonExistentVersion) {
       //valueEquivalence can be null because this command never compares values.
       super(key, value, notifier, EnumUtil.EMPTY_BIT_SET, valueEquivalence, commandInvocationId);
       this.lifespan = lifespan;
       this.valueMatcher = ValueMatcher.MATCH_EXPECTED_OR_NULL;
+      this.nonExistentVersion = nonExistentVersion;
    }
 
    /**
@@ -59,13 +62,15 @@ public class RemoveExpiredCommand extends RemoveCommand {
          Object value = e.getValue();
          // If the provided lifespan is null, that means it is a store removal command, so we can't compare lifespan
          Object prevValue = e.getValue();
+         Metadata metadata = e.getMetadata();
          if (lifespan == null) {
             if (valueMatcher.matches(prevValue, value, e.getValue(), valueEquivalence)) {
                e.setExpired(true);
                return performRemove(e, prevValue, ctx);
             }
-         } else if (e.getMetadata() == null) {
+         } else if (metadata == null || metadata.version() == nonExistentVersion) {
             // If there is no metadata and no value that means it is gone currently or not shown due to expired
+            // Non existent version is used when versioning is enabled and the entry doesn't exist
             // If we have a value though we should verify it matches the value as well
             if (value == null || valueMatcher.matches(prevValue, value, e.getValue(), valueEquivalence)) {
                e.setExpired(true);
@@ -174,5 +179,11 @@ public class RemoveExpiredCommand extends RemoveCommand {
    public long getFlagsBitSet() {
       // Override the flags
       return FlagBitSets.SKIP_CACHE_LOAD;
+   }
+
+   public void init(CacheNotifier notifier, Equivalence<?> valueEquivalence, IncrementableEntryVersion nonExistentVersion) {
+      super.init(notifier, valueEquivalence);
+      this.nonExistentVersion = nonExistentVersion;
+
    }
 }

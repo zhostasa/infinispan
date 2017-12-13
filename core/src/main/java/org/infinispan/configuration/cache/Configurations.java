@@ -18,6 +18,10 @@ public class Configurations {
    private Configurations() {
    }
 
+   public static boolean isExceptionBasedEviction(Configuration cfg) {
+      return cfg.memory().size() > 0 && cfg.memory().evictionType().isExceptionBased();
+   }
+
    public static boolean isSecondPhaseAsync(Configuration cfg) {
       ClusteringConfiguration clusteringCfg = cfg.clustering();
       return !cfg.transaction().syncCommitPhase()
@@ -25,11 +29,19 @@ public class Configurations {
    }
 
    public static boolean isOnePhaseCommit(Configuration cfg) {
+      // Otherwise pessimistic transactions will be one phase commit
+      if (isExceptionBasedEviction(cfg)) {
+         return false;
+      }
       return !cfg.clustering().cacheMode().isSynchronous() ||
             cfg.transaction().lockingMode() == LockingMode.PESSIMISTIC;
    }
 
    public static boolean isOnePhaseTotalOrderCommit(Configuration cfg) {
+      // Even total order needs 2 phase commit with this
+      if (isExceptionBasedEviction(cfg)) {
+         return false;
+      }
       return cfg.transaction().transactionProtocol().isTotalOrder() && !isVersioningEnabled(cfg);
    }
 

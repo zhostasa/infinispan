@@ -85,6 +85,7 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.conflict.impl.StateReceiver;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.InternalEntryFactory;
+import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.distribution.DistributionManager;
@@ -184,6 +185,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
    private StreamingMarshaller marshaller;
    private Equivalence<?> keyEquivalence;
    private Equivalence<?> valueEquivalence;
+   private VersionGenerator versionGenerator;
 
    @Inject
    public void setupDependencies(DataContainer container, CacheNotifier<Object, Object> notifier, Cache<Object, Object> cache,
@@ -198,7 +200,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                  GroupManager groupManager, PartitionHandlingManager partitionHandlingManager,
                                  LocalStreamManager localStreamManager, ClusterStreamManager clusterStreamManager,
                                  ClusteringDependentLogic clusteringDependentLogic, StreamingMarshaller marshaller,
-                                 CommandAckCollector commandAckCollector, StateReceiver stateReceiver) {
+                                 CommandAckCollector commandAckCollector, StateReceiver stateReceiver,
+         VersionGenerator versionGenerator) {
       this.dataContainer = container;
       this.notifier = notifier;
       this.cache = cache;
@@ -226,6 +229,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
       this.marshaller = marshaller;
       this.commandAckCollector = commandAckCollector;
       this.stateReceiver = stateReceiver;
+      this.versionGenerator = versionGenerator;
    }
 
    @Start(priority = 1)
@@ -275,8 +279,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
 
    @Override
    public RemoveExpiredCommand buildRemoveExpiredCommand(Object key, Object value, Long lifespan) {
-      return new RemoveExpiredCommand(key, value, lifespan, notifier, valueEquivalence,
-                                      generateUUID(transactional));
+      return new RemoveExpiredCommand(key, value, lifespan, notifier, valueEquivalence, generateUUID(transactional),
+            versionGenerator.nonExistingVersion());
    }
 
    @Override
@@ -528,7 +532,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
             break;
          case RemoveExpiredCommand.COMMAND_ID:
             RemoveExpiredCommand removeExpiredCommand = (RemoveExpiredCommand) c;
-            removeExpiredCommand.init(notifier, valueEquivalence);
+            removeExpiredCommand.init(notifier, valueEquivalence, versionGenerator.nonExistingVersion());
             break;
          case BackupAckCommand.COMMAND_ID:
             BackupAckCommand command = (BackupAckCommand) c;
@@ -536,7 +540,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
             break;
          case SingleKeyBackupWriteCommand.COMMAND_ID:
             ((SingleKeyBackupWriteCommand) c)
-                  .init(icf, interceptorChain, notifier);
+                  .init(icf, interceptorChain, notifier, versionGenerator.nonExistingVersion());
             break;
          case SingleKeyFunctionalBackupWriteCommand.COMMAND_ID:
             ((SingleKeyFunctionalBackupWriteCommand) c).init(icf, interceptorChain);

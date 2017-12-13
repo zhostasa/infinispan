@@ -47,6 +47,7 @@ import org.infinispan.interceptors.impl.VersionedEntryWrappingInterceptor;
 import org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor;
 import org.infinispan.interceptors.locking.OptimisticLockingInterceptor;
 import org.infinispan.interceptors.locking.PessimisticLockingInterceptor;
+import org.infinispan.interceptors.impl.TransactionalExceptionEvictionInterceptor;
 import org.infinispan.interceptors.totalorder.TotalOrderDistributionInterceptor;
 import org.infinispan.interceptors.totalorder.TotalOrderInterceptor;
 import org.infinispan.interceptors.totalorder.TotalOrderStateTransferInterceptor;
@@ -222,8 +223,17 @@ public class InterceptorChainFactory extends AbstractNamedCacheComponentFactory 
          } else {
             interceptorChain.appendInterceptor(createInterceptor(new VersionedEntryWrappingInterceptor(), VersionedEntryWrappingInterceptor.class), false);
          }
-      } else
+      } else {
          interceptorChain.appendInterceptor(createInterceptor(new EntryWrappingInterceptor(), EntryWrappingInterceptor.class), false);
+      }
+
+      // Has to be after entry wrapping interceptor so it can properly see context values even when removed
+      if (transactionMode.isTransactional()) {
+         if (configuration.memory().evictionType().isExceptionBased()) {
+            interceptorChain.appendInterceptor(createInterceptor(new TransactionalExceptionEvictionInterceptor(),
+                  TransactionalExceptionEvictionInterceptor.class), false);
+         }
+      }
 
       if (configuration.persistence().usingStores()) {
          if (cacheMode.isClustered()) {

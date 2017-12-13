@@ -10,6 +10,8 @@ import org.infinispan.commands.write.RemoveExpiredCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.commons.marshall.MarshallUtil;
+import org.infinispan.container.versioning.IncrementableEntryVersion;
+import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.metadata.Metadata;
@@ -33,6 +35,7 @@ public class SingleKeyBackupWriteCommand extends BackupWriteCommand {
    private Metadata metadata;
 
    private CacheNotifier cacheNotifier;
+   private IncrementableEntryVersion nonExistentVersion;
 
    //for testing
    @SuppressWarnings("unused")
@@ -49,9 +52,10 @@ public class SingleKeyBackupWriteCommand extends BackupWriteCommand {
    }
 
    public void init(InvocationContextFactory factory, AsyncInterceptorChain chain,
-         CacheNotifier cacheNotifier) {
+         CacheNotifier cacheNotifier, IncrementableEntryVersion nonExistentVersion) {
       injectDependencies(factory, chain);
       this.cacheNotifier = cacheNotifier;
+      this.nonExistentVersion = nonExistentVersion;
    }
 
    @Override
@@ -129,7 +133,8 @@ public class SingleKeyBackupWriteCommand extends BackupWriteCommand {
          case REMOVE:
             return new RemoveCommand(key, null, cacheNotifier, getFlags(), null, getCommandInvocationId());
          case REMOVE_EXPIRED:
-            return new RemoveExpiredCommand(key, valueOrFunction, null, cacheNotifier, null, getCommandInvocationId());
+            return new RemoveExpiredCommand(key, valueOrFunction, null, cacheNotifier, null, getCommandInvocationId(),
+                  nonExistentVersion);
          case WRITE:
             return new PutKeyValueCommand(key, valueOrFunction, false, cacheNotifier, metadata, getFlags(), null,
                   getCommandInvocationId());
