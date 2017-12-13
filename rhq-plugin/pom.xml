@@ -91,12 +91,6 @@
          <scope>test</scope>
       </dependency>
 
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>infinispan-commons-test</artifactId>
-         <scope>test</scope>
-      </dependency>
-
    </dependencies>
 
    <build>
@@ -153,6 +147,17 @@
             </executions>
          </plugin>
 
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>default-test</id>
+                  <!-- We don't have any real tests -->
+                  <phase>none</phase>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
 
