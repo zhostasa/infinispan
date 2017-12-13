@@ -245,13 +245,14 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
             log.version(Version.printVersion());
          }
 
-         super.postStart();
-
          if (needToNotify && state == ComponentStatus.RUNNING) {
             for (ModuleLifecycle l : moduleLifecycles) {
                l.cacheManagerStarted(this);
             }
          }
+
+         // Now invoke all post start events
+         super.postStart();
       } catch (RuntimeException rte) {
          EmbeddedCacheManagerStartupException exception = new EmbeddedCacheManagerStartupException(rte);
          state = ComponentStatus.FAILED;
