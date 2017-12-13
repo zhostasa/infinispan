@@ -42,9 +42,13 @@ public class QueryDefinition {
       return Optional.ofNullable(queryString);
    }
 
+   protected QueryEngine getQueryEngine(AdvancedCache<?, ?> cache) {
+      return cache.getComponentRegistry().getComponent(EmbeddedQueryEngine.class);
+   }
+
    public void initialize(AdvancedCache<?, ?> cache) {
       if (hsQuery == null) {
-         QueryEngine queryEngine = cache.getComponentRegistry().getComponent(EmbeddedQueryEngine.class);
+         QueryEngine queryEngine = getQueryEngine(cache);
          HsQueryRequest hsQueryRequest = queryEngine.createHsQuery(queryString);
          this.hsQuery = hsQueryRequest.getHsQuery();
          this.sort = hsQueryRequest.getSort();

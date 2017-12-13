@@ -48,6 +48,7 @@ import org.infinispan.objectfilter.impl.syntax.parser.IckleParsingResult;
 import org.infinispan.objectfilter.impl.syntax.parser.ObjectPropertyHelper;
 import org.infinispan.objectfilter.impl.syntax.parser.RowPropertyHelper;
 import org.infinispan.query.CacheQuery;
+import org.infinispan.query.QueryDefinition;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.infinispan.query.backend.KeyTransformationHandler;
@@ -60,6 +61,7 @@ import org.infinispan.query.dsl.impl.QueryStringCreator;
 import org.infinispan.query.impl.CacheQueryImpl;
 import org.infinispan.query.impl.ComponentRegistryUtils;
 import org.infinispan.query.logging.Log;
+import org.infinispan.query.spi.SearchManagerImplementor;
 import org.infinispan.security.AuthorizationManager;
 import org.infinispan.security.AuthorizationPermission;
 import org.infinispan.util.logging.LogFactory;
@@ -99,7 +101,7 @@ public class QueryEngine<TypeMetadata> {
    /**
     * Optional, lazily acquired. This is {@code null} if the cache is not indexed.
     */
-   private SearchManager searchManager;
+   private SearchManagerImplementor searchManager;
 
    /**
     * Optional, lazily acquired form the {@link SearchManager}. This is {@code null} if the cache is not indexed.
@@ -131,12 +133,12 @@ public class QueryEngine<TypeMetadata> {
       return cache;
    }
 
-   protected SearchManager getSearchManager() {
+   protected SearchManagerImplementor getSearchManager() {
       if (!isIndexed) {
          throw new IllegalStateException("Cache is not indexed");
       }
       if (searchManager == null) {
-         searchManager = Search.getSearchManager(cache);
+         searchManager = Search.getSearchManager(cache).unwrap(SearchManagerImplementor.class);
       }
       return searchManager;
    }
@@ -734,7 +736,8 @@ public class QueryEngine<TypeMetadata> {
       }
       LuceneQueryParsingResult luceneParsingResult = transformParsingResult(parsingResult, emptyMap());
       org.apache.lucene.search.Query luceneQuery = makeTypeQuery(luceneParsingResult.getQuery(), luceneParsingResult.getTargetEntityName());
-      HSQuery hsQuery = getSearchFactory().createHSQuery(luceneQuery);
+      SearchIntegrator searchFactory = getSearchFactory();
+      HSQuery hsQuery = searchFactory.createHSQuery(luceneQuery);
       Sort sort = luceneParsingResult.getSort();
       String[] projections = luceneParsingResult.getProjections();
       if (sort != null) {
@@ -745,6 +748,22 @@ public class QueryEngine<TypeMetadata> {
       }
       return new HsQueryRequest(hsQuery, sort, projections);
    }
+
+
+   public <E> CacheQuery<E> buildCacheQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode, KeyTransformationHandler keyTransformationHandler, TimeoutExceptionFactory timeoutExceptionFactory, ExecutorService asyncExecutor) {
+      if (!isIndexed) {
+         throw log.cannotRunLuceneQueriesIfNotIndexed(cache.getName());
+      }
+      if (indexedQueryMode == IndexedQueryMode.BROADCAST) {
+         return new ClusteredCacheQueryImpl<>(queryDefinition, asyncExecutor, cache, keyTransformationHandler);
+      } else {
+         queryDefinition.initialize(cache);
+         HSQuery hsQuery = queryDefinition.getHsQuery();
+         CacheQuery cacheQuery = new CacheQueryImpl<>(hsQuery, cache, keyTransformationHandler);
+         return (CacheQuery<E>) cacheQuery;
+      }
+   }
+
 
    public <E> CacheQuery<E> buildCacheQuery(String queryString, IndexedQueryMode indexedQueryMode,
                                             KeyTransformationHandler keyTransformationHandler,
@@ -767,7 +786,7 @@ public class QueryEngine<TypeMetadata> {
       org.apache.lucene.search.Query luceneQuery = makeTypeQuery(luceneParsingResult.getQuery(), luceneParsingResult.getTargetEntityName());
 
       if (indexedQueryMode == IndexedQueryMode.BROADCAST) {
-         return new ClusteredCacheQueryImpl<>(queryString, asyncExecutor, cache, keyTransformationHandler);
+         return new ClusteredCacheQueryImpl<>(new QueryDefinition(queryString), asyncExecutor, cache, keyTransformationHandler);
       } else {
 
          if (log.isDebugEnabled()) {
@@ -852,7 +871,8 @@ public class QueryEngine<TypeMetadata> {
 
    protected CacheQuery<?> makeCacheQuery(IckleParsingResult<TypeMetadata> ickleParsingResult, org.apache.lucene.search.Query luceneQuery, IndexedQueryMode queryMode) {
       if (queryMode == IndexedQueryMode.BROADCAST) {
-         return getSearchManager().getQuery(ickleParsingResult.getQueryString(), queryMode);
+         QueryDefinition queryDefinition = new QueryDefinition(ickleParsingResult.getQueryString());
+         return getSearchManager().getQuery(queryDefinition, queryMode);
       }
       return getSearchManager().getQuery(luceneQuery, queryMode, getTargetedClass(ickleParsingResult));
    }

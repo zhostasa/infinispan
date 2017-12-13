@@ -43,11 +43,10 @@ public class ClusteredCacheQueryImpl<E> extends CacheQueryImpl<E> {
       this.asyncExecutor = asyncExecutor;
    }
 
-   public ClusteredCacheQueryImpl(String queryString, ExecutorService asyncExecutor, AdvancedCache<?, ?> cache,
+   public ClusteredCacheQueryImpl(QueryDefinition queryDefinition, ExecutorService asyncExecutor, AdvancedCache<?, ?> cache,
                                   KeyTransformationHandler keyTransformationHandler) {
-      super(queryString, cache, keyTransformationHandler);
+      super(queryDefinition, cache, keyTransformationHandler);
       this.asyncExecutor = asyncExecutor;
-      this.queryDefinition = new QueryDefinition(queryString);
    }
 
    @Override

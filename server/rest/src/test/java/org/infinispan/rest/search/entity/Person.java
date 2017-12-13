@@ -1,5 +1,6 @@
 package org.infinispan.rest.search.entity;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.hibernate.search.annotations.Field;
@@ -12,7 +13,7 @@ import org.hibernate.search.annotations.NumericField;
  */
 @Indexed
 @SuppressWarnings("unused")
-public class Person {
+public class Person implements Serializable {
 
    @Field
    private Integer id;

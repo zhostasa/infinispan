@@ -1,8 +1,11 @@
 package org.infinispan.query.spi;
 
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
+import org.infinispan.query.CacheQuery;
+import org.infinispan.query.QueryDefinition;
 import org.infinispan.query.SearchManager;
 import org.infinispan.query.Transformer;
+import org.infinispan.query.dsl.IndexedQueryMode;
 
 public interface SearchManagerImplementor extends SearchManager {
 
@@ -28,4 +31,10 @@ public interface SearchManagerImplementor extends SearchManager {
     *           the timeout exception factory to use
     */
    void setTimeoutExceptionFactory(TimeoutExceptionFactory timeoutExceptionFactory);
+
+   /**
+    * Creates a cache query based on a {@link QueryDefinition} and a custom metadata.
+    */
+   <E> CacheQuery<E> getQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode);
+
 }

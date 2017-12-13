@@ -8,7 +8,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.hibernate.search.query.engine.spi.HSQuery;
 import org.infinispan.AdvancedCache;
 import org.infinispan.commons.dataconversion.ByteArrayWrapper;
 import org.infinispan.objectfilter.impl.ProtobufMatcher;
@@ -18,7 +17,6 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.dsl.embedded.impl.IckleFilterAndConverter;
 import org.infinispan.query.dsl.embedded.impl.RowProcessor;
-import org.infinispan.query.impl.SearchManagerImpl;
 import org.infinispan.query.remote.impl.filter.IckleProtobufFilterAndConverter;
 import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapper;
 
@@ -86,8 +84,13 @@ final class RemoteQueryEngine extends BaseRemoteQueryEngine {
 
    @Override
    protected CacheQuery<?> makeCacheQuery(IckleParsingResult<Descriptor> ickleParsingResult, Query luceneQuery, IndexedQueryMode queryMode) {
-      HSQuery hSearchQuery = getSearchFactory().createHSQuery(luceneQuery);
-      return ((SearchManagerImpl) getSearchManager()).getQuery(hSearchQuery);
+      RemoteQueryDefinition queryDefinition;
+      if (queryMode == IndexedQueryMode.BROADCAST) {
+         queryDefinition = new RemoteQueryDefinition(ickleParsingResult.getQueryString());
+      } else {
+         queryDefinition = new RemoteQueryDefinition(getSearchFactory().createHSQuery(luceneQuery));
+      }
+      return getSearchManager().getQuery(queryDefinition, queryMode);
    }
 
    @Override

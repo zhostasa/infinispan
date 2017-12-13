@@ -13,9 +13,11 @@ import org.hibernate.search.stat.Statistics;
 import org.infinispan.AdvancedCache;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.MassIndexer;
+import org.infinispan.query.QueryDefinition;
 import org.infinispan.query.Transformer;
 import org.infinispan.query.backend.KeyTransformationHandler;
 import org.infinispan.query.backend.QueryInterceptor;
+import org.infinispan.query.clustered.ClusteredCacheQueryImpl;
 import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.dsl.embedded.impl.EmbeddedQueryEngine;
 import org.infinispan.query.impl.massindex.DistributedExecutorMassIndexer;
@@ -67,9 +69,16 @@ public class SearchManagerImpl implements SearchManagerImplementor {
       }
    }
 
+   @Override
+   public <E> CacheQuery<E> getQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode) {
+      KeyTransformationHandler keyTransformationHandler = queryInterceptor.getKeyTransformationHandler();
+      ExecutorService asyncExecutor = queryInterceptor.getAsyncExecutor();
+      return queryEngine.buildCacheQuery(queryDefinition, indexedQueryMode, keyTransformationHandler, timeoutExceptionFactory, asyncExecutor);
+   }
+
    /* (non-Javadoc)
-    * @see org.infinispan.query.SearchManager#getQuery(org.apache.lucene.search.Query, java.lang.Class)
-    */
+       * @see org.infinispan.query.SearchManager#getQuery(org.apache.lucene.search.Query, java.lang.Class)
+       */
    @Override
    public <E> CacheQuery<E> getQuery(Query luceneQuery, Class<?>... classes) {
       return getQuery(luceneQuery, IndexedQueryMode.FETCH, classes);
@@ -81,13 +90,19 @@ public class SearchManagerImpl implements SearchManagerImplementor {
     * @param hSearchQuery {@link HSQuery}
     * @return the CacheQuery object which can be used to iterate through results
     */
-   public <E> CacheQuery<E> getQuery(HSQuery hSearchQuery) {
+   public <E> CacheQuery<E> getQuery(HSQuery hSearchQuery, IndexedQueryMode queryMode) {
       if (timeoutExceptionFactory != null) {
          hSearchQuery.timeoutExceptionFactory(timeoutExceptionFactory);
       }
       Class<?>[] classes = hSearchQuery.getTargetedEntities().toArray(new Class[hSearchQuery.getTargetedEntities().size()]);
       queryInterceptor.enableClasses(classes);
-      return new CacheQueryImpl<>(hSearchQuery, cache, queryInterceptor.getKeyTransformationHandler());
+
+      if (queryMode == IndexedQueryMode.BROADCAST) {
+         ExecutorService asyncExecutor = queryInterceptor.getAsyncExecutor();
+         return new ClusteredCacheQueryImpl<>(new QueryDefinition(hSearchQuery), asyncExecutor, cache, queryInterceptor.getKeyTransformationHandler());
+      } else {
+         return new CacheQueryImpl<>(hSearchQuery, cache, queryInterceptor.getKeyTransformationHandler());
+      }
    }
 
    /**

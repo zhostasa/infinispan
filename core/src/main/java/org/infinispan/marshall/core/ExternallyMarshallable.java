@@ -26,8 +26,8 @@ final class ExternallyMarshallable {
       String pkgName = pkg.getName();
       boolean isBlackList =
             Serializable.class.isAssignableFrom(clazz)
-            && isMarshallablePackage(pkgName)
-            && !isWhiteList(clazz.getName());
+                  && isMarshallablePackage(pkgName)
+                  && !isWhiteList(clazz.getName());
       return !isBlackList;
    }
 
@@ -197,6 +197,7 @@ final class ExternallyMarshallable {
 
             || className.equals("org.jboss.as.clustering.infinispan.equivalence.AnyServerEquivalence")
             || className.contains("org.jboss.as.quickstarts.datagrid") // quickstarts testing
+            || className.contains("org.infinispan.rest.search.entity")
             ;
    }
 
