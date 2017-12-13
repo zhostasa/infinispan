@@ -55,19 +55,17 @@ class Encoder2x implements VersionedEncoder {
       boolean compatibilityEnabled;
       CacheTopology cacheTopology;
 
-      if (CounterModuleLifecycle.COUNTER_CACHE_NAME.equals(r.cacheName)) {
+      if (CounterModuleLifecycle.COUNTER_CACHE_NAME.equals(cacheName)) {
          cacheTopology = getCounterCacheTopology(addressCache.getCacheManager());
          newTopology = getTopologyResponse(r, addressCache, CacheMode.DIST_SYNC, cacheTopology);
          compatibilityEnabled = false;
       } else {
-         ComponentRegistry cr = server.getCacheRegistry(r.cacheName);
-         Configuration configuration = server.getCacheConfiguration(r.cacheName);
+         ComponentRegistry cr = server.getCacheRegistry(cacheName);
+         Configuration configuration = server.getCacheConfiguration(cacheName);
          CacheMode cacheMode = configuration == null ? CacheMode.LOCAL : configuration.clustering().cacheMode();
 
          cacheTopology = cacheMode.isClustered() ? cr.getStateTransferManager().getCacheTopology() : null;
          newTopology = getTopologyResponse(r, addressCache, cacheMode, cacheTopology);
-         configuration = r.cacheName.isEmpty() ? server.getCacheManager().getDefaultCacheConfiguration() :
-               server.getCacheManager().getCacheConfiguration(r.cacheName);
          compatibilityEnabled = configuration.compatibility().enabled();
       }
 

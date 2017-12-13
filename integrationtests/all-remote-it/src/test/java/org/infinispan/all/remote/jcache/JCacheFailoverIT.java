@@ -4,6 +4,7 @@ import static javax.cache.configuration.FactoryBuilder.factoryOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Properties;
 

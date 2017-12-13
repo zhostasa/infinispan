@@ -1600,4 +1600,10 @@ public interface Log extends BasicLogger {
          "address count of %d", id = 505)
    CacheConfigurationException offHeapMemoryEvictionSizeNotLargeEnoughForAddresses(long configuredSize,
          long addressMemorySize, int addressCount);
+
+   @Message(value = "Cache %s already exists", id = 507)
+   CacheConfigurationException cacheExists(String cacheName);
+
+   @Message(value = "Cannot rename file %s to %s", id = 508)
+   CacheConfigurationException cannotRenamePersistentFile(String absolutePath, File persistentFile);
 }

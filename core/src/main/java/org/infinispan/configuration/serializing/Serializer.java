@@ -323,6 +323,9 @@ public class Serializer extends AbstractStoreSerializer implements Configuration
          if (transport.transportThreadPool().threadPoolFactory() != null) {
             writer.writeAttribute(Attribute.EXECUTOR, "transport-pool");
          }
+         attributes.write(writer, TransportConfiguration.DISTRIBUTED_SYNC_TIMEOUT, Attribute.LOCK_TIMEOUT);
+         attributes.write(writer, TransportConfiguration.INITIAL_CLUSTER_SIZE, Attribute.INITIAL_CLUSTER_SIZE);
+         attributes.write(writer, TransportConfiguration.INITIAL_CLUSTER_TIMEOUT, Attribute.INITIAL_CLUSTER_TIMEOUT);
          writer.writeEndElement();
       }
    }
