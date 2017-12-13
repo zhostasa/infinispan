@@ -6,6 +6,7 @@ import java.security.PrivilegedActionException;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -50,7 +51,7 @@ public class ContextHandler extends SimpleChannelInboundHandler<CacheDecodeConte
       executor.execute(() -> {
          try {
             realRead(ctx, msg);
-         } catch (PrivilegedActionException e) {
+         } catch (PrivilegedActionException|ExecutionException e) {
             ctx.fireExceptionCaught(e.getCause());
          } catch (Exception e) {
             ctx.fireExceptionCaught(e);
