@@ -28,13 +28,13 @@ public class ClusteredQueryMultipleCachesTest extends ClusteredQueryTest {
             .addProperty("default.directory_provider", "ram")
             .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
             .addProperty("lucene_version", "LUCENE_CURRENT");
-      enhanceConfig(cacheCfg);
-      String[] cacheNames = { "cacheA", "cacheB" };
+      String[] cacheNames = {"cacheA", "cacheB"};
       List<List<Cache<String, Person>>> caches = createClusteredCaches(2, cacheCfg, cacheNames);
       cacheAMachine1 = caches.get(0).get(0);
       cacheAMachine2 = caches.get(1).get(0);
       cacheBMachine1 = caches.get(0).get(1);
       cacheBMachine2 = caches.get(1).get(1);
+      populateCache();
    }
 
    @Override
