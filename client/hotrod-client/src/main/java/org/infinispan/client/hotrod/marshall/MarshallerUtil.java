@@ -8,8 +8,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.io.ObjectStreamConstants;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
@@ -17,6 +15,7 @@ import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Util;
 
@@ -102,18 +101,7 @@ public final class MarshallerUtil {
       @Override
       protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
          //Enforce SerialKiller's whitelist
-         boolean safeClass = false;
-         for (String whiteRegExp : whitelist) {
-            Pattern whitePattern = Pattern.compile(whiteRegExp);
-            Matcher whiteMatcher = whitePattern.matcher(desc.getName());
-            if (whiteMatcher.find()) {
-               safeClass = true;
-
-               if (log.isTraceEnabled())
-                  log.tracef("Whitelist match: '%s'", desc.getName());
-            }
-         }
-
+         boolean safeClass = MarshallUtil.isSafeClass(desc.getName(), whitelist);
          if (!safeClass)
             throw log.classNotInWhitelist(desc.getName());
 

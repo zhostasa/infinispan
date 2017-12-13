@@ -4,6 +4,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.infinispan.commons.CacheConfigurationException;
+import org.infinispan.commons.CacheException;
 import org.infinispan.commons.dataconversion.EncodingException;
 import org.infinispan.counter.exception.CounterException;
 import org.infinispan.counter.exception.CounterOutOfBoundsException;
@@ -142,5 +143,8 @@ public interface Log extends BasicLogger {
    CounterException invalidCounterTypeEncoded();
 
    //----- counters exceptions ------
+
+   @Message(value = "Class '%s' blocked by deserialization white list. Adjust the client configuration serialization white list regular expression to include this class.", id = 28023)
+   CacheException classNotInWhitelist(String className);
 
 }
