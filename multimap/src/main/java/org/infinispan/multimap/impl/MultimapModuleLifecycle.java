@@ -5,6 +5,7 @@ import java.util.Map;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.GlobalComponentRegistry;
+import org.infinispan.lifecycle.AbstractModuleLifecycle;
 import org.infinispan.lifecycle.ModuleLifecycle;
 import org.infinispan.multimap.impl.function.ContainsFunction;
 import org.infinispan.multimap.impl.function.GetFunction;
@@ -20,7 +21,7 @@ import org.kohsuke.MetaInfServices;
  * @since 9.2
  */
 @MetaInfServices(value = ModuleLifecycle.class)
-public class MultimapModuleLifecycle implements ModuleLifecycle {
+public class MultimapModuleLifecycle extends AbstractModuleLifecycle {
 
    private static void addAdvancedExternalizer(Map<Integer, AdvancedExternalizer<?>> map, AdvancedExternalizer<?> ext) {
       map.put(ext.getId(), ext);

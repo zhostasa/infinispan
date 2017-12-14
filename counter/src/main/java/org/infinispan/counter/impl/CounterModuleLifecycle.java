@@ -40,6 +40,7 @@ import org.infinispan.counter.logging.Log;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.interceptors.impl.EntryWrappingInterceptor;
 import org.infinispan.jmx.CacheManagerJmxRegistration;
+import org.infinispan.lifecycle.AbstractModuleLifecycle;
 import org.infinispan.lifecycle.ModuleLifecycle;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.partitionhandling.PartitionHandling;
@@ -55,7 +56,7 @@ import org.kohsuke.MetaInfServices;
  * @since 8.5
  */
 @MetaInfServices(value = ModuleLifecycle.class)
-public class CounterModuleLifecycle implements ModuleLifecycle {
+public class CounterModuleLifecycle extends AbstractModuleLifecycle {
 
    private static final Log log = LogFactory.getLog(CounterModuleLifecycle.class, Log.class);
    public static final String COUNTER_CACHE_NAME = "___counters";

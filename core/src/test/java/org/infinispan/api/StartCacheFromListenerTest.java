@@ -15,6 +15,7 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
+import org.infinispan.lifecycle.AbstractModuleLifecycle;
 import org.infinispan.lifecycle.ModuleLifecycle;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.MultipleCacheManagersTest;
@@ -45,7 +46,7 @@ public class StartCacheFromListenerTest extends MultipleCacheManagersTest {
       GlobalComponentRegistry registry = (GlobalComponentRegistry) TestingUtil.extractField(cacheManager, "globalComponentRegistry");
       List<ModuleLifecycle> lifecycles = new LinkedList<ModuleLifecycle>();
       TestingUtil.replaceField(lifecycles, "moduleLifecycles", registry, GlobalComponentRegistry.class);
-      lifecycles.add(new ModuleLifecycle() {
+      lifecycles.add(new AbstractModuleLifecycle() {
          @Override
          public void cacheStarting(ComponentRegistry cr, Configuration configuration, String cacheName) {
             log.debug("StartCacheFromListenerTest.cacheStarting");
@@ -89,7 +90,7 @@ public class StartCacheFromListenerTest extends MultipleCacheManagersTest {
       GlobalComponentRegistry registry = (GlobalComponentRegistry) TestingUtil.extractField(cacheManager, "globalComponentRegistry");
       List<ModuleLifecycle> lifecycles = new LinkedList<>();
       TestingUtil.replaceField(lifecycles, "moduleLifecycles", registry, GlobalComponentRegistry.class);
-      lifecycles.add(new ModuleLifecycle() {
+      lifecycles.add(new AbstractModuleLifecycle() {
          @Override
          public void cacheStarted(ComponentRegistry cr,  String cacheName) {
             Cache cache = cacheManager.getCache("single");

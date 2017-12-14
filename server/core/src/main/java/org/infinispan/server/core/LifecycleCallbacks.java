@@ -3,7 +3,7 @@ package org.infinispan.server.core;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.components.ComponentMetadataRepo;
-import org.infinispan.lifecycle.ModuleLifecycle;
+import org.infinispan.lifecycle.AbstractModuleLifecycle;
 
 /**
  * Module lifecycle callbacks implementation that enables module specific
@@ -12,7 +12,7 @@ import org.infinispan.lifecycle.ModuleLifecycle;
  * @author Galder Zamarreño
  * @since 5.0
  */
-public class LifecycleCallbacks implements ModuleLifecycle {
+public class LifecycleCallbacks extends AbstractModuleLifecycle {
 
    static ComponentMetadataRepo componentMetadataRepo;
 

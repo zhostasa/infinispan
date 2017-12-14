@@ -4,6 +4,7 @@ import static org.infinispan.server.core.ExternalizerIds.MIME_METADATA;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.GlobalComponentRegistry;
+import org.infinispan.lifecycle.AbstractModuleLifecycle;
 import org.infinispan.marshall.core.EncoderRegistry;
 import org.infinispan.rest.dataconversion.JavaSerializationTranscoder;
 import org.infinispan.rest.dataconversion.JsonObjectTranscoder;
@@ -11,7 +12,6 @@ import org.infinispan.rest.dataconversion.OctedStreamToObject;
 import org.infinispan.rest.dataconversion.TextBinaryTranscoder;
 import org.infinispan.rest.dataconversion.TextObjectTranscoder;
 import org.infinispan.rest.dataconversion.XMLObjectTranscoder;
-import org.infinispan.lifecycle.ModuleLifecycle;
 import org.infinispan.rest.operations.mime.MimeMetadata;
 
 /**
@@ -21,7 +21,7 @@ import org.infinispan.rest.operations.mime.MimeMetadata;
  * @author Galder Zamarreño
  * @since 5.3
  */
-public class LifecycleCallbacks implements ModuleLifecycle {
+public class LifecycleCallbacks extends AbstractModuleLifecycle {
 
    @Override
    public void cacheManagerStarting(GlobalComponentRegistry gcr, GlobalConfiguration globalConfiguration) {
