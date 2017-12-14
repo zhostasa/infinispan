@@ -123,16 +123,16 @@ final class IndexingTagHandler implements TagHandler {
          case SINT32:
          case SINT64:
          case ENUM:
-//            if (isSortable) {
-//               luceneOptions.addNumericDocValuesFieldToDocument(fullFieldName, (Number) value, document);
-//            }
+            if (isSortable) {
+               luceneOptions.addNumericDocValuesFieldToDocument(fullFieldName, (Number) value, document);
+            }
             luceneOptions.addNumericFieldToDocument(fullFieldName, value, document);
             break;
          default:
             String indexedString = String.valueOf(value);
-//            if (isSortable) {
-//               luceneOptions.addSortedDocValuesFieldToDocument(fullFieldName, indexedString, document);
-//            }
+            if (isSortable) {
+               luceneOptions.addSortedDocValuesFieldToDocument(fullFieldName, indexedString, document);
+            }
             luceneOptions.addFieldToDocument(fullFieldName, indexedString, document);
       }
    }

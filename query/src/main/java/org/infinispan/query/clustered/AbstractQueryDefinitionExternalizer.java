@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.search.query.engine.spi.HSQuery;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.query.QueryDefinition;
 
 /**
@@ -26,6 +29,8 @@ public abstract class AbstractQueryDefinitionExternalizer<Q extends QueryDefinit
       }
       output.writeInt(object.getFirstResult());
       output.writeInt(object.getMaxResults());
+      MarshallUtil.marshallCollection(object.getSortableFields(), output);
+      output.writeObject(object.getIndexedType());
       Map<String, Object> namedParameters = object.getNamedParameters();
       int size = namedParameters.size();
       output.writeShort(size);
@@ -49,6 +54,10 @@ public abstract class AbstractQueryDefinitionExternalizer<Q extends QueryDefinit
       }
       queryDefinition.setFirstResult(input.readInt());
       queryDefinition.setMaxResults(input.readInt());
+      Set<String> sortableField = MarshallUtil.unmarshallCollection(input, HashSet::new);
+      Class<?> indexedTypes = (Class<?>) input.readObject();
+      queryDefinition.setSortableField(sortableField);
+      queryDefinition.setIndexedType(indexedTypes);
       short paramSize = input.readShort();
       if (paramSize > 0) {
          Map<String, Object> params = new HashMap<>();

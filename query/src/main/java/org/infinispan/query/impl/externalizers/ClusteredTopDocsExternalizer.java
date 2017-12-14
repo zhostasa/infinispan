@@ -3,6 +3,7 @@ package org.infinispan.query.impl.externalizers;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.lucene.search.TopDocs;
@@ -15,7 +16,7 @@ public class ClusteredTopDocsExternalizer extends AbstractExternalizer<NodeTopDo
 
    @Override
    public Set<Class<? extends NodeTopDocs>> getTypeClasses() {
-      return Util.<Class<? extends NodeTopDocs>>asSet(NodeTopDocs.class);
+      return Util.asSet(NodeTopDocs.class);
    }
 
    @Override

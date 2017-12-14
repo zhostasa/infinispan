@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import org.apache.lucene.search.Sort;
 import org.hibernate.search.query.engine.spi.HSQuery;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
+import org.hibernate.search.spi.CustomTypeMetadata;
 import org.hibernate.search.spi.SearchIntegrator;
 import org.infinispan.AdvancedCache;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
@@ -103,6 +104,8 @@ public class QueryEngine<TypeMetadata> {
     * Optional, lazily acquired form the {@link SearchManager}. This is {@code null} if the cache is not indexed.
     */
    private SearchIntegrator searchFactory;
+
+   protected final CustomTypeMetadata[] NO_METADATA = new CustomTypeMetadata[]{};
 
    private static final BooleanFilterNormalizer booleanFilterNormalizer = new BooleanFilterNormalizer();
 
@@ -720,7 +723,7 @@ public class QueryEngine<TypeMetadata> {
       return (CacheQuery<E>) cacheQuery;
    }
 
-   public HsQueryRequest createHsQuery(String queryString, Map<String, Object> nameParameters) {
+   public HsQueryRequest createHsQuery(String queryString, CustomTypeMetadata metadata, Map<String, Object> nameParameters) {
       IckleParsingResult<TypeMetadata> parsingResult = parse(queryString);
       if (parsingResult.hasGroupingOrAggregations()) {
          throw log.groupAggregationsNotSupported();
@@ -728,7 +731,7 @@ public class QueryEngine<TypeMetadata> {
       LuceneQueryParsingResult luceneParsingResult = transformParsingResult(parsingResult, nameParameters);
       org.apache.lucene.search.Query luceneQuery = makeTypeQuery(luceneParsingResult.getQuery(), luceneParsingResult.getTargetEntityName());
       SearchIntegrator searchFactory = getSearchFactory();
-      HSQuery hsQuery = searchFactory.createHSQuery(luceneQuery);
+      HSQuery hsQuery = metadata == null ? searchFactory.createHSQuery(luceneQuery, NO_METADATA) : searchFactory.createHSQuery(luceneQuery, metadata);
       Sort sort = luceneParsingResult.getSort();
       String[] projections = luceneParsingResult.getProjections();
       if (sort != null) {
@@ -740,12 +743,12 @@ public class QueryEngine<TypeMetadata> {
       return new HsQueryRequest(hsQuery, sort, projections);
    }
 
-   public <E> CacheQuery<E> buildCacheQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode, KeyTransformationHandler keyTransformationHandler, TimeoutExceptionFactory timeoutExceptionFactory, ExecutorService asyncExecutor) {
+   public <E> CacheQuery<E> buildCacheQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode, KeyTransformationHandler keyTransformationHandler, TimeoutExceptionFactory timeoutExceptionFactory, ExecutorService asyncExecutor, CustomTypeMetadata indexedTypeMap) {
       if (!isIndexed) {
          throw log.cannotRunLuceneQueriesIfNotIndexed(cache.getName());
       }
       if (indexedQueryMode == IndexedQueryMode.BROADCAST) {
-         return new ClusteredCacheQueryImpl<>(queryDefinition, asyncExecutor, cache, keyTransformationHandler);
+         return new ClusteredCacheQueryImpl<>(queryDefinition, asyncExecutor, cache, keyTransformationHandler, indexedTypeMap);
       } else {
          queryDefinition.initialize(cache);
          HSQuery hsQuery = queryDefinition.getHsQuery();
@@ -774,7 +777,7 @@ public class QueryEngine<TypeMetadata> {
       org.apache.lucene.search.Query luceneQuery = makeTypeQuery(luceneParsingResult.getQuery(), luceneParsingResult.getTargetEntityName());
 
       if (indexedQueryMode == IndexedQueryMode.BROADCAST) {
-         return new ClusteredCacheQueryImpl<>(new QueryDefinition(queryString), asyncExecutor, cache, keyTransformationHandler);
+         return new ClusteredCacheQueryImpl<>(new QueryDefinition(queryString), asyncExecutor, cache, keyTransformationHandler, null);
       } else {
 
          if (log.isDebugEnabled()) {
@@ -861,7 +864,7 @@ public class QueryEngine<TypeMetadata> {
       if (queryMode == IndexedQueryMode.BROADCAST) {
          QueryDefinition queryDefinition = new QueryDefinition(ickleParsingResult.getQueryString());
          queryDefinition.setNamedParameters(namedParameters);
-         return getSearchManager().getQuery(queryDefinition, queryMode);
+         return getSearchManager().getQuery(queryDefinition, queryMode, null);
       }
       return getSearchManager().getQuery(luceneQuery, queryMode, getTargetedClass(ickleParsingResult));
    }

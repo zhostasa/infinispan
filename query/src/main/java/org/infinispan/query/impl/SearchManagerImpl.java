@@ -8,6 +8,7 @@ import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.query.dsl.EntityContext;
 import org.hibernate.search.query.engine.spi.HSQuery;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
+import org.hibernate.search.spi.CustomTypeMetadata;
 import org.hibernate.search.spi.SearchIntegrator;
 import org.hibernate.search.stat.Statistics;
 import org.infinispan.AdvancedCache;
@@ -70,10 +71,10 @@ public class SearchManagerImpl implements SearchManagerImplementor {
    }
 
    @Override
-   public <E> CacheQuery<E> getQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode) {
+   public <E> CacheQuery<E> getQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode, CustomTypeMetadata indexedTypeMap) {
       KeyTransformationHandler keyTransformationHandler = queryInterceptor.getKeyTransformationHandler();
       ExecutorService asyncExecutor = queryInterceptor.getAsyncExecutor();
-      return queryEngine.buildCacheQuery(queryDefinition, indexedQueryMode, keyTransformationHandler, timeoutExceptionFactory, asyncExecutor);
+      return queryEngine.buildCacheQuery(queryDefinition, indexedQueryMode, keyTransformationHandler, timeoutExceptionFactory, asyncExecutor, indexedTypeMap);
    }
 
    /* (non-Javadoc)
@@ -99,7 +100,7 @@ public class SearchManagerImpl implements SearchManagerImplementor {
 
       if (queryMode == IndexedQueryMode.BROADCAST) {
          ExecutorService asyncExecutor = queryInterceptor.getAsyncExecutor();
-         return new ClusteredCacheQueryImpl<>(new QueryDefinition(hSearchQuery), asyncExecutor, cache, queryInterceptor.getKeyTransformationHandler());
+         return new ClusteredCacheQueryImpl<>(new QueryDefinition(hSearchQuery), asyncExecutor, cache, queryInterceptor.getKeyTransformationHandler(), null);
       } else {
          return new CacheQueryImpl<>(hSearchQuery, cache, queryInterceptor.getKeyTransformationHandler());
       }

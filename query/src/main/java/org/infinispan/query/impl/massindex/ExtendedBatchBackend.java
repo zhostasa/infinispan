@@ -2,7 +2,6 @@ package org.infinispan.query.impl.massindex;
 
 import static java.util.Arrays.stream;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.function.BiConsumer;
 

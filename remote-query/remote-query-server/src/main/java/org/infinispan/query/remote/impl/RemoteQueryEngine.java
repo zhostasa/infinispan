@@ -1,23 +1,28 @@
 package org.infinispan.query.remote.impl;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.hibernate.search.spi.CustomTypeMetadata;
 import org.infinispan.AdvancedCache;
 import org.infinispan.commons.dataconversion.ByteArrayWrapper;
 import org.infinispan.objectfilter.impl.ProtobufMatcher;
 import org.infinispan.objectfilter.impl.syntax.parser.IckleParsingResult;
 import org.infinispan.protostream.descriptors.Descriptor;
 import org.infinispan.query.CacheQuery;
+import org.infinispan.query.IndexedTypeMetadata;
 import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.dsl.embedded.impl.IckleFilterAndConverter;
 import org.infinispan.query.dsl.embedded.impl.RowProcessor;
 import org.infinispan.query.remote.impl.filter.IckleProtobufFilterAndConverter;
+import org.infinispan.query.remote.impl.indexing.IndexingMetadata;
 import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapper;
 
 /**
@@ -84,14 +89,17 @@ final class RemoteQueryEngine extends BaseRemoteQueryEngine {
 
    @Override
    protected CacheQuery<?> makeCacheQuery(IckleParsingResult<Descriptor> ickleParsingResult, Query luceneQuery, IndexedQueryMode queryMode, Map<String, Object> namedParameters) {
+      IndexingMetadata indexingMetadata = ickleParsingResult.getTargetEntityMetadata().getProcessedAnnotation(IndexingMetadata.INDEXED_ANNOTATION);
+      final Set<String> sortableFields = indexingMetadata != null ? indexingMetadata.getSortableFields() : Collections.emptySet();
+      CustomTypeMetadata queryMetadata = new IndexedTypeMetadata(ProtobufValueWrapper.class, sortableFields);
       RemoteQueryDefinition queryDefinition;
       if (queryMode == IndexedQueryMode.BROADCAST) {
          queryDefinition = new RemoteQueryDefinition(ickleParsingResult.getQueryString());
       } else {
-         queryDefinition = new RemoteQueryDefinition(getSearchFactory().createHSQuery(luceneQuery));
+         queryDefinition = new RemoteQueryDefinition(getSearchFactory().createHSQuery(luceneQuery, queryMetadata));
       }
       queryDefinition.setNamedParameters(namedParameters);
-      return getSearchManager().getQuery(queryDefinition, queryMode);
+      return getSearchManager().getQuery(queryDefinition, queryMode, queryMetadata);
    }
 
    @Override

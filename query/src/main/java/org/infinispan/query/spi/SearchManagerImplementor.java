@@ -1,6 +1,7 @@
 package org.infinispan.query.spi;
 
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
+import org.hibernate.search.spi.CustomTypeMetadata;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.QueryDefinition;
 import org.infinispan.query.SearchManager;
@@ -35,6 +36,6 @@ public interface SearchManagerImplementor extends SearchManager {
    /**
     * Creates a cache query based on a {@link QueryDefinition} and a custom metadata.
     */
-   <E> CacheQuery<E> getQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode);
+   <E> CacheQuery<E> getQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode, CustomTypeMetadata indexedTypeMap);
 
 }

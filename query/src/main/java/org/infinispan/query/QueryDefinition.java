@@ -3,11 +3,13 @@ package org.infinispan.query;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Sort;
 import org.hibernate.search.filter.FullTextFilter;
 import org.hibernate.search.query.engine.spi.HSQuery;
+import org.hibernate.search.spi.CustomTypeMetadata;
 import org.infinispan.AdvancedCache;
 import org.infinispan.query.dsl.embedded.impl.EmbeddedQueryEngine;
 import org.infinispan.query.dsl.embedded.impl.HsQueryRequest;
@@ -29,6 +31,8 @@ public class QueryDefinition {
    private HSQuery hsQuery;
    private int maxResults = 100;
    private int firstResult;
+   private Set<String> sortableFields;
+   private Class<?> indexedType;
 
    private final Map<String, Object> namedParameters = new HashMap<>();
    private transient Sort sort;
@@ -45,6 +49,10 @@ public class QueryDefinition {
       return Optional.ofNullable(queryString);
    }
 
+   private CustomTypeMetadata createMetadata() {
+      return new IndexedTypeMetadata(indexedType, sortableFields);
+   }
+
    protected QueryEngine getQueryEngine(AdvancedCache<?, ?> cache) {
       return cache.getComponentRegistry().getComponent(EmbeddedQueryEngine.class);
    }
@@ -52,7 +60,13 @@ public class QueryDefinition {
    public void initialize(AdvancedCache<?, ?> cache) {
       if (hsQuery == null) {
          QueryEngine queryEngine = getQueryEngine(cache);
-         HsQueryRequest hsQueryRequest = queryEngine.createHsQuery(queryString, namedParameters);
+         HsQueryRequest hsQueryRequest;
+         if (indexedType != null && sortableFields != null) {
+            CustomTypeMetadata metadata = createMetadata();
+            hsQueryRequest = queryEngine.createHsQuery(queryString, metadata, namedParameters);
+         } else {
+            hsQueryRequest = queryEngine.createHsQuery(queryString, null, namedParameters);
+         }
          this.hsQuery = hsQueryRequest.getHsQuery();
          this.sort = hsQueryRequest.getSort();
          hsQuery.firstResult(firstResult);
@@ -127,5 +141,21 @@ public class QueryDefinition {
    public void disableFullTextFilter(String name) {
       if (queryString != null) throw log.filterNotSupportedWithQueryString();
       hsQuery.disableFullTextFilter(name);
+   }
+
+   public Set<String> getSortableFields() {
+      return sortableFields;
+   }
+
+   public void setSortableField(Set<String> sortableField) {
+      this.sortableFields = sortableField;
+   }
+
+   public Class<?> getIndexedType() {
+      return indexedType;
+   }
+
+   public void setIndexedType(Class<?> indexedType) {
+      this.indexedType = indexedType;
    }
 }
