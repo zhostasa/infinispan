@@ -78,7 +78,7 @@ public class TwoNodesTest {
                .onField("message")
                .matching("Hibernate Getting Started")
                .createQuery();
-         List list = fullTextSession.createFullTextQuery(query).setProjection("message").list();
+         List list = fullTextSession.createFullTextQuery(query).setProjection("message").getResultList();
          assertEquals(1, list.size());
          Object[] result = (Object[]) list.get(0);
          assertEquals(messageText, result[0]);
