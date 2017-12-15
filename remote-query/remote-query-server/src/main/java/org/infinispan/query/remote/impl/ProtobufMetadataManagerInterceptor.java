@@ -371,7 +371,7 @@ final class ProtobufMetadataManagerInterceptor extends BaseCustomAsyncIntercepto
       invoker.invoke(ctx, cmd);
 
       return invokeNextThenAccept(ctx, command, (rCtx, rCommand, rv) -> {
-         if (((WriteCommand) rCommand).isSuccessful()) {
+         if (rCommand.isSuccessful()) {
             FileDescriptorSource source = new FileDescriptorSource()
                         .addProtoFile((String) key, (String) value);
 

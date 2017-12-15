@@ -1,5 +1,7 @@
 package org.infinispan.query.queries.ranges;
 
+import static org.testng.AssertJUnit.assertEquals;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -17,8 +19,6 @@ import org.infinispan.query.Search;
 import org.infinispan.query.test.Person;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.junit.Assert;
-import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 /**
@@ -66,7 +66,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(2, found.size());
+      assertEquals(2, found.size());
       assert found.contains(person1);
       assert found.contains(person3);
       assert !found.contains(person4) : "This should not contain object person4";
@@ -96,7 +96,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person1);
       assert found.contains(person2);
       assert found.contains(person3);
@@ -128,14 +128,14 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(0, found.size());
+      assertEquals(0, found.size());
 
       query = Search.getSearchManager(cache).buildQueryBuilderForClass(Person.class)
             .get().range().onField("age").above(20).excludeLimit().createQuery();
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(2, found.size());
+      assertEquals(2, found.size());
       assert found.contains(person2);
       assert found.contains(person3);
       assert !found.contains(person4) : "This should not contain object person4";
@@ -165,14 +165,14 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(0, found.size());
+      assertEquals(0, found.size());
 
       query = Search.getSearchManager(cache).buildQueryBuilderForClass(Person.class)
             .get().range().onField("age").above(20).createQuery();
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person1);
       assert found.contains(person2);
       assert found.contains(person3);
@@ -204,7 +204,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(1, found.size());
+      assertEquals(1, found.size());
       assert found.contains(person3);
       assert !found.contains(person4) : "This should not contain object person4";
 
@@ -232,7 +232,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person1);
       assert found.contains(person2);
       assert found.contains(person3);
@@ -280,7 +280,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(2, found.size());
+      assertEquals(2, found.size());
       assert found.contains(person2);
       assert found.contains(person3);
       assert !found.contains(person4) : "This should not contain object person4";
@@ -295,7 +295,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      Assert.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person2);
       assert found.contains(person3);
       assert found.contains(person4) : "This should now contain object person4";
@@ -310,7 +310,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      Assert.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person2);
       assert found.contains(person3);
       assert found.contains(person4) : "This should now contain object person4";
@@ -321,7 +321,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      Assert.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person1);
       assert found.contains(person3);
       assert found.contains(person4);
@@ -337,7 +337,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(query);
       List<?> found = cacheQuery.list();
 
-      AssertJUnit.assertEquals(2, found.size());
+      assertEquals(2, found.size());
       assert found.contains(person1);
       assert found.contains(person2);
 
@@ -347,7 +347,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      Assert.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person1);
       assert found.contains(person2);
       assert found.contains(person4) : "This should now contain object person4";
@@ -358,7 +358,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      Assert.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person1);
       assert found.contains(person2);
       assert found.contains(person4);
@@ -370,7 +370,7 @@ public class QueryRangesTest extends SingleCacheManagerTest {
       cacheQuery = Search.getSearchManager(cache).getQuery(query);
       found = cacheQuery.list();
 
-      Assert.assertEquals(3, found.size());
+      assertEquals(3, found.size());
       assert found.contains(person2);
       assert found.contains(person3);
       assert found.contains(person4);
@@ -403,9 +403,9 @@ public class QueryRangesTest extends SingleCacheManagerTest {
    protected Date formatDate(String dateString) {
       Date date = null;
       try {
-         date = new SimpleDateFormat("MMMM d, yyyy", Locale.ROOT).parse(dateString);
+         date = new SimpleDateFormat("MMMM d, yyyy", Locale.US).parse(dateString);
       } catch (java.text.ParseException e) {
-         throw new IllegalArgumentException("Unable to parse date.", e);
+         throw new IllegalArgumentException("Unable to parse date " + dateString, e);
       }
       //Make sure it's timezone neutral:
       synchronized(neutralCalendar) {

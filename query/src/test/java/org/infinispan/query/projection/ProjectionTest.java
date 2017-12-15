@@ -1,5 +1,7 @@
 package org.infinispan.query.projection;
 
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,7 +22,6 @@ import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.junit.Assert;
 import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "query.projection.ProjectionTest")
@@ -104,7 +105,7 @@ public class ProjectionTest extends SingleCacheManagerTest {
    private void assertQueryListContains(List<?> list, Object[] expected) {
       assert list.size() == 1;
       Object[] array = (Object[]) list.get(0);
-      Assert.assertArrayEquals(expected, array);
+      assertArrayEquals(expected, array);
    }
 
    private void assertQueryIteratorContains(ResultIterator<?> iterator, Object[] expected) {

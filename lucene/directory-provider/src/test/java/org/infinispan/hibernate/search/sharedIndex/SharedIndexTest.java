@@ -30,7 +30,6 @@ import org.junit.Test;
  *
  * @author Zach Kurey
  */
-
 public class SharedIndexTest {
    FullTextSessionBuilder node;
    HashSet<Class<?>> entityTypes;
@@ -57,7 +56,7 @@ public class SharedIndexTest {
          QueryBuilder queryBuilder = fullTextSession.getSearchFactory().buildQueryBuilder()
                .forEntity(Toaster.class).get();
          Query query = queryBuilder.keyword().onField("serialNumber").matching("A1").createQuery();
-         List list = fullTextSession.createFullTextQuery(query).list();
+         List list = fullTextSession.createFullTextQuery(query).getResultList();
          assertEquals(1, list.size());
          Device device = (Device) list.get(0);
 

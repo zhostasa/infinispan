@@ -1,6 +1,5 @@
 package org.infinispan.all.embeddedquery.testdomain.hsearch;
 
-
 import org.infinispan.all.embeddedquery.testdomain.Account;
 import org.infinispan.all.embeddedquery.testdomain.Address;
 import org.infinispan.all.embeddedquery.testdomain.ModelFactory;

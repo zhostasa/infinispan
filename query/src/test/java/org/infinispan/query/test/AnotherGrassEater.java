@@ -3,14 +3,10 @@ package org.infinispan.query.test;
 import java.io.Serializable;
 
 import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.ProvidedId;
 import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
-import org.hibernate.search.bridge.builtin.StringBridge;
 
-@ProvidedId(bridge = @FieldBridge(impl = StringBridge.class))
 @Indexed(index = "anotherclass")
 public class AnotherGrassEater implements Serializable {
    private static final long serialVersionUID = -5685487467005726138L;
