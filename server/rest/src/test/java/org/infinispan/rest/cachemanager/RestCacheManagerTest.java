@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 public class RestCacheManagerTest extends SingleCacheManagerTest {
 
    @BeforeClass
-   public void prepare() throws Exception {
+   public void prepare() {
       Configuration config = new ConfigurationBuilder().build();
       cacheManager.defineConfiguration("cache1", config);
       cacheManager.defineConfiguration("cache2", config);
@@ -36,16 +36,16 @@ public class RestCacheManagerTest extends SingleCacheManagerTest {
       Map<String, Cache<String, ?>> knownCaches = TestingUtil.extractField(restCacheManager, "knownCaches");
 
       // Request cache by simple name
-      restCacheManager.getCache("cache1", null);
-      restCacheManager.getCache("cache2", null);
+      restCacheManager.getCache("cache1", MediaType.MATCH_ALL);
+      restCacheManager.getCache("cache2", MediaType.MATCH_ALL);
 
       // Verify they are stored internally
       assertEquals(knownCaches.keySet().size(), 2);
 
       // Requesting again should not cause interaction with the cache manager
       Mockito.reset(embeddedCacheManager);
-      restCacheManager.getCache("cache1", null);
-      restCacheManager.getCache("cache2", null);
+      restCacheManager.getCache("cache1", MediaType.MATCH_ALL);
+      restCacheManager.getCache("cache2", MediaType.MATCH_ALL);
 
       Mockito.verifyZeroInteractions(embeddedCacheManager);
 
@@ -67,7 +67,7 @@ public class RestCacheManagerTest extends SingleCacheManagerTest {
    }
 
    @Override
-   protected EmbeddedCacheManager createCacheManager() throws Exception {
+   protected EmbeddedCacheManager createCacheManager() {
       return TestCacheManagerFactory.createCacheManager(getDefaultStandaloneCacheConfig(false));
    }
 }
