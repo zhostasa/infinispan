@@ -66,6 +66,11 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-objectfilter</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-cachestore-jdbc</artifactId>
       </dependency>
 
@@ -82,6 +87,11 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-cachestore-rest</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-cachestore-leveldb</artifactId>
       </dependency>
 
       <dependency>
@@ -149,6 +159,27 @@
          <artifactId>infinispan-extended-statistics</artifactId>
          <version>${project.version}</version>
       </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-scripting</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-tasks</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-tasks-api</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-multimap</artifactId>
+         <version>${project.version}</version>
+      </dependency>
    </dependencies>
 
    <build>
@@ -188,7 +219,7 @@
                         </group>
                         <group>
                            <title>Query API</title>
-                           <packages>org.infinispan.query*</packages>
+                           <packages>org.infinispan.query*:org.infinispan.objectfilter*</packages>
                         </group>
                         <group>
                            <title>Distributed Executors and Map/Reduce API</title>
@@ -209,6 +240,22 @@
                         <group>
                            <title>Server Connectors API</title>
                            <packages>org.infinispan.server*</packages>
+                        </group>
+                        <group>
+                           <title>Scripting API</title>
+                           <packages>org.infinispan.scripting*</packages>
+                        </group>
+                        <group>
+                           <title>Task Execution API</title>
+                           <packages>org.infinispan.tasks*</packages>
+                        </group>
+                        <group>
+                           <title>Server Connectors API</title>
+                           <packages>org.infinispan.server*:org.infinispan.rest*</packages>
+                        </group>
+                        <group>
+                           <title>Multimap API</title>
+                           <packages>org.infinispan.multimap*</packages>
                         </group>
                         <!-- <group>
                            <title>Tree API</title>
