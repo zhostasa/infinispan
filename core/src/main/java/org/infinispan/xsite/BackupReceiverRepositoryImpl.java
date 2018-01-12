@@ -25,6 +25,7 @@ import org.infinispan.util.logging.LogFactory;
 public class BackupReceiverRepositoryImpl implements BackupReceiverRepository {
 
    private static Log log = LogFactory.getLog(BackupReceiverRepositoryImpl.class);
+   private static final boolean trace = log.isTraceEnabled();
 
    private final ConcurrentMap<SiteCachePair, BackupReceiver> backupReceivers = new ConcurrentHashMap<>();
 
@@ -71,44 +72,42 @@ public class BackupReceiverRepositoryImpl implements BackupReceiverRepository {
       if (backupManager != null) return backupManager;
 
       //check the default cache first
-      Configuration dcc = cacheManager.getDefaultCacheConfiguration();
-      if (isBackupForRemoteCache(remoteSite, remoteCache, dcc, EmbeddedCacheManager.DEFAULT_CACHE_NAME)) {
-         Cache<Object, Object> cache = cacheManager.getCache();
-         backupReceivers.putIfAbsent(toLookFor, createBackupReceiver(cache));
-         toLookFor.setLocalCacheName(EmbeddedCacheManager.DEFAULT_CACHE_NAME);
-         return backupReceivers.get(toLookFor);
+      Configuration configuration = cacheManager.getDefaultCacheConfiguration();
+      if (configuration != null && isBackupForRemoteCache(toLookFor, configuration)) {
+         return setBackupToUse(cacheManager.getCache(), toLookFor, EmbeddedCacheManager.DEFAULT_CACHE_NAME);
       }
 
       Set<String> cacheNames = cacheManager.getCacheNames();
       for (String name : cacheNames) {
-         Configuration cacheConfiguration = cacheManager.getCacheConfiguration(name);
-         if (isBackupForRemoteCache(remoteSite, remoteCache, cacheConfiguration, name)) {
-            Cache<Object, Object> cache = cacheManager.getCache(name);
-            toLookFor.setLocalCacheName(name);
-            backupReceivers.putIfAbsent(toLookFor, createBackupReceiver(cache));
-            return backupReceivers.get(toLookFor);
+         configuration = cacheManager.getCacheConfiguration(name);
+         if (configuration != null && isBackupForRemoteCache(toLookFor, configuration)) {
+            return setBackupToUse(cacheManager.getCache(name), toLookFor, name);
          }
       }
       log.debugf("Did not find any backup explicitly configured backup cache for remote cache/site: %s/%s. Using %s",
                  remoteSite, remoteCache, remoteCache);
 
-      Cache<Object, Object> cache = cacheManager.getCache(remoteCache);
-      backupReceivers.putIfAbsent(toLookFor, createBackupReceiver(cache));
-      toLookFor.setLocalCacheName(cache.getName());
-      return backupReceivers.get(toLookFor);
+      return setBackupToUse(cacheManager.getCache(remoteCache), toLookFor, remoteCache);
    }
 
-   private boolean isBackupForRemoteCache(String remoteSite, String remoteCache, Configuration cacheConfiguration, String name) {
-      boolean found = cacheConfiguration.sites().backupFor().isBackupFor(remoteSite, remoteCache);
-      if (found)
-         log.tracef("Found local cache '%s' is backup for cache '%s' from site '%s'", name, remoteCache, remoteSite);
-      return found;
+   private boolean isBackupForRemoteCache(SiteCachePair toLookFor, Configuration configuration) {
+      return configuration.sites().backupFor().isBackupFor(toLookFor.remoteSite,toLookFor.remoteCache);
+   }
+
+   private BackupReceiver setBackupToUse(Cache<Object,Object> cache, SiteCachePair toLookFor, String cacheName) {
+      if (trace) {
+         log.tracef("Found local cache '%s' is backup for cache '%s' from site '%s'",
+               cacheName, toLookFor.remoteCache, toLookFor.remoteSite);
+      }
+      backupReceivers.putIfAbsent(toLookFor, createBackupReceiver(cache));
+      toLookFor.setLocalCacheName(cacheName);
+      return backupReceivers.get(toLookFor);
    }
 
    static class SiteCachePair {
       public final String remoteSite;
       public final String remoteCache;
-      public String localCacheName;
+      String localCacheName;
 
       /**
        * Important: do not include the localCacheName field in the equals and hash code comparison. This is mainly used
@@ -121,17 +120,12 @@ public class BackupReceiverRepositoryImpl implements BackupReceiverRepository {
 
          SiteCachePair that = (SiteCachePair) o;
 
-         if (remoteCache != null ? !remoteCache.equals(that.remoteCache) : that.remoteCache != null) return false;
-         if (remoteSite != null ? !remoteSite.equals(that.remoteSite) : that.remoteSite != null) return false;
-
-         return true;
+         return remoteCache.equals(that.remoteCache) && remoteSite.equals(that.remoteSite);
       }
 
       @Override
       public int hashCode() {
-         int result = remoteSite != null ? remoteSite.hashCode() : 0;
-         result = 31 * result + (remoteCache != null ? remoteCache.hashCode() : 0);
-         return result;
+         return  31 * remoteSite.hashCode() + remoteCache.hashCode();
       }
 
       SiteCachePair(String remoteCache, String remoteSite) {
@@ -139,7 +133,7 @@ public class BackupReceiverRepositoryImpl implements BackupReceiverRepository {
          this.remoteSite = remoteSite;
       }
 
-      public void setLocalCacheName(String localCacheName) {
+      void setLocalCacheName(String localCacheName) {
          this.localCacheName = localCacheName;
       }
 
