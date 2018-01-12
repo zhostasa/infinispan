@@ -71,6 +71,10 @@
             <maven-resource group="com.thoughtworks.xstream" artifact="xstream" />
         </module-def>
 
+        <module-def name="io.netty" slot="${infinispan.slot}">
+            <maven-resource group="io.netty" artifact="netty-all" />
+        </module-def>
+
         <module-def name="org.antlr.antlr-runtime" slot="${infinispan.slot}">
             <maven-resource group="org.antlr" artifact="antlr-runtime" />
         </module-def>
