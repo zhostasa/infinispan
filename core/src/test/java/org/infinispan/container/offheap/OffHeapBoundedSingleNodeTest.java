@@ -34,6 +34,8 @@ public class OffHeapBoundedSingleNodeTest extends OffHeapSingleNodeTest {
       dcc.memory().storageType(StorageType.OFF_HEAP).size(COUNT).evictionType(EvictionType.COUNT);
       // Only start up the 1 cache
       addClusterEnabledCacheManager(dcc);
+
+      configureTimeService();
    }
 
    public void testMoreWriteThanSize() {

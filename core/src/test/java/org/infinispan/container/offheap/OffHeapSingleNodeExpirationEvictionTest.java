@@ -75,9 +75,9 @@ public class OffHeapSingleNodeExpirationEvictionTest extends OffHeapSingleNodeTe
 
    public void testEnsureCorrectStorage() {
       Cache<String, String> cache = cache(0);
-      long beforeInsert = System.currentTimeMillis();
+      long beforeInsert = timeService.wallClockTime();
       cache.put("k", "v");
-      long afterInsert = System.currentTimeMillis();
+      timeService.advance(10);
 
       DataConversion dataConversion = cache.getAdvancedCache().getKeyDataConversion();
 
@@ -90,26 +90,21 @@ public class OffHeapSingleNodeExpirationEvictionTest extends OffHeapSingleNodeTe
          case MORTAL:
             assertEquals(storedTime, entry.getLifespan());
             assertEquals(-1, entry.getMaxIdle());
-            assertBetweenTimes(beforeInsert, entry.getCreated(), afterInsert);
+            assertEquals(beforeInsert, entry.getCreated());
             assertEquals(-1, entry.getLastUsed());
             break;
          case TRANSIENT:
             assertEquals(-1, entry.getLifespan());
             assertEquals(storedTime, entry.getMaxIdle());
             assertEquals(-1, entry.getCreated());
-            assertBetweenTimes(beforeInsert, entry.getLastUsed(), afterInsert);
+            assertEquals(beforeInsert, entry.getLastUsed());
             break;
          case TRANSIENT_MORTAL:
             assertEquals(storedTime, entry.getLifespan());
             assertEquals(storedTime, entry.getMaxIdle());
-            assertBetweenTimes(beforeInsert, entry.getCreated(), afterInsert);
-            assertBetweenTimes(beforeInsert, entry.getLastUsed(), afterInsert);
+            assertEquals(beforeInsert, entry.getCreated());
+            assertEquals(beforeInsert, entry.getLastUsed());
             break;
       }
-   }
-
-   void assertBetweenTimes(long beforeInsert, long middle, long afterInsert) {
-      assertTrue("before insert: " + beforeInsert + ",created time: " + middle + ", after insert: " + afterInsert,
-            beforeInsert <= middle && middle <= afterInsert);
    }
 }
