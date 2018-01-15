@@ -76,6 +76,12 @@ public class IckleContinuousQueryFilterIndexingServiceProvider extends BaseJPAFi
       }
 
       if (oldValue != null || newValue != null) {
+         if (oldValue != null && oldValue.getClass() == WrappedByteArray.class) {
+            oldValue = ((WrappedByteArray) oldValue).getBytes();
+         }
+         if (newValue != null && newValue.getClass() == WrappedByteArray.class) {
+            newValue = ((WrappedByteArray) newValue).getBytes();
+         }
          matcher.matchDelta(eventWrapper, event.getType(), oldValue, newValue, joiningEvent, updatedEvent, leavingEvent);
       }
    }
