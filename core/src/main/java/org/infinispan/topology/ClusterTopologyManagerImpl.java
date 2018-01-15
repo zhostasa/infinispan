@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.CollectionFactory;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.executors.LimitedExecutor;
@@ -220,7 +221,7 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
             return null;
          }
 
-         cacheStatus = initCacheStatusIfAbsent(cacheName);
+         cacheStatus = initCacheStatusIfAbsent(cacheName, joinInfo.getCacheMode());
       } finally {
          clusterManagerLock.unlock();
       }
@@ -414,7 +415,7 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
       return true;
    }
 
-   private ClusterCacheStatus initCacheStatusIfAbsent(String cacheName) {
+   private ClusterCacheStatus initCacheStatusIfAbsent(String cacheName, CacheMode cacheMode) {
       return cacheStatusMap.computeIfAbsent(cacheName, (name) -> {
          // We assume that any cache with partition handling configured is already defined on all the nodes
          // (including the coordinator) before it starts on any node.
@@ -493,7 +494,8 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
       CountDownLatch latch = new CountDownLatch(responsesByCache.size());
       LimitedExecutor cs = new LimitedExecutor("Merge-" + newViewId, asyncTransportExecutor, maxThreads);
       for (final Map.Entry<String, Map<Address, CacheStatusResponse>> e : responsesByCache.entrySet()) {
-         ClusterCacheStatus cacheStatus = initCacheStatusIfAbsent(e.getKey());
+         CacheJoinInfo joinInfo = e.getValue().values().stream().findAny().get().getCacheJoinInfo();
+         ClusterCacheStatus cacheStatus = initCacheStatusIfAbsent(e.getKey(), joinInfo.getCacheMode());
          cs.execute(() -> {
             try {
                cacheStatus.doMergePartitions(e.getValue());

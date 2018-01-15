@@ -117,7 +117,7 @@ public class StateTransferManagerImpl implements StateTransferManager {
             configuration.clustering().hash().numOwners(),
             configuration.clustering().stateTransfer().timeout(),
             configuration.transaction().transactionProtocol().isTotalOrder(),
-            configuration.clustering().cacheMode().isDistributed(),
+            configuration.clustering().cacheMode(),
             CapacityFactor.capacityFactor(configuration.clustering().hash()),
             localTopologyManager.getPersistentUUID(),
             persistentStateChecksum);

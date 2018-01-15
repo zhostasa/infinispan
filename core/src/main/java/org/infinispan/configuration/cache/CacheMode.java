@@ -39,6 +39,12 @@ public enum CacheMode {
     */
    DIST_ASYNC;
 
+   private static CacheMode[] cachedValues = values();
+
+   public static CacheMode valueOf(int order) {
+      return cachedValues[order];
+   }
+
    /**
     * Returns true if the mode is invalidation, either sync or async.
     */

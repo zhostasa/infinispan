@@ -126,7 +126,7 @@ public class ClusterCacheStatus implements AvailabilityStrategyContext {
    }
 
    public boolean isDistributed() {
-      return joinInfo.isDistributed();
+      return joinInfo.getCacheMode().isDistributed();
    }
 
    public Map<Address, Float> getCapacityFactors() {
