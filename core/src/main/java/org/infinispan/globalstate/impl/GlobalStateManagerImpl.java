@@ -4,10 +4,13 @@ import static org.infinispan.globalstate.ScopedPersistentState.GLOBAL_SCOPE;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +49,8 @@ public class GlobalStateManagerImpl implements GlobalStateManager {
    private List<GlobalStateProvider> stateProviders = new ArrayList<>();
    private TimeService timeService;
    private boolean persistentState;
+   FileOutputStream globalLockFile;
+   private FileLock globalLock;
 
    @Inject
    public void inject(GlobalConfiguration globalConfiguration, TimeService timeService) {
@@ -57,6 +62,7 @@ public class GlobalStateManagerImpl implements GlobalStateManager {
    @Start(priority = 1) // Must start before everything else
    public void start() {
       if (persistentState) {
+         acquireGlobalLock();
          loadGlobalState();
       }
    }
@@ -65,7 +71,30 @@ public class GlobalStateManagerImpl implements GlobalStateManager {
    public void stop() {
       if (persistentState) {
          writeGlobalState();
+         releaseGlobalLock();
       }
+   }
+
+   private void acquireGlobalLock() {
+      File lockFile = getLockFile();
+      try {
+         lockFile.getParentFile().mkdirs();
+         globalLockFile = new FileOutputStream(lockFile);
+         globalLock = globalLockFile.getChannel().tryLock();
+         if (globalLock == null) {
+            throw log.globalStateCannotAcquireLockFile(null, lockFile);
+         }
+      } catch (IOException | OverlappingFileLockException e) {
+         throw log.globalStateCannotAcquireLockFile(e, lockFile);
+      }
+   }
+
+   private void releaseGlobalLock() {
+      if (globalLock != null && globalLock.isValid())
+         Util.close(globalLock);
+      globalLock = null;
+      Util.close(globalLockFile);
+      getLockFile().delete();
    }
 
    private void loadGlobalState() {
@@ -82,13 +111,8 @@ public class GlobalStateManagerImpl implements GlobalStateManager {
 
          stateProviders.forEach(provider -> provider.prepareForRestore(state));
       } else {
-         // Clean slate. Try to create an empty state file before proceeding
-         try {
-            stateFile.getParentFile().mkdirs();
-            stateFile.createNewFile();
-         } catch (IOException e) {
-            throw log.nonWritableStateFile(stateFile);
-         }
+         // Clean slate. Create the persistent location if necessary and acquire a lock
+         stateFile.getParentFile().mkdirs();
       }
    }
 
@@ -149,6 +173,10 @@ public class GlobalStateManagerImpl implements GlobalStateManager {
 
    private File getStateFile(String scope) {
       return new File(globalConfiguration.globalState().persistentLocation(), scope + ".state");
+   }
+
+   private File getLockFile() {
+      return new File(globalConfiguration.globalState().persistentLocation(), GLOBAL_SCOPE + ".lck");
    }
 
    @Override
