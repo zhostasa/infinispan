@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.server.infinispan.spi.service.CacheServiceName;
 import org.jboss.as.controller.AttributeDefinition;
@@ -62,6 +63,15 @@ public class MemoryOffHeapConfigurationResource extends CacheConfigurationChildR
                 .setDefaultValue(new ModelNode().set(EvictionType.COUNT.name()))
                 .build();
 
+    static final SimpleAttributeDefinition STRATEGY =
+          new SimpleAttributeDefinitionBuilder(ModelKeys.STRATEGY, ModelType.STRING, true)
+                .setXmlName(Attribute.STRATEGY.getLocalName())
+                .setAllowExpression(true)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setValidator(new EnumValidator<>(EvictionStrategy.class, true, false))
+                .setDefaultValue(new ModelNode().set(EvictionStrategy.NONE.name()))
+                .build();
+
     static final SimpleAttributeDefinition ADDRESS_COUNT =
           new SimpleAttributeDefinitionBuilder(ModelKeys.ADDRESS_COUNT, ModelType.LONG, true)
                 .setXmlName(Attribute.ADDRESS_COUNT.getLocalName())
@@ -70,7 +80,7 @@ public class MemoryOffHeapConfigurationResource extends CacheConfigurationChildR
                 .setDefaultValue(new ModelNode().set(-1))
                 .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = {ADDRESS_COUNT, SIZE, EVICTION};
+    static final AttributeDefinition[] ATTRIBUTES = {ADDRESS_COUNT, SIZE, EVICTION, STRATEGY};
 
     public MemoryOffHeapConfigurationResource(CacheConfigurationResource parent) {
         super(PATH, ModelKeys.MEMORY, parent, ATTRIBUTES);
@@ -83,6 +93,7 @@ public class MemoryOffHeapConfigurationResource extends CacheConfigurationChildR
 
         resourceRegistration.registerReadWriteAttribute(EVICTION, CacheReadAttributeHandler.INSTANCE, restartCacheWriteHandler);
         resourceRegistration.registerReadWriteAttribute(ADDRESS_COUNT, CacheReadAttributeHandler.INSTANCE, restartCacheWriteHandler);
+        resourceRegistration.registerReadWriteAttribute(STRATEGY, CacheReadAttributeHandler.INSTANCE, restartCacheWriteHandler);
         resourceRegistration.registerReadWriteAttribute(SIZE, CacheReadAttributeHandler.INSTANCE, new RuntimeCacheConfigurationWriteAttributeHandler(SIZE, (configuration, newSize) -> {
             configuration.memory().size(newSize.asLong());
         }));

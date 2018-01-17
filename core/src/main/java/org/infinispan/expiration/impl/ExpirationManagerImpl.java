@@ -132,15 +132,16 @@ public class ExpirationManagerImpl<K, V> implements ExpirationManager<K, V> {
    @Override
    public void handleInMemoryExpiration(InternalCacheEntry<K, V> entry, long currentTime) {
       dataContainer.compute(entry.getKey(), ((k, oldEntry, factory) -> {
-         if (entry == oldEntry) {
-            synchronized (entry) {
-               if (entry.isExpired(currentTime)) {
-                  deleteFromStoresAndNotify(k, entry.getValue(), entry.getMetadata());
+         if (oldEntry != null) {
+            synchronized (oldEntry) {
+               if (oldEntry.isExpired(currentTime)) {
+                  deleteFromStoresAndNotify(k, oldEntry.getValue(), oldEntry.getMetadata());
+               } else {
+                  return oldEntry;
                }
             }
-            return null;
          }
-         return oldEntry;
+         return null;
       }));
    }
 

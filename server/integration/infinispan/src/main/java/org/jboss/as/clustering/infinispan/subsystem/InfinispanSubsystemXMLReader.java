@@ -1417,6 +1417,10 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
                     MemoryObjectConfigurationResource.SIZE.parseAndSetParameter(value, object, reader);
                     break;
                 }
+                case STRATEGY: {
+                    MemoryObjectConfigurationResource.STRATEGY.parseAndSetParameter(value, object, reader);
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -1443,6 +1447,10 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
                     MemoryBinaryConfigurationResource.SIZE.parseAndSetParameter(value, binary, reader);
                     break;
                 }
+                case STRATEGY: {
+                    MemoryBinaryConfigurationResource.STRATEGY.parseAndSetParameter(value, binary, reader);
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -1466,6 +1474,10 @@ public final class InfinispanSubsystemXMLReader implements XMLElementReader<List
                 }
                 case SIZE: {
                     MemoryOffHeapConfigurationResource.SIZE.parseAndSetParameter(value, offHeap, reader);
+                    break;
+                }
+                case STRATEGY: {
+                    MemoryOffHeapConfigurationResource.STRATEGY.parseAndSetParameter(value, offHeap, reader);
                     break;
                 }
                 case ADDRESS_COUNT: {

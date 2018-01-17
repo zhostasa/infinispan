@@ -69,6 +69,7 @@ import org.infinispan.conflict.EntryMergePolicy;
 import org.infinispan.conflict.MergePolicy;
 import org.infinispan.container.DataContainer;
 import org.infinispan.distribution.group.Grouper;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.factories.threads.DefaultThreadFactory;
 import org.infinispan.jmx.MBeanServerLookup;
@@ -1679,6 +1680,9 @@ public class Parser implements ConfigurationParser {
             case ADDRESS_COUNT:
                memoryBuilder.addressCount(Integer.parseInt(value));
                break;
+            case STRATEGY:
+               memoryBuilder.evictionStrategy(EvictionStrategy.valueOf(value));
+               break;
             default:
                throw ParseUtils.unexpectedAttribute(reader, i);
          }
@@ -1695,6 +1699,9 @@ public class Parser implements ConfigurationParser {
          switch (attribute) {
             case SIZE:
                memoryBuilder.size(Long.parseLong(value));
+               break;
+            case STRATEGY:
+               memoryBuilder.evictionStrategy(EvictionStrategy.valueOf(value));
                break;
             default:
                throw ParseUtils.unexpectedAttribute(reader, i);
@@ -1715,6 +1722,9 @@ public class Parser implements ConfigurationParser {
                break;
             case EVICTION:
                memoryBuilder.evictionType(EvictionType.valueOf(value));
+               break;
+            case STRATEGY:
+               memoryBuilder.evictionStrategy(EvictionStrategy.valueOf(value));
                break;
             default:
                throw ParseUtils.unexpectedAttribute(reader, i);
