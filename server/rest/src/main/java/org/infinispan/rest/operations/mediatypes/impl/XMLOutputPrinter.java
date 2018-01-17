@@ -21,7 +21,8 @@ public class XMLOutputPrinter implements OutputPrinter {
    @Override
    public byte[] print(String cacheName, CacheSet<?> keys, Charset charset) {
       return keys.stream()
-            .map(b -> Escaper.escapeXml(b.toString()))
+            .map(this::asString)
+            .map(Escaper::escapeXml)
             .map(s -> "<key>" + s + "</key>")
             .collect(CacheCollectors.serializableCollector(() -> Collectors.joining("", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><keys>", "</keys>")))
             .getBytes(charset.getJavaCharset());

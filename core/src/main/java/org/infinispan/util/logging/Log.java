@@ -35,8 +35,8 @@ import org.infinispan.commons.dataconversion.EncodingException;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.util.TypedProperties;
-import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.parsing.Element;
 import org.infinispan.jmx.JmxDomainConflictException;
 import org.infinispan.partitionhandling.AvailabilityException;
@@ -782,11 +782,11 @@ public interface Log extends BasicLogger {
    void noLiveOwnersFoundForSegments(Collection<Integer> segments, String cacheName, Collection<Address> faultySources);
 
    @LogMessage(level = WARN)
-   @Message(value = "Failed to retrieve transactions for segments %s of cache %s from node %s", id=209)
+   @Message(value = "Failed to retrieve transactions for segments %s of cache %s from node %s", id = 209)
    void failedToRetrieveTransactionsForSegments(Collection<Integer> segments, String cacheName, Address source, @Cause Exception e);
 
    @LogMessage(level = WARN)
-   @Message(value = "Failed to request segments %s of cache %s from node %s (node will not be retried)", id=210)
+   @Message(value = "Failed to request segments %s of cache %s from node %s (node will not be retried)", id = 210)
    void failedToRequestSegments(Collection<Integer> segments, String cacheName, Address source, @Cause Throwable e);
 
 //   @LogMessage(level = ERROR)
@@ -1562,7 +1562,7 @@ public interface Log extends BasicLogger {
    @Message(value = "Invalid text format: '%s'", id = 493)
    EncodingException invalidTextFormat(Object content);
 
-   @Message(value = "Invalid text format: '%s'", id = 494)
+   @Message(value = "Invalid binary format: '%s'", id = 494)
    EncodingException invalidBinaryFormat(Object content);
 
    @Message(value = "Error transcoding content", id = 495)
@@ -1599,7 +1599,7 @@ public interface Log extends BasicLogger {
    @Message(value = "MEMORY based OFF_HEAP eviction configured size %d must be larger than %d to store configured " +
          "address count of %d", id = 505)
    CacheConfigurationException offHeapMemoryEvictionSizeNotLargeEnoughForAddresses(long configuredSize,
-         long addressMemorySize, int addressCount);
+                                                                                   long addressMemorySize, int addressCount);
 
    @Message(value = "Cache %s already exists", id = 507)
    CacheConfigurationException cacheExists(String cacheName);

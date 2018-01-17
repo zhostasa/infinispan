@@ -21,7 +21,7 @@ public class JSONOutputPrinter implements OutputPrinter {
    @Override
    public byte[] print(String cacheName, CacheSet<?> keys, Charset charset) {
       return keys.stream()
-            .map(b -> Escaper.escapeJson(b.toString()))
+            .map(this::asString)
             .collect(CacheCollectors.serializableCollector(() -> Collectors.joining(",", "keys=[", "]")))
             .getBytes(charset.getJavaCharset());
    }

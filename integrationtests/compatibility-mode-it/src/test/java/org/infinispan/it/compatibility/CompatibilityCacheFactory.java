@@ -160,8 +160,8 @@ public class CompatibilityCacheFactory<K, V> {
          cacheManager.defineConfiguration(cacheName, builder.build());
 
       embeddedCache = cacheName.isEmpty()
-            ? cacheManager.<K, V>getCache()
-            : cacheManager.<K, V>getCache(cacheName);
+            ? cacheManager.getCache()
+            : cacheManager.getCache(cacheName);
    }
 
    private void createHotRodCache() {
@@ -172,12 +172,12 @@ public class CompatibilityCacheFactory<K, V> {
       hotrod = server;
       hotrodClient = new RemoteCacheManager(new ConfigurationBuilder()
             .addServers("localhost:" + hotrod.getPort())
-            .addJavaSerialWhiteList(".*Person.*")
+            .addJavaSerialWhiteList(".*Person.*", ".*CustomEvent.*")
             .marshaller(marshaller)
             .build());
       hotrodCache = cacheName.isEmpty()
-            ? hotrodClient.<K, V>getCache()
-            : hotrodClient.<K, V>getCache(cacheName);
+            ? hotrodClient.getCache()
+            : hotrodClient.getCache(cacheName);
    }
 
    public void createRestCache() throws Exception {
