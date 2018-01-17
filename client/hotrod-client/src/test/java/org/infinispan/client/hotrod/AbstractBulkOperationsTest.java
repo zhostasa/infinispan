@@ -44,28 +44,18 @@ import org.testng.annotations.Test;
  * @author William Burns
  * @since 9.1
  */
-@Test(groups = "functional", testName = "org.infinispan.client.hotrod.BulkOperationsTest")
-public class BulkOperationsTest extends MultipleCacheManagersTest {
+@Test(groups = "functional", testName = "org.infinispan.client.hotrod.AbstractBulkOperationsTest")
+public abstract class AbstractBulkOperationsTest extends MultipleCacheManagersTest {
 
    protected HotRodServer[] hotrodServers;
    protected RemoteCacheManager remoteCacheManager;
    protected RemoteCache<Object, Object> remoteCache;
    protected ControlledTimeService timeService;
 
-   protected CacheMode cacheMode;
+   protected final CacheMode cacheMode;
 
-   public BulkOperationsTest cacheMode(CacheMode cacheMode) {
+   public AbstractBulkOperationsTest(CacheMode cacheMode) {
       this.cacheMode = cacheMode;
-      return this;
-   }
-
-   @Factory
-   public Object[] factory() {
-      return new Object[] {
-            new BulkOperationsTest().cacheMode(CacheMode.DIST_SYNC),
-            new BulkOperationsTest().cacheMode(CacheMode.REPL_SYNC),
-            new BulkOperationsTest().cacheMode(CacheMode.LOCAL),
-      };
    }
 
    protected int numberOfHotRodServers() {
