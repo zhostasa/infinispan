@@ -35,6 +35,7 @@ import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.registry.InternalCacheRegistry;
 import org.infinispan.remoting.rpc.RpcManager;
+import org.infinispan.security.Security;
 import org.infinispan.server.core.ServerConstants;
 import org.infinispan.server.hotrod.counter.CounterAddDecodeContext;
 import org.infinispan.server.hotrod.counter.CounterCompareAndSetDecodeContext;
@@ -320,6 +321,10 @@ public final class CacheDecodeContext {
    void withSubect(Subject subject) {
       this.subject = subject;
       this.cache = cache.withSubject(subject);
+   }
+
+   public String getPrincipalName() {
+      return subject != null ? Security.getSubjectUserPrincipal(subject).getName() : null;
    }
 
    Metadata buildMetadata() {

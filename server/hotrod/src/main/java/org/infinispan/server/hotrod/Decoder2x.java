@@ -135,7 +135,7 @@ class Decoder2x implements VersionedDecoder {
       int size;
 
       if (readExpiration) {
-         boolean pre22Version = Constants.isVersionPre22(header.version);
+         boolean pre22Version = HotRodVersion.HOTROD_22.isOlder(header.version);
          byte firstUnit;
          byte secondUnit;
          if (pre22Version) {
@@ -443,7 +443,7 @@ class Decoder2x implements VersionedDecoder {
             }
             if (!readMaybeNamedFactory(buffer).map(converter -> {
                boolean useRawData;
-               if (Constants.isVersion2x(header.version)) {
+               if (HotRodVersion.HOTROD_20.isAtLeast(header.version)) {
                   Optional<Byte> rawOptional = ExtendedByteBuf.readMaybeByte(buffer);
                   if (rawOptional.isPresent()) {
                      useRawData = rawOptional.get() == 1;
@@ -462,7 +462,7 @@ class Decoder2x implements VersionedDecoder {
             }).isPresent()) {
                return;
             }
-            if (Constants.isVersionPost25(header.version)) {
+            if (HotRodVersion.HOTROD_26.isAtLeast(header.version)) {
                int listenerInterests = ExtendedByteBufJava.readMaybeVInt(buffer);
                if (listenerInterests == Integer.MIN_VALUE)
                   return;
@@ -483,7 +483,7 @@ class Decoder2x implements VersionedDecoder {
             ExtendedByteBuf.readMaybeOptRangedBytes(buffer).flatMap(segments ->
                   ExtendedByteBuf.readMaybeOptString(buffer).map(name -> {
                      Optional<KeyValuePair<String, List<byte[]>>> factory;
-                     boolean isPre24 = Constants.isVersionPre24(header.version);
+                     boolean isPre24 = HotRodVersion.HOTROD_24.isOlder(header.version);
                      if (name.isPresent()) {
                         if (isPre24) {
                            factory = Optional.of(new KeyValuePair<>(name.get(), Collections.emptyList()));
@@ -655,7 +655,7 @@ class Decoder2x implements VersionedDecoder {
       stats.put("totalBytesWritten", t.getTotalBytesWritten());
 
       HotRodHeader h = ctx.header;
-      if (!Constants.isVersionPre24(h.version)) {
+      if (HotRodVersion.HOTROD_24.isAtLeast(h.version)) {
          ComponentRegistry registry = ctx.getCacheRegistry(h.cacheName);
          ClusterCacheStats clusterCacheStats = registry.getComponent(ClusterCacheStats.class);
          if (clusterCacheStats != null) {
