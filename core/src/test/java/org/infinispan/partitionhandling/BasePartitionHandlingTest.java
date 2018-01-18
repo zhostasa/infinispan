@@ -1,8 +1,10 @@
 package org.infinispan.partitionhandling;
 
+import static org.infinispan.test.Exceptions.expectException;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -22,6 +24,7 @@ import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.partitionhandling.impl.PartitionHandlingManager;
 import org.infinispan.remoting.transport.AbstractDelegatingTransport;
 import org.infinispan.remoting.transport.Transport;
+import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
@@ -43,7 +46,7 @@ import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "partitionhandling.BasePartitionHandlingTest")
 public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
-   protected Log log = LogFactory.getLog(getClass());
+   protected static Log log = LogFactory.getLog(MethodHandles.lookup().lookupClass());
 
    private final AtomicInteger viewId = new AtomicInteger(5);
    protected int numMembersInCluster = 4;
@@ -312,7 +315,7 @@ public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
 
       public void assertKeyAvailableForRead(Object k, Object expectedValue) {
          for (Cache c : cachesInThisPartition()) {
-            assertEquals(c.get(k), expectedValue, "Cache " + c.getAdvancedCache().getRpcManager().getAddress() + " doesn't see the right value: ");
+            BasePartitionHandlingTest.this.assertKeyAvailableForRead(c, k, expectedValue);
          }
       }
 
@@ -330,12 +333,7 @@ public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
 
       public void assertKeyNotAvailableForRead(Object key) {
          for (Cache<Object, ?> c : cachesInThisPartition()) {
-            try {
-               c.get(key);
-               fail("Key " + key + " available in cache " + address(c));
-            } catch (AvailabilityException ae) {
-               //expected!
-            }
+            BasePartitionHandlingTest.this.assertKeyNotAvailableForRead(c, key);
          }
       }
 
@@ -372,6 +370,23 @@ public class BasePartitionHandlingTest extends MultipleCacheManagersTest {
             eventuallyEquals(state, () -> partitionHandlingManager(c).getAvailabilityMode());
          }
       }
+
+      public List<org.infinispan.remoting.transport.Address> getAddresses() {
+         return channels.stream().map(ch -> new JGroupsAddress(ch.getAddress())).collect(Collectors.toList());
+      }
+   }
+
+   protected void assertKeyAvailableForRead(Cache c, Object k, Object expectedValue) {
+      assertEquals(c.get(k), expectedValue, "Cache " + c.getAdvancedCache().getRpcManager().getAddress() + " doesn't see the right value: ");
+   }
+
+   protected void assertKeyNotAvailableForRead(Cache<Object, ?> c, Object key) {
+      expectException(AvailabilityException.class, () -> c.get(key));
+   }
+
+
+   protected void splitCluster(PartitionDescriptor... partitions) {
+      splitCluster(Arrays.stream(partitions).map(p -> p.getNodes()).toArray(int[][]::new));
    }
 
    protected void splitCluster(int[]... parts) {

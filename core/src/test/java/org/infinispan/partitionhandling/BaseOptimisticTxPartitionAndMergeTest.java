@@ -28,7 +28,7 @@ import org.infinispan.transaction.tm.DummyTransactionManager;
  */
 public abstract class BaseOptimisticTxPartitionAndMergeTest extends BaseTxPartitionAndMergeTest {
 
-   protected static final String OPTIMISTIC_TX_CACHE_NAME = "opt-cache";
+   static final String OPTIMISTIC_TX_CACHE_NAME = "opt-cache";
 
    @Override
    protected void createCacheManagers() throws Throwable {
@@ -78,6 +78,7 @@ public abstract class BaseOptimisticTxPartitionAndMergeTest extends BaseTxPartit
       }
 
       checkLocksDuringPartition(splitMode, keyInfo, discard);
+      filterCollection.stopDiscard();
 
       mergeCluster(OPTIMISTIC_TX_CACHE_NAME);
       finalAsserts(OPTIMISTIC_TX_CACHE_NAME, keyInfo, txFail ? INITIAL_VALUE : FINAL_VALUE);
