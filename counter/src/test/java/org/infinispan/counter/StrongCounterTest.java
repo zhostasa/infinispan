@@ -26,7 +26,7 @@ import org.infinispan.counter.util.StrongTestCounter;
 import org.testng.annotations.Test;
 
 /**
- * A simple consistency test.
+ * A simple consistency test for {@link org.infinispan.counter.api.StrongCounter}.
  *
  * @author Pedro Ruivo
  * @since 8.5
@@ -37,13 +37,16 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
    private static final int CLUSTER_SIZE = 4;
 
    public void testUniqueReturnValues(Method method) throws ExecutionException, InterruptedException, TimeoutException {
-      final List<Future<List<Long>>> workers = new ArrayList<>(CLUSTER_SIZE);
+      //local mode will have 8 concurrent thread, cluster mode will have 8 concurrent threads (4 nodes, 2 threads per node)
+      final int numThreadsPerNode = clusterSize() == 1 ? 8 : 2;
+      final int totalThreads = clusterSize() * numThreadsPerNode;
+      final List<Future<List<Long>>> workers = new ArrayList<>(totalThreads);
       final String counterName = method.getName();
       final CyclicBarrier barrier = new CyclicBarrier(CLUSTER_SIZE);
       final long counterLimit = 1000;
 
-      for (int i = 0; i < CLUSTER_SIZE; ++i) {
-         final int cmIndex = i;
+      for (int i = 0; i < totalThreads; ++i) {
+         final int cmIndex = i % clusterSize();
          workers.add(fork(() -> {
             List<Long> retValues = new LinkedList<>();
             CounterManager manager = counterManager(cmIndex);
@@ -126,8 +129,9 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
 
    public void testCompareAndSetConcurrent(Method method)
          throws ExecutionException, InterruptedException, TimeoutException {
-      final int numThreadsPerNode = 2;
-      final int totalThreads = CLUSTER_SIZE * numThreadsPerNode;
+      //local mode will have 8 concurrent thread, cluster mode will have 8 concurrent threads (4 nodes, 2 threads per node)
+      final int numThreadsPerNode = clusterSize() == 1 ? 8 : 2;
+      final int totalThreads = clusterSize() * numThreadsPerNode;
       final List<Future<Boolean>> workers = new ArrayList<>(totalThreads);
       final String counterName = method.getName();
       final CyclicBarrier barrier = new CyclicBarrier(totalThreads);
@@ -135,7 +139,7 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
       final long maxIterations = 100;
       for (int i = 0; i < totalThreads; ++i) {
          final int threadIndex = i;
-         final int cmIndex = i % CLUSTER_SIZE;
+         final int cmIndex = i % clusterSize();
          workers.add(fork(() -> {
             long iteration = 0;
             final long initialValue = 0;
@@ -169,8 +173,9 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
 
    public void testCompareAndSwapConcurrent(Method method)
          throws ExecutionException, InterruptedException, TimeoutException {
-      final int numThreadsPerNode = 2;
-      final int totalThreads = CLUSTER_SIZE * numThreadsPerNode;
+      //local mode will have 8 concurrent thread, cluster mode will have 8 concurrent threads (4 nodes, 2 threads per node)
+      final int numThreadsPerNode = clusterSize() == 1 ? 8 : 2;
+      final int totalThreads = clusterSize() * numThreadsPerNode;
       final List<Future<Boolean>> workers = new ArrayList<>(totalThreads);
       final String counterName = method.getName();
       final CyclicBarrier barrier = new CyclicBarrier(totalThreads);
@@ -178,7 +183,7 @@ public class StrongCounterTest extends AbstractCounterTest<StrongTestCounter> {
       final long maxIterations = 100;
       for (int i = 0; i < totalThreads; ++i) {
          final int threadIndex = i;
-         final int cmIndex = i % CLUSTER_SIZE;
+         final int cmIndex = i % clusterSize();
          workers.add(fork(() -> {
             long iteration = 0;
             final long initialValue = 0;
