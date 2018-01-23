@@ -282,7 +282,10 @@ public class SingleNodeJdbcStoreIT {
         binaryCache.put(key3, "v3");
         assertTrue(2 >= server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntries());
         assertTrue(!binaryDB.bucketTable.getAllRows().isEmpty());
-        assertNotNull(getFirstKeyInBucket(binaryCache, binaryDB));
+        
+        assertEquals("v1", binaryCache.get(key1));
+        assertEquals("v2", binaryCache.get(key2));
+        assertEquals("v3", binaryCache.get(key3));
     }
 
     public void testRestartBinaryStoreAfter(boolean killed) throws Exception {
@@ -292,12 +295,13 @@ public class SingleNodeJdbcStoreIT {
         assertEquals(0, server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntries());
         if (killed) {
             assertEquals(1, binaryDB.bucketTable.getAllRows().size());
-            Set<String> allKeys = new HashSet<>(Arrays.asList(key1, key2, key3));
-            String passivatedKey = (String) getFirstKeyInBucket(binaryCache, binaryDB);
-            allKeys.remove(passivatedKey);
-            for (String key : allKeys) {
-                assertNull(binaryCache.get(key));
+
+            int count = 0;
+            for (String key : Arrays.asList(key1, key2, key3)) {
+               if (!(null == binaryCache.get(key))) count++;
             }
+            assertEquals(1, count);
+            
         } else {
             assertTrue(binaryDB.bucketTable.getAllRows().size() >= 2); // can't test for 3, the row may be shared
             assertEquals("v1", binaryCache.get(key1));
@@ -433,16 +437,6 @@ public class SingleNodeJdbcStoreIT {
                 }
             }, 10000);
         }
-    }
-
-    public Object getFirstKeyInBucket(RemoteCache cache, DBServer db) throws Exception {
-        Bucket bucket = db.bucketTable.getFirstNonEmptyBucket(globalMarshaller);
-        assertNotNull(bucket);
-        Map<Object, MarshalledEntry> entries = bucket.getStoredEntries();
-        assertNotNull(entries);
-        assertEquals(1, entries.size());
-        WrappedByteArray key = (WrappedByteArray) entries.keySet().iterator().next();
-        return getRealKeyFromStored(key.getBytes(), cache);
     }
 
     // gets the database representation of the String key stored with hotrod client (when using string store)
