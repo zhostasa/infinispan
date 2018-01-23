@@ -1,5 +1,8 @@
 package org.infinispan.remoting.inboundhandler;
 
+import static org.infinispan.commons.util.EnumUtil.containsAll;
+import static org.infinispan.context.impl.FlagBitSets.FORCE_ASYNCHRONOUS;
+import static org.infinispan.context.impl.FlagBitSets.FORCE_SYNCHRONOUS;
 import static org.infinispan.remoting.inboundhandler.DeliverOrder.NONE;
 
 import java.util.Collection;
@@ -11,10 +14,9 @@ import org.infinispan.commands.remote.CacheRpcCommand;
 import org.infinispan.commands.remote.SingleRpcCommand;
 import org.infinispan.commands.write.BackupAckCommand;
 import org.infinispan.commands.write.BackupMultiKeyAckCommand;
-import org.infinispan.commands.write.BackupPutMapRcpCommand;
-import org.infinispan.commands.write.BackupWriteRcpCommand;
+import org.infinispan.commands.write.BackupPutMapRpcCommand;
+import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ExceptionAckCommand;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.distribution.TriangleOrderManager;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
@@ -60,15 +62,16 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
    private CommandAckCollector commandAckCollector;
    private CommandsFactory commandsFactory;
    private Address localAddress;
+   private boolean syncCache;
+
 
    @Inject
    public void inject(LockManager lockManager,
          ClusteringDependentLogic clusteringDependentLogic,
-         Configuration configuration, TriangleOrderManager anotherTriangleOrderManager, RpcManager rpcManager,
+         TriangleOrderManager anotherTriangleOrderManager, RpcManager rpcManager,
          CommandAckCollector commandAckCollector, CommandsFactory commandsFactory) {
       this.lockManager = lockManager;
       this.clusteringDependentLogic = clusteringDependentLogic;
-      lockTimeout = configuration.locking().lockAcquisitionTimeout();
       this.triangleOrderManager = anotherTriangleOrderManager;
       this.rpcManager = rpcManager;
       this.commandAckCollector = commandAckCollector;
@@ -77,7 +80,9 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
 
    @Start
    public void start() {
+      lockTimeout = configuration.locking().lockAcquisitionTimeout();
       localAddress = rpcManager.getAddress();
+      this.syncCache = configuration.clustering().cacheMode().isSynchronous();
    }
 
    @Override
@@ -90,11 +95,11 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
             case SingleRpcCommand.COMMAND_ID:
                handleSingleRpcCommand((SingleRpcCommand) command, reply, order);
                return;
-            case BackupWriteRcpCommand.COMMAND_ID:
-               handleBackupWriteRpcCommand((BackupWriteRcpCommand) command);
+            case BackupWriteRpcCommand.COMMAND_ID:
+               handleBackupWriteRpcCommand((BackupWriteRpcCommand) command);
                return;
-            case BackupPutMapRcpCommand.COMMAND_ID:
-               handleBackupPutMapRpcCommand((BackupPutMapRcpCommand) command);
+            case BackupPutMapRpcCommand.COMMAND_ID:
+               handleBackupPutMapRpcCommand((BackupPutMapRpcCommand) command);
                return;
             case BackupAckCommand.COMMAND_ID:
                handleBackupAckCommand((BackupAckCommand) command);
@@ -184,7 +189,7 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
       }
    }
 
-   private void handleBackupPutMapRpcCommand(BackupPutMapRcpCommand command) {
+   private void handleBackupPutMapRpcCommand(BackupPutMapRpcCommand command) {
       final int topologyId = command.getTopologyId();
       ReadyAction readyAction = createTriangleOrderAction(command, topologyId, command.getSequence(),
             command.getMap().keySet().iterator().next());
@@ -192,7 +197,7 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
       remoteCommandsExecutor.execute(runnable);
    }
 
-   private void handleBackupWriteRpcCommand(BackupWriteRcpCommand command) {
+   private void handleBackupWriteRpcCommand(BackupWriteRpcCommand command) {
       final int topologyId = command.getTopologyId();
       ReadyAction readyAction = createTriangleOrderAction(command, topologyId, command.getSequence(), command.getKey());
       BlockingRunnable runnable = createBackupWriteRpcRunnable(command, topologyId, readyAction);
@@ -223,8 +228,14 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
       }
    }
 
-   private void sendExceptionAck(CommandInvocationId id, Throwable throwable, int topologyId) {
+   private void sendExceptionAck(CommandInvocationId id, Throwable throwable, int topologyId, long flagBitSet) {
       final Address origin = id.getAddress();
+      if (skipBackupAck(flagBitSet)) {
+         if (trace) {
+            log.tracef("Skipping ack for command %s.", id);
+         }
+         return;
+      }
       if (trace) {
          log.tracef("Sending exception ack for command %s. Originator=%s.", id, origin);
       }
@@ -235,8 +246,14 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
       }
    }
 
-   private void sendBackupAck(CommandInvocationId id, int topologyId) {
+   private void sendBackupAck(CommandInvocationId id, int topologyId, long flagBitSet) {
       final Address origin = id.getAddress();
+      if (skipBackupAck(flagBitSet)) {
+         if (trace) {
+            log.tracef("Skipping ack for command %s.", id);
+         }
+         return;
+      }
       boolean isLocal = localAddress.equals(origin);
       if (trace) {
          log.tracef("Sending ack for command %s. isLocal? %s.", id, isLocal);
@@ -248,7 +265,7 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
       }
    }
 
-   private BlockingRunnable createBackupWriteRpcRunnable(BackupWriteRcpCommand command, int commandTopologyId,
+   private BlockingRunnable createBackupWriteRpcRunnable(BackupWriteRpcCommand command, int commandTopologyId,
          ReadyAction readyAction) {
       readyAction.addListener(remoteCommandsExecutor::checkForReadyTasks);
       return new DefaultTopologyRunnable(this, command, Reply.NO_OP, TopologyMode.READY_TX_DATA, commandTopologyId,
@@ -263,20 +280,29 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
             super.onException(throwable);
             readyAction.onException();
             readyAction.onFinally(); //notified TriangleOrderManager before sending the ack.
-            sendExceptionAck(((BackupWriteRcpCommand) command).getCommandInvocationId(), throwable, commandTopologyId);
+            BackupWriteRpcCommand backupCommand = (BackupWriteRpcCommand) command;
+            sendExceptionAck(backupCommand.getCommandInvocationId(), throwable, commandTopologyId,
+backupCommand.getFlagBitSet());
          }
 
          @Override
          protected void afterInvoke() {
             super.afterInvoke();
             readyAction.onFinally();
-            sendBackupAck(((BackupWriteRcpCommand) command).getCommandInvocationId(), commandTopologyId);
+            BackupWriteRpcCommand backupCommand = (BackupWriteRpcCommand) command;
+            sendBackupAck(backupCommand.getCommandInvocationId(), commandTopologyId, backupCommand.getFlagBitSet());
          }
       };
    }
 
-   private void sendPutMapBackupAck(CommandInvocationId id, int topologyId, int segment) {
+   private void sendPutMapBackupAck(CommandInvocationId id, int topologyId, int segment, long flagBitSet) {
       final Address origin = id.getAddress();
+      if (skipBackupAck(flagBitSet)) {
+         if (trace) {
+            log.tracef("Skipping ack for command %s.", id);
+         }
+         return;
+      }
       if (trace) {
          log.tracef("Sending ack for command %s. Originator=%s.", id, origin);
       }
@@ -288,7 +314,7 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
       }
    }
 
-   private BlockingRunnable createBackupPutMapRunnable(BackupPutMapRcpCommand command, int commandTopologyId,
+   private BlockingRunnable createBackupPutMapRunnable(BackupPutMapRpcCommand command, int commandTopologyId,
          ReadyAction readyAction) {
       readyAction.addListener(remoteCommandsExecutor::checkForReadyTasks);
       return new DefaultTopologyRunnable(this, command, Reply.NO_OP, TopologyMode.READY_TX_DATA, commandTopologyId,
@@ -303,17 +329,20 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
             super.onException(throwable);
             readyAction.onException();
             readyAction.onFinally();
-            sendExceptionAck(((BackupPutMapRcpCommand) command).getCommandInvocationId(), throwable, commandTopologyId);
+            BackupPutMapRpcCommand backupCommand = (BackupPutMapRpcCommand) command;
+            sendExceptionAck(backupCommand.getCommandInvocationId(), throwable, commandTopologyId,
+                  backupCommand.getFlagBitSet());
          }
 
          @Override
          protected void afterInvoke() {
             super.afterInvoke();
             readyAction.onFinally();
-            Object key = ((BackupPutMapRcpCommand) command).getMap().keySet().iterator().next();
+            BackupPutMapRpcCommand backupCommand = (BackupPutMapRpcCommand) command;
+            Object key = backupCommand.getMap().keySet().iterator().next();
             int segment = clusteringDependentLogic.getCacheTopology().getDistribution(key).segmentId();
-            sendPutMapBackupAck(((BackupPutMapRcpCommand) command).getCommandInvocationId(), commandTopologyId,
-                  segment);
+            sendPutMapBackupAck(backupCommand.getCommandInvocationId(), commandTopologyId, segment,
+                  backupCommand.getFlagBitSet());
          }
       };
    }
@@ -345,5 +374,10 @@ public class TrianglePerCacheInboundInvocationHandler extends BasePerCacheInboun
    private ReadyAction createTriangleOrderAction(ReplicableCommand command, int topologyId, long sequence, Object key) {
       return new DefaultReadyAction(new ActionState(command, topologyId, 0), this,
             new TriangleOrderAction(this, sequence, key));
+   }
+
+   private boolean skipBackupAck(long flagBitSet) {
+      return containsAll(flagBitSet, FORCE_ASYNCHRONOUS) ||
+            (!syncCache && !containsAll(flagBitSet, FORCE_SYNCHRONOUS));
    }
 }

@@ -13,6 +13,7 @@ import org.infinispan.commands.remote.ClusteredGetAllCommand;
 import org.infinispan.commands.remote.ClusteredGetCommand;
 import org.infinispan.commands.remote.SingleRpcCommand;
 import org.infinispan.commons.CacheException;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.remoting.inboundhandler.action.ReadyAction;
@@ -41,6 +42,7 @@ public abstract class BasePerCacheInboundInvocationHandler implements PerCacheIn
    protected StateTransferManager stateTransferManager;
    private ResponseGenerator responseGenerator;
    private CancellationService cancellationService;
+   protected Configuration configuration;
 
    private static int extractCommandTopologyId(SingleRpcCommand command) {
       ReplicableCommand innerCmd = command.getCommand();
@@ -72,12 +74,14 @@ public abstract class BasePerCacheInboundInvocationHandler implements PerCacheIn
                                   ResponseGenerator responseGenerator,
                                   CancellationService cancellationService,
                                   StateTransferLock stateTransferLock,
-                                  StateTransferManager stateTransferManager) {
+                                  StateTransferManager stateTransferManager,
+                                  Configuration configuration) {
       this.remoteCommandsExecutor = remoteCommandsExecutor;
       this.responseGenerator = responseGenerator;
       this.cancellationService = cancellationService;
       this.stateTransferLock = stateTransferLock;
       this.stateTransferManager = stateTransferManager;
+      this.configuration = configuration;
    }
 
    final CompletableFuture<Response> invokeCommand(CacheRpcCommand cmd) throws Throwable {

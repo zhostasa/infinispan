@@ -219,7 +219,7 @@ public class RemoveCommand extends AbstractDataWriteCommand {
    }
 
    @Override
-   public void initBackupWriteRcpCommand(BackupWriteRcpCommand command) {
+   public void initBackupWriteRcpCommand(BackupWriteRpcCommand command) {
       command.setRemove(commandInvocationId, key, getFlagsBitSet(), getTopologyId());
    }
 

@@ -29,7 +29,7 @@ import org.infinispan.util.ByteString;
  * @author Pedro Ruivo
  * @since 9.0
  */
-public class BackupPutMapRcpCommand extends BaseRpcCommand implements TopologyAffectedCommand {
+public class BackupPutMapRpcCommand extends BaseRpcCommand implements TopologyAffectedCommand {
 
    public static final byte COMMAND_ID = 66;
    private CommandInvocationId commandInvocationId;
@@ -42,11 +42,11 @@ public class BackupPutMapRcpCommand extends BaseRpcCommand implements TopologyAf
    private AsyncInterceptorChain interceptorChain;
    private CacheNotifier cacheNotifier;
 
-   public BackupPutMapRcpCommand() {
+   public BackupPutMapRpcCommand() {
       super(null);
    }
 
-   public BackupPutMapRcpCommand(ByteString cacheName, PutMapCommand command) {
+   public BackupPutMapRpcCommand(ByteString cacheName, PutMapCommand command) {
       super(cacheName);
       this.metadata = command.getMetadata();
       this.flags = command.getFlagsBitSet();
@@ -54,7 +54,7 @@ public class BackupPutMapRcpCommand extends BaseRpcCommand implements TopologyAf
       this.commandInvocationId = command.getCommandInvocationId();
    }
 
-   public BackupPutMapRcpCommand(ByteString cacheName) {
+   public BackupPutMapRpcCommand(ByteString cacheName) {
       super(cacheName);
    }
 
@@ -135,7 +135,7 @@ public class BackupPutMapRcpCommand extends BaseRpcCommand implements TopologyAf
 
    @Override
    public String toString() {
-      return "BackupPutMapRcpCommand{" +
+      return "BackupPutMapRpcCommand{" +
             "commandInvocationId=" + commandInvocationId +
             ", map=" + map +
             ", metadata=" + metadata +
@@ -151,5 +151,9 @@ public class BackupPutMapRcpCommand extends BaseRpcCommand implements TopologyAf
 
    public void setSequence(long sequence) {
       this.sequence = sequence;
+   }
+
+   public long getFlagBitSet() {
+      return flags;
    }
 }

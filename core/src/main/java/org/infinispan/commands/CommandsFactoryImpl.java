@@ -58,8 +58,8 @@ import org.infinispan.commands.tx.totalorder.TotalOrderVersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.BackupAckCommand;
 import org.infinispan.commands.write.BackupMultiKeyAckCommand;
-import org.infinispan.commands.write.BackupPutMapRcpCommand;
-import org.infinispan.commands.write.BackupWriteRcpCommand;
+import org.infinispan.commands.write.BackupPutMapRpcCommand;
+import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.EvictCommand;
@@ -532,8 +532,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
             BackupAckCommand command = (BackupAckCommand) c;
             command.setCommandAckCollector(commandAckCollector);
             break;
-         case BackupWriteRcpCommand.COMMAND_ID:
-            BackupWriteRcpCommand bwc = (BackupWriteRcpCommand) c;
+         case BackupWriteRpcCommand.COMMAND_ID:
+            BackupWriteRpcCommand bwc = (BackupWriteRpcCommand) c;
             bwc.init(icf, interceptorChain, notifier);
             break;
          case BackupMultiKeyAckCommand.COMMAND_ID:
@@ -542,8 +542,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
          case ExceptionAckCommand.COMMAND_ID:
             ((ExceptionAckCommand) c).setCommandAckCollector(commandAckCollector);
             break;
-         case BackupPutMapRcpCommand.COMMAND_ID:
-            ((BackupPutMapRcpCommand) c).init(icf, interceptorChain, notifier);
+         case BackupPutMapRpcCommand.COMMAND_ID:
+            ((BackupPutMapRpcCommand) c).init(icf, interceptorChain, notifier);
             break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
@@ -773,15 +773,15 @@ public class CommandsFactoryImpl implements CommandsFactory {
    }
 
    @Override
-   public BackupWriteRcpCommand buildBackupWriteRcpCommand(DataWriteCommand command) {
-      BackupWriteRcpCommand cmd = new BackupWriteRcpCommand(cacheName);
+   public BackupWriteRpcCommand buildBackupWriteRcpCommand(DataWriteCommand command) {
+      BackupWriteRpcCommand cmd = new BackupWriteRpcCommand(cacheName);
       command.initBackupWriteRcpCommand(cmd);
       return cmd;
    }
 
    @Override
-   public BackupPutMapRcpCommand buildBackupPutMapRcpCommand(PutMapCommand command) {
-      return new BackupPutMapRcpCommand(cacheName, command);
+   public BackupPutMapRpcCommand buildBackupPutMapRcpCommand(PutMapCommand command) {
+      return new BackupPutMapRpcCommand(cacheName, command);
    }
 
    private ValueMatcher getValueMatcher(Object o) {

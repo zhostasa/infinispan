@@ -23,8 +23,8 @@ import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.commands.write.AbstractDataWriteCommand;
 import org.infinispan.commands.write.BackupAckCommand;
 import org.infinispan.commands.write.BackupMultiKeyAckCommand;
-import org.infinispan.commands.write.BackupPutMapRcpCommand;
-import org.infinispan.commands.write.BackupWriteRcpCommand;
+import org.infinispan.commands.write.BackupPutMapRpcCommand;
+import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.PutMapCommand;
@@ -160,14 +160,14 @@ public class TriangleDistributionInterceptor extends NonTxDistributionIntercepto
          }
          Map<Object, Object> map = entry.getValue();
          long sequence = triangleOrderManager.next(segmentId, topologyId);
-         BackupPutMapRcpCommand backupPutMapRcpCommand = commandsFactory.buildBackupPutMapRcpCommand(command);
-         backupPutMapRcpCommand.setMap(map);
-         backupPutMapRcpCommand.setSequence(sequence);
+         BackupPutMapRpcCommand backupPutMapRpcCommand = commandsFactory.buildBackupPutMapRcpCommand(command);
+         backupPutMapRpcCommand.setMap(map);
+         backupPutMapRpcCommand.setSequence(sequence);
          if (trace) {
             log.tracef("Command %s got sequence %s for segment %s", command.getCommandInvocationId(), segmentId,
                   sequence);
          }
-         rpcManager.sendToMany(backups, backupPutMapRcpCommand, DeliverOrder.NONE);
+         rpcManager.sendToMany(backups, backupPutMapRpcCommand, DeliverOrder.NONE);
       }
    }
 
@@ -339,8 +339,11 @@ public class TriangleDistributionInterceptor extends NonTxDistributionIntercepto
             return rv;
          }
          final int topologyId = dwCommand.getTopologyId();
-         if (isSynchronous(dwCommand) || dwCommand.isReturnValueExpected()) {
-            Collector<Object> collector = commandAckCollector.create(id.getId(), backupOwners, topologyId);
+         final boolean sync = isSynchronous(dwCommand);
+         if (sync || dwCommand.isReturnValueExpected()) {
+            Collector<Object> collector = commandAckCollector.create(id.getId(),
+                  sync ? backupOwners : Collections.emptyList(),
+                  topologyId);
             //check the topology after registering the collector.
             //if we don't, the collector may wait forever (==timeout) for non-existing acknowledges.
             checkTopologyId(topologyId, collector);
@@ -384,24 +387,25 @@ public class TriangleDistributionInterceptor extends NonTxDistributionIntercepto
          log.tracef("Command %s send to backup owner %s.", id, backupOwners);
       }
       long sequenceNumber = triangleOrderManager.next(segmentId, command.getTopologyId());
-      BackupWriteRcpCommand backupWriteRcpCommand = commandsFactory.buildBackupWriteRcpCommand(command);
-      backupWriteRcpCommand.setSequence(sequenceNumber);
+      BackupWriteRpcCommand backupWriteRpcCommand = commandsFactory.buildBackupWriteRcpCommand(command);
+      backupWriteRpcCommand.setSequence(sequenceNumber);
       if (trace) {
          log.tracef("Command %s got sequence %s for segment %s", id, sequenceNumber, segmentId);
       }
       // we must send the message only after the collector is registered in the map
-      rpcManager.sendToMany(backupOwners, backupWriteRcpCommand, DeliverOrder.NONE);
+      rpcManager.sendToMany(backupOwners, backupWriteRpcCommand, DeliverOrder.NONE);
    }
 
    private Object localWriteInvocation(InvocationContext context, DataWriteCommand command,
          DistributionInfo distributionInfo) {
       assert context.isOriginLocal();
       final CommandInvocationId invocationId = command.getCommandInvocationId();
-      if (isSynchronous(command) || command.isReturnValueExpected() && !command
-            .hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ)) {
+      final boolean sync = isSynchronous(command);
+      if (sync || command.isReturnValueExpected() && !command.hasAnyFlag(FlagBitSets.PUT_FOR_EXTERNAL_READ)) {
          final int topologyId = command.getTopologyId();
-         Collector<Object> collector = commandAckCollector
-               .create(invocationId.getId(), distributionInfo.writeBackups(), topologyId);
+         Collector<Object> collector = commandAckCollector.create(invocationId.getId(),
+               sync ? distributionInfo.writeBackups() : Collections.emptyList(),
+               topologyId);
          //check the topology after registering the collector.
          //if we don't, the collector may wait forever (==timeout) for non-existing acknowledges.
          checkTopologyId(topologyId, collector);
