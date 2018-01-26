@@ -25,8 +25,6 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.stream.StreamMarshalling;
 import org.infinispan.stream.impl.local.ValueCacheCollection;
 
-import javax.security.auth.Subject;
-
 /**
  * A decorator to a cache, which can be built with a specific set of {@link Flag}s.  This
  * set of {@link Flag}s will be applied to all cache invocations made via this decorator.
@@ -51,6 +49,10 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
 
    public DecoratedCache(AdvancedCache<K, V> delegate) {
       this(delegate, EMPTY_FLAGS);
+   }
+
+   public DecoratedCache(AdvancedCache<K, V> delegate, Collection<Flag> flags) {
+      this((CacheImpl<K, V>) delegate, EnumUtil.bitSetOf(flags));
    }
 
    public DecoratedCache(AdvancedCache<K, V> delegate, Flag... flags) {
@@ -87,14 +89,31 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
       if (flags == null || flags.length == 0)
          return this;
       else {
-         long newFlags = EnumUtil.bitSetOf(flags);
-         if (EnumUtil.containsAll(this.flags, newFlags)) {
-            //we already have all specified flags
-            return this;
-         } else {
-            return new DecoratedCache<>(cacheImplementation, EnumUtil.mergeBitSets(this.flags, newFlags));
-         }
+         return withFlags(EnumUtil.bitSetOf(flags));
       }
+   }
+
+   @Override
+   public AdvancedCache<K, V> withFlags(Collection<Flag> flags) {
+      if (flags == null || flags.isEmpty()) {
+         return this;
+      } else {
+         return withFlags(EnumUtil.bitSetOf(flags));
+      }
+   }
+
+   private AdvancedCache<K, V> withFlags(long newFlags) {
+      if (EnumUtil.containsAll(this.flags, newFlags)) {
+         //we already have all specified flags
+         return this;
+      } else {
+         return new DecoratedCache<>(this.cacheImplementation, EnumUtil.mergeBitSets(this.flags, newFlags));
+      }
+   }
+
+   @Override
+   public AdvancedCache<K, V> noFlags() {
+      return this.cacheImplementation;
    }
 
    @Override
@@ -155,9 +174,9 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
    @Override
    public void putForExternalRead(K key, V value, long lifespan, TimeUnit unit) {
       Metadata metadata = new EmbeddedMetadata.Builder()
-       .lifespan(lifespan, unit)
-       .maxIdle(cacheImplementation.defaultMetadata.maxIdle(), MILLISECONDS)
-       .build();
+            .lifespan(lifespan, unit)
+            .maxIdle(cacheImplementation.defaultMetadata.maxIdle(), MILLISECONDS)
+            .build();
 
       cacheImplementation.putForExternalRead(key, value, metadata, flags);
    }
@@ -165,9 +184,9 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
    @Override
    public void putForExternalRead(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
       Metadata metadata = new EmbeddedMetadata.Builder()
-       .lifespan(lifespan, lifespanUnit)
-       .maxIdle(maxIdle, maxIdleUnit)
-       .build();
+            .lifespan(lifespan, lifespanUnit)
+            .maxIdle(maxIdle, maxIdleUnit)
+            .build();
 
       cacheImplementation.putForExternalRead(key, value, metadata, flags);
    }

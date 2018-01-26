@@ -24,9 +24,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
-import javax.transaction.InvalidTransactionException;
 import javax.security.auth.Subject;
+import javax.transaction.InvalidTransactionException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -1553,6 +1554,24 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
          return this;
       else
          return new DecoratedCache<>(this, flags);
+   }
+
+   @Override
+   public AdvancedCache<K, V> withFlags(Collection<Flag> flags) {
+      if (flags == null || flags.isEmpty())
+         return this;
+      else
+         return new DecoratedCache<>(this, flags);
+   }
+
+   @Override
+   public AdvancedCache<K, V> noFlags() {
+      return this;
+   }
+
+   @Override
+   public AdvancedCache<K, V> transform(Function<AdvancedCache<K, V>, ? extends AdvancedCache<K, V>> transformation) {
+      return transformation.apply(this);
    }
 
    @Override

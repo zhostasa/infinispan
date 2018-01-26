@@ -4,6 +4,7 @@ import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OBJECT
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
@@ -309,6 +310,21 @@ public class SecureCacheTestDriver {
    @TestCachePermission(AuthorizationPermission.NONE)
    public void testWithFlags_FlagArray(SecureCache<String, String> cache) {
       cache.withFlags(Flag.IGNORE_RETURN_VALUES);
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testWithFlags_Collection(SecureCache<String, String> cache) {
+      cache.withFlags(Collections.singleton(Flag.IGNORE_RETURN_VALUES));
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testNoFlags(SecureCache<String, String> cache) {
+      cache.noFlags();
+   }
+
+   @TestCachePermission(AuthorizationPermission.NONE)
+   public void testTransform_Function(SecureCache<String, String> cache) {
+      cache.transform(Function.identity());
    }
 
    @TestCachePermission(AuthorizationPermission.NONE)
