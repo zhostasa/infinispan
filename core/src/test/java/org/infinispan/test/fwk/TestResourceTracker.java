@@ -58,6 +58,11 @@ public class TestResourceTracker {
       }
    }
 
+   public static String getCurrentTestShortName() {
+      String currentTestName = TestResourceTracker.getCurrentTestName();
+      return currentTestName.substring(currentTestName.lastIndexOf(".") + 1);
+   }
+
    public static String getCurrentTestName() {
       String testName = threadTestName.get();
       if (testName == null) {

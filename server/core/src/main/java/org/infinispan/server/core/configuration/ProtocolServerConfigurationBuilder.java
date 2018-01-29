@@ -49,6 +49,10 @@ public abstract class ProtocolServerConfigurationBuilder<T extends ProtocolServe
       return this.self();
    }
 
+   public String name() {
+      return name;
+   }
+
    @Override
    public S host(String host) {
       this.host = host;

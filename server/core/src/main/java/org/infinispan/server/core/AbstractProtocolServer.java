@@ -177,4 +177,8 @@ public abstract class AbstractProtocolServer<A extends ProtocolServerConfigurati
    protected void startDefaultCache() {
       cacheManager.getCache(configuration.defaultCacheName());
    }
+
+   public NettyTransport getTransport() {
+      return transport;
+   }
 }

@@ -23,7 +23,6 @@ public class RestServerHelper {
    private final RestServerConfigurationBuilder restServerConfigurationBuilder = new RestServerConfigurationBuilder();
 
    private Authenticator authenticator = new VoidAuthenticator();
-   private String host;
 
    public RestServerHelper(EmbeddedCacheManager cacheManager) {
       this.cacheManager = cacheManager;
@@ -56,7 +55,8 @@ public class RestServerHelper {
       cacheManager.defineConfiguration(cacheName, configurationBuilder.build());
    }
 
-   public RestServerHelper start() {
+   public RestServerHelper start(String name) {
+      restServerConfigurationBuilder.name(name);
       restServer.setAuthenticator(authenticator);
       restServer.start(restServerConfigurationBuilder.build(), cacheManager);
       return this;

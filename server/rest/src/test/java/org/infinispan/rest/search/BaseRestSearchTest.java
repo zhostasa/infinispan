@@ -34,6 +34,7 @@ import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.rest.assertion.ResponseAssertion;
 import org.infinispan.rest.helper.RestServerHelper;
 import org.infinispan.test.MultipleCacheManagersTest;
+import org.infinispan.test.fwk.TestResourceTracker;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -88,7 +89,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
    public void setUp() throws Exception {
       IntStream.range(0, getNumNodes()).forEach(n -> {
          RestServerHelper restServer = new RestServerHelper(cacheManagers.get(n));
-         restServer.start();
+         restServer.start(TestResourceTracker.getCurrentTestShortName());
          restServers.add(restServer);
       });
 

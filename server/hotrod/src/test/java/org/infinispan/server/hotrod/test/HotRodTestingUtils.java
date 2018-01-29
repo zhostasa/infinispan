@@ -51,6 +51,7 @@ import org.infinispan.server.hotrod.transport.SingleByteFrameDecoderChannelIniti
 import org.infinispan.server.hotrod.transport.TimeoutEnabledChannelInitializer;
 import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.test.TestingUtil;
+import org.infinispan.test.fwk.TestResourceTracker;
 import org.infinispan.util.KeyValuePair;
 
 import io.netty.channel.Channel;
@@ -181,6 +182,11 @@ public class HotRodTestingUtils {
             return new NettyInitializers(inits);
          }
       };
+      String shortTestName = TestResourceTracker.getCurrentTestShortName();
+      if (!builder.name().contains(shortTestName)) {
+         // Only set the name once if HotRodClientTestingUtil.startHotRodServer() retries
+         builder.name(shortTestName + builder.name());
+      }
       builder.host(host).port(port);
       server.start(builder.build(), manager);
 
