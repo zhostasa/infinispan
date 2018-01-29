@@ -1,12 +1,22 @@
 package org.infinispan.commands.write;
 
+import static org.infinispan.commands.write.ValueMatcher.MATCH_ALWAYS;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.TopologyAffectedCommand;
+import org.infinispan.commands.functional.ReadWriteKeyCommand;
+import org.infinispan.commands.functional.ReadWriteKeyValueCommand;
+import org.infinispan.commands.functional.WriteOnlyKeyCommand;
+import org.infinispan.commands.functional.WriteOnlyKeyValueCommand;
 import org.infinispan.commands.remote.BaseRpcCommand;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.util.EnumUtil;
@@ -14,6 +24,8 @@ import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.distribution.ch.KeyPartitioner;
+import org.infinispan.functional.impl.Params;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
@@ -37,14 +49,19 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
    private CommandInvocationId commandInvocationId;
    private Object key;
    private Object value;
+   private Object function;
    private Metadata metadata;
    private int topologyId;
    private long flags;
    private long sequence;
+   private Params params;
+   private Object prevValue;
+   private Metadata prevMetadata;
 
    private InvocationContextFactory invocationContextFactory;
    private AsyncInterceptorChain interceptorChain;
    private CacheNotifier cacheNotifier;
+   private KeyPartitioner keyPartitioner;
 
    //for org.infinispan.commands.CommandIdUniquenessTest
    public BackupWriteRpcCommand() {
@@ -86,11 +103,48 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
       this.metadata = metadata;
    }
 
+   public void setReadWriteKey(CommandInvocationId commandInvocationId, Object key, Function function, Params params,
+         long flags, int topologyId) {
+      this.operation = Operation.READ_WRITE_KEY;
+      setCommonAttributes(commandInvocationId, key, flags, topologyId);
+      this.function = function;
+      this.params = params;
+   }
+
+   public void setReadWriteKeyValue(CommandInvocationId commandInvocationId, Object key, BiFunction biFunction,
+         Object value, Object prevValue, Metadata prevMetadata, Params params, long flags, int topologyId) {
+      this.operation = Operation.READ_WRITE_KEY_VALUE;
+      setCommonAttributes(commandInvocationId, key, flags, topologyId);
+      this.function = biFunction;
+      this.value = value;
+      this.prevValue = prevValue;
+      this.prevMetadata = prevMetadata;
+      this.params = params;
+   }
+
+   public void setWriteOnlyKey(CommandInvocationId commandInvocationId, Object key, Consumer consumer, Params params,
+         long flags, int topologyId) {
+      this.operation = Operation.WRITE_ONLY_KEY;
+      setCommonAttributes(commandInvocationId, key, flags, topologyId);
+      this.function = consumer;
+      this.params = params;
+   }
+
+   public void setWriteOnlyKeyValue(CommandInvocationId commandInvocationId, Object key,
+         BiConsumer biConsumer, Object value, Params params, long flags, int topologyId) {
+      this.operation = Operation.WRITE_ONLY_KEY_VALUE;
+      setCommonAttributes(commandInvocationId, key, flags, topologyId);
+      this.function = biConsumer;
+      this.value = value;
+      this.params = params;
+   }
+
    public void init(InvocationContextFactory invocationContextFactory, AsyncInterceptorChain interceptorChain,
-         CacheNotifier cacheNotifier) {
+         CacheNotifier cacheNotifier, KeyPartitioner keyPartitioner) {
       this.invocationContextFactory = invocationContextFactory;
       this.interceptorChain = interceptorChain;
       this.cacheNotifier = cacheNotifier;
+      this.keyPartitioner = keyPartitioner;
    }
 
    @Override
@@ -110,11 +164,26 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
          case REPLACE:
             command = new ReplaceCommand(key, null, value, cacheNotifier, metadata, flags, null, commandInvocationId);
             break;
+         case READ_WRITE_KEY:
+            //noinspection unchecked
+            command = new ReadWriteKeyCommand(key, (Function) function, commandInvocationId, MATCH_ALWAYS, params);
+            break;
+         case READ_WRITE_KEY_VALUE:
+            command = createReadWriteKeyValueCommand();
+            break;
+         case WRITE_ONLY_KEY:
+            //noinspection unchecked
+            command = new WriteOnlyKeyCommand(key, (Consumer) function, commandInvocationId, MATCH_ALWAYS, params);
+            break;
+         case WRITE_ONLY_KEY_VALUE:
+            //noinspection unchecked
+            command = new WriteOnlyKeyValueCommand(key, value, (BiConsumer) function, commandInvocationId, MATCH_ALWAYS, params);
+            break;
          default:
             throw new IllegalStateException();
       }
       command.addFlags(FlagBitSets.SKIP_LOCKING);
-      command.setValueMatcher(ValueMatcher.MATCH_ALWAYS);
+      command.setValueMatcher(MATCH_ALWAYS);
       command.setTopologyId(topologyId);
       InvocationContext invocationContext = invocationContextFactory
             .createRemoteInvocationContextForCommand(command, getOrigin());
@@ -158,6 +227,23 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
          case REMOVE_EXPIRED:
             output.writeObject(value);
             break;
+         case WRITE_ONLY_KEY_VALUE:
+            output.writeObject(function);
+            Params.writeObject(output, params);
+            output.writeObject(value);
+            break;
+         case READ_WRITE_KEY_VALUE:
+            output.writeObject(value);
+            output.writeObject(function);
+            Params.writeObject(output, params);
+            output.writeObject(prevValue);
+            output.writeObject(prevMetadata);
+            break;
+         case READ_WRITE_KEY:
+         case WRITE_ONLY_KEY:
+            output.writeObject(function);
+            Params.writeObject(output, params);
+            break;
          default:
       }
       output.writeLong(FlagBitSets.copyWithoutRemotableFlags(flags));
@@ -178,6 +264,23 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
          case REMOVE_EXPIRED:
             value = input.readObject();
             break;
+         case WRITE_ONLY_KEY_VALUE:
+            function = input.readObject();
+            params = Params.readObject(input);
+            value = input.readObject();
+            break;
+         case WRITE_ONLY_KEY:
+         case READ_WRITE_KEY:
+            function = input.readObject();
+            params = Params.readObject(input);
+            break;
+         case READ_WRITE_KEY_VALUE:
+            value = input.readObject();
+            function = input.readObject();
+            params = Params.readObject(input);
+            prevValue = input.readObject();
+            prevMetadata = (Metadata) input.readObject();
+            break;
          default:
       }
       this.flags = input.readLong();
@@ -191,10 +294,15 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
             ", commandInvocationId=" + commandInvocationId +
             ", key=" + key +
             ", value=" + value +
+            ", function=" + function +
             ", metadata=" + metadata +
             ", topologyId=" + topologyId +
             ", flags=" + EnumUtil.prettyPrintBitSet(flags, Flag.class) +
             ", sequence=" + sequence +
+            ", params=" + params +
+            ", prevValue=" + prevValue +
+            ", prevMetadata=" + prevMetadata +
+            ", cacheName=" + cacheName +
             '}';
    }
 
@@ -224,6 +332,10 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
       return flags;
    }
 
+   public int getSegmentId() {
+      return keyPartitioner.getSegment(key);
+   }
+
    private void setCommonAttributes(CommandInvocationId commandInvocationId, Object key, long flags, int topologyId) {
       this.commandInvocationId = commandInvocationId;
       this.key = key;
@@ -231,10 +343,22 @@ public class BackupWriteRpcCommand extends BaseRpcCommand implements TopologyAff
       this.topologyId = topologyId;
    }
 
+   private ReadWriteKeyValueCommand createReadWriteKeyValueCommand() {
+      //noinspection unchecked
+      ReadWriteKeyValueCommand cmd = new ReadWriteKeyValueCommand(key, value, (BiFunction) function,
+            commandInvocationId, MATCH_ALWAYS, params);
+      cmd.setPrevValueAndMetadata(prevValue, prevMetadata);
+      return cmd;
+   }
+
    private enum Operation {
       WRITE,
       REMOVE,
       REMOVE_EXPIRED,
-      REPLACE
+      REPLACE,
+      READ_WRITE_KEY,
+      READ_WRITE_KEY_VALUE,
+      WRITE_ONLY_KEY,
+      WRITE_ONLY_KEY_VALUE
    }
 }

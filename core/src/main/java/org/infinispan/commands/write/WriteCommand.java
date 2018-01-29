@@ -2,6 +2,7 @@ package org.infinispan.commands.write;
 
 import java.util.Collection;
 
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
@@ -76,4 +77,30 @@ public interface WriteCommand extends VisitableCommand, FlagAffectedCommand, Top
       return false;
    }
 
+   /**
+    * @return the {@link CommandInvocationId} associated to the command.
+    */
+   CommandInvocationId getCommandInvocationId();
+
+   /**
+    * Initializes the {@link BackupWriteRpcCommand} to send the update to backup owner of a key.
+    * <p>
+    * This method will be invoked in the primary owner only.
+    *
+    * @param command the {@link BackupWriteRpcCommand} to initialize.
+    */
+   default void initBackupWriteRpcCommand(BackupWriteRpcCommand command) {
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * Initializes the {@link BackupMultiKeyWriteRpcCommand} to send the update to backup owner of a key.
+    * <p>
+    * This method will be invoked in the primary owner only.
+    *
+    * @param command the {@link BackupMultiKeyWriteRpcCommand} to initialize.
+    */
+   default void initBackupMultiKeyWriteRpcCommand(BackupMultiKeyWriteRpcCommand command, Collection<Object> keys) {
+      throw new UnsupportedOperationException();
+   }
 }

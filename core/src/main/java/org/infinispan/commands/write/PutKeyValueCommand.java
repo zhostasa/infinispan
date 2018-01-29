@@ -218,7 +218,7 @@ public class PutKeyValueCommand extends AbstractDataWriteCommand implements Meta
    }
 
    @Override
-   public void initBackupWriteRcpCommand(BackupWriteRpcCommand command) {
+   public void initBackupWriteRpcCommand(BackupWriteRpcCommand command) {
       command.setWrite(commandInvocationId, key, value, metadata, getFlagsBitSet(), getTopologyId());
    }
 

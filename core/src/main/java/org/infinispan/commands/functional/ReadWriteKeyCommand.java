@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
+import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.functional.EntryView.ReadWriteEntryView;
 import org.infinispan.commons.marshall.MarshallUtil;
@@ -95,5 +96,10 @@ public final class ReadWriteKeyCommand<K, V, R> extends AbstractWriteKeyCommand<
    @Override
    public LoadType loadType() {
       return LoadType.OWNER;
+   }
+
+   @Override
+   public void initBackupWriteRpcCommand(BackupWriteRpcCommand command) {
+      command.setReadWriteKey(commandInvocationId, key, f, params, getFlagsBitSet(), getTopologyId());
    }
 }

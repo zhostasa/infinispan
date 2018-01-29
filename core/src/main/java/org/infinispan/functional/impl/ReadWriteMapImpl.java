@@ -54,7 +54,9 @@ public final class ReadWriteMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       Param<FutureMode> futureMode = params.get(FutureMode.ID);
       ReadWriteKeyCommand cmd = fmap.cmdFactory().buildReadWriteKeyCommand(key, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, 1);
-      ctx.setLockOwner(cmd.getKeyLockOwner());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return withFuture(futureMode, fmap.asyncExec(), () -> (R) fmap.chain().invoke(ctx, cmd));
    }
 
@@ -64,7 +66,9 @@ public final class ReadWriteMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       Param<FutureMode> futureMode = params.get(FutureMode.ID);
       ReadWriteKeyValueCommand cmd = fmap.cmdFactory().buildReadWriteKeyValueCommand(key, value, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, 1);
-      ctx.setLockOwner(cmd.getKeyLockOwner());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return withFuture(futureMode, fmap.asyncExec(), () -> (R) fmap.chain().invoke(ctx, cmd));
    }
 
@@ -73,6 +77,9 @@ public final class ReadWriteMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       log.tracef("Invoked evalMany(entries=%s, %s)", entries, params);
       ReadWriteManyEntriesCommand cmd = fmap.cmdFactory().buildReadWriteManyEntriesCommand(entries, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, entries.size());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return Traversables.of(((List<R>) fmap.chain().invoke(ctx, cmd)).stream());
    }
 
@@ -81,6 +88,9 @@ public final class ReadWriteMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       log.tracef("Invoked evalMany(keys=%s, %s)", keys, params);
       ReadWriteManyCommand cmd = fmap.cmdFactory().buildReadWriteManyCommand(keys, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, keys.size());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return Traversables.of(((List<R>) fmap.chain().invoke(ctx, cmd)).stream());
    }
 
@@ -92,6 +102,9 @@ public final class ReadWriteMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       CloseableIteratorSet<K> keys = fmap.cache.keySet();
       ReadWriteManyCommand cmd = fmap.cmdFactory().buildReadWriteManyCommand(keys, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, keys.size());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return Traversables.of(((List<R>) fmap.chain().invoke(ctx, cmd)).stream());
    }
 

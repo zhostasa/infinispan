@@ -8,7 +8,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
+import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
 import org.infinispan.functional.EntryView.WriteEntryView;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.entries.CacheEntry;
@@ -28,16 +30,16 @@ public final class WriteOnlyManyCommand<K, V> extends AbstractWriteManyCommand<K
    private Collection<? extends K> keys;
    private Consumer<WriteEntryView<V>> f;
 
-   public WriteOnlyManyCommand(Collection<? extends K> keys, Consumer<WriteEntryView<V>> f, Params params) {
+   public WriteOnlyManyCommand(Collection<? extends K> keys, Consumer<WriteEntryView<V>> f, Params params, CommandInvocationId commandInvocationId) {
+      super(commandInvocationId, params);
       this.keys = keys;
       this.f = f;
-      this.params = params;
    }
 
    public WriteOnlyManyCommand(WriteOnlyManyCommand<K, V> command) {
+      super(command);
       this.keys = command.keys;
       this.f = command.f;
-      this.params = command.params;
    }
 
    public WriteOnlyManyCommand() {
@@ -59,6 +61,7 @@ public final class WriteOnlyManyCommand<K, V> extends AbstractWriteManyCommand<K
 
    @Override
    public void writeTo(ObjectOutput output) throws IOException {
+      CommandInvocationId.writeTo(output, commandInvocationId);
       MarshallUtil.marshallCollection(keys, output);
       output.writeObject(f);
       output.writeBoolean(isForwarded);
@@ -67,6 +70,7 @@ public final class WriteOnlyManyCommand<K, V> extends AbstractWriteManyCommand<K
 
    @Override
    public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
+      commandInvocationId = CommandInvocationId.readFrom(input);
       keys = MarshallUtil.unmarshallCollectionUnbounded(input, ArrayList::new);
       f = (Consumer<WriteEntryView<V>>) input.readObject();
       isForwarded = input.readBoolean();
@@ -143,5 +147,16 @@ public final class WriteOnlyManyCommand<K, V> extends AbstractWriteManyCommand<K
       sb.append(", isForwarded=").append(isForwarded);
       sb.append('}');
       return sb.toString();
+   }
+
+   @Override
+   public Collection<?> getKeysToLock() {
+      return keys;
+   }
+
+   @Override
+   public void initBackupMultiKeyWriteRpcCommand(BackupMultiKeyWriteRpcCommand command, Collection<Object> keys) {
+      //noinspection unchecked
+      command.setWriteOnly(commandInvocationId, keys, f, params, getFlagsBitSet(), getTopologyId());
    }
 }

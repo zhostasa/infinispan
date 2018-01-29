@@ -1,5 +1,7 @@
 package org.infinispan.util.concurrent;
 
+import static java.lang.String.format;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -90,19 +92,20 @@ public class CommandAckCollector {
     * Creates a collector for {@link org.infinispan.commands.write.PutMapCommand}.
     *
     * @param id         the id from {@link CommandInvocationId#getId()}.
-    * @param primary    a primary owners collection..
     * @param backups    a map between a backup owner and its segments affected.
     * @param topologyId the current topology id.
     */
-   public Collector<Map<Object, Object>> createMultiKeyCollector(long id, Collection<Address> primary,
-         Map<Address, Collection<Integer>> backups, int topologyId) {
+   public <T> Collector<T> createSegmentBasedCollector(long id, Map<Address, Collection<Integer>> backups, int topologyId) {
       if (backups.isEmpty()) {
          return new PrimaryOwnerOnlyCollector<>();
       }
-      MultiKeyCollector collector = new MultiKeyCollector(id, backups, topologyId);
-      collectorMap.put(id, collector);
+      SegmentBasedCollector<T> collector = new SegmentBasedCollector<>(id, backups, topologyId);
+      BaseCollector prev = collectorMap.put(id, collector);
+      //is it possible the have a previous collector when the topology changes after the first collector is created
+      //in that case, the previous collector must have a lower topology id
+      assert prev == null || prev.topologyId < topologyId : format("replaced old collector '%s' by '%s'", prev, collector);
       if (trace) {
-         log.tracef("Created new collector for %s. Primary=%s. BackupSegments=%s", (Long) id, primary, backups);
+         log.tracef("Created new collector for %s. BackupSegments=%s", (Long) id, backups);
       }
       return collector;
    }
@@ -116,7 +119,7 @@ public class CommandAckCollector {
     * @param topologyId the topology id.
     */
    public void multiKeyBackupAck(long id, Address from, int segment, int topologyId) {
-      MultiKeyCollector collector = (MultiKeyCollector) collectorMap.get(id);
+      SegmentBasedCollector collector = (SegmentBasedCollector) collectorMap.get(id);
       if (collector != null) {
          collector.backupAck(from, segment, topologyId);
       }
@@ -309,11 +312,11 @@ public class CommandAckCollector {
       }
    }
 
-   private class MultiKeyCollector extends BaseCollector<Map<Object, Object>> {
+   private class SegmentBasedCollector<T> extends BaseCollector<T> {
       @GuardedBy("this")
       private final Map<Address, Collection<Integer>> backups;
 
-      MultiKeyCollector(long id, Map<Address, Collection<Integer>> backups,
+      SegmentBasedCollector(long id, Map<Address, Collection<Integer>> backups,
             int topologyId) {
          super(id, topologyId);
          this.backups = backups;
@@ -335,7 +338,7 @@ public class CommandAckCollector {
       }
 
       @Override
-      public void primaryResult(Map<Object, Object> result, boolean success) {
+      public void primaryResult(T result, boolean success) {
          primaryResult = result;
          primaryResultReceived = true;
          synchronized (this) {

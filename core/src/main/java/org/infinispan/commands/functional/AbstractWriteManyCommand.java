@@ -1,21 +1,42 @@
 package org.infinispan.commands.functional;
 
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.commands.write.WriteCommand;
-import org.infinispan.commons.util.EnumUtil;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.lifecycle.ComponentStatus;
+import org.infinispan.util.concurrent.locks.RemoteLockCommand;
 
 /**
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-public abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, ParamsCommand {
+public abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, ParamsCommand, RemoteLockCommand {
 
+   CommandInvocationId commandInvocationId;
    boolean isForwarded = false;
    int topologyId = -1;
    Params params;
+   // TODO: this is used for the non-modifying read-write commands. Move required flags to Params
+   // and make sure that ClusteringDependentLogic checks them.
+   long flags;
+
+   protected AbstractWriteManyCommand(CommandInvocationId commandInvocationId,
+                                      Params params) {
+      this.commandInvocationId = commandInvocationId;
+      this.params = params;
+   }
+
+   protected <K, V> AbstractWriteManyCommand(AbstractWriteManyCommand<K, V> command) {
+      this.commandInvocationId = command.commandInvocationId;
+      this.topologyId = command.topologyId;
+      this.params = command.params;
+   }
+
+   protected AbstractWriteManyCommand() {
+   }
 
    @Override
    public int getTopologyId() {
@@ -77,12 +98,12 @@ public abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, Pa
 
    @Override
    public long getFlagsBitSet() {
-      return EnumUtil.EMPTY_BIT_SET;
+      return flags;
    }
 
    @Override
    public void setFlagsBitSet(long bitSet) {
-      // TODO: Customise this generated block
+      this.flags = bitSet;
    }
 
    @Override
@@ -94,5 +115,24 @@ public abstract class AbstractWriteManyCommand<K, V> implements WriteCommand, Pa
       this.params = params;
    }
 
+   @Override
+   public Object getKeyLockOwner() {
+      return commandInvocationId;
+   }
+
+   @Override
+   public CommandInvocationId getCommandInvocationId() {
+      return commandInvocationId;
+   }
+
+   @Override
+   public boolean hasZeroLockAcquisition() {
+      return hasAnyFlag(FlagBitSets.ZERO_LOCK_ACQUISITION_TIMEOUT);
+   }
+
+   @Override
+   public boolean hasSkipLocking() {
+      return hasAnyFlag(FlagBitSets.SKIP_LOCKING);
+   }
 
 }

@@ -60,7 +60,7 @@ import org.infinispan.commands.tx.VersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.BackupAckCommand;
 import org.infinispan.commands.write.BackupMultiKeyAckCommand;
-import org.infinispan.commands.write.BackupPutMapRpcCommand;
+import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
 import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.DataWriteCommand;
@@ -465,12 +465,12 @@ public class ControlledCommandFactory implements CommandsFactory {
    }
 
    @Override
-   public BackupWriteRpcCommand buildBackupWriteRcpCommand(DataWriteCommand command) {
-      return actual.buildBackupWriteRcpCommand(command);
+   public BackupWriteRpcCommand buildBackupWriteRpcCommand(WriteCommand command) {
+      return actual.buildBackupWriteRpcCommand(command);
    }
 
    @Override
-   public BackupPutMapRpcCommand buildBackupPutMapRcpCommand(PutMapCommand command) {
-      return actual.buildBackupPutMapRcpCommand(command);
+   public BackupMultiKeyWriteRpcCommand buildBackupMultiKeyWriteRpcCommand(WriteCommand command, Collection<Object> keys) {
+      return actual.buildBackupMultiKeyWriteRpcCommand(command, keys);
    }
 }

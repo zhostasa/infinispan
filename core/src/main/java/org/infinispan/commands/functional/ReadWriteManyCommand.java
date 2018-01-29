@@ -10,14 +10,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
-import org.infinispan.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.Params;
-import org.infinispan.lifecycle.ComponentStatus;
 
 /**
  * @deprecated Since 8.3, will be removed.
@@ -32,19 +33,18 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
    private Collection<? extends K> keys;
    private Function<ReadWriteEntryView<K, V>, R> f;
 
-   private int topologyId = -1;
    boolean isForwarded = false;
 
-   public ReadWriteManyCommand(Collection<? extends K> keys, Function<ReadWriteEntryView<K, V>, R> f, Params params) {
+   public ReadWriteManyCommand(Collection<? extends K> keys, Function<ReadWriteEntryView<K, V>, R> f, Params params, CommandInvocationId commandInvocationId) {
+      super(commandInvocationId, params);
       this.keys = keys;
       this.f = f;
-      this.params = params;
    }
 
    public ReadWriteManyCommand(ReadWriteManyCommand command) {
+      super(command);
       this.keys = command.keys;
       this.f = command.f;
-      this.params = command.params;
    }
 
    public ReadWriteManyCommand() {
@@ -66,6 +66,7 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
 
    @Override
    public void writeTo(ObjectOutput output) throws IOException {
+      CommandInvocationId.writeTo(output, commandInvocationId);
       MarshallUtil.marshallCollection(keys, output);
       output.writeObject(f);
       output.writeBoolean(isForwarded);
@@ -74,6 +75,7 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
 
    @Override
    public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
+      commandInvocationId = CommandInvocationId.readFrom(input);
       keys = MarshallUtil.unmarshallCollection(input, ArrayList::new);
       f = (Function<ReadWriteEntryView<K, V>, R>) input.readObject();
       isForwarded = input.readBoolean();
@@ -89,23 +91,8 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
    }
 
    @Override
-   public boolean shouldInvoke(InvocationContext ctx) {
-      return true;
-   }
-
-   @Override
    public boolean isReturnValueExpected() {
       return true;
-   }
-
-   @Override
-   public int getTopologyId() {
-      return topologyId;
-   }
-
-   @Override
-   public void setTopologyId(int topologyId) {
-      this.topologyId = topologyId;
    }
 
    @Override
@@ -165,5 +152,16 @@ public final class ReadWriteManyCommand<K, V, R> extends AbstractWriteManyComman
       sb.append(", isForwarded=").append(isForwarded);
       sb.append('}');
       return sb.toString();
+   }
+
+   @Override
+   public Collection<?> getKeysToLock() {
+      return keys;
+   }
+
+   @Override
+   public void initBackupMultiKeyWriteRpcCommand(BackupMultiKeyWriteRpcCommand command, Collection<Object> keys) {
+      //noinspection unchecked
+      command.setReadWrite(commandInvocationId, keys, f, params, getFlagsBitSet(), getTopologyId());
    }
 }

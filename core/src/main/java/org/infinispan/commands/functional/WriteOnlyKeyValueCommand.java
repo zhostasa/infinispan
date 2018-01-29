@@ -7,6 +7,7 @@ import java.util.function.BiConsumer;
 
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
+import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.functional.EntryView.WriteEntryView;
 import org.infinispan.commons.marshall.MarshallUtil;
@@ -96,4 +97,8 @@ public final class WriteOnlyKeyValueCommand<K, V> extends AbstractWriteKeyComman
       return true;
    }
 
+   @Override
+   public void initBackupWriteRpcCommand(BackupWriteRpcCommand command) {
+      command.setWriteOnlyKeyValue(commandInvocationId, key, f, value, params, getFlagsBitSet(), getTopologyId());
+   }
 }

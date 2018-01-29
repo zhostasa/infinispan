@@ -1,20 +1,25 @@
 package org.infinispan.commands.functional;
 
 import static org.infinispan.functional.impl.EntryViews.snapshot;
+import static org.infinispan.util.TriangleFunctionsUtil.filterEntries;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
-import org.infinispan.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
+import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -32,22 +37,21 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
    private Map<? extends K, ? extends V> entries;
    private BiFunction<V, ReadWriteEntryView<K, V>, R> f;
 
-   private int topologyId = -1;
    boolean isForwarded = false;
 
-   public ReadWriteManyEntriesCommand(Map<? extends K, ? extends V> entries, BiFunction<V, ReadWriteEntryView<K, V>, R> f, Params params) {
+   public ReadWriteManyEntriesCommand(Map<? extends K, ? extends V> entries, BiFunction<V, ReadWriteEntryView<K, V>, R> f, Params params, CommandInvocationId commandInvocationId) {
+      super(commandInvocationId, params);
       this.entries = entries;
       this.f = f;
-      this.params = params;
    }
 
    public ReadWriteManyEntriesCommand() {
    }
 
    public ReadWriteManyEntriesCommand(ReadWriteManyEntriesCommand command) {
+      super(command);
       this.entries = command.entries;
       this.f = command.f;
-      this.params = command.params;
    }
 
    public Map<? extends K, ? extends V> getEntries() {
@@ -70,7 +74,8 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
 
    @Override
    public void writeTo(ObjectOutput output) throws IOException {
-      output.writeObject(entries);
+      CommandInvocationId.writeTo(output, commandInvocationId);
+      MarshallUtil.marshallMap(entries, output);
       output.writeObject(f);
       output.writeBoolean(isForwarded);
       Params.writeObject(output, params);
@@ -78,7 +83,9 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
 
    @Override
    public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
-      entries = (Map<? extends K, ? extends V>) input.readObject();
+      commandInvocationId = CommandInvocationId.readFrom(input);
+      // We use LinkedHashMap in order to guarantee the same order of iteration
+      entries = MarshallUtil.unmarshallMap(input, LinkedHashMap::new);
       f = (BiFunction<V, ReadWriteEntryView<K, V>, R>) input.readObject();
       isForwarded = input.readBoolean();
       params = Params.readObject(input);
@@ -94,21 +101,6 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
 
    @Override
    public boolean isReturnValueExpected() {
-      return true;
-   }
-
-   @Override
-   public int getTopologyId() {
-      return topologyId;  // TODO: Customise this generated block
-   }
-
-   @Override
-   public void setTopologyId(int topologyId) {
-      this.topologyId = topologyId;
-   }
-
-   @Override
-   public boolean shouldInvoke(InvocationContext ctx) {
       return true;
    }
 
@@ -178,5 +170,16 @@ public final class ReadWriteManyEntriesCommand<K, V, R> extends AbstractWriteMan
       sb.append(", isForwarded=").append(isForwarded);
       sb.append('}');
       return sb.toString();
+   }
+
+   @Override
+   public Collection<?> getKeysToLock() {
+      return entries.keySet();
+   }
+
+   @Override
+   public void initBackupMultiKeyWriteRpcCommand(BackupMultiKeyWriteRpcCommand command, Collection<Object> keys) {
+      //noinspection unchecked
+      command.setReadWriteEntries(commandInvocationId, filterEntries(entries, keys), f, params, getFlagsBitSet(), getTopologyId());
    }
 }

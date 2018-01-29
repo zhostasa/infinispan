@@ -53,7 +53,9 @@ public final class WriteOnlyMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       Param<FutureMode> futureMode = params.get(FutureMode.ID);
       WriteOnlyKeyCommand cmd = fmap.cmdFactory().buildWriteOnlyKeyCommand(key, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, 1);
-      ctx.setLockOwner(cmd.getKeyLockOwner());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return futureVoid(futureMode, ctx, cmd);
    }
 
@@ -63,7 +65,9 @@ public final class WriteOnlyMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       Param<FutureMode> futureMode = params.get(FutureMode.ID);
       WriteOnlyKeyValueCommand cmd = fmap.cmdFactory().buildWriteOnlyKeyValueCommand(key, value, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, 1);
-      ctx.setLockOwner(cmd.getKeyLockOwner());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return futureVoid(futureMode, ctx, cmd);
    }
 
@@ -73,6 +77,9 @@ public final class WriteOnlyMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       Param<FutureMode> futureMode = params.get(FutureMode.ID);
       WriteOnlyManyEntriesCommand cmd = fmap.cmdFactory().buildWriteOnlyManyEntriesCommand(entries, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, entries.size());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return futureVoid(futureMode, ctx, cmd);
    }
 
@@ -82,6 +89,9 @@ public final class WriteOnlyMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       Param<FutureMode> futureMode = params.get(FutureMode.ID);
       WriteOnlyManyCommand cmd = fmap.cmdFactory().buildWriteOnlyManyCommand(keys, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, keys.size());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return futureVoid(futureMode, ctx, cmd);
    }
 
@@ -94,6 +104,9 @@ public final class WriteOnlyMapImpl<K, V> extends AbstractFunctionalMap<K, V> im
       CloseableIteratorSet<K> keys = fmap.cache.keySet();
       WriteOnlyManyCommand cmd = fmap.cmdFactory().buildWriteOnlyManyCommand(keys, f, params);
       InvocationContext ctx = fmap.invCtxFactory().createInvocationContext(true, keys.size());
+      if (ctx.getLockOwner() == null) {
+         ctx.setLockOwner(cmd.getKeyLockOwner());
+      }
       return futureVoid(futureMode, ctx, cmd);
    }
 

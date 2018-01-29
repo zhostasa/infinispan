@@ -165,6 +165,11 @@ public class InvalidateCommand extends AbstractTopologyAffectedCommand implement
    }
 
    @Override
+   public CommandInvocationId getCommandInvocationId() {
+      return commandInvocationId;
+   }
+
+   @Override
    public Collection<?> getKeysToLock() {
       return Arrays.asList(keys);
    }

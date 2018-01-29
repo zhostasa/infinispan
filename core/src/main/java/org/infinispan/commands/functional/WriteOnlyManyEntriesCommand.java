@@ -1,16 +1,22 @@
 package org.infinispan.commands.functional;
 
+import static org.infinispan.util.TriangleFunctionsUtil.filterEntries;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
-import org.infinispan.functional.EntryView.WriteEntryView;
+import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
+import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.functional.EntryView.WriteEntryView;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -26,16 +32,16 @@ public final class WriteOnlyManyEntriesCommand<K, V> extends AbstractWriteManyCo
    private Map<? extends K, ? extends V> entries;
    private BiConsumer<V, WriteEntryView<V>> f;
 
-   public WriteOnlyManyEntriesCommand(Map<? extends K, ? extends V> entries, BiConsumer<V, WriteEntryView<V>> f, Params params) {
+   public WriteOnlyManyEntriesCommand(Map<? extends K, ? extends V> entries, BiConsumer<V, WriteEntryView<V>> f, Params params, CommandInvocationId commandInvocationId) {
+      super(commandInvocationId, params);
       this.entries = entries;
       this.f = f;
-      this.params = params;
    }
 
    public WriteOnlyManyEntriesCommand(WriteOnlyManyEntriesCommand<K, V> command) {
+      super(command);
       this.entries = command.entries;
       this.f = command.f;
-      this.params = command.params;
    }
 
    public WriteOnlyManyEntriesCommand() {
@@ -61,7 +67,8 @@ public final class WriteOnlyManyEntriesCommand<K, V> extends AbstractWriteManyCo
 
    @Override
    public void writeTo(ObjectOutput output) throws IOException {
-      output.writeObject(entries);
+      CommandInvocationId.writeTo(output, commandInvocationId);
+      MarshallUtil.marshallMap(entries, output);
       output.writeObject(f);
       output.writeBoolean(isForwarded);
       Params.writeObject(output, params);
@@ -69,7 +76,9 @@ public final class WriteOnlyManyEntriesCommand<K, V> extends AbstractWriteManyCo
 
    @Override
    public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
-      entries = (Map<? extends K, ? extends V>) input.readObject();
+      commandInvocationId = CommandInvocationId.readFrom(input);
+      // We use LinkedHashMap in order to guarantee the same order of iteration
+      entries = MarshallUtil.unmarshallMap(input, LinkedHashMap::new);
       f = (BiConsumer<V, WriteEntryView<V>>) input.readObject();
       isForwarded = input.readBoolean();
       params = Params.readObject(input);
@@ -138,5 +147,16 @@ public final class WriteOnlyManyEntriesCommand<K, V> extends AbstractWriteManyCo
       sb.append(", isForwarded=").append(isForwarded);
       sb.append('}');
       return sb.toString();
+   }
+
+   @Override
+   public Collection<?> getKeysToLock() {
+      return entries.keySet();
+   }
+
+   @Override
+   public void initBackupMultiKeyWriteRpcCommand(BackupMultiKeyWriteRpcCommand command, Collection<Object> keys) {
+      //noinspection unchecked
+      command.setWriteOnlyEntries(commandInvocationId, filterEntries(entries, keys), f, params, getFlagsBitSet(), getTopologyId());
    }
 }

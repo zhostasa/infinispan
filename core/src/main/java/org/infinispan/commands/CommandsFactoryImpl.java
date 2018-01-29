@@ -58,10 +58,9 @@ import org.infinispan.commands.tx.totalorder.TotalOrderVersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.BackupAckCommand;
 import org.infinispan.commands.write.BackupMultiKeyAckCommand;
-import org.infinispan.commands.write.BackupPutMapRpcCommand;
+import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
 import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ClearCommand;
-import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.EvictCommand;
 import org.infinispan.commands.write.ExceptionAckCommand;
 import org.infinispan.commands.write.InvalidateCommand;
@@ -73,9 +72,6 @@ import org.infinispan.commands.write.RemoveExpiredCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.commands.write.WriteCommand;
-import org.infinispan.functional.EntryView.ReadEntryView;
-import org.infinispan.functional.EntryView.ReadWriteEntryView;
-import org.infinispan.functional.EntryView.WriteEntryView;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.LambdaExternalizer;
@@ -89,11 +85,15 @@ import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.distribution.group.impl.GroupManager;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
+import org.infinispan.functional.EntryView.ReadEntryView;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.functional.EntryView.WriteEntryView;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
@@ -182,6 +182,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
    private StreamingMarshaller marshaller;
    private Equivalence<?> keyEquivalence;
    private Equivalence<?> valueEquivalence;
+   private KeyPartitioner keyPartitioner;
 
    @Inject
    public void setupDependencies(DataContainer container, CacheNotifier<Object, Object> notifier, Cache<Object, Object> cache,
@@ -196,7 +197,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                  GroupManager groupManager, PartitionHandlingManager partitionHandlingManager,
                                  LocalStreamManager localStreamManager, ClusterStreamManager clusterStreamManager,
                                  ClusteringDependentLogic clusteringDependentLogic, StreamingMarshaller marshaller,
-                                 CommandAckCollector commandAckCollector, StateReceiver stateReceiver) {
+                                 CommandAckCollector commandAckCollector, StateReceiver stateReceiver,
+                                 KeyPartitioner keyPartitioner) {
       this.dataContainer = container;
       this.notifier = notifier;
       this.cache = cache;
@@ -224,6 +226,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
       this.marshaller = marshaller;
       this.commandAckCollector = commandAckCollector;
       this.stateReceiver = stateReceiver;
+      this.keyPartitioner = keyPartitioner;
    }
 
    @Start(priority = 1)
@@ -534,7 +537,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
             break;
          case BackupWriteRpcCommand.COMMAND_ID:
             BackupWriteRpcCommand bwc = (BackupWriteRpcCommand) c;
-            bwc.init(icf, interceptorChain, notifier);
+            bwc.init(icf, interceptorChain, notifier, keyPartitioner);
             break;
          case BackupMultiKeyAckCommand.COMMAND_ID:
             ((BackupMultiKeyAckCommand) c).setCommandAckCollector(commandAckCollector);
@@ -542,8 +545,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
          case ExceptionAckCommand.COMMAND_ID:
             ((ExceptionAckCommand) c).setCommandAckCollector(commandAckCollector);
             break;
-         case BackupPutMapRpcCommand.COMMAND_ID:
-            ((BackupPutMapRpcCommand) c).init(icf, interceptorChain, notifier);
+         case BackupMultiKeyWriteRpcCommand.COMMAND_ID:
+            ((BackupMultiKeyWriteRpcCommand) c).init(icf, interceptorChain, notifier, keyPartitioner);
             break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
@@ -725,12 +728,12 @@ public class CommandsFactoryImpl implements CommandsFactory {
 
    @Override
    public <K, V, R> ReadWriteManyCommand<K, V, R> buildReadWriteManyCommand(Collection<? extends K> keys, Function<ReadWriteEntryView<K, V>, R> f, Params params) {
-      return new ReadWriteManyCommand<>(keys, f, params);
+      return new ReadWriteManyCommand<>(keys, f, params, generateUUID(transactional));
    }
 
    @Override
    public <K, V, R> ReadWriteManyEntriesCommand<K, V, R> buildReadWriteManyEntriesCommand(Map<? extends K, ? extends V> entries, BiFunction<V, ReadWriteEntryView<K, V>, R> f, Params params) {
-      return new ReadWriteManyEntriesCommand<>(entries, f, params);
+      return new ReadWriteManyEntriesCommand<>(entries, f, params, generateUUID(transactional));
    }
 
    @Override
@@ -748,13 +751,13 @@ public class CommandsFactoryImpl implements CommandsFactory {
 
    @Override
    public <K, V> WriteOnlyManyCommand<K, V> buildWriteOnlyManyCommand(Collection<? extends K> keys, Consumer<WriteEntryView<V>> f, Params params) {
-      return new WriteOnlyManyCommand<>(keys, f, params);
+      return new WriteOnlyManyCommand<>(keys, f, params, generateUUID(transactional));
    }
 
    @Override
    public <K, V> WriteOnlyManyEntriesCommand<K, V> buildWriteOnlyManyEntriesCommand(
          Map<? extends K, ? extends V> entries, BiConsumer<V, WriteEntryView<V>> f, Params params) {
-      return new WriteOnlyManyEntriesCommand<>(entries, f, params);
+      return new WriteOnlyManyEntriesCommand<>(entries, f, params, generateUUID(transactional));
    }
 
    @Override
@@ -773,15 +776,17 @@ public class CommandsFactoryImpl implements CommandsFactory {
    }
 
    @Override
-   public BackupWriteRpcCommand buildBackupWriteRcpCommand(DataWriteCommand command) {
+   public BackupWriteRpcCommand buildBackupWriteRpcCommand(WriteCommand command) {
       BackupWriteRpcCommand cmd = new BackupWriteRpcCommand(cacheName);
-      command.initBackupWriteRcpCommand(cmd);
+      command.initBackupWriteRpcCommand(cmd);
       return cmd;
    }
 
    @Override
-   public BackupPutMapRpcCommand buildBackupPutMapRcpCommand(PutMapCommand command) {
-      return new BackupPutMapRpcCommand(cacheName, command);
+   public BackupMultiKeyWriteRpcCommand buildBackupMultiKeyWriteRpcCommand(WriteCommand command, Collection<Object> keys) {
+      BackupMultiKeyWriteRpcCommand cmd = new BackupMultiKeyWriteRpcCommand(cacheName);
+      command.initBackupMultiKeyWriteRpcCommand(cmd, keys);
+      return cmd;
    }
 
    private ValueMatcher getValueMatcher(Object o) {
