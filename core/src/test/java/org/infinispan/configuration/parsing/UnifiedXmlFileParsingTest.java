@@ -14,6 +14,7 @@ import java.util.NoSuchElementException;
 
 import org.infinispan.Version;
 import org.infinispan.commons.CacheConfigurationException;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
 import org.infinispan.commons.executors.CachedThreadPoolExecutorFactory;
@@ -26,6 +27,7 @@ import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.EncodingConfiguration;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.InterceptorConfiguration;
 import org.infinispan.configuration.cache.MemoryConfiguration;
@@ -35,11 +37,14 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalStateConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.conflict.MergePolicy;
 import org.infinispan.distribution.ch.impl.SyncConsistentHashFactory;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.factories.threads.DefaultThreadFactory;
+import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.interceptors.impl.InvocationContextInterceptor;
 import org.infinispan.jmx.CustomMBeanServerPropertiesTest;
@@ -105,6 +110,14 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
 
    private static void configurationCheck85(EmbeddedCacheManager cm) {
       configurationCheck83(cm);
+      GlobalStateConfiguration gs = cm.getCacheManagerConfiguration().globalState();
+      assertEquals(ConfigurationStorage.OVERLAY, gs.configurationStorage());
+      assertEquals("sharedPath", gs.sharedPersistentLocation());
+
+      EncodingConfiguration encoding = cm.getCacheConfiguration("local").encoding();
+      assertEquals(MediaType.APPLICATION_OBJECT, encoding.keyDataType().mediaType());
+      assertEquals(MediaType.APPLICATION_OBJECT, encoding.valueDataType().mediaType());
+
       PartitionHandlingConfiguration ph = cm.getCacheConfiguration("dist").clustering().partitionHandling();
       assertTrue(ph.enabled());
       assertEquals(PartitionHandling.ALLOW_READS, ph.whenSplit());

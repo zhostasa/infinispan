@@ -1618,4 +1618,7 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Cannot acquire lock '%s' for persistent global state", id = 512)
    CacheConfigurationException globalStateCannotAcquireLockFile(@Cause Throwable cause, File lockFile);
+
+   @Message(value = "The configuration is immutable", id = 515)
+   UnsupportedOperationException immutableConfiguration();
 }
