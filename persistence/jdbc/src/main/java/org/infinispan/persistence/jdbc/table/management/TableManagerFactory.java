@@ -37,6 +37,9 @@ public class TableManagerFactory {
                                           storeConfig.dbMajorVersion(), isUpsertDisabled(storeConfig));
 
       switch (metaData.getType()) {
+         case DB2:
+         case DB2_390:
+            return new DB2TableManager(connectionFactory, tableConfig, metaData);
          case H2:
             return new H2TableManager(connectionFactory, tableConfig, metaData);
          case MYSQL:
