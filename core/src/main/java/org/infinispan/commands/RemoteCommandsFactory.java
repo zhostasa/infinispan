@@ -26,6 +26,11 @@ import org.infinispan.commands.remote.recovery.CompleteTransactionCommand;
 import org.infinispan.commands.remote.recovery.GetInDoubtTransactionsCommand;
 import org.infinispan.commands.remote.recovery.GetInDoubtTxInfoCommand;
 import org.infinispan.commands.remote.recovery.TxCompletionNotificationCommand;
+import org.infinispan.commands.triangle.MultiEntriesFunctionalBackupWriteCommand;
+import org.infinispan.commands.triangle.MultiKeyFunctionalBackupWriteCommand;
+import org.infinispan.commands.triangle.PutMapBackupWriteCommand;
+import org.infinispan.commands.triangle.SingleKeyBackupWriteCommand;
+import org.infinispan.commands.triangle.SingleKeyFunctionalBackupWriteCommand;
 import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.tx.RollbackCommand;
@@ -37,8 +42,6 @@ import org.infinispan.commands.tx.totalorder.TotalOrderRollbackCommand;
 import org.infinispan.commands.tx.totalorder.TotalOrderVersionedCommitCommand;
 import org.infinispan.commands.tx.totalorder.TotalOrderVersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
-import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
-import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.commands.write.InvalidateL1Command;
@@ -303,11 +306,20 @@ public class RemoteCommandsFactory {
             case StreamResponseCommand.COMMAND_ID:
                command = new StreamResponseCommand(cacheName);
                break;
-            case BackupWriteRpcCommand.COMMAND_ID:
-               command = new BackupWriteRpcCommand(cacheName);
+            case SingleKeyBackupWriteCommand.COMMAND_ID:
+               command = new SingleKeyBackupWriteCommand(cacheName);
                break;
-            case BackupMultiKeyWriteRpcCommand.COMMAND_ID:
-               command = new BackupMultiKeyWriteRpcCommand(cacheName);
+            case SingleKeyFunctionalBackupWriteCommand.COMMAND_ID:
+               command = new SingleKeyFunctionalBackupWriteCommand(cacheName);
+               break;
+            case PutMapBackupWriteCommand.COMMAND_ID:
+               command = new PutMapBackupWriteCommand(cacheName);
+               break;
+            case MultiEntriesFunctionalBackupWriteCommand.COMMAND_ID:
+               command = new MultiEntriesFunctionalBackupWriteCommand(cacheName);
+               break;
+            case MultiKeyFunctionalBackupWriteCommand.COMMAND_ID:
+               command = new MultiKeyFunctionalBackupWriteCommand(cacheName);
                break;
             default:
                throw new CacheException("Unknown command id " + id + "!");

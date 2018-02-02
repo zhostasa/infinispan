@@ -45,6 +45,11 @@ import org.infinispan.commands.remote.recovery.CompleteTransactionCommand;
 import org.infinispan.commands.remote.recovery.GetInDoubtTransactionsCommand;
 import org.infinispan.commands.remote.recovery.GetInDoubtTxInfoCommand;
 import org.infinispan.commands.remote.recovery.TxCompletionNotificationCommand;
+import org.infinispan.commands.triangle.MultiEntriesFunctionalBackupWriteCommand;
+import org.infinispan.commands.triangle.MultiKeyFunctionalBackupWriteCommand;
+import org.infinispan.commands.triangle.PutMapBackupWriteCommand;
+import org.infinispan.commands.triangle.SingleKeyBackupWriteCommand;
+import org.infinispan.commands.triangle.SingleKeyFunctionalBackupWriteCommand;
 import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.tx.RollbackCommand;
@@ -58,8 +63,6 @@ import org.infinispan.commands.tx.totalorder.TotalOrderVersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.BackupAckCommand;
 import org.infinispan.commands.write.BackupMultiKeyAckCommand;
-import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
-import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.EvictCommand;
 import org.infinispan.commands.write.ExceptionAckCommand;
@@ -85,7 +88,6 @@ import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.distribution.group.impl.GroupManager;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.ComponentName;
@@ -182,7 +184,6 @@ public class CommandsFactoryImpl implements CommandsFactory {
    private StreamingMarshaller marshaller;
    private Equivalence<?> keyEquivalence;
    private Equivalence<?> valueEquivalence;
-   private KeyPartitioner keyPartitioner;
 
    @Inject
    public void setupDependencies(DataContainer container, CacheNotifier<Object, Object> notifier, Cache<Object, Object> cache,
@@ -197,8 +198,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                  GroupManager groupManager, PartitionHandlingManager partitionHandlingManager,
                                  LocalStreamManager localStreamManager, ClusterStreamManager clusterStreamManager,
                                  ClusteringDependentLogic clusteringDependentLogic, StreamingMarshaller marshaller,
-                                 CommandAckCollector commandAckCollector, StateReceiver stateReceiver,
-                                 KeyPartitioner keyPartitioner) {
+                                 CommandAckCollector commandAckCollector, StateReceiver stateReceiver) {
       this.dataContainer = container;
       this.notifier = notifier;
       this.cache = cache;
@@ -226,7 +226,6 @@ public class CommandsFactoryImpl implements CommandsFactory {
       this.marshaller = marshaller;
       this.commandAckCollector = commandAckCollector;
       this.stateReceiver = stateReceiver;
-      this.keyPartitioner = keyPartitioner;
    }
 
    @Start(priority = 1)
@@ -535,18 +534,27 @@ public class CommandsFactoryImpl implements CommandsFactory {
             BackupAckCommand command = (BackupAckCommand) c;
             command.setCommandAckCollector(commandAckCollector);
             break;
-         case BackupWriteRpcCommand.COMMAND_ID:
-            BackupWriteRpcCommand bwc = (BackupWriteRpcCommand) c;
-            bwc.init(icf, interceptorChain, notifier, keyPartitioner);
+         case SingleKeyBackupWriteCommand.COMMAND_ID:
+            ((SingleKeyBackupWriteCommand) c)
+                  .init(icf, interceptorChain, notifier);
+            break;
+         case SingleKeyFunctionalBackupWriteCommand.COMMAND_ID:
+            ((SingleKeyFunctionalBackupWriteCommand) c).init(icf, interceptorChain);
+            break;
+         case PutMapBackupWriteCommand.COMMAND_ID:
+            ((PutMapBackupWriteCommand) c).init(icf, interceptorChain, notifier);
+            break;
+         case MultiEntriesFunctionalBackupWriteCommand.COMMAND_ID:
+            ((MultiEntriesFunctionalBackupWriteCommand) c).init(icf, interceptorChain);
+            break;
+         case MultiKeyFunctionalBackupWriteCommand.COMMAND_ID:
+            ((MultiKeyFunctionalBackupWriteCommand) c).init(icf, interceptorChain);
             break;
          case BackupMultiKeyAckCommand.COMMAND_ID:
             ((BackupMultiKeyAckCommand) c).setCommandAckCollector(commandAckCollector);
             break;
          case ExceptionAckCommand.COMMAND_ID:
             ((ExceptionAckCommand) c).setCommandAckCollector(commandAckCollector);
-            break;
-         case BackupMultiKeyWriteRpcCommand.COMMAND_ID:
-            ((BackupMultiKeyWriteRpcCommand) c).init(icf, interceptorChain, notifier, keyPartitioner);
             break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
@@ -775,20 +783,6 @@ public class CommandsFactoryImpl implements CommandsFactory {
       return new ExceptionAckCommand(cacheName, id, throwable, topologyId);
    }
 
-   @Override
-   public BackupWriteRpcCommand buildBackupWriteRpcCommand(WriteCommand command) {
-      BackupWriteRpcCommand cmd = new BackupWriteRpcCommand(cacheName);
-      command.initBackupWriteRpcCommand(cmd);
-      return cmd;
-   }
-
-   @Override
-   public BackupMultiKeyWriteRpcCommand buildBackupMultiKeyWriteRpcCommand(WriteCommand command, Collection<Object> keys) {
-      BackupMultiKeyWriteRpcCommand cmd = new BackupMultiKeyWriteRpcCommand(cacheName);
-      command.initBackupMultiKeyWriteRpcCommand(cmd, keys);
-      return cmd;
-   }
-
    private ValueMatcher getValueMatcher(Object o) {
       SerializeFunctionWith ann = o.getClass().getAnnotation(SerializeFunctionWith.class);
       if (ann != null)
@@ -799,5 +793,30 @@ public class CommandsFactoryImpl implements CommandsFactory {
          return ValueMatcher.valueOf(((LambdaExternalizer) ext).valueMatcher(o).toString());
 
       return ValueMatcher.MATCH_ALWAYS;
+   }
+
+   @Override
+   public SingleKeyBackupWriteCommand buildSingleKeyBackupWriteCommand() {
+      return new SingleKeyBackupWriteCommand(cacheName);
+   }
+
+   @Override
+   public SingleKeyFunctionalBackupWriteCommand buildSingleKeyFunctionalBackupWriteCommand() {
+      return new SingleKeyFunctionalBackupWriteCommand(cacheName);
+   }
+
+   @Override
+   public PutMapBackupWriteCommand buildPutMapBackupWriteCommand() {
+      return new PutMapBackupWriteCommand(cacheName);
+   }
+
+   @Override
+   public MultiEntriesFunctionalBackupWriteCommand buildMultiEntriesFunctionalBackupWriteCommand() {
+      return new MultiEntriesFunctionalBackupWriteCommand(cacheName);
+   }
+
+   @Override
+   public MultiKeyFunctionalBackupWriteCommand buildMultiKeyFunctionalBackupWriteCommand() {
+      return new MultiKeyFunctionalBackupWriteCommand(cacheName);
    }
 }

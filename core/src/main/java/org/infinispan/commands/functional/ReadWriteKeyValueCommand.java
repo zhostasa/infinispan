@@ -10,15 +10,14 @@ import java.util.function.BiFunction;
 
 import org.infinispan.commands.CommandInvocationId;
 import org.infinispan.commands.Visitor;
-import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ValueMatcher;
-import org.infinispan.functional.EntryView.ReadWriteEntryView;
 import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.MVCCEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.FlagBitSets;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
 import org.infinispan.functional.impl.EntryViews;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.metadata.Metadata;
@@ -154,14 +153,25 @@ public final class ReadWriteKeyValueCommand<K, V, R> extends AbstractWriteKeyCom
          .toString();
    }
 
-   @Override
-   public void initBackupWriteRpcCommand(BackupWriteRpcCommand command) {
-      command.setReadWriteKeyValue(commandInvocationId, key, f, value, prevValue, prevMetadata, params, getFlagsBitSet(), getTopologyId());
-   }
-
    public void setPrevValueAndMetadata(Object prevValue, Metadata prevMetadata) {
       this.prevMetadata = prevMetadata;
       //noinspection unchecked
       this.prevValue = (V) prevValue;
+   }
+
+   public Object getValue() {
+      return value;
+   }
+
+   public BiFunction<V, ReadWriteEntryView<K, V>, R> getBiFunction() {
+      return f;
+   }
+
+   public Object getPrevValue() {
+      return prevValue;
+   }
+
+   public Metadata getPrevMetadata() {
+      return prevMetadata;
    }
 }

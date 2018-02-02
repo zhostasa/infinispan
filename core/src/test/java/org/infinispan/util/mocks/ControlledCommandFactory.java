@@ -52,6 +52,11 @@ import org.infinispan.commands.remote.recovery.CompleteTransactionCommand;
 import org.infinispan.commands.remote.recovery.GetInDoubtTransactionsCommand;
 import org.infinispan.commands.remote.recovery.GetInDoubtTxInfoCommand;
 import org.infinispan.commands.remote.recovery.TxCompletionNotificationCommand;
+import org.infinispan.commands.triangle.MultiEntriesFunctionalBackupWriteCommand;
+import org.infinispan.commands.triangle.MultiKeyFunctionalBackupWriteCommand;
+import org.infinispan.commands.triangle.PutMapBackupWriteCommand;
+import org.infinispan.commands.triangle.SingleKeyBackupWriteCommand;
+import org.infinispan.commands.triangle.SingleKeyFunctionalBackupWriteCommand;
 import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
 import org.infinispan.commands.tx.RollbackCommand;
@@ -60,10 +65,7 @@ import org.infinispan.commands.tx.VersionedPrepareCommand;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.BackupAckCommand;
 import org.infinispan.commands.write.BackupMultiKeyAckCommand;
-import org.infinispan.commands.write.BackupMultiKeyWriteRpcCommand;
-import org.infinispan.commands.write.BackupWriteRpcCommand;
 import org.infinispan.commands.write.ClearCommand;
-import org.infinispan.commands.write.DataWriteCommand;
 import org.infinispan.commands.write.EvictCommand;
 import org.infinispan.commands.write.ExceptionAckCommand;
 import org.infinispan.commands.write.InvalidateCommand;
@@ -73,8 +75,8 @@ import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.RemoveExpiredCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commands.write.WriteCommand;
-import org.infinispan.functional.EntryView;
 import org.infinispan.factories.ComponentRegistry;
+import org.infinispan.functional.EntryView;
 import org.infinispan.functional.impl.Params;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.metadata.Metadata;
@@ -101,7 +103,7 @@ import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
  */
 public class ControlledCommandFactory implements CommandsFactory {
 
-   private static Log log = LogFactory.getLog(ControlledCommandFactory.class);
+   private final static Log log = LogFactory.getLog(ControlledCommandFactory.class);
 
    public final CommandsFactory actual;
    public final ReclosableLatch gate = new ReclosableLatch(true);
@@ -465,12 +467,27 @@ public class ControlledCommandFactory implements CommandsFactory {
    }
 
    @Override
-   public BackupWriteRpcCommand buildBackupWriteRpcCommand(WriteCommand command) {
-      return actual.buildBackupWriteRpcCommand(command);
+   public SingleKeyBackupWriteCommand buildSingleKeyBackupWriteCommand() {
+      return actual.buildSingleKeyBackupWriteCommand();
    }
 
    @Override
-   public BackupMultiKeyWriteRpcCommand buildBackupMultiKeyWriteRpcCommand(WriteCommand command, Collection<Object> keys) {
-      return actual.buildBackupMultiKeyWriteRpcCommand(command, keys);
+   public SingleKeyFunctionalBackupWriteCommand buildSingleKeyFunctionalBackupWriteCommand() {
+      return actual.buildSingleKeyFunctionalBackupWriteCommand();
+   }
+
+   @Override
+   public PutMapBackupWriteCommand buildPutMapBackupWriteCommand() {
+      return actual.buildPutMapBackupWriteCommand();
+   }
+
+   @Override
+   public MultiEntriesFunctionalBackupWriteCommand buildMultiEntriesFunctionalBackupWriteCommand() {
+      return actual.buildMultiEntriesFunctionalBackupWriteCommand();
+   }
+
+   @Override
+   public MultiKeyFunctionalBackupWriteCommand buildMultiKeyFunctionalBackupWriteCommand() {
+      return actual.buildMultiKeyFunctionalBackupWriteCommand();
    }
 }

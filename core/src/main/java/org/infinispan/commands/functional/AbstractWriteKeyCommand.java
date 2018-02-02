@@ -12,7 +12,7 @@ import org.infinispan.functional.impl.Params;
  * @deprecated Since 8.3, will be removed.
  */
 @Deprecated
-abstract class AbstractWriteKeyCommand<K> extends AbstractDataWriteCommand implements ParamsCommand {
+public abstract class AbstractWriteKeyCommand<K> extends AbstractDataWriteCommand implements ParamsCommand {
 
    Params params;
    ValueMatcher valueMatcher;
