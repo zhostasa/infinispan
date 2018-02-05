@@ -179,8 +179,42 @@
       <dependency>
          <groupId>org.apache.karaf.features</groupId>
          <artifactId>org.apache.karaf.features.core</artifactId>
-         <scope>test</scope>
       </dependency>
+
+      <!-- Download the features.xml referenced by the tests -->
+      <dependency>
+         <groupId>org.infinispan.protostream</groupId>
+         <artifactId>protostream</artifactId>
+         <version>${version.protostream}</version>
+         <type>xml</type>
+         <classifier>features</classifier>
+         <scope>provided</scope>
+      </dependency>
+
+      <!-- Uncomment to debug surefire and the test container -->
+      <!--<dependency>-->
+         <!--<groupId>org.apache.maven.surefire</groupId>-->
+         <!--<artifactId>surefire-api</artifactId>-->
+         <!--<version>${version.maven.surefire}</version>-->
+         <!--<scope>provided</scope>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+         <!--<groupId>org.apache.maven.surefire</groupId>-->
+         <!--<artifactId>maven-surefire-common</artifactId>-->
+         <!--<version>${version.maven.surefire}</version>-->
+         <!--<scope>provided</scope>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+         <!--<groupId>org.apache.maven.surefire</groupId>-->
+         <!--<artifactId>surefire-junit47</artifactId>-->
+         <!--<version>${version.maven.surefire}</version>-->
+         <!--<scope>provided</scope>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+         <!--<groupId>org.ops4j.pax.exam</groupId>-->
+         <!--<artifactId>pax-exam-invoker-junit</artifactId>-->
+         <!--<version>${version.pax.exam}</version>-->
+      <!--</dependency>-->
    </dependencies>
 
    <properties>
