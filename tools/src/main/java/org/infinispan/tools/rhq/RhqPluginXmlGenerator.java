@@ -79,7 +79,8 @@ public class RhqPluginXmlGenerator {
          Scope scope = clazz.getAnnotation(Scope.class);
          if (scope != null && scope.value() == Scopes.GLOBAL) {
             globalClasses.add(clazz);
-         } else {
+         } else if (!clazz.getName().equals("org.infinispan.cache.impl.AbstractDelegatingAdvancedCache")) {
+            // We don't accept AbstractDelegatingAdvancedCache as it duplicates CacheImpl
             namedCacheClasses.add(clazz);
          }
       }
