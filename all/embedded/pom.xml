@@ -140,6 +140,18 @@
       </dependency>
 
       <dependency>
+         <groupId>com.microsoft.azure</groupId>
+         <artifactId>azure-storage</artifactId>
+         <optional>${uberjar.deps.optional}</optional>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jgroups.azure</groupId>
+         <artifactId>jgroups-azure</artifactId>
+         <optional>${uberjar.deps.optional}</optional>
+      </dependency>
+
+      <dependency>
          <groupId>org.jgroups.kubernetes</groupId>
          <artifactId>jgroups-kubernetes</artifactId>
          <optional>${uberjar.deps.optional}</optional>

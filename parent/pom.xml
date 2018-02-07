@@ -156,6 +156,7 @@
       <version.log4j>2.8.2.redhat-1</version.log4j>
       <version.lucene>5.5.5.redhat-1</version.lucene>
       <version.mc4j>1.2.6</version.mc4j>
+      <version.microsoft.azure.storage>5.0.0.redhat-1</version.microsoft.azure.storage>
       <version.mockito>1.9.5</version.mockito>
       <version.mockito_dep.objenesis>1.4</version.mockito_dep.objenesis>
       <version.mysql.driver>5.1.19</version.mysql.driver>
@@ -176,6 +177,7 @@
       <version.weld>2.3.3.Final-redhat-1</version.weld>
       <version.weld-se>2.2.0.SP1</version.weld-se>
       <version.jmh>1.12</version.jmh>
+      <version.jgroups.azure>1.2.0.Final-redhat-1</version.jgroups.azure>
       <version.jgroups.kubernetes>1.0.5.Final-redhat-1</version.jgroups.kubernetes>
       <version.oauth.core>20100527</version.oauth.core>
 
@@ -440,6 +442,17 @@
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
             <version>${version.c3p0}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-storage</artifactId>
+            <version>${version.microsoft.azure.storage}</version>
+            <exclusions>
+               <exclusion>
+                  <groupId>com.microsoft.azure</groupId>
+                  <artifactId>azure-keyvault-core</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
          <dependency>
             <groupId>com.h2database</groupId>
@@ -1127,6 +1140,11 @@
              <scope>import</scope>
              <type>pom</type>
           </dependency>
+          <dependency>
+            <groupId>org.jgroups.azure</groupId>
+            <artifactId>jgroups-azure</artifactId>
+            <version>${version.jgroups.azure}</version>
+         </dependency>
          <dependency>
             <groupId>org.jgroups.kubernetes</groupId>
             <artifactId>jgroups-kubernetes</artifactId>
