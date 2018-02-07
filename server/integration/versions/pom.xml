@@ -63,6 +63,7 @@
       <version.h2.database>1.3.173.redhat-2</version.h2.database>
       <version.resteasy>3.1.0.Final-redhat-1</version.resteasy>
       <version.lucene>5.5.5.redhat-1</version.lucene>
+      <version.agent-bond>1.0.2.redhat-1</version.agent-bond>
    </properties>
 
    <dependencyManagement>
@@ -656,30 +657,6 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-facet</artifactId>
             <version>${version.lucene}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>io.searchbox</groupId>
-            <artifactId>jest</artifactId>
-            <version>${version.jest}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>io.searchbox</groupId>
-            <artifactId>jest-common</artifactId>
-            <version>${version.jest}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${version.gson}</version>
-         </dependency>
-
-         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${version.commonslang3}</version>
          </dependency>
 
          <dependency>
