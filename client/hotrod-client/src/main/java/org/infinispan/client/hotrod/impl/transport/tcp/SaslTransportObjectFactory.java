@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,6 +14,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
+import javax.security.sasl.SaslClientFactory;
 import javax.security.sasl.SaslException;
 
 import org.infinispan.client.hotrod.configuration.AuthenticationConfiguration;
@@ -22,6 +24,7 @@ import org.infinispan.client.hotrod.impl.operations.AuthOperation;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
+import org.infinispan.commons.util.SaslUtils;
 
 /**
  * AuthenticatedTransportObjectFactory.
@@ -55,6 +58,7 @@ public class SaslTransportObjectFactory extends TransportObjectFactory {
       }
 
       SaslClient saslClient;
+      SaslClientFactory scf = getSaslClientFactory(authentication);
       if (authentication.clientSubject() != null) {
          saslClient = Subject.doAs(authentication.clientSubject(), new PrivilegedExceptionAction<SaslClient>() {
             @Override
@@ -63,12 +67,12 @@ public class SaslTransportObjectFactory extends TransportObjectFactory {
                if (callbackHandler == null) {
                   callbackHandler = NoOpCallbackHandler.INSTANCE;
                }
-            return Sasl.createSaslClient(new String[] { authentication.saslMechanism() }, null, "hotrod",
+            return scf.createSaslClient(new String[] { authentication.saslMechanism() }, null, "hotrod",
                   authentication.serverName(), authentication.saslProperties(), callbackHandler);
             }
          });
       } else {
-         saslClient = Sasl.createSaslClient(new String[] { authentication.saslMechanism() }, null, "hotrod",
+         saslClient = scf.createSaslClient(new String[] { authentication.saslMechanism() }, null, "hotrod",
                authentication.serverName(), authentication.saslProperties(), authentication.callbackHandler());
       }
 
@@ -102,6 +106,27 @@ public class SaslTransportObjectFactory extends TransportObjectFactory {
          ping(tcpTransport, defaultCacheTopologyId);
       }
       return tcpTransport;
+   }
+
+   private SaslClientFactory getSaslClientFactory(AuthenticationConfiguration configuration) {
+      if (trace) {
+         log.tracef("Attempting to load SaslClientFactory implementation with mech=%s, props=%s",
+               configuration.saslMechanism(), configuration.saslProperties());
+      }
+      Iterator<SaslClientFactory> clientFactories = SaslUtils.getSaslClientFactories(this.getClass().getClassLoader(), true);
+      while (clientFactories.hasNext()) {
+         SaslClientFactory saslFactory = clientFactories.next();
+         String[] saslFactoryMechs = saslFactory.getMechanismNames(configuration.saslProperties());
+         for (String supportedMech : saslFactoryMechs) {
+            if (supportedMech.equals(configuration.saslMechanism())) {
+               if (trace) {
+                  log.tracef("Loaded SaslClientFactory: %s", saslFactory.getClass().getName());
+               }
+               return saslFactory;
+            }
+         }
+      }
+      throw new IllegalStateException("SaslClientFactory implementation now found");
    }
 
    private byte[] evaluateChallenge(final SaslClient saslClient, final byte[] challenge, Subject clientSubject) throws SaslException {
