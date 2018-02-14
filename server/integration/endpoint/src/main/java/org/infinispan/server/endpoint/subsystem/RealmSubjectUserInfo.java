@@ -22,7 +22,7 @@ public class RealmSubjectUserInfo implements SubjectUserInfo {
        this.subject = userInfo.getSubject();
    }
 
-   RealmSubjectUserInfo(String userName, Subject subject) {
+   public RealmSubjectUserInfo(String userName, Subject subject) {
       this.userName = userName;
       this.subject = subject;
    }

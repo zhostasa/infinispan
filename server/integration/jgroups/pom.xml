@@ -81,10 +81,19 @@
         </dependency>
 
         <dependency>
-         <groupId>org.kohsuke.metainf-services</groupId>
-         <artifactId>metainf-services</artifactId>
-         <optional>true</optional>
-      </dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Version must be declared here to prevent issues with transitive dependencies in other server modules -->
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron</artifactId>
+            <version>${version.org.wildfly.security.elytron}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>

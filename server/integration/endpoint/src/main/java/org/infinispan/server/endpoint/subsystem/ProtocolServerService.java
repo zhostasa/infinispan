@@ -31,6 +31,7 @@ import javax.security.auth.login.LoginException;
 import org.infinispan.commons.util.ReflectionUtil;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.server.commons.modules.JbossModulesUtil;
 import org.infinispan.server.core.ProtocolServer;
 import org.infinispan.server.core.admin.embeddedserver.EmbeddedServerAdminOperationHandler;
 import org.infinispan.server.core.configuration.ProtocolServerConfiguration;
@@ -137,7 +138,8 @@ class ProtocolServerService implements Service<ProtocolServer>, EncryptableServi
             }
             SecurityRealm authenticationRealm = authenticationSecurityRealm.getOptionalValue();
             if (authenticationRealm != null) {
-               hotRodBuilder.authentication().serverAuthenticationProvider(new EndpointServerAuthenticationProvider(authenticationRealm));
+               boolean elytron = JbossModulesUtil.isElytronAvailable();
+               hotRodBuilder.authentication().serverAuthenticationProvider(new EndpointServerAuthenticationProvider(authenticationRealm, elytron));
             }
          }
 

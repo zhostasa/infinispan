@@ -34,7 +34,9 @@ import org.infinispan.rest.authentication.impl.ClientCertAuthenticator;
 import org.infinispan.rest.authentication.impl.VoidAuthenticator;
 import org.infinispan.rest.configuration.ExtendedHeaders;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
-import org.infinispan.server.endpoint.subsystem.security.BasicRestSecurityDomain;
+import org.infinispan.server.commons.modules.JbossModulesUtil;
+import org.infinispan.server.endpoint.subsystem.security.ElytronRestSecurityDomain;
+import org.infinispan.server.endpoint.subsystem.security.JbossSaslRestSecurityDomain;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.SocketBinding;
@@ -106,7 +108,9 @@ public class RestService implements Service<RestServer>, EncryptableService {
          switch (authMethod) {
             case BASIC: {
                SecurityRealm authenticationRealm = authenticationSecurityRealm.getOptionalValue();
-               SecurityDomain restSecurityDomain = new BasicRestSecurityDomain(authenticationRealm);
+               SecurityDomain restSecurityDomain = JbossModulesUtil.isElytronAvailable() ?
+                     new ElytronRestSecurityDomain(authenticationRealm) :
+                     new JbossSaslRestSecurityDomain(authenticationRealm);
                authenticator = new BasicAuthenticator(restSecurityDomain, authenticationRealm.getName());
                break;
             }

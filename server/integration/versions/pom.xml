@@ -47,6 +47,7 @@
       <version.org.wildfly.core>2.1.10.Final-redhat-1</version.org.wildfly.core>
       <version.org.wildfly.arquillian>1.1.0.Beta1</version.org.wildfly.arquillian>
       <version.org.wildfly.build-tools>1.1.6.Final</version.org.wildfly.build-tools>
+      <version.org.wildfly.security.elytron>1.1.8.Final-redhat-1</version.org.wildfly.security.elytron>
       <version.remoting.jmx.wildfly>2.0.1.Final-redhat-1</version.remoting.jmx.wildfly>
       <version.org.wildfly.extras.creaper>0.9.5</version.org.wildfly.extras.creaper>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>

@@ -41,9 +41,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Supplier;
 
+import javax.security.auth.callback.CallbackHandler;
+
+import org.infinispan.server.commons.modules.JbossModulesUtil;
 import org.infinispan.server.jgroups.logging.JGroupsLogger;
+import org.infinispan.server.jgroups.security.ElytronRealmAuthorizationCallbackHandler;
+import org.infinispan.server.jgroups.security.ElytronSaslClientCallbackHandler;
+import org.infinispan.server.jgroups.security.JbossSaslClientCallbackHandler;
 import org.infinispan.server.jgroups.security.RealmAuthorizationCallbackHandler;
-import org.infinispan.server.jgroups.security.SaslClientCallbackHandler;
 import org.infinispan.server.jgroups.spi.ChannelFactory;
 import org.infinispan.server.jgroups.spi.ProtocolConfiguration;
 import org.infinispan.server.jgroups.spi.ProtocolStackConfiguration;
@@ -188,7 +193,8 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         // Handle the Sasl protocol
         final SaslConfiguration saslConfig = this.configuration.getSasl();
         if (saslConfig != null) {
-            final String clusterRole = saslConfig.getClusterRole();
+            final boolean elytron = JbossModulesUtil.isElytronAvailable();
+            final String clusterRole = saslConfig.getClusterRole() != null ? saslConfig.getClusterRole() : id;
             final SecurityRealm securityRealm = saslConfig.getSecurityRealm();
             final String mech = saslConfig.getMech();
             final SASL sasl = new SASL();
@@ -196,23 +202,36 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             Map<String, String> props = saslConfig.getProperties();
             if (props.containsKey("client_password")) {
                 String credential = props.get("client_password");
+
+                String realm;
                 String name = props.get("client_name");
                 if (name == null) {
-                    sasl.setClientCallbackHandler(new SaslClientCallbackHandler(securityRealm.getName(),
-                            this.configuration.getNodeName(), credential));
-                } else if (name.contains("@")) {
-                    sasl.setClientCallbackHandler(new SaslClientCallbackHandler(name, credential));
+                    realm = securityRealm.getName();
+                    name = this.configuration.getNodeName();
+                } else if (name.contains("@'")) {
+                    int realmSep = name.indexOf('@');
+                    realm = realmSep < 0 ? "" : name.substring(realmSep + 1);
+                    name = realmSep < 0 ? name : name.substring(0, realmSep);
                 } else {
-                    sasl.setClientCallbackHandler(
-                            new SaslClientCallbackHandler(securityRealm.getName(), name, credential));
+                    realm = securityRealm.getName();
                 }
+
+                CallbackHandler clientCallbackHandler = elytron ?
+                      new ElytronSaslClientCallbackHandler(realm, name, credential) :
+                      new JbossSaslClientCallbackHandler(realm, name, credential);
+                sasl.setClientCallbackHandler(clientCallbackHandler);
             } else {
                 props.put("client_password", ""); // HACKY
             }
+
             Map<String, String> saslProps = props.containsKey("sasl_props")
                     ? Util.parseCommaDelimitedProps(props.get("sasl_props")) : new HashMap<>();
-            sasl.setServerCallbackHandler(new RealmAuthorizationCallbackHandler(securityRealm, mech,
-                    clusterRole != null ? clusterRole : id, saslProps));
+
+            CallbackHandler serverCallbackHandler = elytron ?
+                  new ElytronRealmAuthorizationCallbackHandler(securityRealm, mech, clusterRole, saslProps) :
+                  new RealmAuthorizationCallbackHandler(securityRealm, mech, clusterRole, saslProps);
+
+            sasl.setServerCallbackHandler(serverCallbackHandler);
             props.put("sasl_props", new PropertyConverters.StringProperties().toString(saslProps));
             Configurator.resolveAndAssignFields(sasl, props);
             Configurator.resolveAndInvokePropertyMethods(sasl, props);

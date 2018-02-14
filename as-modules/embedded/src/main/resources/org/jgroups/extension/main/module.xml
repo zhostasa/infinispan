@@ -24,7 +24,8 @@
         <module name="org.jboss.marshalling" slot="${slot}"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.sasl" services="import" />
+        <module name="org.jboss.sasl" services="import" optional="true"/>
+        <module name="org.wildfly.security.elytron-private" services="import" optional="true"/>
         <module name="org.jboss.security.negotiation" />
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.threads"/>

@@ -22,7 +22,8 @@
       <module name="org.infinispan.query" slot="${slot}"/>
       <module name="org.jboss.logging" />
       <module name="org.jboss.marshalling" slot="${slot}" services="import"/>
-      <module name="org.jboss.sasl" services="import" />
+      <module name="org.jboss.sasl" services="import" optional="true"/>
+      <module name="org.wildfly.security.elytron-private" services="import" optional="true"/>
       <module name="io.netty" slot="${slot}"/>
       <module name="org.jgroups" slot="${slot}"/>
    </dependencies>

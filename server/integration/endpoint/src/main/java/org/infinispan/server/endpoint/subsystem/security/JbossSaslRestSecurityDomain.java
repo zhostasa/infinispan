@@ -18,11 +18,11 @@ import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 
-public class BasicRestSecurityDomain implements SecurityDomain {
+public class JbossSaslRestSecurityDomain implements SecurityDomain {
 
    private final SecurityRealm securityRealm;
 
-   public BasicRestSecurityDomain(SecurityRealm securityRealm) {
+   public JbossSaslRestSecurityDomain(SecurityRealm securityRealm) {
       this.securityRealm = securityRealm;
    }
 
