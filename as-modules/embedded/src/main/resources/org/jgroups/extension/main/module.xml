@@ -31,7 +31,7 @@
         <module name="org.jboss.threads"/>
         <module name="org.jgroups" slot="${slot}"/>
         <module name="org.picketbox" />
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.manager" optional="true"/>
         <module name="sun.jdk"/>
     </dependencies>
 </module>
