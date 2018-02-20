@@ -130,6 +130,13 @@ public class TcpTransportFactory implements TransportFactory {
             SslConfiguration ssl = configuration.security().ssl();
             if (ssl.sslContext() != null) {
                sslContext = ssl.sslContext();
+            } else if (ssl.trustStorePath() != null) {
+               sslContext = SslContextFactory.getContext(
+                     ssl.keyStoreFileName(),
+                     ssl.keyStorePassword(),
+                     ssl.keyStoreCertificatePassword(),
+                     ssl.keyAlias(),
+                     ssl.trustStorePath());
             } else {
                sslContext = SslContextFactory.getContext(
                   ssl.keyStoreFileName(),

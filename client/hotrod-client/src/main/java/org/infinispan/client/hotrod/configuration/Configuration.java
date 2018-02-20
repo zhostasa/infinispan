@@ -265,8 +265,6 @@ public class Configuration {
       }
       properties.setProperty(ConfigurationProperties.SERVER_LIST, servers.toString());
 
-      properties.setProperty(ConfigurationProperties.USE_SSL, Boolean.toString(security.ssl().enabled()));
-
       if (security.ssl().keyStoreFileName() != null)
          properties.setProperty(ConfigurationProperties.KEY_STORE_FILE_NAME, security.ssl().keyStoreFileName());
 
@@ -287,8 +285,8 @@ public class Configuration {
 
       if (security.ssl().sslContext() != null)
          properties.put(ConfigurationProperties.SSL_CONTEXT, security.ssl().sslContext());
-
-      properties.setProperty(ConfigurationProperties.USE_AUTH, Boolean.toString(security.authentication().enabled()));
+         
+      properties.setProperty(ConfigurationProperties.USE_SSL, Boolean.toString(security.ssl().enabled()));
 
       if (security.authentication().saslMechanism() != null)
          properties.setProperty(ConfigurationProperties.SASL_MECHANISM, security.authentication().saslMechanism());
@@ -304,6 +302,8 @@ public class Configuration {
 
       for (Map.Entry<String, String> entry : security.authentication().saslProperties().entrySet())
          properties.setProperty(ConfigurationProperties.SASL_PROPERTIES_PREFIX + '.' + entry.getKey(), entry.getValue());
+   
+      properties.setProperty(ConfigurationProperties.USE_AUTH, Boolean.toString(security.authentication().enabled()));
 
       properties.setProperty(ConfigurationProperties.JAVA_SERIAL_WHITELIST, String.join(",", serialWhitelist));
 

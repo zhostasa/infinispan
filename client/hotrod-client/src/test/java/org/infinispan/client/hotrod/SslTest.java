@@ -71,27 +71,29 @@ public class SslTest extends SingleCacheManagerTest {
       String clientTrustStore = tccl.getResource("ca.jks").getPath();
       ConfigurationBuilder clientBuilder = new ConfigurationBuilder();
       SslConfigurationBuilder clientSSLConfig = clientBuilder
-         .addServer()
-         .host("127.0.0.1")
-         .port(hotrodServer.getPort())
-         .socketTimeout(3000)
-         .connectionPool()
-         .maxActive(1)
-         .timeBetweenEvictionRuns(2000)
-         .security()
-         .authentication()
-         .disable()
-         .ssl()
-         .enabled(sslClient)
-         .trustStoreFileName(clientTrustStore)
-         .trustStorePassword(STORE_PASSWORD);
-      if (clientAuth) {
+            .addServer()
+               .host("127.0.0.1")
+               .port(hotrodServer.getPort())
+            .socketTimeout(3000)
+            .connectionPool()
+               .maxActive(1)
+               .timeBetweenEvictionRuns(2000)
+            .security()
+            .authentication()
+               .disable()
+            .ssl();
+      if (sslClient) {
          clientSSLConfig
-            .keyStoreFileName(clientKeyStore)
-            .keyStorePassword(STORE_PASSWORD);
-         if (altCertPassword) {
+               .trustStoreFileName(clientTrustStore)
+               .trustStorePassword(STORE_PASSWORD);
+         if (clientAuth) {
             clientSSLConfig
-               .keyStoreCertificatePassword(ALT_CERTIFICATE_PASSWORD);
+                  .keyStoreFileName(clientKeyStore)
+                  .keyStorePassword(STORE_PASSWORD);
+            if (altCertPassword) {
+               clientSSLConfig
+                     .keyStoreCertificatePassword(ALT_CERTIFICATE_PASSWORD);
+            }
          }
       }
       remoteCacheManager = new RemoteCacheManager(clientBuilder.build());

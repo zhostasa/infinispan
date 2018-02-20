@@ -252,4 +252,6 @@ public interface Log extends BasicLogger {
    @Message(value = "Class '%s' blocked by Java standard deserialization white list. Adjust the client configuration java serialization white list regular expression to include this class.", id = 4068)
    CacheException classNotInWhitelist(String className);
 
+   @Message(value = "TrustStoreFileName and TrustStorePath are mutually exclusive", id = 4075)
+   CacheConfigurationException trustStoreFileAndPathExclusive();
 }
