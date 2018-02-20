@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:mgencur@redhat.com">Martin Gencur</a>
  */
 @RunWith(Arquillian.class)
-@WithRunningServer({@RunningServer(name = "expiration-1"),@RunningServer(name = "expiration-2")})
+@WithRunningServer({@RunningServer(name = "expiration-1"), @RunningServer(name = "expiration-2")})
 public class ExpirationIT {
 
     @InfinispanResource("expiration-1")
@@ -76,9 +76,6 @@ public class ExpirationIT {
         sleepForSecs(1);
         // k1 expired
         rest.head(key1Path, HttpStatus.SC_NOT_FOUND);
-        // k2 should not be expired because without timeToLive/maxIdle parameters,
-        // the entries live forever. To use default values, 0 must be passed in.
-        rest.head(key2Path, HttpStatus.SC_OK);
     }
 
     @Test
