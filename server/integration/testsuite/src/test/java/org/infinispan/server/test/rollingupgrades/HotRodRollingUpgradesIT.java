@@ -1,12 +1,11 @@
 package org.infinispan.server.test.rollingupgrades;
 
-import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import javax.management.ObjectName;
 
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
-import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;

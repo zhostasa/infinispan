@@ -1,9 +1,9 @@
 package org.infinispan.hibernate.search;
 
-import static junit.framework.Assert.assertEquals;
 import static org.infinispan.hibernate.search.ClusterTestHelper.clusterSize;
 import static org.infinispan.hibernate.search.ClusterTestHelper.createClusterNode;
 import static org.infinispan.hibernate.search.ClusterTestHelper.waitMembersCount;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
 import java.util.LinkedList;
