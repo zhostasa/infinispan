@@ -38,7 +38,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration combine.self="override">
                <trimStackTrace>false</trimStackTrace>
-               <argLine>-Xmx512m ${env.ZING_TESTING_LICENSE_KEY}</argLine>
+               <argLine>-Xmx512m</argLine>
             </configuration>
             <dependencies>
                <dependency>
@@ -62,4 +62,16 @@
          </plugin>
       </plugins>
    </build>
+   
+   <profiles>
+      <profile>
+         <id>jdk-other-testsuite</id>
+         <activation>
+            <property><name>env.JAVA_HOME_OTHER</name></property>
+         </activation>
+         <properties>
+            <server.jvm>${env.JAVA_HOME_OTHER}</server.jvm>
+         </properties>
+      </profile>
+   </profiles>
 </project>
