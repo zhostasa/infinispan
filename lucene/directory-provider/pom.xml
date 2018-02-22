@@ -125,7 +125,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration combine.self="override">
-                    <argLine>-javaagent:${project.build.directory}/agents/byteman.jar=port:9091,boot:${project.build.directory}/agents/byteman.jar ${env.ZING_TESTING_LICENSE_KEY}</argLine>
+                    <argLine>-javaagent:${project.build.directory}/agents/byteman.jar=port:9091,boot:${project.build.directory}/agents/byteman.jar</argLine>
                     <excludedGroups>${suite.exclude.groups}</excludedGroups>
                     <systemPropertyVariables>
                         <log4j.configurationFile>${log4j.configurationFile}</log4j.configurationFile>
@@ -144,5 +144,17 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>jdk-other-testsuite</id>
+            <activation>
+                <property><name>env.JAVA_HOME_OTHER</name></property>
+            </activation>
+            <properties>
+                <server.jvm>${env.JAVA_HOME_OTHER}</server.jvm>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
