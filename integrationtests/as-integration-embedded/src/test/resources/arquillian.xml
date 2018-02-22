@@ -28,6 +28,16 @@
                 <property name="managementPort">19990</property>
             </configuration>
         </container>
+        <container qualifier="container.no-ispn">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/node1/${eap.dir}</property>
+                <property name="javaVmArguments">-Djboss.socket.binding.port-offset=100 -Xmx512m
+                    -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=127.0.0.1 -Djgroups.join_timeout=2000
+                </property>
+                <property name="managementPort">10090</property>
+                <property name="serverConfig">standalone-no-ispn.xml</property>
+            </configuration>
+        </container>
     </group>
 
 </arquillian>
