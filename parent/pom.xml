@@ -1670,7 +1670,7 @@
                   </property>
                </properties>
 
-               <argLine>${forkJvmArgs} -Dsun.nio.ch.bugLevel</argLine>
+               <argLine>${forkJvmArgs} -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
             </configuration>
          </plugin>
 
@@ -2060,7 +2060,7 @@
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
-                     <argLine combine.self="override">${forkJvmArgs} -Dsun.nio.ch.bugLevel ${jacoco.agent.argLine}</argLine>
+                     <argLine combine.self="override">${forkJvmArgs} -Dsun.nio.ch.bugLevel ${jacoco.agent.argLine} ${env.ZING_TESTING_LICENSE_KEY}</argLine>
                   </configuration>
                </plugin>
 
@@ -2344,7 +2344,7 @@
                           </property>
                        </properties>
 
-                       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel</argLine>
+                       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
                     </configuration>
                  </plugin>
               </plugins>

@@ -67,7 +67,7 @@
                   <build.directory>${project.build.directory}</build.directory>
                </systemPropertyVariables>
                <trimStackTrace>false</trimStackTrace>
-               <argLine>-Xmx512m</argLine>
+               <argLine>-Xmx512m ${env.ZING_TESTING_LICENSE_KEY}</argLine>
             </configuration>
             <dependencies>
                <dependency>

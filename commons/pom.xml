@@ -109,7 +109,7 @@
                   <build.directory>${project.build.directory}</build.directory>
                </systemPropertyVariables>
                <trimStackTrace combine.self="override">false</trimStackTrace>
-               <argLine combine.self="override">-Xmx768m</argLine>
+               <argLine combine.self="override">-Xmx768m  ${env.ZING_TESTING_LICENSE_KEY}</argLine>
                <properties combine.self="override">
                   <property>
                      <name>usedefaultlisteners</name>

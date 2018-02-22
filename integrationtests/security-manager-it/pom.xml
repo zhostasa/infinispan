@@ -61,7 +61,7 @@
                      <value>${testNGListeners}</value>
                   </property>
                </properties>
-               <argLine>-Xmx2G -Dsun.nio.ch.bugLevel</argLine>
+               <argLine>-Xmx2G -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
             </configuration>
          </plugin>
       </plugins>
