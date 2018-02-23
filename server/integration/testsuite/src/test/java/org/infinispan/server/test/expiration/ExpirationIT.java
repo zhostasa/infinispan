@@ -73,6 +73,7 @@ public class ExpirationIT {
         rest.get(key1Path, "v1");
         rest.head(key3Path, HttpStatus.SC_NOT_FOUND);
         rest.head(key4Path, HttpStatus.SC_NOT_FOUND);
+        rest.head(key2Path, HttpStatus.SC_NOT_FOUND);
         sleepForSecs(1);
         // k1 expired
         rest.head(key1Path, HttpStatus.SC_NOT_FOUND);
