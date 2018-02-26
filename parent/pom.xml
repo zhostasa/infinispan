@@ -152,7 +152,7 @@
       <version.junit>4.11</version.junit>
       <version.assertj>3.4.1</version.assertj>
       <version.leveldb>0.7</version.leveldb>
-      <version.leveldbjni>1.7</version.leveldbjni>
+      <version.leveldbjni>1.8-redhat.003</version.leveldbjni>
       <version.log4j>2.8.2.redhat-1</version.log4j>
       <version.lucene>5.5.5.redhat-1</version.lucene>
       <version.mc4j>1.2.6</version.mc4j>
