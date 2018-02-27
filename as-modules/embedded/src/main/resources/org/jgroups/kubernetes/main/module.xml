@@ -13,7 +13,6 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="net.oauth.core"/>
         <module name="org.jgroups"/>
     </dependencies>
 </module>

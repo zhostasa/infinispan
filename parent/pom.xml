@@ -179,7 +179,6 @@
       <version.jmh>1.12</version.jmh>
       <version.jgroups.azure>1.2.0.Final-redhat-1</version.jgroups.azure>
       <version.jgroups.kubernetes>1.0.5.Final-redhat-1</version.jgroups.kubernetes>
-      <version.oauth.core>20100527</version.oauth.core>
 
       <version.org.wildfly>7.0.8.GA-redhat-1</version.org.wildfly>
       <version.org.wildfly.short>7.0</version.org.wildfly.short>
@@ -1164,11 +1163,6 @@
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>${version.jmh}</version>
-         </dependency>
-         <dependency>
-            <groupId>net.oauth.core</groupId>
-            <artifactId>oauth</artifactId>
-            <version>${version.oauth.core}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

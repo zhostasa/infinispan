@@ -275,10 +275,6 @@
                            <shadedPattern>infinispan.org.jboss.dmr</shadedPattern>
                         </relocation>
                         <relocation>
-                           <pattern>net.oauth</pattern>
-                           <shadedPattern>infinispan.net.oauth</shadedPattern>
-                        </relocation>
-                        <relocation>
                            <pattern>com.google</pattern>
                            <shadedPattern>infinispan.com.google</shadedPattern>
                         </relocation>
