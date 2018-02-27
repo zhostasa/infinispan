@@ -1,6 +1,6 @@
 rem ### -*- batch file -*- ######################################################
 rem #                                                                          ##
-rem #  JBoss Data Grid Bootstrap Script Configuration                          ##
+rem #  Red Hat Data Grid Bootstrap Script Configuration                        ##
 rem #                                                                          ##
 rem #############################################################################
 

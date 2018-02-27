@@ -1,1 +1,1 @@
-Red Hat JBoss Data Grid - Version @product.version@
+Red Hat Data Grid - Version @product.version@

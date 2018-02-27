@@ -7,7 +7,7 @@ Manik Surtani, Mircea Markus, Galder Zamarreño, Pete Muir, and others from the 
 
 This guide walks you through the process of upgrading Infinispan.
 
-== Upgrading from Infinispan 8.x to JBoss Data Grid 7.x
+== Upgrading from Infinispan 8.x to Red Hat Data Grid 7.x
 
 === Default Cache changes
 Up to Infinispan 8.x, the default cache always implicitly existed, even if not declared in the XML configuration.
@@ -16,7 +16,7 @@ Since 9.0, the default cache only exists if it has been explicitly configured. A
 it will never act as base template for other caches.
 
 === New Cloud module for library mode
-In JBoss Data Grid 7.2, cloud related configuration were added to `infinispan-core` module. Since 7.2 they were moved to `infinispan-cloud` module.
+In Red Hat Data Grid 7.2, cloud related configuration were added to `infinispan-core` module. Since 7.2 they were moved to `infinispan-cloud` module.
 
 === Entry Retriever is now removed
 The entry retriever feature has been removed.  Please update to use the new Streams feature detailed in the User Guide.

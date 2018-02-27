@@ -201,9 +201,9 @@
                         <artifactId>infinispan-tools</artifactId>
                         <version>${project.version}</version>
                      </docletArtifact>
-                     <doctitle>JBoss Data Grid ${product.version} API</doctitle>
-                     <windowtitle>JBoss Data Grid ${product.version} API</windowtitle>
-                     <packagesheader>JBoss Data Grid ${product.version} API</packagesheader>
+                     <doctitle>Red Hat Data Grid ${product.version} API</doctitle>
+                     <windowtitle>Red Hat Data Grid ${product.version} API</windowtitle>
+                     <packagesheader>Red Hat Data Grid ${product.version} API</packagesheader>
 
                      <docfilessubdirs>true</docfilessubdirs>
                      <detectLinks>false</detectLinks>

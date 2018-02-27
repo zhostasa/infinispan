@@ -155,7 +155,7 @@ public class HashConfigurationBuilder extends AbstractClusteringConfigurationChi
    }
 
    /**
-    * This feature is UNSUPPORTED in JBoss Data Grid.
+    * This feature is UNSUPPORTED in Red Hat Data Grid.
     *
     * Controls the proportion of entries that will reside on the local node, compared to the other nodes in the
     * cluster. This is just a suggestion, there is no guarantee that a node with a capacity factor of {@code 2} will

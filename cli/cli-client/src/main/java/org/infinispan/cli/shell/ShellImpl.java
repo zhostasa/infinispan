@@ -233,10 +233,10 @@ public class ShellImpl implements Shell {
 
    private void help() {
       System.out.println("Usage: ispn-cli [OPTION]...");
-      System.out.println("Command-line interface for interacting with a running instance of JBoss Data Grid");
+      System.out.println("Command-line interface for interacting with a running instance of Red Hat Data Grid");
       System.out.println();
       System.out.println("Options:");
-      System.out.println("  -c, --connect=URL       connects to a running instance of JBoss Data Grid. ");
+      System.out.println("  -c, --connect=URL       connects to a running instance of Red Hat Data Grid. ");
       System.out.println("                          JMX over RMI jmx://[username[:password]]@host:port[/container[/cache]]");
       System.out.println("                          JMX over JBoss remoting remoting://[username[:password]]@host:port[/container[/cache]]");
       System.out.println("  -f, --file=FILE         reads input from the specified file instead of using ");
@@ -249,7 +249,7 @@ public class ShellImpl implements Shell {
 
    private void version() {
       System.out.println("ispn-cli " + Version.class.getPackage().getImplementationVersion());
-      System.out.println("Copyright (C) 2009-2017 Red Hat Inc. and/or its affiliates and other contributors");
+      System.out.println("Copyright (C) 2009-2018 Red Hat Inc. and/or its affiliates and other contributors");
       System.out.println("License Apache License, v. 2.0. http://www.apache.org/licenses/LICENSE-2.0");
       System.exit(0);
    }

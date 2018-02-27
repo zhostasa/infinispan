@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# JBoss Data Grid control script
+# Red Hat Data Grid control script
 #
 # chkconfig: - 80 20
-# description: JBoss Data Grid startup script
+# description: Red Hat Data Grid startup script
 # processname: jboss-datagrid
 # pidfile: /var/run/jboss-datagrid/jboss-datagrid.pid
 # config: /etc/default/jboss-datagrid.conf
@@ -20,7 +20,7 @@ if [ -z "$JBOSS_NAME" ]; then
   JBOSS_NAME='jboss-datagrid'
 fi
 
-# Load JBoss Data Grid init.d configuration.
+# Load Red Hat Data Grid init.d configuration.
 if [ -z "$JBOSS_CONF" ]; then
 	JBOSS_CONF="/etc/default/$JBOSS_NAME.conf"
 fi

@@ -3,8 +3,8 @@
    <!ENTITY pluginName 'JDG7Server'>
 ]>
 
-<plugin name="&pluginName;" displayName="JBoss Data Grid Server 7"
-        description="Supports management and monitoring of JBoss Data Grid Server 7"
+<plugin name="&pluginName;" displayName="Red Hat Data Grid Server 7"
+        description="Supports management and monitoring of Red Hat Data Grid Server 7"
         package="org.rhq.modules.plugins.wildfly10"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="urn:xmlns:rhq-plugin"

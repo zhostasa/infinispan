@@ -1,6 +1,6 @@
 #############################################################################
 #                                                                          ##
-#    JBoss Data Grid Startup Script for starting the standalone server     ##
+#   Red Hat Data Grid Startup Script for starting the standalone server    ##
 #                                                                          ##
 #############################################################################
 
