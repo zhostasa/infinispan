@@ -201,6 +201,7 @@
                            <exclude>org.osgi:org.osgi.core:jar:</exclude>
                            <exclude>org.osgi:org.osgi.compendium:jar:</exclude>
                            <exclude>com.google.code.findbugs:jsr305:jar:</exclude>
+                           <exclude>com.microsoft.azure:azure-keyvault-core:jar</exclude>
                         </excludes>
                      </artifactSet>
                      <filters>
@@ -334,6 +335,7 @@
                         </_exportcontents>
                         <Import-Package>
                            !com.mchange.v2.c3p0,
+                           !com.microsoft.azure.keyvault.core,
                            !com.sun.jmx.mbeanserver,
                            !infinispan.*,
                            !javax.cache.*,
