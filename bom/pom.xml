@@ -68,8 +68,8 @@
       <version.protostream>4.2.0.CR1-redhat-1</version.protostream>
       <version.aesh>0.66.12.redhat-1</version.aesh>
       <version.antlr>3.5.2</version.antlr>
-      <version.caffeine>2.4.0</version.caffeine>
-      <version.c3p0>0.9.5</version.c3p0>
+      <version.caffeine>2.4.0.redhat-1</version.caffeine>
+      <version.c3p0>0.9.5-pre8</version.c3p0>
       <version.commons.pool>1.6.0.redhat-9</version.commons.pool>
       <version.gnu.getopt>1.0.13.redhat-5</version.gnu.getopt>
       <version.hibernate.javax.persistence>1.0.0.Final-redhat-1</version.hibernate.javax.persistence>
@@ -93,7 +93,7 @@
       <version.scala.major>2.11</version.scala.major>
       <version.scala>${version.scala.major}.7</version.scala>
       <version.scala.xml>1.0.2</version.scala.xml>
-      <version.xpp3>1.1.4c</version.xpp3>
+      <version.xpp3>1.1.4c-redhat-2</version.xpp3>
       <version.xstream>1.4.9.redhat-2</version.xstream>
       <version.c3p0_dep.mchange-commons-java>0.2.7</version.c3p0_dep.mchange-commons-java>
       <version.hibernate.entitymanager>${version.hibernate.core}</version.hibernate.entitymanager>
@@ -101,7 +101,7 @@
       <version.hibernate_dep.antlr>2.7.7_5</version.hibernate_dep.antlr>
       <version.hibernate_dep.dom4j>1.6.1_5</version.hibernate_dep.dom4j>
       <version.hibernate_dep.classmate>0.5.4</version.hibernate_dep.classmate>
-      <version.hibernate_dep.hibernate-commons-annotations>5.0.2.Final</version.hibernate_dep.hibernate-commons-annotations>
+      <version.hibernate_dep.hibernate-commons-annotations>5.0.1.Final</version.hibernate_dep.hibernate-commons-annotations>
       <version.hibernate_dep.jandex>2.0.0.Final</version.hibernate_dep.jandex>
       <version.hibernate_dep.javaassist>3.18.1-GA</version.hibernate_dep.javaassist>
 

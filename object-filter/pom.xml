@@ -37,6 +37,11 @@
       </dependency>
 
       <dependency>
+         <groupId>antlr</groupId>
+         <artifactId>antlr</artifactId>
+      </dependency>
+
+      <dependency>
          <groupId>org.assertj</groupId>
          <artifactId>assertj-core</artifactId>
          <scope>test</scope>
@@ -98,7 +103,7 @@
                <dependency>
                   <groupId>org.antlr</groupId>
                   <artifactId>antlr</artifactId>
-                  <version>${version.antlr}</version>
+                  <version>${version.maven.antlr3}</version>
                </dependency>
             </dependencies>
          </plugin>

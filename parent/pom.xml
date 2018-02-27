@@ -98,7 +98,10 @@
       <product.version>7.2.0</product.version>
 
       <version.ant>1.9.4</version.ant>
-      <version.antlr>3.4</version.antlr>
+      <version.antlr2>2.7.7.redhat-7</version.antlr2>
+      <version.antlr3>3.4.0.redhat-1</version.antlr3>
+      <version.antlr4>4.5.1.1-redhat-1</version.antlr4>
+      <version.stringtemplate>3.2.1-redhat-1</version.stringtemplate>
       <version.maven.antlr3>3.4</version.maven.antlr3>
       <version.apache.ds>2.0.0-M20</version.apache.ds>
       <version.arquillian>1.1.5.Final</version.arquillian>
@@ -106,8 +109,8 @@
       <version.aspectj.aspectjweaver>1.8.1</version.aspectj.aspectjweaver>
       <version.byteman>2.1.4</version.byteman>
       <version.avro>1.7.6.redhat-1</version.avro>
-      <version.c3p0>0.9.5-pre8</version.c3p0>
-      <version.c3p0_dep.mchange-commons-java>0.2.7</version.c3p0_dep.mchange-commons-java>
+      <version.c3p0>0.9.5-pre8-redhat-1</version.c3p0>
+      <version.c3p0_dep.mchange-commons-java>0.2.7.redhat-1</version.c3p0_dep.mchange-commons-java>
       <version.com.intellij.forms_rt>6.0.5</version.com.intellij.forms_rt>
       <version.commons.compress>1.4</version.commons.compress>
       <version.commons.codec>1.10.0.redhat-5</version.commons.codec>
@@ -126,7 +129,7 @@
       <version.hibernate_dep.antlr>2.7.7_5</version.hibernate_dep.antlr>
       <version.hibernate_dep.classmate>0.5.4</version.hibernate_dep.classmate>
       <version.hibernate_dep.dom4j>1.6.1_5</version.hibernate_dep.dom4j>
-      <version.hibernate_dep.hibernate-commons-annotations>5.0.2.Final</version.hibernate_dep.hibernate-commons-annotations>
+      <version.hibernate_dep.hibernate-commons-annotations>5.0.1.Final</version.hibernate_dep.hibernate-commons-annotations>
       <version.hibernate_dep.jandex>2.0.0.Final</version.hibernate_dep.jandex>
       <version.hibernate_dep.javaassist>3.18.1-GA</version.hibernate_dep.javaassist>
       <version.httpclient>4.5.0.redhat-1</version.httpclient>
@@ -163,8 +166,10 @@
       <version.org.jboss.naming>5.0.6.CR1</version.org.jboss.naming>
       <version.org.picketbox>4.0.20.Final</version.org.picketbox>
       <version.postgresql.driver>9.3-1101-jdbc41</version.postgresql.driver>
+      <version.scala.major>2.11</version.scala.major>
+      <version.scala>${version.scala.major}.7</version.scala>
       <version.shrinkwrapResolver>2.1.0</version.shrinkwrapResolver>
-      <version.slf4j>1.7.5</version.slf4j>
+      <version.slf4j>1.7.5.redhat-2</version.slf4j>
       <version.snappy>1.0.5</version.snappy>
       <version.solder>3.1.0.Final</version.solder>
       <version.spring-session>1.2.2.RELEASE-redhat-1</version.spring-session>
@@ -178,7 +183,7 @@
       <version.weld-se>2.2.0.SP1</version.weld-se>
       <version.jmh>1.12</version.jmh>
       <version.jgroups.azure>1.2.0.Final-redhat-1</version.jgroups.azure>
-      <version.jgroups.kubernetes>1.0.5.Final-redhat-1</version.jgroups.kubernetes>
+      <version.jgroups.kubernetes>1.0.6.Final-redhat-1</version.jgroups.kubernetes>
 
       <version.org.wildfly>7.0.8.GA-redhat-1</version.org.wildfly>
       <version.org.wildfly.short>7.0</version.org.wildfly.short>
@@ -562,6 +567,11 @@
             <version>${version.postgresql.driver}</version>
          </dependency>
          <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${version.scala}</version>
+         </dependency>
+         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${version.junit}</version>
@@ -579,7 +589,7 @@
          <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr-runtime</artifactId>
-            <version>${version.antlr}</version>
+            <version>${version.antlr3}</version>
          </dependency>
          <dependency>
             <groupId>org.apache.commons</groupId>
@@ -1045,6 +1055,7 @@
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
             <version>${version.snappy}</version>
+            <scope>provided</scope>
          </dependency>
          <dependency>
             <groupId>org.apache.geronimo.components</groupId>
@@ -1164,6 +1175,26 @@
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>${version.jmh}</version>
+         </dependency>
+         <dependency>
+            <groupId>net.oauth.core</groupId>
+            <artifactId>oauth</artifactId>
+            <version>${version.oauth.core}</version>
+         </dependency>
+         <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>${version.antlr2}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>${version.antlr4}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>stringtemplate</artifactId>
+            <version>${version.stringtemplate}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
