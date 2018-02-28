@@ -15,7 +15,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 import org.fusesource.leveldbjni.JniDBFactory;
-import org.fusesource.leveldbjni.internal.JniDB;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.persistence.Store;
@@ -289,7 +288,9 @@ public class LevelDBStore implements AdvancedLoadWriteStore {
             // Some Cache Store tests use clear and in case of JNI Level DB implementation
             // this clears out internal references and results in throwing exceptions
             // when getting an iterator. Unfortunately there is no nice way to check that...
-            if (db instanceof JniDB) {
+            // The leveldbjni-all OSGi bundle doesn't export package org.fusesource.leveldbjni.internal,
+            // so instanceof wouldn't work in an OSGi environment.
+            if (db.getClass().getName().equals("org.fusesource.leveldbjni.internal.JniDB")) {
                 log.warnAboutExceptionInLevelDB(e);
                 return Optional.empty();
             }

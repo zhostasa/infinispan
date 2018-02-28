@@ -241,6 +241,8 @@ public class KarafTestSupport {
         }
 
         return composite(systemProperty("org.ops4j.pax.url.mvn.localRepository").value(localRepo),
-                         editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", "org.ops4j.pax.url.mvn.localRepository", localRepo));
+                         systemProperty("org.ops4j.pax.url.mvn.repositories").value(""),
+                         editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", "org.ops4j.pax.url.mvn.localRepository", localRepo),
+                         editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", "org.ops4j.pax.url.mvn.repositories", ""));
     }
 }
