@@ -65,9 +65,10 @@
          </copy>
          <base-distribution-lib-remote dir="${output.dir}" />
          <base-distribution-common-files dir="${output.dir}" type="remote" />
+         <base-distribution-javadocs-hotrod dir="${output.dir}" />
          <delete dir="${output.dir}/bin" />
          <delete dir="${output.dir}/configs" />
-         <delete dir="${output.dir}/docs" />
+         <delete file="${output.dir}/docs/index.html" />
          <delete file="${output.dir}/README-GUI-Demo.txt" />
       </sequential>
    </target>
@@ -138,6 +139,15 @@
             </fileset>
          </copy>
          <unjar src="${org.infinispan:infinispan-javadoc:jar:javadoc}" dest="@{dir}/docs/api">
+         </unjar>
+      </sequential>
+   </macrodef>
+
+   <macrodef name="base-distribution-javadocs-hotrod">
+      <attribute name="dir" />
+      <sequential>
+         <mkdir dir="@{dir}/docs" />
+         <unjar src="${org.infinispan:infinispan-javadoc:jar:javadoc-hotrod}" dest="@{dir}/docs/api">
          </unjar>
       </sequential>
    </macrodef>

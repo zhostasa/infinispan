@@ -123,6 +123,13 @@
       </dependency>
       
       <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>infinispan-javadoc</artifactId>
+         <version>${project.version}</version>
+         <classifier>javadoc-hotrod</classifier>
+      </dependency>
+
+      <dependency>
          <groupId>javax.cache</groupId>
          <artifactId>cache-api</artifactId>
          <scope>provided</scope>

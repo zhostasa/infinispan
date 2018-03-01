@@ -234,10 +234,6 @@
                            <packages>org.infinispan.lock*</packages>
                         </group>
                         <group>
-                           <title>Hot Rod Client API</title>
-                           <packages>org.infinispan.client.hotrod*</packages>
-                        </group>
-                        <group>
                            <title>Server Connectors API</title>
                            <packages>org.infinispan.server*</packages>
                         </group>
@@ -257,10 +253,6 @@
                            <title>Multimap API</title>
                            <packages>org.infinispan.multimap*</packages>
                         </group>
-                        <!-- <group>
-                           <title>Tree API</title>
-                           <packages>org.infinispan.tree*</packages>
-                        </group> -->
                      </groups>
                      <includeDependencySources>true</includeDependencySources>
                      <includeTransitiveDependencySources>false</includeTransitiveDependencySources>
@@ -282,7 +274,102 @@
                      <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
                      <subpackages>org.infinispan</subpackages>
                      <additionalparam>-Xdoclint:none</additionalparam>
-                     
+
+                     <additionalDependencies>
+                        <additionalDependency>
+                           <groupId>javax.enterprise</groupId>
+                           <artifactId>cdi-api</artifactId>
+                           <version>1.0-SP4</version>
+                        </additionalDependency>
+                        <additionalDependency>
+                           <groupId>javax.cache</groupId>
+                           <artifactId>cache-api</artifactId>
+                           <version>1.0.0</version>
+                        </additionalDependency>
+                        <additionalDependency>
+                           <groupId>javax.servlet</groupId>
+                           <artifactId>servlet-api</artifactId>
+                           <version>2.5</version>
+                        </additionalDependency>
+                        <additionalDependency>
+                           <groupId>org.kohsuke.metainf-services</groupId>
+                           <artifactId>metainf-services</artifactId>
+                           <version>1.5</version>
+                        </additionalDependency>
+                        <additionalDependency>
+                           <groupId>org.osgi</groupId>
+                           <artifactId>org.osgi.core</artifactId>
+                           <version>4.3.1</version>
+                           <scope>provided</scope>
+                        </additionalDependency>
+                        <additionalDependency>
+                           <groupId>org.osgi</groupId>
+                           <artifactId>org.osgi.compendium</artifactId>
+                           <version>4.3.1</version>
+                           <scope>provided</scope>
+                        </additionalDependency>
+                        <additionalDependency>
+                           <groupId>org.hibernate</groupId>
+                           <artifactId>hibernate-core</artifactId>
+                           <version>4.3.8.Final</version>
+                        </additionalDependency>
+                        <additionalDependency>
+                           <groupId>com.mchange</groupId>
+                           <artifactId>c3p0</artifactId>
+                           <version>0.9.5-pre8</version>
+                        </additionalDependency>
+                     </additionalDependencies>
+                  </configuration>
+               </execution>
+
+               <execution>
+                  <id>javadoc-hotrod</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>jar</goal>
+                  </goals>
+                  <configuration>
+                    <classifier>javadoc-hotrod</classifier>
+                     <doclet>org.infinispan.tools.doclet.DocletMultiplexer</doclet>
+                     <docletArtifact>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-tools</artifactId>
+                        <version>${project.version}</version>
+                     </docletArtifact>
+                     <doctitle>Red Hat Data Grid ${product.version} API</doctitle>
+                     <windowtitle>Red Hat Data Grid ${product.version} API</windowtitle>
+                     <packagesheader>Red Hat Data Grid ${product.version} API</packagesheader>
+
+                     <docfilessubdirs>true</docfilessubdirs>
+                     <detectLinks>false</detectLinks>
+                     <footer>${analytics.code}</footer>
+                     <groups>
+                        <group>
+                           <title>Hot Rod Client API</title>
+                           <packages>org.infinispan.client.hotrod*</packages>
+                        </group>
+                     </groups>
+                     <includeDependencySources>true</includeDependencySources>
+                     <includeTransitiveDependencySources>false</includeTransitiveDependencySources>
+                     <dependencySourceIncludes>
+                        <dependencySourceInclude>org.infinispan:*</dependencySourceInclude>
+                     </dependencySourceIncludes>
+                     <javadocDirectory>${basedir}/src/main/javadoc</javadocDirectory>
+                     <links>
+                        <link>http://docs.oracle.com/javase/7/docs/api/</link>
+                        <link>http://docs.oracle.com/javaee/5/api/</link>
+                        <link>http://docs.jboss.org/jbossmarshalling/1.3/</link>
+                        <link>http://docs.jboss.org/jbosslogging/latest/</link>
+                        <link>http://www.osgi.org/javadoc/r4v43/core/</link>
+                        <link>http://jgroups.org/javadoc/</link>
+                        <link>http://lucene.apache.org/core/5_5_0/core/</link>
+                        <link>http://docs.jboss.org/hibernate/search/5.7/api/</link>
+                     </links>
+                     <quiet>true</quiet>
+                     <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
+                     <subpackages>org.infinispan</subpackages>
+                     <additionalparam>-Xdoclint:none</additionalparam>
+
                      <additionalDependencies>
                         <additionalDependency>
                            <groupId>javax.enterprise</groupId>
