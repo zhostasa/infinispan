@@ -1,7 +1,7 @@
 package org.infinispan.test.integration.as;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
