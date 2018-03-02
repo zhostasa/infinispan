@@ -21,6 +21,15 @@
             <skipOSGiTests>true</skipOSGiTests>
          </properties>
       </profile>
+      <profile>
+         <id>jdk-other-testsuite</id>
+         <activation>
+            <property><name>env.JAVA_HOME_OTHER</name></property>
+         </activation>
+         <properties>
+            <server.jvm>${env.JAVA_HOME_OTHER}</server.jvm>
+         </properties>
+      </profile>
    </profiles>
 
    <dependencies>
@@ -251,6 +260,7 @@
                      <value>${junitListener}</value>
                   </property>
                </properties>
+               <argLine>${env.ZING_TESTING_LICENSE_KEY}</argLine>
             </configuration>
             <executions>
                <execution>

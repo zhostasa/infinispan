@@ -2344,7 +2344,7 @@
                           </property>
                        </properties>
 
-                       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
+                       <argLine>-Xmx2048m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
                     </configuration>
                  </plugin>
               </plugins>
