@@ -4,10 +4,10 @@ import static java.lang.String.format;
 import static org.infinispan.server.hotrod.Response.createEmptyResponse;
 import static org.infinispan.util.concurrent.CompletableFutures.extractException;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.Subject;
 
@@ -29,7 +29,6 @@ import org.infinispan.counter.exception.CounterOutOfBoundsException;
 import org.infinispan.counter.impl.CounterModuleLifecycle;
 import org.infinispan.counter.impl.manager.EmbeddedCounterManager;
 import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
@@ -273,7 +272,7 @@ public final class CacheDecodeContext {
          return notExecutedResp(null);
    }
 
-   void obtainCache(EmbeddedCacheManager cacheManager, boolean loopback) throws RequestParsingException {
+   void obtainCache(EmbeddedCacheManager cacheManager) throws RequestParsingException {
       switch (header.op) {
          case COUNTER_CREATE:
          case COUNTER_ADD_AND_GET:
@@ -302,15 +301,9 @@ public final class CacheDecodeContext {
                   format("Remote requests are not allowed to private caches. Do no send remote requests to cache '%s'", cacheName),
                   header.version, header.messageId);
          } else if (icr.internalCacheHasFlag(cacheName, InternalCacheRegistry.Flag.PROTECTED)) {
-            if (!cacheManager.getCacheManagerConfiguration().security().authorization().enabled() && !loopback) {
-               throw new RequestParsingException(
-                     format("Remote requests are allowed to protected caches only over loopback or if authorization is enabled. Do no send remote requests to cache '%s'", cacheName),
-                     header.version, header.messageId);
-            } else {
-               // We want to make sure the cache access is checked everytime, so don't store it as a "known" cache. More
-               // expensive, but these caches should not be accessed frequently
-               cache = server.getCacheInstance(cacheName, cacheManager, true, false);
-            }
+            // We want to make sure the cache access is checked everytime, so don't store it as a "known" cache. More
+            // expensive, but these caches should not be accessed frequently
+            cache = server.getCacheInstance(cacheName, cacheManager, true, false);
          } else if (!cacheName.isEmpty() && !cacheManager.getCacheNames().contains(cacheName)) {
             throw new CacheNotFoundException(
                   format("Cache with name '%s' not found amongst the configured caches", cacheName),

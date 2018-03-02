@@ -7,8 +7,8 @@ import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
 import org.infinispan.registry.InternalCacheRegistry
 import org.infinispan.server.core.test.ServerTestingUtil._
 import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodClient
 import org.infinispan.server.hotrod.test.HotRodTestingUtil._
-import org.infinispan.server.hotrod.test.{HotRodClient, TestErrorResponse}
 import org.infinispan.test.AbstractCacheTest._
 import org.infinispan.test.MultipleCacheManagersTest
 import org.infinispan.test.fwk.TestCacheManagerFactory
@@ -55,11 +55,8 @@ class HotRodSingleClusteredNonLoopbackTest extends MultipleCacheManagersTest {
       internalCacheRegistry.registerInternalCache("MyInternalCache",
          new ConfigurationBuilder().build(),
          EnumSet.of(InternalCacheRegistry.Flag.USER, InternalCacheRegistry.Flag.PROTECTED))
-      val resp = hotRodClient.execute(0xA0, 0x01, "MyInternalCache", k(m), 0, 0, v(m), 0, 1, 0).asInstanceOf[TestErrorResponse]
-      assertTrue(resp.msg.contains("protected caches only over loopback"))
-      assertEquals(resp.status, ParseError, "Status should have been 'ParseError' but instead was: " + resp.status)
+      val resp = hotRodClient.execute(0xA0, 0x01, "MyInternalCache", k(m), 0, 0, v(m), 0, 1, 0)
+      assertEquals(resp.status, Success, "Status should have been 'Success' but instead was: " + resp.status)
       hotRodClient.assertPut(m)
    }
-
-
 }
