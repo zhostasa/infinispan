@@ -61,7 +61,7 @@
                      <value>${testNGListeners}</value>
                   </property>
                </properties>
-               <argLine>-Xmx2G -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
+               <argLine>-Xmx2G -Dsun.nio.ch.bugLevel</argLine>
             </configuration>
          </plugin>
       </plugins>
@@ -84,6 +84,9 @@
                </plugin>
             </plugins>
          </build>
+      </profile>
+      <profile>
+         <id>jdk-other-testsuite</id>
       </profile>
    </profiles>
 </project>

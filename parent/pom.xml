@@ -1670,7 +1670,7 @@
                   </property>
                </properties>
 
-               <argLine>${forkJvmArgs} -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
+<!--                <argLine>${forkJvmArgs} -Dsun.nio.ch.bugLevel</argLine> -->
             </configuration>
          </plugin>
 
@@ -2053,14 +2053,13 @@
       </profile>
       <profile>
          <id>coverage</id>
-
          <build>
             <plugins>
                <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
-                     <argLine combine.self="override">${forkJvmArgs} -Dsun.nio.ch.bugLevel ${jacoco.agent.argLine} ${env.ZING_TESTING_LICENSE_KEY}</argLine>
+                     <argLine combine.self="override">${forkJvmArgs} -Dsun.nio.ch.bugLevel ${jacoco.agent.argLine}</argLine>
                   </configuration>
                </plugin>
 

@@ -85,12 +85,6 @@
       </profile>
       <profile>
          <id>jdk-other-testsuite</id>
-         <activation>
-            <property><name>env.JAVA_HOME_OTHER</name></property>
-         </activation>
-         <properties>
-            <server.jvm>${env.JAVA_HOME_OTHER}</server.jvm>
-         </properties>
       </profile>
    </profiles>
 </project>
