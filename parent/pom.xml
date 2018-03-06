@@ -1670,7 +1670,7 @@
                   </property>
                </properties>
 
-<!--                <argLine>${forkJvmArgs} -Dsun.nio.ch.bugLevel</argLine> -->
+               <argLine>${forkJvmArgs} -Dsun.nio.ch.bugLevel</argLine>
             </configuration>
          </plugin>
 
@@ -2342,8 +2342,7 @@
                              <value>${testNGListeners}</value>
                           </property>
                        </properties>
-
-                       <argLine>-Xmx2048m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel ${env.ZING_TESTING_LICENSE_KEY}</argLine>
+                       <argLine>-Xmx2048m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel ${env.JAVA_HOME_OTHER_JVM_PROPERTIES}</argLine>
                     </configuration>
                  </plugin>
               </plugins>
