@@ -207,20 +207,25 @@ public class JdbcStringBasedStore<K,V> extends AbstractJdbcStore<K,V> {
             for (MarshalledEntry entry : marshalledEntries) {
                String keyStr = key2Str(entry.getKey());
                prepareUpdateStatement(entry, keyStr, upsertBatch);
+               if (trace) log.tracef("Writing entry %s to batch", entry.getKey());
                upsertBatch.addBatch();
                batchSize++;
 
                if (batchSize == configuration.maxBatchSize()) {
+                  if (trace) log.tracef("Execute batch with %d entries", (Integer) batchSize);
                   batchSize = 0;
                   upsertBatch.executeBatch();
                   upsertBatch.clearBatch();
                }
             }
 
-            if (batchSize != 0)
+            if (batchSize != 0) {
+               if (trace) log.tracef("Execute batch with %d entries", (Integer) batchSize);
                upsertBatch.executeBatch();
+            }
          }
       } catch (SQLException | InterruptedException e) {
+         if (trace) log.trace("Exception while writing entries in batch to the database", e);
          throw log.sqlFailureWritingBatch(e);
       } finally {
          connectionFactory.releaseConnection(connection);
@@ -463,7 +468,9 @@ public class JdbcStringBasedStore<K,V> extends AbstractJdbcStore<K,V> {
    private void prepareUpdateStatement(MarshalledEntry entry, String key, PreparedStatement ps) throws InterruptedException, SQLException {
       ByteBuffer byteBuffer = marshall(new KeyValuePair(entry.getValueBytes(), entry.getMetadataBytes()));
       long expiryTime = getExpiryTime(entry.getMetadata());
+      if (trace) log.tracef("before prepareUpdatesStatement key=%s, expiryTime=%s, buffer=%s", key, expiryTime, byteBuffer);
       tableManager.prepareUpdateStatement(ps, key, expiryTime, byteBuffer);
+      if (trace) log.tracef("after prepareUpdatesStatement key=%s, expiryTime=%s, buffer=%s", key, expiryTime, byteBuffer);
    }
 
    private String key2Str(Object key) throws PersistenceException {

@@ -58,10 +58,10 @@ class OracleTableManager extends AbstractTableManager {
    public String getUpsertRowSql() {
       if (upsertRowSql == null) {
          upsertRowSql = String.format("MERGE INTO %1$s t " +
-                     "USING (SELECT ? %2$s, ? %3$s, ? %4$s from dual) tmp ON (t.%4$s = tmp.%4$s) " +
-                     "WHEN MATCHED THEN UPDATE SET t.%2$s = tmp.%2$s, t.%3$s = tmp.%3$s " +
-                     "WHEN NOT MATCHED THEN INSERT VALUES (tmp.%4$s, tmp.%2$s, tmp.%3$s)",
-               this.getTableName(), config.dataColumnName(), config.timestampColumnName(), config.idColumnName());
+                     "USING (SELECT ? %2$s, ? %3$s, ? %4$s from dual) tmp ON (t.%2$s = tmp.%2$s) " +
+                     "WHEN MATCHED THEN UPDATE SET t.%3$s = tmp.%3$s, t.%4$s = tmp.%4$s " +
+                     "WHEN NOT MATCHED THEN INSERT (%2$s, %3$s, %4$s) VALUES (tmp.%2$s, tmp.%3$s, tmp.%4$s)",
+               this.getTableName(), config.idColumnName(), config.timestampColumnName(), config.dataColumnName());
       }
       return upsertRowSql;
    }
