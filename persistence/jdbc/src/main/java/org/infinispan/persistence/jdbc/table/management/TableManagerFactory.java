@@ -21,7 +21,7 @@ import java.util.Arrays;
 public class TableManagerFactory {
 
    private static final Log LOG = LogFactory.getLog(TableManagerFactory.class, Log.class);
-   private static final String UPSERT_DISABLED = "jdbc.upsert.disabled";
+   private static final String UPSERT_DISABLED = "infinispan.jdbc.upsert.disabled";
 
    public static TableManager getManager(ConnectionFactory connectionFactory, JdbcStringBasedStoreConfiguration config) {
       return getManager(connectionFactory, config.table(), config);
