@@ -186,6 +186,7 @@
       <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
       <version.org.wildfly.build-tools>1.1.6.Final</version.org.wildfly.build-tools>
       <version.org.wildfly.maven-plugin>1.1.0.Alpha5</version.org.wildfly.maven-plugin>
+      <version.owasp-dependency-check-plugin>3.1.1</version.owasp-dependency-check-plugin>
 
       <version.javassist>3.18.1.GA-redhat-2</version.javassist>
       <version.maven.buildhelper>1.8</version.maven.buildhelper>
@@ -2349,5 +2350,24 @@
               </plugins>
            </build>
         </profile>
+        <profile>
+           <id>owasp</id>
+              <build>
+                 <plugins>
+                    <plugin>
+                       <groupId>org.owasp</groupId>
+                       <artifactId>dependency-check-maven</artifactId>
+                       <version>${version.owasp-dependency-check-plugin}</version>
+                       <executions>
+                          <execution>
+                             <goals>
+                                <goal>aggregate</goal>
+                             </goals>
+                          </execution>
+                       </executions>
+                  </plugin>
+               </plugins>
+             </build>
+      </profile>
    </profiles>
 </project>
