@@ -257,8 +257,11 @@
                      <includeDependencySources>true</includeDependencySources>
                      <includeTransitiveDependencySources>false</includeTransitiveDependencySources>
                      <dependencySourceIncludes>
-                        <dependencySourceInclude>org.infinispan:*</dependencySourceInclude>
+                        <include>org.infinispan:*</include>
                      </dependencySourceIncludes>
+                     <dependencySourceExcludes>
+                        <exclude>org.infinispan:infinispan-client-hotrod</exclude>
+                     </dependencySourceExcludes>
                      <javadocDirectory>${basedir}/src/main/javadoc</javadocDirectory>
                      <links>
                         <link>http://docs.oracle.com/javase/7/docs/api/</link>
@@ -273,6 +276,7 @@
                      <quiet>true</quiet>
                      <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
                      <subpackages>org.infinispan</subpackages>
+                     <excludePackageNames>org.infinispan.client.hotrod*</excludePackageNames>
                      <additionalparam>-Xdoclint:none</additionalparam>
 
                      <additionalDependencies>
@@ -367,7 +371,7 @@
                      </links>
                      <quiet>true</quiet>
                      <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
-                     <subpackages>org.infinispan</subpackages>
+                     <subpackages>org.infinispan.client.hotrod</subpackages>
                      <additionalparam>-Xdoclint:none</additionalparam>
 
                      <additionalDependencies>
