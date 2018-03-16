@@ -93,15 +93,6 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
       }
    }
 
-   @Override
-   public AdvancedCache<K, V> withFlags(Collection<Flag> flags) {
-      if (flags == null || flags.isEmpty()) {
-         return this;
-      } else {
-         return withFlags(EnumUtil.bitSetOf(flags));
-      }
-   }
-
    private AdvancedCache<K, V> withFlags(long newFlags) {
       if (EnumUtil.containsAll(this.flags, newFlags)) {
          //we already have all specified flags
@@ -109,11 +100,6 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
       } else {
          return new DecoratedCache<>(this.cacheImplementation, EnumUtil.mergeBitSets(this.flags, newFlags));
       }
-   }
-
-   @Override
-   public AdvancedCache<K, V> noFlags() {
-      return this.cacheImplementation;
    }
 
    @Override

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import javax.security.auth.Subject;
 import javax.transaction.TransactionManager;
@@ -160,23 +159,6 @@ public final class SecureCacheImpl<K, V> implements SecureCache<K, V> {
    @Override
    public AdvancedCache<K, V> withFlags(Flag... flags) {
       return new SecureCacheImpl<>(delegate.withFlags(flags), authzManager, subject);
-   }
-
-   @Override
-   public AdvancedCache<K, V> withFlags(Collection<Flag> flags) {
-      return new SecureCacheImpl<>(delegate.withFlags(flags), authzManager, subject);
-   }
-
-   @Override
-   public AdvancedCache<K, V> noFlags() {
-      return new SecureCacheImpl<>(delegate.noFlags(), authzManager, subject);
-   }
-
-   @Override
-   public AdvancedCache<K, V> transform(Function<AdvancedCache<K, V>, ? extends AdvancedCache<K, V>> transformation) {
-      AdvancedCache<K, V> newDelegate = delegate.transform(transformation);
-      AdvancedCache<K, V> newInstance = newDelegate != delegate ? new SecureCacheImpl<>(newDelegate, authzManager, subject) : this;
-      return transformation.apply(newInstance);
    }
 
    @Override

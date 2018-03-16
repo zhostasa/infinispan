@@ -313,21 +313,6 @@ public class SecureCacheTestDriver {
    }
 
    @TestCachePermission(AuthorizationPermission.NONE)
-   public void testWithFlags_Collection(SecureCache<String, String> cache) {
-      cache.withFlags(Collections.singleton(Flag.IGNORE_RETURN_VALUES));
-   }
-
-   @TestCachePermission(AuthorizationPermission.NONE)
-   public void testNoFlags(SecureCache<String, String> cache) {
-      cache.noFlags();
-   }
-
-   @TestCachePermission(AuthorizationPermission.NONE)
-   public void testTransform_Function(SecureCache<String, String> cache) {
-      cache.transform(Function.identity());
-   }
-
-   @TestCachePermission(AuthorizationPermission.NONE)
    public void testWith_ClassLoader(SecureCache<String, String> cache) {
       cache.with(this.getClass().getClassLoader());
    }

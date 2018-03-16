@@ -1035,21 +1035,6 @@ public class SimpleCacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    @Override
-   public AdvancedCache<K, V> withFlags(Collection<Flag> flags) {
-      return this;
-   }
-
-   @Override
-   public AdvancedCache<K, V> noFlags() {
-      return this;
-   }
-
-   @Override
-   public AdvancedCache<K, V> transform(Function<AdvancedCache<K, V>, ? extends AdvancedCache<K, V>> transformation) {
-      return transformation.apply(this);
-   }
-
-   @Override
    public AdvancedCache<K, V> withSubject(Subject subject) {
       return this; // NO-OP
    }

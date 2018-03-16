@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 import javax.security.auth.Subject;
 import javax.transaction.TransactionManager;
@@ -229,33 +228,6 @@ public class AbstractDelegatingAdvancedCache<K, V> extends AbstractDelegatingCac
       } else {
          return this;
       }
-   }
-
-   @Override
-   public AdvancedCache<K, V> withFlags(Collection<Flag> flags) {
-      AdvancedCache<K, V> flagCache = cache.withFlags(flags);
-      if (flagCache != cache) {
-         return wrapper.wrap(this, flagCache);
-      } else {
-         return this;
-      }
-   }
-
-   @Override
-   public AdvancedCache<K, V> noFlags() {
-      AdvancedCache<K, V> flagCache = cache.noFlags();
-      if (flagCache != cache) {
-         return wrapper.wrap(this, flagCache);
-      } else {
-         return this;
-      }
-   }
-
-   @Override
-   public AdvancedCache<K, V> transform(Function<AdvancedCache<K, V>, ? extends AdvancedCache<K, V>> transformation) {
-      AdvancedCache<K, V> newDelegate = cache.transform(transformation);
-      AdvancedCache<K, V> newInstance = newDelegate != cache ? wrapper.wrap(this, newDelegate) : this;
-      return transformation.apply(newInstance);
    }
 
    @Override

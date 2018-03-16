@@ -76,38 +76,6 @@ public interface AdvancedCache<K, V> extends Cache<K, V> {
    AdvancedCache<K, V> withFlags(Flag... flags);
 
    /**
-    * An alternative to {@link #withFlags(Flag...)} not requiring array allocation.
-    * @param flags
-    * @return
-    */
-   default AdvancedCache<K, V> withFlags(Collection<Flag> flags) {
-      if (flags == null) return this;
-      int numFlags = flags.size();
-      if (numFlags == 0) return this;
-      return withFlags(flags.toArray(new Flag[numFlags]));
-   }
-
-   /**
-    * Unset all flags set on this cache using {@link #withFlags(Flag...)} or {@link #withFlags(Collection)} methods.
-    *
-    * @return Cache not applying any flags to the command; possibly <code>this</code>.
-    */
-   default AdvancedCache<K, V> noFlags() {
-      throw new UnsupportedOperationException();
-   }
-
-   /**
-    * Apply the <code>transformation</code> on each {@link AdvancedCache} instance in a delegation chain, starting
-    * with the innermost implementation.
-    *
-    * @param transformation
-    * @return The outermost transformed cache.
-    */
-   default AdvancedCache<K, V> transform(Function<AdvancedCache<K, V>, ? extends AdvancedCache<K, V>> transformation) {
-      throw new UnsupportedOperationException();
-   }
-
-   /**
     * Performs any cache operations using the specified {@link Subject}. Only applies to caches with authorization
     * enabled (see {@link ConfigurationBuilder#security()}).
     * @param subject
