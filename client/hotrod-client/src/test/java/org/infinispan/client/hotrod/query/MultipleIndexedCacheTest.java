@@ -50,7 +50,7 @@ public class MultipleIndexedCacheTest extends MultiHotRodServersTest {
 
    public Configuration buildIndexedConfig(String lockCache, String dataCache, String metadataCache) {
       ConfigurationBuilder builder = hotRodCacheConfiguration(getDefaultClusteredCacheConfig(CacheMode.DIST_SYNC, false));
-      builder.indexing().index(Index.PRIMARY_OWNER)
+      builder.indexing().index(Index.ALL)
             .addProperty("default.indexmanager", InfinispanIndexManager.class.getName())
             .addProperty("default.metadata_cachename", metadataCache)
             .addProperty("default.data_cachename", dataCache)
