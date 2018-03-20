@@ -320,7 +320,7 @@
                         <additionalDependency>
                            <groupId>com.mchange</groupId>
                            <artifactId>c3p0</artifactId>
-                           <version>0.9.5-pre8</version>
+                           <version>0.9.5-pre8-redhat-1</version>
                         </additionalDependency>
                      </additionalDependencies>
                   </configuration>
